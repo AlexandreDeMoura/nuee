@@ -6,6 +6,21 @@ type AppRoute =
   | { name: 'project-canvas'; projectId: string }
   | { name: 'not-found' };
 
+const focusRing =
+  '[-webkit-tap-highlight-color:transparent] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/30';
+const pageClasses =
+  "min-h-screen min-w-80 bg-[#f4f6f9] text-[#1e2733] [font-family:'IBM_Plex_Sans',system-ui,sans-serif] [font-synthesis:none] [text-rendering:optimizeLegibility]";
+const headerClasses =
+  'flex h-14 items-center gap-3 border-b border-[#e1e6ec] bg-white px-4 sm:px-[22px]';
+const brandClasses =
+  `inline-flex items-center gap-[11px] text-[15px] font-semibold tracking-[-0.2px] text-[#1e2733] no-underline ${focusRing}`;
+const primaryButtonClasses =
+  `ml-auto inline-flex min-h-9 cursor-pointer items-center justify-center gap-[7px] rounded-[9px] bg-[#3f63a8] px-3.5 py-2 text-[12.5px] font-semibold text-white shadow-[0_6px_16px_-8px_rgba(63,99,168,0.7)] transition-[background-color,border-color,box-shadow,transform] duration-150 hover:bg-[#33538f] motion-reduce:transition-none ${focusRing}`;
+const secondaryButtonClasses =
+  `inline-flex min-h-9 cursor-pointer items-center justify-center gap-[7px] rounded-[9px] border border-[#cdd8ea] bg-[#f6f8fc] px-3.5 py-2 text-[12.5px] font-semibold text-[#33538f] no-underline transition-[background-color,border-color,box-shadow,transform] duration-150 hover:border-[#aebed8] hover:bg-[#eef2fa] motion-reduce:transition-none ${focusRing}`;
+const statePanelClasses =
+  'flex min-h-[290px] flex-col items-center justify-center rounded-xl border border-[#e1e6ec] bg-white px-6 py-11 text-center';
+
 function resolveRoute(pathname: string): AppRoute {
   if (pathname === '/' || pathname === '/projects' || pathname === '/projects/') {
     return { name: 'project-entry' };
@@ -46,23 +61,34 @@ function navigate(event: MouseEvent<HTMLAnchorElement>, href: string) {
 
 function Logo() {
   return (
-    <span className="brand-mark" aria-hidden="true">
-      <span className="brand-mark__cloud" />
+    <span
+      className="grid size-6 shrink-0 place-items-center rounded-[7px] bg-[#3f63a8]"
+      aria-hidden="true"
+    >
+      <span className="size-[9px] rounded-full bg-white/90" />
     </span>
   );
 }
 
 function PlusIcon() {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
+    <svg
+      className="size-[15px] fill-none stroke-current stroke-2 [stroke-linecap:round]"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
       <path d="M12 5v14M5 12h14" />
     </svg>
   );
 }
 
-function ProjectIcon() {
+function ProjectIcon({ className = 'size-[18px]' }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
+    <svg
+      className={`${className} fill-none stroke-current stroke-[1.7]`}
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
       <circle cx="12" cy="12" r="3" />
       <circle cx="12" cy="12" r="7.5" opacity=".55" />
     </svg>
@@ -71,15 +97,23 @@ function ProjectIcon() {
 
 function ChevronIcon() {
   return (
-    <svg className="project-row__chevron" viewBox="0 0 24 24" aria-hidden="true">
+    <svg
+      className="size-[13px] shrink-0 fill-none stroke-[#c4cdd8] stroke-[1.8] opacity-50 transition-[opacity,transform] duration-150 [stroke-linecap:round] [stroke-linejoin:round] group-hover:translate-x-0.5 group-hover:opacity-100 motion-reduce:transition-none sm:size-[15px]"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
       <path d="m9 6 6 6-6 6" />
     </svg>
   );
 }
 
-function InfoIcon() {
+function InfoIcon({ className = 'size-[13px]' }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
+    <svg
+      className={`${className} shrink-0 fill-none stroke-current stroke-[1.7] [stroke-linecap:round] [stroke-linejoin:round]`}
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
       <circle cx="12" cy="12" r="9" />
       <path d="M12 8v5M12 16h.01" />
     </svg>
@@ -88,7 +122,11 @@ function InfoIcon() {
 
 function RetryIcon() {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
+    <svg
+      className="size-[15px] fill-none stroke-current stroke-[1.8] [stroke-linecap:round] [stroke-linejoin:round]"
+      viewBox="0 0 24 24"
+      aria-hidden="true"
+    >
       <path d="M20 11a8 8 0 1 0-2.3 5.7" />
       <path d="M20 5v6h-6" />
     </svg>
@@ -97,13 +135,13 @@ function RetryIcon() {
 
 function AppHeader() {
   return (
-    <header className="app-header">
-      <a className="brand" href="/" onClick={(event) => navigate(event, '/')}>
+    <header className={headerClasses}>
+      <a className={brandClasses} href="/" onClick={(event) => navigate(event, '/')}>
         <Logo />
         <span>Nuée</span>
       </a>
 
-      <button className="primary-button" type="button" aria-haspopup="dialog">
+      <button className={primaryButtonClasses} type="button" aria-haspopup="dialog">
         <PlusIcon />
         New project
       </button>
@@ -157,16 +195,26 @@ function formatUpdatedAt(updatedAt: string, now = new Date()): string {
 }
 
 function LoadingProjects() {
+  const skeletonClasses = 'block animate-pulse bg-[#eef1f5] motion-reduce:animate-none';
+
   return (
-    <div className="project-list project-list--loading" role="status" aria-label="Loading projects">
+    <div
+      className="min-h-[203px] overflow-hidden rounded-xl border border-[#e1e6ec] bg-white"
+      role="status"
+      aria-label="Loading projects"
+    >
       {[0, 1, 2].map((item) => (
-        <div className="project-skeleton" key={item} aria-hidden="true">
-          <span className="project-skeleton__icon" />
-          <span className="project-skeleton__copy">
-            <span className="project-skeleton__title" />
-            <span className="project-skeleton__description" />
+        <div
+          className="flex min-h-[67px] items-center gap-3.5 border-b border-[#eef1f5] px-4 py-[15px] last:border-b-0"
+          key={item}
+          aria-hidden="true"
+        >
+          <span className={`${skeletonClasses} size-9 shrink-0 rounded-[9px]`} />
+          <span className="flex flex-1 flex-col gap-[7px]">
+            <span className={`${skeletonClasses} h-[11px] w-[min(44%,260px)] rounded-md`} />
+            <span className={`${skeletonClasses} h-[9px] w-[min(62%,360px)] rounded-md`} />
           </span>
-          <span className="project-skeleton__date" />
+          <span className={`${skeletonClasses} h-[9px] w-[46px] shrink-0 rounded-md`} />
         </div>
       ))}
       <span className="sr-only">Loading your projects…</span>
@@ -176,13 +224,17 @@ function LoadingProjects() {
 
 function EmptyProjects() {
   return (
-    <section className="empty-state" aria-labelledby="empty-projects-title">
-      <span className="empty-state__icon">
+    <section className={statePanelClasses} aria-labelledby="empty-projects-title">
+      <span className="mb-3.5 grid size-[42px] place-items-center rounded-[11px] bg-[#eef2fa] text-[#3f63a8]">
         <ProjectIcon />
       </span>
-      <h2 id="empty-projects-title">Create your first project</h2>
-      <p>Start with a title and short description. Your canvas will begin empty and ready for your ideas.</p>
-      <button className="secondary-button" type="button" aria-haspopup="dialog">
+      <h2 className="m-0 text-[15px] font-semibold text-[#1e2733]" id="empty-projects-title">
+        Create your first project
+      </h2>
+      <p className="mt-[7px] mb-[18px] max-w-[390px] text-xs leading-[1.55] text-[#7b8899]">
+        Start with a title and short description. Your canvas will begin empty and ready for your ideas.
+      </p>
+      <button className={secondaryButtonClasses} type="button" aria-haspopup="dialog">
         <PlusIcon />
         New project
       </button>
@@ -192,13 +244,17 @@ function EmptyProjects() {
 
 function ProjectsError({ onRetry }: { onRetry: () => void }) {
   return (
-    <section className="error-state" aria-labelledby="projects-error-title">
-      <span className="error-state__icon">
+    <section className={statePanelClasses} aria-labelledby="projects-error-title">
+      <span className="mb-3.5 grid size-[42px] place-items-center rounded-[11px] bg-[#f9eeee] text-[#a95f57]">
         <InfoIcon />
       </span>
-      <h2 id="projects-error-title">We couldn’t load your projects</h2>
-      <p>Your projects are still safe. Check your connection and try again.</p>
-      <button className="secondary-button" type="button" onClick={onRetry}>
+      <h2 className="m-0 text-[15px] font-semibold text-[#1e2733]" id="projects-error-title">
+        We couldn’t load your projects
+      </h2>
+      <p className="mt-[7px] mb-[18px] max-w-[390px] text-xs leading-[1.55] text-[#7b8899]">
+        Your projects are still safe. Check your connection and try again.
+      </p>
+      <button className={secondaryButtonClasses} type="button" onClick={onRetry}>
         <RetryIcon />
         Try again
       </button>
@@ -208,25 +264,34 @@ function ProjectsError({ onRetry }: { onRetry: () => void }) {
 
 function ProjectList({ projects }: { projects: Project[] }) {
   return (
-    <div className="project-list">
+    <div className="overflow-hidden rounded-xl border border-[#e1e6ec] bg-white">
       {projects.map((project, index) => {
         const href = `/projects/${encodeURIComponent(project.id)}`;
 
         return (
           <a
-            className="project-row"
+            className={`group flex min-h-[67px] items-center gap-2.5 border-b border-[#eef1f5] px-3 py-3.5 text-inherit no-underline transition-colors duration-150 last:border-b-0 hover:bg-[#f6f8fc] motion-reduce:transition-none sm:gap-3.5 sm:px-4 sm:py-[15px] ${focusRing}`}
             href={href}
             onClick={(event) => navigate(event, href)}
             key={project.id}
           >
-            <span className={`project-row__icon${index === 0 ? ' project-row__icon--recent' : ''}`}>
+            <span
+              className={`grid size-8 shrink-0 place-items-center rounded-[9px] sm:size-9 ${
+                index === 0 ? 'bg-[#eef2fa] text-[#3f63a8]' : 'bg-[#eef1f5] text-[#7b8899]'
+              }`}
+            >
               <ProjectIcon />
             </span>
-            <span className="project-row__copy">
-              <span className="project-row__title">{project.title}</span>
-              <span className="project-row__description">{project.description}</span>
+            <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <span className="truncate text-[13.5px] font-semibold text-[#1e2733]">
+                {project.title}
+              </span>
+              <span className="truncate text-[11.5px] text-[#8b97a6]">{project.description}</span>
             </span>
-            <time className="project-row__updated" dateTime={project.updated_at}>
+            <time
+              className="hidden shrink-0 text-[10.5px] font-medium text-[#9aa6b4] [font-family:'IBM_Plex_Mono',ui-monospace,monospace] sm:block"
+              dateTime={project.updated_at}
+            >
               {formatUpdatedAt(project.updated_at)}
             </time>
             <ChevronIcon />
@@ -265,16 +330,27 @@ function ProjectEntry() {
   };
 
   return (
-    <main className="entry-page">
+    <main className={pageClasses}>
       <AppHeader />
 
-      <section className="entry-content" aria-labelledby="projects-heading">
-        <div className="section-heading">
-          <div className="section-heading__title">
-            <h1 id="projects-heading">Your projects</h1>
-            {projects && <span className="project-count">{projects.length}</span>}
+      <section
+        className="mx-auto w-full max-w-[940px] px-4 py-6 sm:p-[30px]"
+        aria-labelledby="projects-heading"
+      >
+        <div className="mb-4 flex items-baseline gap-[9px]">
+          <div className="flex items-baseline gap-[9px]">
+            <h1 className="m-0 text-[12.5px] font-semibold" id="projects-heading">
+              Your projects
+            </h1>
+            {projects && (
+              <span className="rounded-[5px] bg-[#eef1f5] px-1.5 py-0.5 text-[10px] font-medium text-[#9aa6b4] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
+                {projects.length}
+              </span>
+            )}
           </div>
-          <span className="section-heading__order">Recently updated</span>
+          <span className="ml-auto text-[10px] font-medium tracking-[0.04em] text-[#9aa6b4] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
+            Recently updated
+          </span>
         </div>
 
         {!projects && !hasError && <LoadingProjects />}
@@ -283,7 +359,7 @@ function ProjectEntry() {
         {projects && projects.length > 0 && <ProjectList projects={projects} />}
 
         {!hasError && projects && projects.length > 0 && (
-          <p className="canvas-note">
+          <p className="mt-3.5 flex items-start gap-1.5 text-[11px] leading-[1.5] text-[#9aa6b4] sm:items-center">
             <InfoIcon />
             Opening a project always lands on its canvas — never a past discussion.
           </p>
@@ -295,21 +371,28 @@ function ProjectEntry() {
 
 function ProjectCanvasRoute({ projectId }: { projectId: string }) {
   return (
-    <main className="route-placeholder">
-      <header className="app-header">
-        <a className="brand" href="/" onClick={(event) => navigate(event, '/')}>
+    <main className={pageClasses}>
+      <header className={headerClasses}>
+        <a className={brandClasses} href="/" onClick={(event) => navigate(event, '/')}>
           <Logo />
           <span>Nuée</span>
         </a>
-        <a className="back-link" href="/" onClick={(event) => navigate(event, '/')}>
+        <a
+          className={`ml-auto text-[12.5px] text-[#5c6a7a] no-underline hover:text-[#33538f] ${focusRing}`}
+          href="/"
+          onClick={(event) => navigate(event, '/')}
+        >
           Projects
         </a>
       </header>
-      <section className="route-placeholder__content" data-project-id={projectId}>
-        <span className="route-placeholder__icon">
+      <section
+        className="flex min-h-[calc(100vh-56px)] flex-col items-center justify-center p-[30px]"
+        data-project-id={projectId}
+      >
+        <span className="mb-3.5 grid size-[42px] place-items-center rounded-[11px] bg-[#eef2fa] text-[#3f63a8]">
           <ProjectIcon />
         </span>
-        <h1>Project canvas</h1>
+        <h1 className="m-0 text-[15px] font-semibold text-[#1e2733]">Project canvas</h1>
       </section>
     </main>
   );
@@ -317,11 +400,15 @@ function ProjectCanvasRoute({ projectId }: { projectId: string }) {
 
 function NotFoundRoute() {
   return (
-    <main className="route-placeholder">
+    <main className={pageClasses}>
       <AppHeader />
-      <section className="route-placeholder__content">
-        <h1>Page not found</h1>
-        <a className="secondary-button" href="/" onClick={(event) => navigate(event, '/')}>
+      <section className="flex min-h-[calc(100vh-56px)] flex-col items-center justify-center p-[30px]">
+        <h1 className="m-0 text-[15px] font-semibold text-[#1e2733]">Page not found</h1>
+        <a
+          className={`${secondaryButtonClasses} mt-4`}
+          href="/"
+          onClick={(event) => navigate(event, '/')}
+        >
           Back to projects
         </a>
       </section>
