@@ -16,6 +16,11 @@ interface ApiErrorBody {
   message?: string;
 }
 
+export interface CreateProjectInput {
+  title: string;
+  description: string;
+}
+
 export class ApiError extends Error {
   readonly status: number;
   readonly code?: string;
@@ -28,10 +33,13 @@ export class ApiError extends Error {
   }
 }
 
-async function requestJson<T>(path: string, signal?: AbortSignal): Promise<T> {
+async function requestJson<T>(path: string, init: RequestInit = {}): Promise<T> {
+  const headers = new Headers(init.headers);
+  headers.set('Accept', 'application/json');
+
   const response = await fetch(`${API_URL}${path}`, {
-    headers: { Accept: 'application/json' },
-    signal,
+    ...init,
+    headers,
   });
 
   if (!response.ok) {
@@ -50,9 +58,17 @@ async function requestJson<T>(path: string, signal?: AbortSignal): Promise<T> {
 }
 
 export function getProjects(signal?: AbortSignal): Promise<Project[]> {
-  return requestJson<Project[]>('/projects', signal);
+  return requestJson<Project[]>('/projects', { signal });
 }
 
 export function getProject(projectId: string, signal?: AbortSignal): Promise<Project> {
-  return requestJson<Project>(`/projects/${encodeURIComponent(projectId)}`, signal);
+  return requestJson<Project>(`/projects/${encodeURIComponent(projectId)}`, { signal });
+}
+
+export function createProject(input: CreateProjectInput): Promise<Project> {
+  return requestJson<Project>('/projects', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(input),
+  });
 }

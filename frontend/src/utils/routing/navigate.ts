@@ -1,5 +1,10 @@
 import type { MouseEvent } from 'react';
 
+export function navigateTo(href: string) {
+  window.history.pushState({}, '', href);
+  window.dispatchEvent(new PopStateEvent('popstate'));
+}
+
 export function navigate(event: MouseEvent<HTMLAnchorElement>, href: string) {
   if (
     event.defaultPrevented ||
@@ -13,6 +18,5 @@ export function navigate(event: MouseEvent<HTMLAnchorElement>, href: string) {
   }
 
   event.preventDefault();
-  window.history.pushState({}, '', href);
-  window.dispatchEvent(new PopStateEvent('popstate'));
+  navigateTo(href);
 }

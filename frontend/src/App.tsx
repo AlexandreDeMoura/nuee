@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { ChevronRight, CircleAlert, CircleDot, Plus, RotateCcw } from 'lucide-react';
 import { getProjects, type Project } from './api';
+import { CreateProjectDialog } from './projects/CreateProjectDialog';
 import { formatUpdatedAt } from './utils/date';
-import { navigate, resolveRoute } from './utils/routing';
+import { navigate, navigateTo, resolveRoute } from './utils/routing';
 
 const focusRing =
   '[-webkit-tap-highlight-color:transparent] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/30';
@@ -30,7 +31,7 @@ function Logo() {
   );
 }
 
-function AppHeader() {
+function AppHeader({ onNewProject }: { onNewProject?: () => void }) {
   return (
     <header className={headerClasses}>
       <a className={brandClasses} href="/" onClick={(event) => navigate(event, '/')}>
@@ -38,10 +39,17 @@ function AppHeader() {
         <span>Nuée</span>
       </a>
 
-      <button className={primaryButtonClasses} type="button" aria-haspopup="dialog">
-        <Plus className="size-[15px]" strokeWidth={2} aria-hidden="true" />
-        New project
-      </button>
+      {onNewProject && (
+        <button
+          className={primaryButtonClasses}
+          type="button"
+          aria-haspopup="dialog"
+          onClick={onNewProject}
+        >
+          <Plus className="size-[15px]" strokeWidth={2} aria-hidden="true" />
+          New project
+        </button>
+      )}
     </header>
   );
 }
@@ -74,7 +82,7 @@ function LoadingProjects() {
   );
 }
 
-function EmptyProjects() {
+function EmptyProjects({ onNewProject }: { onNewProject: () => void }) {
   return (
     <section className={statePanelClasses} aria-labelledby="empty-projects-title">
       <span className="mb-3.5 grid size-[42px] place-items-center rounded-[11px] bg-[#eef2fa] text-[#3f63a8]">
@@ -86,7 +94,12 @@ function EmptyProjects() {
       <p className="mt-[7px] mb-[18px] max-w-[390px] text-xs leading-[1.55] text-[#7b8899]">
         Start with a title and short description. Your canvas will begin empty and ready for your ideas.
       </p>
-      <button className={secondaryButtonClasses} type="button" aria-haspopup="dialog">
+      <button
+        className={secondaryButtonClasses}
+        type="button"
+        aria-haspopup="dialog"
+        onClick={onNewProject}
+      >
         <Plus className="size-[15px]" strokeWidth={2} aria-hidden="true" />
         New project
       </button>
@@ -162,6 +175,7 @@ function ProjectEntry() {
   const [projects, setProjects] = useState<Project[] | null>(null);
   const [hasError, setHasError] = useState(false);
   const [requestKey, setRequestKey] = useState(0);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -185,9 +199,16 @@ function ProjectEntry() {
     setRequestKey((key) => key + 1);
   };
 
+  const openCreateDialog = () => setIsCreateDialogOpen(true);
+
+  const handleProjectCreated = (project: Project) => {
+    setIsCreateDialogOpen(false);
+    navigateTo(`/projects/${encodeURIComponent(project.id)}`);
+  };
+
   return (
     <main className={pageClasses}>
-      <AppHeader />
+      <AppHeader onNewProject={openCreateDialog} />
 
       <section
         className="mx-auto w-full max-w-[940px] px-4 py-6 sm:p-[30px]"
@@ -211,7 +232,7 @@ function ProjectEntry() {
 
         {!projects && !hasError && <LoadingProjects />}
         {hasError && <ProjectsError onRetry={retry} />}
-        {projects?.length === 0 && <EmptyProjects />}
+        {projects?.length === 0 && <EmptyProjects onNewProject={openCreateDialog} />}
         {projects && projects.length > 0 && <ProjectList projects={projects} />}
 
         {!hasError && projects && projects.length > 0 && (
@@ -221,6 +242,13 @@ function ProjectEntry() {
           </p>
         )}
       </section>
+
+      {isCreateDialogOpen && (
+        <CreateProjectDialog
+          onCancel={() => setIsCreateDialogOpen(false)}
+          onCreated={handleProjectCreated}
+        />
+      )}
     </main>
   );
 }
