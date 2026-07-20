@@ -1,11 +1,8 @@
-import { useEffect, useState, type MouseEvent } from 'react';
+import { useEffect, useState } from 'react';
 import { ChevronRight, CircleAlert, CircleDot, Plus, RotateCcw } from 'lucide-react';
 import { getProjects, type Project } from './api';
-
-type AppRoute =
-  | { name: 'project-entry' }
-  | { name: 'project-canvas'; projectId: string }
-  | { name: 'not-found' };
+import { formatUpdatedAt } from './utils/date';
+import { navigate, resolveRoute } from './utils/routing';
 
 const focusRing =
   '[-webkit-tap-highlight-color:transparent] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/30';
@@ -21,44 +18,6 @@ const secondaryButtonClasses =
   `inline-flex min-h-9 cursor-pointer items-center justify-center gap-[7px] rounded-[9px] border border-[#cdd8ea] bg-[#f6f8fc] px-3.5 py-2 text-[12.5px] font-semibold text-[#33538f] no-underline transition-[background-color,border-color,box-shadow,transform] duration-150 hover:border-[#aebed8] hover:bg-[#eef2fa] motion-reduce:transition-none ${focusRing}`;
 const statePanelClasses =
   'flex min-h-[290px] flex-col items-center justify-center rounded-xl border border-[#e1e6ec] bg-white px-6 py-11 text-center';
-
-function resolveRoute(pathname: string): AppRoute {
-  if (pathname === '/' || pathname === '/projects' || pathname === '/projects/') {
-    return { name: 'project-entry' };
-  }
-
-  const projectMatch = pathname.match(/^\/projects\/([^/]+)\/?$/);
-
-  if (projectMatch) {
-    try {
-      return {
-        name: 'project-canvas',
-        projectId: decodeURIComponent(projectMatch[1]),
-      };
-    } catch {
-      return { name: 'not-found' };
-    }
-  }
-
-  return { name: 'not-found' };
-}
-
-function navigate(event: MouseEvent<HTMLAnchorElement>, href: string) {
-  if (
-    event.defaultPrevented ||
-    event.button !== 0 ||
-    event.metaKey ||
-    event.ctrlKey ||
-    event.shiftKey ||
-    event.altKey
-  ) {
-    return;
-  }
-
-  event.preventDefault();
-  window.history.pushState({}, '', href);
-  window.dispatchEvent(new PopStateEvent('popstate'));
-}
 
 function Logo() {
   return (
@@ -85,51 +44,6 @@ function AppHeader() {
       </button>
     </header>
   );
-}
-
-function formatUpdatedAt(updatedAt: string, now = new Date()): string {
-  const timestamp = new Date(updatedAt).getTime();
-
-  if (!Number.isFinite(timestamp)) {
-    return 'Recently';
-  }
-
-  const elapsedMilliseconds = Math.max(0, now.getTime() - timestamp);
-  const elapsedMinutes = Math.floor(elapsedMilliseconds / 60_000);
-
-  if (elapsedMinutes < 1) {
-    return 'Just now';
-  }
-
-  if (elapsedMinutes < 60) {
-    return `${elapsedMinutes}m ago`;
-  }
-
-  const elapsedHours = Math.floor(elapsedMinutes / 60);
-
-  if (elapsedHours < 24) {
-    return `${elapsedHours}h ago`;
-  }
-
-  const elapsedDays = Math.floor(elapsedHours / 24);
-
-  if (elapsedDays < 14) {
-    return `${elapsedDays}d ago`;
-  }
-
-  const elapsedWeeks = Math.floor(elapsedDays / 7);
-
-  if (elapsedDays < 60) {
-    return `${elapsedWeeks}w ago`;
-  }
-
-  const elapsedMonths = Math.floor(elapsedDays / 30);
-
-  if (elapsedDays < 730) {
-    return `${elapsedMonths}mo ago`;
-  }
-
-  return `${Math.floor(elapsedDays / 365)}y ago`;
 }
 
 function LoadingProjects() {

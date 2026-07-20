@@ -1,0 +1,1 @@
+export { formatUpdatedAt } from './formatUpdatedAt';
