@@ -1,4 +1,5 @@
 import { useEffect, useState, type MouseEvent } from 'react';
+import { ChevronRight, CircleAlert, CircleDot, Plus, RotateCcw } from 'lucide-react';
 import { getProjects, type Project } from './api';
 
 type AppRoute =
@@ -70,69 +71,6 @@ function Logo() {
   );
 }
 
-function PlusIcon() {
-  return (
-    <svg
-      className="size-[15px] fill-none stroke-current stroke-2 [stroke-linecap:round]"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <path d="M12 5v14M5 12h14" />
-    </svg>
-  );
-}
-
-function ProjectIcon({ className = 'size-[18px]' }: { className?: string }) {
-  return (
-    <svg
-      className={`${className} fill-none stroke-current stroke-[1.7]`}
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="3" />
-      <circle cx="12" cy="12" r="7.5" opacity=".55" />
-    </svg>
-  );
-}
-
-function ChevronIcon() {
-  return (
-    <svg
-      className="size-[13px] shrink-0 fill-none stroke-[#c4cdd8] stroke-[1.8] opacity-50 transition-[opacity,transform] duration-150 [stroke-linecap:round] [stroke-linejoin:round] group-hover:translate-x-0.5 group-hover:opacity-100 motion-reduce:transition-none sm:size-[15px]"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <path d="m9 6 6 6-6 6" />
-    </svg>
-  );
-}
-
-function InfoIcon({ className = 'size-[13px]' }: { className?: string }) {
-  return (
-    <svg
-      className={`${className} shrink-0 fill-none stroke-current stroke-[1.7] [stroke-linecap:round] [stroke-linejoin:round]`}
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 8v5M12 16h.01" />
-    </svg>
-  );
-}
-
-function RetryIcon() {
-  return (
-    <svg
-      className="size-[15px] fill-none stroke-current stroke-[1.8] [stroke-linecap:round] [stroke-linejoin:round]"
-      viewBox="0 0 24 24"
-      aria-hidden="true"
-    >
-      <path d="M20 11a8 8 0 1 0-2.3 5.7" />
-      <path d="M20 5v6h-6" />
-    </svg>
-  );
-}
-
 function AppHeader() {
   return (
     <header className={headerClasses}>
@@ -142,7 +80,7 @@ function AppHeader() {
       </a>
 
       <button className={primaryButtonClasses} type="button" aria-haspopup="dialog">
-        <PlusIcon />
+        <Plus className="size-[15px]" strokeWidth={2} aria-hidden="true" />
         New project
       </button>
     </header>
@@ -226,7 +164,7 @@ function EmptyProjects() {
   return (
     <section className={statePanelClasses} aria-labelledby="empty-projects-title">
       <span className="mb-3.5 grid size-[42px] place-items-center rounded-[11px] bg-[#eef2fa] text-[#3f63a8]">
-        <ProjectIcon />
+        <CircleDot className="size-[18px]" strokeWidth={1.7} aria-hidden="true" />
       </span>
       <h2 className="m-0 text-[15px] font-semibold text-[#1e2733]" id="empty-projects-title">
         Create your first project
@@ -235,7 +173,7 @@ function EmptyProjects() {
         Start with a title and short description. Your canvas will begin empty and ready for your ideas.
       </p>
       <button className={secondaryButtonClasses} type="button" aria-haspopup="dialog">
-        <PlusIcon />
+        <Plus className="size-[15px]" strokeWidth={2} aria-hidden="true" />
         New project
       </button>
     </section>
@@ -246,7 +184,7 @@ function ProjectsError({ onRetry }: { onRetry: () => void }) {
   return (
     <section className={statePanelClasses} aria-labelledby="projects-error-title">
       <span className="mb-3.5 grid size-[42px] place-items-center rounded-[11px] bg-[#f9eeee] text-[#a95f57]">
-        <InfoIcon />
+        <CircleAlert className="size-[13px]" strokeWidth={1.7} aria-hidden="true" />
       </span>
       <h2 className="m-0 text-[15px] font-semibold text-[#1e2733]" id="projects-error-title">
         We couldn’t load your projects
@@ -255,7 +193,7 @@ function ProjectsError({ onRetry }: { onRetry: () => void }) {
         Your projects are still safe. Check your connection and try again.
       </p>
       <button className={secondaryButtonClasses} type="button" onClick={onRetry}>
-        <RetryIcon />
+        <RotateCcw className="size-[15px]" strokeWidth={1.8} aria-hidden="true" />
         Try again
       </button>
     </section>
@@ -280,7 +218,7 @@ function ProjectList({ projects }: { projects: Project[] }) {
                 index === 0 ? 'bg-[#eef2fa] text-[#3f63a8]' : 'bg-[#eef1f5] text-[#7b8899]'
               }`}
             >
-              <ProjectIcon />
+              <CircleDot className="size-[18px]" strokeWidth={1.7} aria-hidden="true" />
             </span>
             <span className="flex min-w-0 flex-1 flex-col gap-0.5">
               <span className="truncate text-[13.5px] font-semibold text-[#1e2733]">
@@ -294,7 +232,11 @@ function ProjectList({ projects }: { projects: Project[] }) {
             >
               {formatUpdatedAt(project.updated_at)}
             </time>
-            <ChevronIcon />
+            <ChevronRight
+              className="size-[13px] shrink-0 text-[#c4cdd8] opacity-50 transition-[opacity,transform] duration-150 group-hover:translate-x-0.5 group-hover:opacity-100 motion-reduce:transition-none sm:size-[15px]"
+              strokeWidth={1.8}
+              aria-hidden="true"
+            />
           </a>
         );
       })}
@@ -360,7 +302,7 @@ function ProjectEntry() {
 
         {!hasError && projects && projects.length > 0 && (
           <p className="mt-3.5 flex items-start gap-1.5 text-[11px] leading-[1.5] text-[#9aa6b4] sm:items-center">
-            <InfoIcon />
+            <CircleAlert className="size-[13px] shrink-0" strokeWidth={1.7} aria-hidden="true" />
             Opening a project always lands on its canvas — never a past discussion.
           </p>
         )}
@@ -390,7 +332,7 @@ function ProjectCanvasRoute({ projectId }: { projectId: string }) {
         data-project-id={projectId}
       >
         <span className="mb-3.5 grid size-[42px] place-items-center rounded-[11px] bg-[#eef2fa] text-[#3f63a8]">
-          <ProjectIcon />
+          <CircleDot className="size-[18px]" strokeWidth={1.7} aria-hidden="true" />
         </span>
         <h1 className="m-0 text-[15px] font-semibold text-[#1e2733]">Project canvas</h1>
       </section>
