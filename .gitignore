@@ -6,6 +6,7 @@ backend/node_modules/
 # Builds
 frontend/dist/
 backend/dist/
+backend/data/
 
 # Environment variables
 .env
