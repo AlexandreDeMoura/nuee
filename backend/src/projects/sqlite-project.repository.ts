@@ -28,6 +28,7 @@ export class SqliteProjectRepository
     }
 
     this.database = new DatabaseSync(databasePath);
+    this.database.exec('PRAGMA foreign_keys = ON;');
     this.database.exec(CREATE_PROJECTS_MIGRATION);
   }
 

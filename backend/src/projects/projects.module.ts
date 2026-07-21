@@ -28,5 +28,6 @@ import { SqliteProjectRepository } from './sqlite-project.repository';
       },
     },
   ],
+  exports: [ProjectsService],
 })
 export class ProjectsModule {}
