@@ -62,6 +62,13 @@ describe('project creation journey', () => {
         }
 
         if (
+          method === 'GET' &&
+          url.pathname === '/projects/project-journey/bubbles'
+        ) {
+          return jsonResponse([]);
+        }
+
+        if (
           method === 'PATCH' &&
           url.pathname === '/projects/project-journey/description' &&
           persistedProject

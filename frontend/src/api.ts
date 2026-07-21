@@ -11,6 +11,23 @@ export interface Project {
   canvas_zoom: number;
 }
 
+export type BubbleSourceKind = 'manual' | 'discussion';
+
+export interface Bubble {
+  id: string;
+  project_id: string;
+  title: string;
+  summary: string | null;
+  content: string;
+  position_x: number;
+  position_y: number;
+  created_at: string;
+  updated_at: string;
+  source_kind: BubbleSourceKind;
+  source_discussion_id: string | null;
+  source_message_ids: string[];
+}
+
 interface ApiErrorBody {
   code?: string;
   message?: string;
@@ -67,6 +84,16 @@ export function getProjects(signal?: AbortSignal): Promise<Project[]> {
 
 export function getProject(projectId: string, signal?: AbortSignal): Promise<Project> {
   return requestJson<Project>(`/projects/${encodeURIComponent(projectId)}`, { signal });
+}
+
+export function getProjectBubbles(
+  projectId: string,
+  signal?: AbortSignal,
+): Promise<Bubble[]> {
+  return requestJson<Bubble[]>(
+    `/projects/${encodeURIComponent(projectId)}/bubbles`,
+    { signal },
+  );
 }
 
 export function createProject(input: CreateProjectInput): Promise<Project> {

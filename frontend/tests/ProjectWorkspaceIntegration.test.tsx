@@ -17,6 +17,8 @@ const project: Project = {
   canvas_zoom: 1,
 };
 
+const requestEmptyBubbles = async () => [];
+
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
@@ -24,7 +26,7 @@ afterEach(() => {
 });
 
 describe('workspace integration contracts', () => {
-  it('dispatches each empty-canvas action to its owning feature callback', () => {
+  it('dispatches each empty-canvas action to its owning feature callback', async () => {
     const startDiscussion = vi.fn();
     const createBubble = vi.fn();
     const uploadDocument = vi.fn();
@@ -32,6 +34,7 @@ describe('workspace integration contracts', () => {
     render(
       <ProjectWorkspace
         project={project}
+        requestBubbles={requestEmptyBubbles}
         emptyActionHandlers={{
           'start-discussion': startDiscussion,
           'create-bubble': createBubble,
@@ -40,6 +43,7 @@ describe('workspace integration contracts', () => {
       />,
     );
 
+    await screen.findByRole('button', { name: 'Start a discussion' });
     fireEvent.click(screen.getByRole('button', { name: 'Start a discussion' }));
     fireEvent.click(screen.getByRole('button', { name: 'Create a bubble' }));
     fireEvent.click(screen.getByRole('button', { name: 'Upload a document' }));
@@ -55,6 +59,7 @@ describe('workspace integration contracts', () => {
     render(
       <ProjectWorkspace
         project={project}
+        requestBubbles={requestEmptyBubbles}
         panelSlots={{
           discussions: <p>Supplied discussion list</p>,
           documents: <p>Supplied document list</p>,
@@ -88,7 +93,9 @@ describe('workspace integration contracts', () => {
   });
 
   it('provides intentional empty states for unsupplied collection panels', () => {
-    render(<ProjectWorkspace project={project} />);
+    render(
+      <ProjectWorkspace project={project} requestBubbles={requestEmptyBubbles} />,
+    );
 
     fireEvent.click(screen.getByRole('tab', { name: 'Discussions' }));
     expect(screen.getByText('No discussions yet')).toBeTruthy();
@@ -107,6 +114,7 @@ describe('workspace integration contracts', () => {
     const rendered = render(
       <ProjectWorkspace
         project={project}
+        requestBubbles={requestEmptyBubbles}
         inspectorSelection={validSelection}
         onInspectorSelectionInvalidated={onInvalidated}
         panelSlots={{
@@ -126,6 +134,7 @@ describe('workspace integration contracts', () => {
     rendered.rerender(
       <ProjectWorkspace
         project={project}
+        requestBubbles={requestEmptyBubbles}
         inspectorSelection={invalidSelection}
         onInspectorSelectionInvalidated={onInvalidated}
         panelSlots={{
@@ -140,7 +149,9 @@ describe('workspace integration contracts', () => {
   });
 
   it('supports focus-moving keyboard navigation and named native tooltips', () => {
-    render(<ProjectWorkspace project={project} />);
+    render(
+      <ProjectWorkspace project={project} requestBubbles={requestEmptyBubbles} />,
+    );
 
     const projectTab = screen.getByRole('tab', { name: 'Project' });
     expect(projectTab.getAttribute('title')).toBe('Project');

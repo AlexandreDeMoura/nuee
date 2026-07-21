@@ -16,6 +16,7 @@ import {
   type AnalyticsClient,
   type AnalyticsEventProperties,
 } from '../analytics';
+import { CanvasSurface, type BubbleListRequest } from '../canvas/CanvasSurface';
 import {
   ProjectDescriptionEditor,
   type ProjectDescriptionSaveStatus,
@@ -60,6 +61,7 @@ export interface WorkspacePanelSlots {
 
 export interface ProjectWorkspaceProps {
   project: Project;
+  requestBubbles?: BubbleListRequest;
   discussionCount?: number;
   panelSlots?: WorkspacePanelSlots;
   emptyActionHandlers?: WorkspaceEmptyActionHandlers;
@@ -271,7 +273,7 @@ function EmptyProjectActions({
   );
 }
 
-function EmptyCanvas({
+function EmptyCanvasContent({
   analyticsClient,
   emptyActionHandlers,
   primaryActions,
@@ -283,33 +285,32 @@ function EmptyCanvas({
   projectId: string;
 }) {
   return (
-    <section
-      className="relative min-w-0 flex-1 overflow-y-auto bg-[#eef1f5] bg-[radial-gradient(#cdd6e0_1.1px,transparent_1.1px)] bg-[position:-1px_-1px] bg-[size:24px_24px]"
+    <div
+      className="pointer-events-auto flex flex-col items-center justify-center text-center"
+      data-canvas-overlay
       aria-labelledby="empty-project-title"
     >
-      <div className="flex min-h-full flex-col items-center justify-center px-6 py-10 text-center lg:px-10">
-        <p className="mb-4 text-[10.5px] font-semibold tracking-[0.16em] text-[#9aa6b4] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
-          EMPTY&nbsp;&nbsp;PROJECT
-        </p>
-        <h2
-          className="mb-[9px] text-[27px] leading-tight font-semibold tracking-[-0.5px] text-[#1e2733]"
-          id="empty-project-title"
-        >
-          Nothing here yet — that&apos;s on purpose.
-        </h2>
-        <p className="mb-[34px] max-w-[460px] text-sm leading-[1.55] text-[#5c6a7a]">
-          Nuée won&apos;t fill this canvas with assumptions. Start a focused discussion, and approve
-          what&apos;s worth keeping as a bubble.
-        </p>
-        {primaryActions ?? (
-          <EmptyProjectActions
-            analyticsClient={analyticsClient}
-            handlers={emptyActionHandlers}
-            projectId={projectId}
-          />
-        )}
-      </div>
-    </section>
+      <p className="mb-4 text-[10.5px] font-semibold tracking-[0.16em] text-[#9aa6b4] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
+        EMPTY&nbsp;&nbsp;PROJECT
+      </p>
+      <h2
+        className="mb-[9px] text-[27px] leading-tight font-semibold tracking-[-0.5px] text-[#1e2733]"
+        id="empty-project-title"
+      >
+        Nothing here yet — that&apos;s on purpose.
+      </h2>
+      <p className="mb-[34px] max-w-[460px] text-sm leading-[1.55] text-[#5c6a7a]">
+        Nuée won&apos;t fill this canvas with assumptions. Start a focused discussion, and approve
+        what&apos;s worth keeping as a bubble.
+      </p>
+      {primaryActions ?? (
+        <EmptyProjectActions
+          analyticsClient={analyticsClient}
+          handlers={emptyActionHandlers}
+          projectId={projectId}
+        />
+      )}
+    </div>
   );
 }
 
@@ -437,6 +438,7 @@ function WorkspacePanel({
 
 export function ProjectWorkspace({
   project,
+  requestBubbles,
   discussionCount = 0,
   panelSlots,
   emptyActionHandlers,
@@ -516,11 +518,18 @@ export function ProjectWorkspace({
         <ProjectBar project={currentProject} descriptionStatus={descriptionStatus} />
 
         <div className="relative flex min-h-0 flex-1">
-          <EmptyCanvas
-            analyticsClient={analyticsClient}
-            emptyActionHandlers={emptyActionHandlers}
-            primaryActions={primaryActions}
+          <CanvasSurface
+            emptyState={
+              <EmptyCanvasContent
+                analyticsClient={analyticsClient}
+                emptyActionHandlers={emptyActionHandlers}
+                primaryActions={primaryActions}
+                projectId={currentProject.id}
+              />
+            }
+            key={currentProject.id}
             projectId={currentProject.id}
+            requestBubbles={requestBubbles}
           />
 
           <aside className="flex shrink-0 bg-white" aria-label="Project tools">

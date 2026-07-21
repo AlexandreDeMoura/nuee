@@ -18,6 +18,8 @@ const project: Project = {
   canvas_zoom: 1,
 };
 
+const requestEmptyBubbles = async () => [];
+
 function projectWithDescription(description: string, milliseconds = 1): Project {
   return {
     ...project,
@@ -233,12 +235,13 @@ describe('project description integration', () => {
       <ProjectWorkspace
         project={project}
         primaryActions={<CurrentDescriptionProbe />}
+        requestBubbles={requestEmptyBubbles}
         requestDescriptionUpdate={requestUpdate}
         descriptionSaveDelayMs={0}
       />,
     );
 
-    const context = screen.getByLabelText('Current project description');
+    const context = await screen.findByLabelText('Current project description');
     const editor = screen.getByLabelText('Project description');
     expect(context.textContent).toBe(`${project.id}:${project.description}`);
 
@@ -265,6 +268,7 @@ describe('project description integration', () => {
     render(
       <ProjectWorkspace
         project={project}
+        requestBubbles={requestEmptyBubbles}
         requestDescriptionUpdate={requestUpdate}
         descriptionSaveDelayMs={10}
       />,
@@ -285,11 +289,37 @@ describe('project description integration', () => {
 
   it('loads the persisted description again after the project route remounts', async () => {
     const updatedProject = projectWithDescription('Persisted across reloads.');
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce({ ok: true, json: async () => project })
-      .mockResolvedValueOnce({ ok: true, json: async () => updatedProject })
-      .mockResolvedValueOnce({ ok: true, json: async () => updatedProject });
+    let projectLoadCount = 0;
+    const fetchMock = vi.fn(
+      async (input: string | URL | Request, init?: RequestInit) => {
+        const url = new URL(
+          typeof input === 'string' || input instanceof URL ? input : input.url,
+        );
+        const method = init?.method ?? 'GET';
+
+        if (method === 'GET' && url.pathname === `/projects/${project.id}`) {
+          projectLoadCount += 1;
+          const loadedProject = projectLoadCount === 1 ? project : updatedProject;
+          return { ok: true, json: async () => loadedProject };
+        }
+
+        if (
+          method === 'GET' &&
+          url.pathname === `/projects/${project.id}/bubbles`
+        ) {
+          return { ok: true, json: async () => [] };
+        }
+
+        if (
+          method === 'PATCH' &&
+          url.pathname === `/projects/${project.id}/description`
+        ) {
+          return { ok: true, json: async () => updatedProject };
+        }
+
+        throw new Error(`Unexpected request: ${method} ${url.pathname}`);
+      },
+    );
     vi.stubGlobal('fetch', fetchMock);
     window.history.replaceState({}, '', `/projects/${project.id}`);
 
@@ -297,11 +327,22 @@ describe('project description integration', () => {
     const editor = (await screen.findByLabelText('Project description')) as HTMLTextAreaElement;
     fireEvent.change(editor, { target: { value: updatedProject.description } });
 
-    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2), { timeout: 1500 });
-    expect(fetchMock.mock.calls[1]?.[0]).toBe(
+    await waitFor(
+      () =>
+        expect(
+          fetchMock.mock.calls.find(
+            ([, init]) => (init as RequestInit | undefined)?.method === 'PATCH',
+          ),
+        ).toBeTruthy(),
+      { timeout: 1500 },
+    );
+    const descriptionRequest = fetchMock.mock.calls.find(
+      ([, init]) => (init as RequestInit | undefined)?.method === 'PATCH',
+    );
+    expect(descriptionRequest?.[0]).toBe(
       `http://localhost:3000/projects/${project.id}/description`,
     );
-    expect(fetchMock.mock.calls[1]?.[1]).toMatchObject({
+    expect(descriptionRequest?.[1]).toMatchObject({
       method: 'PATCH',
       body: JSON.stringify({ description: updatedProject.description }),
     });
@@ -313,6 +354,6 @@ describe('project description integration', () => {
       'Project description',
     )) as HTMLTextAreaElement;
     expect(reloadedEditor.value).toBe(updatedProject.description);
-    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect(projectLoadCount).toBe(2);
   });
 });

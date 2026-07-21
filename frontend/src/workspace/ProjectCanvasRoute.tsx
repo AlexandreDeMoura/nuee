@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { CircleAlert, CircleDot, RotateCcw } from 'lucide-react';
 import { ApiError, getProject, type Project } from '../api';
 import { analytics, trackAnalytics, type AnalyticsClient } from '../analytics';
+import type { BubbleListRequest } from '../canvas/CanvasSurface';
 import { navigate } from '../utils/routing';
 import { ProjectWorkspace } from './ProjectWorkspace';
 
@@ -10,6 +11,7 @@ type ProjectRequest = (projectId: string, signal?: AbortSignal) => Promise<Proje
 export interface ProjectCanvasRouteProps {
   projectId: string;
   requestProject?: ProjectRequest;
+  requestBubbles?: BubbleListRequest;
   analyticsClient?: AnalyticsClient;
 }
 
@@ -110,6 +112,7 @@ function ProjectRouteState({
 export function ProjectCanvasRoute({
   projectId,
   requestProject = getProject,
+  requestBubbles,
   analyticsClient = analytics,
 }: ProjectCanvasRouteProps) {
   const [loadState, setLoadState] = useState<ProjectLoadState>({ status: 'loading' });
@@ -148,7 +151,13 @@ export function ProjectCanvasRoute({
   }, [analyticsClient, projectId, requestKey, requestProject]);
 
   if (loadState.status === 'ready') {
-    return <ProjectWorkspace analyticsClient={analyticsClient} project={loadState.project} />;
+    return (
+      <ProjectWorkspace
+        analyticsClient={analyticsClient}
+        project={loadState.project}
+        requestBubbles={requestBubbles}
+      />
+    );
   }
 
   return (

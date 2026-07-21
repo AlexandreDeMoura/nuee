@@ -23,6 +23,8 @@ const project: Project = {
   canvas_zoom: 1,
 };
 
+const requestEmptyBubbles = async () => [];
+
 function createAnalyticsSpy() {
   const track = vi.fn<AnalyticsClient['track']>();
   const analyticsClient: AnalyticsClient = { track };
@@ -83,7 +85,8 @@ describe('project workspace analytics contract', () => {
       .mockResolvedValueOnce(jsonResponse([]))
       .mockRejectedValueOnce(new Error('Unavailable'))
       .mockResolvedValueOnce(jsonResponse(project))
-      .mockResolvedValueOnce(jsonResponse(project));
+      .mockResolvedValueOnce(jsonResponse(project))
+      .mockResolvedValueOnce(jsonResponse([]));
     vi.stubGlobal('fetch', fetchMock);
 
     render(<App analyticsClient={analyticsClient} />);
@@ -116,6 +119,7 @@ describe('project workspace analytics contract', () => {
       <ProjectCanvasRoute
         analyticsClient={analyticsClient}
         projectId={project.id}
+        requestBubbles={requestEmptyBubbles}
         requestProject={requestProject}
       />,
     );
@@ -167,11 +171,18 @@ describe('project workspace analytics contract', () => {
     expect(track).toHaveBeenCalledTimes(1);
   });
 
-  it('records minimal properties for panel changes and empty-state actions', () => {
+  it('records minimal properties for panel changes and empty-state actions', async () => {
     const { analyticsClient, track } = createAnalyticsSpy();
 
-    render(<ProjectWorkspace analyticsClient={analyticsClient} project={project} />);
+    render(
+      <ProjectWorkspace
+        analyticsClient={analyticsClient}
+        project={project}
+        requestBubbles={requestEmptyBubbles}
+      />,
+    );
 
+    await screen.findByRole('button', { name: 'Start a discussion' });
     fireEvent.click(screen.getByRole('button', { name: 'Start a discussion' }));
     fireEvent.click(screen.getByRole('button', { name: 'Create a bubble' }));
     fireEvent.click(screen.getByRole('button', { name: 'Upload a document' }));
