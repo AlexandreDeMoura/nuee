@@ -11,6 +11,12 @@ import {
 } from 'lucide-react';
 import type { Project } from '../api';
 import {
+  analytics,
+  trackAnalytics,
+  type AnalyticsClient,
+  type AnalyticsEventProperties,
+} from '../analytics';
+import {
   ProjectDescriptionEditor,
   type ProjectDescriptionSaveStatus,
   type ProjectDescriptionUpdateRequest,
@@ -23,6 +29,15 @@ export type WorkspaceEmptyAction =
   | 'start-discussion'
   | 'create-bubble'
   | 'upload-document';
+
+const emptyActionAnalyticsNames: Record<
+  WorkspaceEmptyAction,
+  AnalyticsEventProperties['project_empty_action_selected']['action']
+> = {
+  'start-discussion': 'start_discussion',
+  'create-bubble': 'create_bubble',
+  'upload-document': 'upload_document',
+};
 
 export type WorkspaceEmptyActionHandlers = Partial<
   Record<WorkspaceEmptyAction, () => void>
@@ -56,6 +71,7 @@ export interface ProjectWorkspaceProps {
   primaryActions?: ReactNode;
   requestDescriptionUpdate?: ProjectDescriptionUpdateRequest;
   descriptionSaveDelayMs?: number;
+  analyticsClient?: AnalyticsClient;
 }
 
 interface PanelDefinition {
@@ -205,10 +221,22 @@ function ActionCard({
 }
 
 function EmptyProjectActions({
+  analyticsClient,
   handlers,
+  projectId,
 }: {
+  analyticsClient: AnalyticsClient;
   handlers?: WorkspaceEmptyActionHandlers;
+  projectId: string;
 }) {
+  const launch = (action: WorkspaceEmptyAction) => () => {
+    trackAnalytics(analyticsClient, 'project_empty_action_selected', {
+      project_id: projectId,
+      action: emptyActionAnalyticsNames[action],
+    });
+    handlers?.[action]?.();
+  };
+
   return (
     <div
       className="grid w-full max-w-[674px] grid-cols-1 gap-4 md:grid-cols-3"
@@ -220,7 +248,7 @@ function EmptyProjectActions({
         icon={MessageSquare}
         label="Start a discussion"
         meta="RECOMMENDED · ⌘K"
-        onLaunch={handlers?.['start-discussion']}
+        onLaunch={launch('start-discussion')}
         primary
       />
       <ActionCard
@@ -229,7 +257,7 @@ function EmptyProjectActions({
         icon={CirclePlus}
         label="Create a bubble"
         meta="MANUAL"
-        onLaunch={handlers?.['create-bubble']}
+        onLaunch={launch('create-bubble')}
       />
       <ActionCard
         action="upload-document"
@@ -237,18 +265,22 @@ function EmptyProjectActions({
         icon={Upload}
         label="Upload a document"
         meta="PDF · TXT · MD"
-        onLaunch={handlers?.['upload-document']}
+        onLaunch={launch('upload-document')}
       />
     </div>
   );
 }
 
 function EmptyCanvas({
+  analyticsClient,
   emptyActionHandlers,
   primaryActions,
+  projectId,
 }: {
+  analyticsClient: AnalyticsClient;
   emptyActionHandlers?: WorkspaceEmptyActionHandlers;
   primaryActions?: ReactNode;
+  projectId: string;
 }) {
   return (
     <section
@@ -269,7 +301,13 @@ function EmptyCanvas({
           Nuée won&apos;t fill this canvas with assumptions. Start a focused discussion, and approve
           what&apos;s worth keeping as a bubble.
         </p>
-        {primaryActions ?? <EmptyProjectActions handlers={emptyActionHandlers} />}
+        {primaryActions ?? (
+          <EmptyProjectActions
+            analyticsClient={analyticsClient}
+            handlers={emptyActionHandlers}
+            projectId={projectId}
+          />
+        )}
       </div>
     </section>
   );
@@ -329,6 +367,7 @@ function WorkspacePanel({
   onDescriptionStatusChange,
   requestDescriptionUpdate,
   descriptionSaveDelayMs,
+  analyticsClient,
 }: {
   activeView: WorkspacePanelView;
   discussionCount: number;
@@ -339,6 +378,7 @@ function WorkspacePanel({
   onDescriptionStatusChange: (status: ProjectDescriptionSaveStatus) => void;
   requestDescriptionUpdate?: ProjectDescriptionUpdateRequest;
   descriptionSaveDelayMs?: number;
+  analyticsClient: AnalyticsClient;
 }) {
   const activeDefinition = panelDefinitions.find(({ view }) => view === activeView)!;
   const hasDefaultProjectEditor = panelSlots?.project === undefined;
@@ -370,6 +410,7 @@ function WorkspacePanel({
           aria-hidden={activeView === 'project' ? undefined : true}
         >
           <ProjectDescriptionEditor
+            analyticsClient={analyticsClient}
             key={project.id}
             project={project}
             onProjectSaved={onProjectSaved}
@@ -404,6 +445,7 @@ export function ProjectWorkspace({
   primaryActions,
   requestDescriptionUpdate,
   descriptionSaveDelayMs,
+  analyticsClient = analytics,
 }: ProjectWorkspaceProps) {
   const [currentProject, setCurrentProject] = useState(project);
   const [descriptionStatus, setDescriptionStatus] =
@@ -440,8 +482,20 @@ export function ProjectWorkspace({
 
     event.preventDefault();
     const nextDefinition = panelDefinitions[nextIndex];
-    setActivePanel(nextDefinition.view);
+    selectPanel(nextDefinition.view);
     panelButtonRefs.current[nextIndex]?.focus();
+  }
+
+  function selectPanel(view: WorkspacePanelView) {
+    if (view === activePanel) {
+      return;
+    }
+
+    setActivePanel(view);
+    trackAnalytics(analyticsClient, 'project_panel_viewed', {
+      project_id: currentProject.id,
+      view,
+    });
   }
 
   const currentDescription = useMemo(
@@ -463,8 +517,10 @@ export function ProjectWorkspace({
 
         <div className="relative flex min-h-0 flex-1">
           <EmptyCanvas
+            analyticsClient={analyticsClient}
             emptyActionHandlers={emptyActionHandlers}
             primaryActions={primaryActions}
+            projectId={currentProject.id}
           />
 
           <aside className="flex shrink-0 bg-white" aria-label="Project tools">
@@ -493,7 +549,7 @@ export function ProjectWorkspace({
                     role="tab"
                     tabIndex={isActive ? 0 : -1}
                     title={label}
-                    onClick={() => setActivePanel(view)}
+                    onClick={() => selectPanel(view)}
                     onKeyDown={(event) => handlePanelKeyDown(event, index)}
                     ref={(button) => {
                       panelButtonRefs.current[index] = button;
@@ -514,6 +570,7 @@ export function ProjectWorkspace({
 
             <WorkspacePanel
               activeView={activePanel}
+              analyticsClient={analyticsClient}
               discussionCount={discussionCount}
               inspectorSelection={validInspectorSelection}
               panelSlots={panelSlots}

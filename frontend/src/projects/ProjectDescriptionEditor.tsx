@@ -5,6 +5,7 @@ import {
   type Project,
   type UpdateProjectDescriptionInput,
 } from '../api';
+import { analytics, trackAnalytics, type AnalyticsClient } from '../analytics';
 
 const DESCRIPTION_LIMIT = 280;
 const DEFAULT_SAVE_DELAY_MS = 600;
@@ -23,6 +24,7 @@ export interface ProjectDescriptionEditorProps {
   onStatusChange?: (status: ProjectDescriptionSaveStatus) => void;
   requestUpdate?: ProjectDescriptionUpdateRequest;
   saveDelayMs?: number;
+  analyticsClient?: AnalyticsClient;
 }
 
 const focusRing =
@@ -48,6 +50,7 @@ export function ProjectDescriptionEditor({
   onStatusChange,
   requestUpdate = updateProjectDescription,
   saveDelayMs = DEFAULT_SAVE_DELAY_MS,
+  analyticsClient = analytics,
 }: ProjectDescriptionEditorProps) {
   const [draft, setDraft] = useState(project.description);
   const [persistedDescription, setPersistedDescription] = useState(project.description);
@@ -77,6 +80,8 @@ export function ProjectDescriptionEditor({
   }, [onStatusChange]);
 
   useEffect(() => {
+    mountedRef.current = true;
+
     return () => {
       mountedRef.current = false;
       requestIdRef.current += 1;
@@ -122,6 +127,9 @@ export function ProjectDescriptionEditor({
         }
 
         setPersistedDescription(updatedProject.description);
+        trackAnalytics(analyticsClient, 'project_description_updated', {
+          project_id: project.id,
+        });
         onProjectSavedRef.current(updatedProject);
 
         if (draftRef.current.trim() === updatedProject.description) {
@@ -149,7 +157,7 @@ export function ProjectDescriptionEditor({
         }
       }
     },
-    [persistedDescription, project.id, publishStatus, requestUpdate],
+    [analyticsClient, persistedDescription, project.id, publishStatus, requestUpdate],
   );
 
   useEffect(() => {

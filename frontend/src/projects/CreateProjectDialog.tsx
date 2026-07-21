@@ -6,6 +6,7 @@ import {
   type CreateProjectInput,
   type Project,
 } from '../api';
+import { analytics, trackAnalytics, type AnalyticsClient } from '../analytics';
 
 const DESCRIPTION_LIMIT = 280;
 
@@ -20,12 +21,14 @@ export interface CreateProjectDialogProps {
   onCancel: () => void;
   onCreated: (project: Project) => void;
   requestCreate?: CreateProjectRequest;
+  analyticsClient?: AnalyticsClient;
 }
 
 export function CreateProjectDialog({
   onCancel,
   onCreated,
   requestCreate = createProject,
+  analyticsClient = analytics,
 }: CreateProjectDialogProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -136,6 +139,7 @@ export function CreateProjectDialog({
 
       isCreatingRef.current = false;
       setIsCreating(false);
+      trackAnalytics(analyticsClient, 'project_created', { project_id: project.id });
       onCreated(project);
     } catch {
       isCreatingRef.current = false;

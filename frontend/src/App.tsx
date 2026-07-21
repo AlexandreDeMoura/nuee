@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ChevronRight, CircleAlert, CircleDot, Plus, RotateCcw } from 'lucide-react';
 import { getProjects, type Project } from './api';
+import { analytics, type AnalyticsClient } from './analytics';
 import { CreateProjectDialog } from './projects/CreateProjectDialog';
 import { formatUpdatedAt } from './utils/date';
 import { navigate, navigateTo, resolveRoute } from './utils/routing';
@@ -172,7 +173,7 @@ function ProjectList({ projects }: { projects: Project[] }) {
   );
 }
 
-function ProjectEntry() {
+function ProjectEntry({ analyticsClient }: { analyticsClient: AnalyticsClient }) {
   const [projects, setProjects] = useState<Project[] | null>(null);
   const [hasError, setHasError] = useState(false);
   const [requestKey, setRequestKey] = useState(0);
@@ -246,6 +247,7 @@ function ProjectEntry() {
 
       {isCreateDialogOpen && (
         <CreateProjectDialog
+          analyticsClient={analyticsClient}
           onCancel={() => setIsCreateDialogOpen(false)}
           onCreated={handleProjectCreated}
         />
@@ -272,7 +274,11 @@ function NotFoundRoute() {
   );
 }
 
-function App() {
+export interface AppProps {
+  analyticsClient?: AnalyticsClient;
+}
+
+function App({ analyticsClient = analytics }: AppProps) {
   const [pathname, setPathname] = useState(window.location.pathname);
 
   useEffect(() => {
@@ -285,11 +291,17 @@ function App() {
   const route = resolveRoute(pathname);
 
   if (route.name === 'project-entry') {
-    return <ProjectEntry />;
+    return <ProjectEntry analyticsClient={analyticsClient} />;
   }
 
   if (route.name === 'project-canvas') {
-    return <ProjectCanvasRoute projectId={route.projectId} key={route.projectId} />;
+    return (
+      <ProjectCanvasRoute
+        analyticsClient={analyticsClient}
+        projectId={route.projectId}
+        key={route.projectId}
+      />
+    );
   }
 
   return <NotFoundRoute />;

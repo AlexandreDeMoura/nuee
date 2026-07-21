@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CircleAlert, CircleDot, RotateCcw } from 'lucide-react';
 import { ApiError, getProject, type Project } from '../api';
+import { analytics, trackAnalytics, type AnalyticsClient } from '../analytics';
 import { navigate } from '../utils/routing';
 import { ProjectWorkspace } from './ProjectWorkspace';
 
@@ -9,6 +10,7 @@ type ProjectRequest = (projectId: string, signal?: AbortSignal) => Promise<Proje
 export interface ProjectCanvasRouteProps {
   projectId: string;
   requestProject?: ProjectRequest;
+  analyticsClient?: AnalyticsClient;
 }
 
 type ProjectLoadState =
@@ -108,15 +110,28 @@ function ProjectRouteState({
 export function ProjectCanvasRoute({
   projectId,
   requestProject = getProject,
+  analyticsClient = analytics,
 }: ProjectCanvasRouteProps) {
   const [loadState, setLoadState] = useState<ProjectLoadState>({ status: 'loading' });
   const [requestKey, setRequestKey] = useState(0);
+  const openedProjectIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     const controller = new AbortController();
 
     requestProject(projectId, controller.signal)
-      .then((project) => setLoadState({ status: 'ready', project }))
+      .then((project) => {
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        setLoadState({ status: 'ready', project });
+
+        if (openedProjectIdRef.current !== project.id) {
+          openedProjectIdRef.current = project.id;
+          trackAnalytics(analyticsClient, 'project_opened', { project_id: project.id });
+        }
+      })
       .catch((error: unknown) => {
         if (error instanceof DOMException && error.name === 'AbortError') {
           return;
@@ -130,10 +145,10 @@ export function ProjectCanvasRoute({
       });
 
     return () => controller.abort();
-  }, [projectId, requestKey, requestProject]);
+  }, [analyticsClient, projectId, requestKey, requestProject]);
 
   if (loadState.status === 'ready') {
-    return <ProjectWorkspace project={loadState.project} />;
+    return <ProjectWorkspace analyticsClient={analyticsClient} project={loadState.project} />;
   }
 
   return (
