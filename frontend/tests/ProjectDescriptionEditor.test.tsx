@@ -273,11 +273,11 @@ describe('project description integration', () => {
     fireEvent.change(screen.getByLabelText('Project description'), {
       target: { value: updatedProject.description },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'Discussions' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Discussions' }));
 
     await waitFor(() => expect(requestUpdate).toHaveBeenCalledTimes(1));
 
-    fireEvent.click(screen.getByRole('button', { name: 'Project' }));
+    fireEvent.click(screen.getByRole('tab', { name: 'Project' }));
     expect((screen.getByLabelText('Project description') as HTMLTextAreaElement).value).toBe(
       updatedProject.description,
     );

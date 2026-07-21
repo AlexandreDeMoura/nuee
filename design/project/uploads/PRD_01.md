@@ -79,3 +79,52 @@ This PRD owns project creation, project-level metadata, the main project shell, 
 - **Empty-state ownership:** The workspace should expose three starting actions, but their components are implemented by separate feature PRDs. Without stable integration contracts, each feature may create competing entry points. This PRD should own placement and visual hierarchy; feature PRDs should own the launched flow.
 - **Inspector selection lifecycle:** The Inspector can display bubble details or frozen context, but those selections originate in other features. The shell must avoid showing stale content when an item is deleted, a modal closes, or the active discussion changes. The leaning is to clear invalid selection automatically and show an explicit empty state.
 - **`updated_at` semantics:** Ordering projects by latest activity requires deciding which actions update the project timestamp. Updating it for every pan or zoom could create noisy ordering; updating it only for metadata edits would ignore meaningful work. The shared analytics and persistence design should define a limited set of meaningful project-activity events before implementation.
+
+## Commit Plan
+
+The commits below are ordered so each one leaves the application in a coherent state and establishes contracts needed by the next slice. The design references are `2.a` (project entry), `2.b` (ready create dialog), `2.c` (invalid, creating, and error states), and `1.a` (the empty workspace reached after creation).
+
+1. **`feat(projects): add the persistent project domain and API`**
+   - Add the selected database adapter and migration for `id`, `title`, `description`, `created_at`, `updated_at`, `canvas_viewport_x`, `canvas_viewport_y`, and `canvas_zoom`, including explicit default viewport values.
+   - Add typed create, list, read, and description-update operations in NestJS. Validate trimmed required fields, enforce the 280-character description limit shown in the design, return stable validation/not-found errors, and order the project list by `updated_at` descending.
+   - Define `updated_at` here as changing on project creation and description updates. Later feature PRDs may add a deliberately limited set of meaningful project-activity updates; viewport-only changes must not reorder the project list.
+   - Cover defaults, validation, ordering, updates, persistence, and missing project identifiers with service/controller tests.
+
+2. **`feat(projects): build the project-entry surface`**
+   - Replace the starter health screen with design `2.a`: the Nuée header, compact recently-updated project list, project count, last-updated labels, and New project action.
+   - Add loading, first-run empty, request-failure, and retry states. Keep the surface intentionally limited to project creation and reopening rather than introducing dashboard features.
+   - Add typed frontend API functions and stable application routes for the entry surface and `/projects/:projectId`; selecting a project must navigate to that project's canvas route.
+
+3. **`feat(projects): implement the create-project dialog states`**
+   - Implement the accessible modal and two-field form from designs `2.b` and `2.c`, with initial focus, labelled inputs, Escape/Cancel behavior, description character count, trimmed required-field validation, and disabled invalid submission.
+   - Implement the creating state with duplicate submission and cancellation blocked while the request is pending.
+   - Preserve both field values after an API failure, show the inline error treatment, and allow retry. On success, close the dialog and navigate directly to `/projects/:projectId` without generating any starter content.
+   - Add component tests for ready, invalid, pending, failure/retry, cancellation, and successful navigation states.
+
+4. **`feat(workspace): add the routed empty project shell`**
+   - Load a project by route identifier and render the design `1.a` shell: project bar, empty canvas, persistent primary-action area, four-icon rail, and stable right panel.
+   - Add project loading, load failure/retry, and missing-project states. Opening or reloading the route must always resolve to the canvas with no discussion automatically opened.
+   - Model the active panel as `discussions | documents | project | inspector`, display exactly one view at a time, keep its position and width stable, and expose typed slots/adapters so later PRDs can supply Discussions, Documents, and Inspector content without duplicating the shell.
+   - Default a completely new project to Project view and a project with discussions to Discussions view, as proposed by this PRD; keep the decision isolated so it can be changed after validation.
+
+5. **`feat(projects): add resilient project-description editing`**
+   - Implement the Project panel editor using debounced autosave, with distinct dirty, saving, saved, and error states and a retry path that retains the unsaved draft.
+   - Update the project header and project-entry data after a successful save without changing the project title.
+   - Publish a read-only current-description contract for future discussion creation. The update operation must not mutate any existing discussion snapshot.
+   - Add tests for persisted reloads, rapid edits, failed saves, retry, stale-response protection, and unmount/navigation while a save is pending.
+
+6. **`feat(workspace): wire panel and empty-state integration contracts`**
+   - Add the three empty-canvas actions from design `1.a`: Start a discussion, Create a bubble, and Upload a document, with launch callbacks owned by their respective feature modules.
+   - Provide intentional empty content for Discussions and Documents until those modules supply data. Inspector must clear invalid selections and show an explicit empty state instead of stale content.
+   - Add accessible names, tooltips, active states, and keyboard/focus behavior for the icon rail, and verify that panel switches never navigate away from the current project.
+   - Test callback dispatch, one-panel-at-a-time behavior, active-view styling, and Inspector clearing independently of the future feature implementations.
+
+7. **`feat(analytics): instrument the project-workspace funnel`**
+   - Add a typed analytics boundary and emit `project_created`, `project_opened`, `project_description_updated`, `project_panel_viewed`, and `project_empty_action_selected` with the correct `project_id` and minimal event-specific properties.
+   - Ensure creation followed by automatic navigation records one creation and one opening, retries do not duplicate successful events, and failed description saves do not emit an update event.
+   - Add event-contract tests without coupling product components to a specific analytics vendor.
+
+8. **`test(projects): cover the project-creation journey`**
+   - Add an end-to-end API/application test for `entry surface → create dialog → validation → create → empty canvas → return to projects → reopen → edit description → reload`.
+   - Assert that the reopened project preserves its metadata and default viewport, lands on the canvas, contains no generated bubbles, discussions, or documents, and keeps the right-panel shell usable.
+   - Run the repository's build, lint, unit, and end-to-end commands. Visual comparison and final interaction QA remain manual against designs `2.a`, `2.b`, `2.c`, and `1.a`.
