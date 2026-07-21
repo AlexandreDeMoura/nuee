@@ -194,6 +194,10 @@ describe('CreateProjectDialog', () => {
       .mockResolvedValueOnce({
         ok: true,
         json: async () => project,
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => project,
       });
     vi.stubGlobal('fetch', fetchMock);
 
@@ -206,8 +210,8 @@ describe('CreateProjectDialog', () => {
     await waitFor(() => expect(window.location.pathname).toBe('/projects/project-123'));
 
     expect(screen.queryByRole('dialog')).toBeNull();
-    expect(screen.getByText('Project canvas')).toBeTruthy();
-    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(await screen.findByText("Nothing here yet — that's on purpose.")).toBeTruthy();
+    expect(fetchMock).toHaveBeenCalledTimes(3);
     expect(fetchMock.mock.calls[1]?.[1]).toMatchObject({
       method: 'POST',
       body: JSON.stringify({
@@ -215,5 +219,6 @@ describe('CreateProjectDialog', () => {
         description: 'Explore the launch constraints.',
       }),
     });
+    expect(fetchMock.mock.calls[2]?.[0]).toBe('http://localhost:3000/projects/project-123');
   });
 });

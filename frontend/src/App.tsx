@@ -4,6 +4,7 @@ import { getProjects, type Project } from './api';
 import { CreateProjectDialog } from './projects/CreateProjectDialog';
 import { formatUpdatedAt } from './utils/date';
 import { navigate, navigateTo, resolveRoute } from './utils/routing';
+import { ProjectCanvasRoute } from './workspace/ProjectCanvasRoute';
 
 const focusRing =
   '[-webkit-tap-highlight-color:transparent] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/30';
@@ -253,35 +254,6 @@ function ProjectEntry() {
   );
 }
 
-function ProjectCanvasRoute({ projectId }: { projectId: string }) {
-  return (
-    <main className={pageClasses}>
-      <header className={headerClasses}>
-        <a className={brandClasses} href="/" onClick={(event) => navigate(event, '/')}>
-          <Logo />
-          <span>Nuée</span>
-        </a>
-        <a
-          className={`ml-auto text-[12.5px] text-[#5c6a7a] no-underline hover:text-[#33538f] ${focusRing}`}
-          href="/"
-          onClick={(event) => navigate(event, '/')}
-        >
-          Projects
-        </a>
-      </header>
-      <section
-        className="flex min-h-[calc(100vh-56px)] flex-col items-center justify-center p-[30px]"
-        data-project-id={projectId}
-      >
-        <span className="mb-3.5 grid size-[42px] place-items-center rounded-[11px] bg-[#eef2fa] text-[#3f63a8]">
-          <CircleDot className="size-[18px]" strokeWidth={1.7} aria-hidden="true" />
-        </span>
-        <h1 className="m-0 text-[15px] font-semibold text-[#1e2733]">Project canvas</h1>
-      </section>
-    </main>
-  );
-}
-
 function NotFoundRoute() {
   return (
     <main className={pageClasses}>
@@ -317,7 +289,7 @@ function App() {
   }
 
   if (route.name === 'project-canvas') {
-    return <ProjectCanvasRoute projectId={route.projectId} />;
+    return <ProjectCanvasRoute projectId={route.projectId} key={route.projectId} />;
   }
 
   return <NotFoundRoute />;
