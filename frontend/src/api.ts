@@ -21,6 +21,10 @@ export interface CreateProjectInput {
   description: string;
 }
 
+export interface UpdateProjectDescriptionInput {
+  description: string;
+}
+
 export class ApiError extends Error {
   readonly status: number;
   readonly code?: string;
@@ -71,4 +75,20 @@ export function createProject(input: CreateProjectInput): Promise<Project> {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),
   });
+}
+
+export function updateProjectDescription(
+  projectId: string,
+  input: UpdateProjectDescriptionInput,
+  signal?: AbortSignal,
+): Promise<Project> {
+  return requestJson<Project>(
+    `/projects/${encodeURIComponent(projectId)}/description`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+      signal,
+    },
+  );
 }

@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
   ChevronLeft,
@@ -10,7 +10,13 @@ import {
   Upload,
 } from 'lucide-react';
 import type { Project } from '../api';
+import {
+  ProjectDescriptionEditor,
+  type ProjectDescriptionSaveStatus,
+  type ProjectDescriptionUpdateRequest,
+} from '../projects/ProjectDescriptionEditor';
 import { navigate } from '../utils/routing';
+import { CurrentProjectDescriptionContext } from './currentProjectDescription';
 import { getDefaultPanelView, type WorkspacePanelView } from './panelModel';
 
 export type WorkspacePanelSlots = Partial<Record<WorkspacePanelView, ReactNode>>;
@@ -20,6 +26,8 @@ export interface ProjectWorkspaceProps {
   discussionCount?: number;
   panelSlots?: WorkspacePanelSlots;
   primaryActions?: ReactNode;
+  requestDescriptionUpdate?: ProjectDescriptionUpdateRequest;
+  descriptionSaveDelayMs?: number;
 }
 
 interface PanelDefinition {
@@ -49,7 +57,41 @@ function Logo() {
   );
 }
 
-function ProjectBar({ project }: { project: Project }) {
+const projectBarStatus: Record<
+  ProjectDescriptionSaveStatus,
+  { label: string; dotClasses: string; textClasses: string }
+> = {
+  dirty: {
+    label: 'UNSAVED',
+    dotClasses: 'bg-[#c4904e]',
+    textClasses: 'text-[#9a7a4d]',
+  },
+  saving: {
+    label: 'SAVING',
+    dotClasses: 'animate-pulse bg-[#6681b5] motion-reduce:animate-none',
+    textClasses: 'text-[#7286ad]',
+  },
+  saved: {
+    label: 'SAVED',
+    dotClasses: 'bg-[#5c9a6b]',
+    textClasses: 'text-[#8b97a6]',
+  },
+  error: {
+    label: 'SAVE FAILED',
+    dotClasses: 'bg-[#b4544e]',
+    textClasses: 'text-[#b4544e]',
+  },
+};
+
+function ProjectBar({
+  project,
+  descriptionStatus,
+}: {
+  project: Project;
+  descriptionStatus: ProjectDescriptionSaveStatus;
+}) {
+  const status = projectBarStatus[descriptionStatus];
+
   return (
     <header className="flex h-[53px] shrink-0 items-center gap-3.5 border-b border-[#e1e6ec] bg-white px-[18px]">
       <a
@@ -70,9 +112,12 @@ function ProjectBar({ project }: { project: Project }) {
         {project.description}
       </p>
 
-      <span className="ml-auto inline-flex shrink-0 items-center gap-1.5 text-[10.5px] font-medium tracking-[0.04em] text-[#8b97a6] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
-        <span className="size-1.5 rounded-full bg-[#5c9a6b]" aria-hidden="true" />
-        SAVED
+      <span
+        className={`ml-auto inline-flex shrink-0 items-center gap-1.5 text-[10.5px] font-medium tracking-[0.04em] [font-family:'IBM_Plex_Mono',ui-monospace,monospace] ${status.textClasses}`}
+        aria-live="polite"
+      >
+        <span className={`size-1.5 rounded-full ${status.dotClasses}`} aria-hidden="true" />
+        {status.label}
       </span>
     </header>
   );
@@ -187,36 +232,28 @@ function IntegrationPlaceholder({ view }: { view: Exclude<WorkspacePanelView, 'p
   );
 }
 
-function DefaultPanelContent({ project, view }: { project: Project; view: WorkspacePanelView }) {
-  if (view !== 'project') {
-    return <IntegrationPlaceholder view={view} />;
-  }
-
-  return (
-    <div className="p-[18px]">
-      <p className="mb-2 text-[10px] font-medium tracking-[0.06em] text-[#9aa6b4] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
-        Project description
-      </p>
-      <p className="rounded-[10px] border border-[#e1e6ec] bg-[#fafbfc] p-3 text-[12.5px] leading-[1.6] text-[#3a4453]">
-        {project.description}
-      </p>
-    </div>
-  );
-}
-
 function WorkspacePanel({
   activeView,
   discussionCount,
   panelSlots,
   project,
+  onProjectSaved,
+  onDescriptionStatusChange,
+  requestDescriptionUpdate,
+  descriptionSaveDelayMs,
 }: {
   activeView: WorkspacePanelView;
   discussionCount: number;
   panelSlots?: WorkspacePanelSlots;
   project: Project;
+  onProjectSaved: (project: Project) => void;
+  onDescriptionStatusChange: (status: ProjectDescriptionSaveStatus) => void;
+  requestDescriptionUpdate?: ProjectDescriptionUpdateRequest;
+  descriptionSaveDelayMs?: number;
 }) {
   const activeDefinition = panelDefinitions.find(({ view }) => view === activeView)!;
   const slottedContent = panelSlots?.[activeView];
+  const hasDefaultProjectEditor = panelSlots?.project === undefined;
 
   return (
     <section
@@ -231,11 +268,28 @@ function WorkspacePanel({
           </span>
         )}
       </header>
-      {slottedContent !== undefined ? (
-        slottedContent
-      ) : (
-        <DefaultPanelContent project={project} view={activeView} />
+      {hasDefaultProjectEditor && (
+        <div
+          className={activeView === 'project' ? 'contents' : 'hidden'}
+          aria-hidden={activeView === 'project' ? undefined : true}
+        >
+          <ProjectDescriptionEditor
+            key={project.id}
+            project={project}
+            onProjectSaved={onProjectSaved}
+            onStatusChange={onDescriptionStatusChange}
+            requestUpdate={requestDescriptionUpdate}
+            saveDelayMs={descriptionSaveDelayMs}
+          />
+        </div>
       )}
+      {activeView === 'project' && !hasDefaultProjectEditor && slottedContent}
+      {activeView !== 'project' &&
+        (slottedContent !== undefined ? (
+          slottedContent
+        ) : (
+          <IntegrationPlaceholder view={activeView} />
+        ))}
     </section>
   );
 }
@@ -245,63 +299,83 @@ export function ProjectWorkspace({
   discussionCount = 0,
   panelSlots,
   primaryActions,
+  requestDescriptionUpdate,
+  descriptionSaveDelayMs,
 }: ProjectWorkspaceProps) {
+  const [currentProject, setCurrentProject] = useState(project);
+  const [descriptionStatus, setDescriptionStatus] =
+    useState<ProjectDescriptionSaveStatus>('saved');
   const [activePanel, setActivePanel] = useState<WorkspacePanelView>(() =>
     getDefaultPanelView(discussionCount),
   );
 
+  const currentDescription = useMemo(
+    () =>
+      Object.freeze({
+        projectId: currentProject.id,
+        currentDescription: currentProject.description,
+      }),
+    [currentProject.description, currentProject.id],
+  );
+
   return (
-    <main
-      className="flex h-screen min-h-[480px] min-w-80 flex-col overflow-hidden bg-[#eef1f5] text-[#1e2733] [font-family:'IBM_Plex_Sans',system-ui,sans-serif] [font-synthesis:none] [text-rendering:optimizeLegibility]"
-      data-project-id={project.id}
-    >
-      <ProjectBar project={project} />
+    <CurrentProjectDescriptionContext.Provider value={currentDescription}>
+      <main
+        className="flex h-screen min-h-[480px] min-w-80 flex-col overflow-hidden bg-[#eef1f5] text-[#1e2733] [font-family:'IBM_Plex_Sans',system-ui,sans-serif] [font-synthesis:none] [text-rendering:optimizeLegibility]"
+        data-project-id={currentProject.id}
+      >
+        <ProjectBar project={currentProject} descriptionStatus={descriptionStatus} />
 
-      <div className="relative flex min-h-0 flex-1">
-        <EmptyCanvas primaryActions={primaryActions} />
+        <div className="relative flex min-h-0 flex-1">
+          <EmptyCanvas primaryActions={primaryActions} />
 
-        <aside className="flex shrink-0 bg-white" aria-label="Project tools">
-          <nav
-            className="flex w-[52px] shrink-0 flex-col items-center gap-1 border-l border-[#e1e6ec] bg-white pt-3"
-            aria-label="Workspace panels"
-          >
-            {panelDefinitions.map(({ view, label, icon: Icon }) => {
-              const isActive = activePanel === view;
+          <aside className="flex shrink-0 bg-white" aria-label="Project tools">
+            <nav
+              className="flex w-[52px] shrink-0 flex-col items-center gap-1 border-l border-[#e1e6ec] bg-white pt-3"
+              aria-label="Workspace panels"
+            >
+              {panelDefinitions.map(({ view, label, icon: Icon }) => {
+                const isActive = activePanel === view;
 
-              return (
-                <button
-                  className={`relative grid size-[38px] cursor-pointer place-items-center rounded-[10px] transition-colors duration-150 motion-reduce:transition-none ${
-                    isActive
-                      ? 'bg-[#eef2fa] text-[#3f63a8]'
-                      : 'bg-transparent text-[#8b97a6] hover:bg-[#f6f8fc] hover:text-[#5c6a7a]'
-                  } ${focusRing}`}
-                  type="button"
-                  aria-label={label}
-                  aria-pressed={isActive}
-                  title={label}
-                  onClick={() => setActivePanel(view)}
-                  key={view}
-                >
-                  {isActive && (
-                    <span
-                      className="absolute top-[9px] left-0 h-5 w-[3px] rounded-r-[3px] bg-[#3f63a8]"
-                      aria-hidden="true"
-                    />
-                  )}
-                  <Icon className="size-[19px]" strokeWidth={1.7} aria-hidden="true" />
-                </button>
-              );
-            })}
-          </nav>
+                return (
+                  <button
+                    className={`relative grid size-[38px] cursor-pointer place-items-center rounded-[10px] transition-colors duration-150 motion-reduce:transition-none ${
+                      isActive
+                        ? 'bg-[#eef2fa] text-[#3f63a8]'
+                        : 'bg-transparent text-[#8b97a6] hover:bg-[#f6f8fc] hover:text-[#5c6a7a]'
+                    } ${focusRing}`}
+                    type="button"
+                    aria-label={label}
+                    aria-pressed={isActive}
+                    title={label}
+                    onClick={() => setActivePanel(view)}
+                    key={view}
+                  >
+                    {isActive && (
+                      <span
+                        className="absolute top-[9px] left-0 h-5 w-[3px] rounded-r-[3px] bg-[#3f63a8]"
+                        aria-hidden="true"
+                      />
+                    )}
+                    <Icon className="size-[19px]" strokeWidth={1.7} aria-hidden="true" />
+                  </button>
+                );
+              })}
+            </nav>
 
-          <WorkspacePanel
-            activeView={activePanel}
-            discussionCount={discussionCount}
-            panelSlots={panelSlots}
-            project={project}
-          />
-        </aside>
-      </div>
-    </main>
+            <WorkspacePanel
+              activeView={activePanel}
+              discussionCount={discussionCount}
+              panelSlots={panelSlots}
+              project={currentProject}
+              onProjectSaved={setCurrentProject}
+              onDescriptionStatusChange={setDescriptionStatus}
+              requestDescriptionUpdate={requestDescriptionUpdate}
+              descriptionSaveDelayMs={descriptionSaveDelayMs}
+            />
+          </aside>
+        </div>
+      </main>
+    </CurrentProjectDescriptionContext.Provider>
   );
 }
