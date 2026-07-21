@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
   ChevronLeft,
@@ -19,12 +19,40 @@ import { navigate } from '../utils/routing';
 import { CurrentProjectDescriptionContext } from './currentProjectDescription';
 import { getDefaultPanelView, type WorkspacePanelView } from './panelModel';
 
-export type WorkspacePanelSlots = Partial<Record<WorkspacePanelView, ReactNode>>;
+export type WorkspaceEmptyAction =
+  | 'start-discussion'
+  | 'create-bubble'
+  | 'upload-document';
+
+export type WorkspaceEmptyActionHandlers = Partial<
+  Record<WorkspaceEmptyAction, () => void>
+>;
+
+export interface WorkspaceInspectorSelection {
+  id: string;
+  kind: 'bubble' | 'context';
+  isValid?: boolean;
+}
+
+export interface WorkspacePanelSlots {
+  discussions?: ReactNode;
+  documents?: ReactNode;
+  project?: ReactNode;
+  inspector?:
+    | ReactNode
+    | ((selection: WorkspaceInspectorSelection) => ReactNode);
+}
 
 export interface ProjectWorkspaceProps {
   project: Project;
   discussionCount?: number;
   panelSlots?: WorkspacePanelSlots;
+  emptyActionHandlers?: WorkspaceEmptyActionHandlers;
+  inspectorSelection?: WorkspaceInspectorSelection | null;
+  onInspectorSelectionInvalidated?: (
+    selection: WorkspaceInspectorSelection,
+  ) => void;
+  /** @deprecated Supply emptyActionHandlers so each feature owns its launch callback. */
   primaryActions?: ReactNode;
   requestDescriptionUpdate?: ProjectDescriptionUpdateRequest;
   descriptionSaveDelayMs?: number;
@@ -124,22 +152,35 @@ function ProjectBar({
 }
 
 interface ActionCardProps {
+  action: WorkspaceEmptyAction;
   description: string;
   icon: LucideIcon;
   label: string;
   meta: string;
+  onLaunch?: () => void;
   primary?: boolean;
 }
 
-function ActionCard({ description, icon: Icon, label, meta, primary = false }: ActionCardProps) {
+function ActionCard({
+  action,
+  description,
+  icon: Icon,
+  label,
+  meta,
+  onLaunch,
+  primary = false,
+}: ActionCardProps) {
   return (
-    <div
-      className={`min-h-[164px] rounded-[14px] border p-[18px] pb-4 text-left shadow-[0_1px_2px_rgba(30,39,51,0.04)] ${
+    <button
+      className={`min-h-[164px] cursor-pointer rounded-[14px] border p-[18px] pb-4 text-left shadow-[0_1px_2px_rgba(30,39,51,0.04)] transition-[border-color,background-color,box-shadow,transform] duration-150 hover:-translate-y-0.5 motion-reduce:transform-none motion-reduce:transition-none ${
         primary
-          ? 'border-[#3f63a8] bg-[#3f63a8] text-white shadow-[0_8px_22px_-10px_rgba(63,99,168,0.7)]'
-          : 'border-[#e1e6ec] bg-white text-[#1e2733]'
-      }`}
-      data-workspace-action={label}
+          ? 'border-[#3f63a8] bg-[#3f63a8] text-white shadow-[0_8px_22px_-10px_rgba(63,99,168,0.7)] hover:bg-[#365894]'
+          : 'border-[#e1e6ec] bg-white text-[#1e2733] hover:border-[#c7d2df] hover:bg-[#fbfcfe]'
+      } ${focusRing}`}
+      aria-label={label}
+      data-workspace-action={action}
+      type="button"
+      onClick={onLaunch}
     >
       <span
         className={`mb-3.5 grid size-8 place-items-center rounded-[9px] ${
@@ -148,51 +189,67 @@ function ActionCard({ description, icon: Icon, label, meta, primary = false }: A
       >
         <Icon className="size-[17px]" strokeWidth={1.7} aria-hidden="true" />
       </span>
-      <h3 className="mb-1 text-sm font-semibold">{label}</h3>
-      <p className={`text-[11.5px] leading-[1.45] ${primary ? 'text-white/80' : 'text-[#5c6a7a]'}`}>
+      <span className="mb-1 block text-sm font-semibold">{label}</span>
+      <span className={`block text-[11.5px] leading-[1.45] ${primary ? 'text-white/80' : 'text-[#5c6a7a]'}`}>
         {description}
-      </p>
-      <p
-        className={`mt-3 text-[9.5px] font-medium tracking-[0.06em] [font-family:'IBM_Plex_Mono',ui-monospace,monospace] ${
+      </span>
+      <span
+        className={`mt-3 block text-[9.5px] font-medium tracking-[0.06em] [font-family:'IBM_Plex_Mono',ui-monospace,monospace] ${
           primary ? 'text-white/60' : 'text-[#9aa6b4]'
         }`}
       >
         {meta}
-      </p>
-    </div>
+      </span>
+    </button>
   );
 }
 
-function EmptyProjectActions() {
+function EmptyProjectActions({
+  handlers,
+}: {
+  handlers?: WorkspaceEmptyActionHandlers;
+}) {
   return (
     <div
       className="grid w-full max-w-[674px] grid-cols-1 gap-4 md:grid-cols-3"
       aria-label="Project starting points"
     >
       <ActionCard
+        action="start-discussion"
         description="Ask a focused question. Answers stay short by default."
         icon={MessageSquare}
         label="Start a discussion"
         meta="RECOMMENDED · ⌘K"
+        onLaunch={handlers?.['start-discussion']}
         primary
       />
       <ActionCard
+        action="create-bubble"
         description="Already know something? Add durable knowledge by hand."
         icon={CirclePlus}
         label="Create a bubble"
         meta="MANUAL"
+        onLaunch={handlers?.['create-bubble']}
       />
       <ActionCard
+        action="upload-document"
         description="Bring a source in. Select it whole as discussion context."
         icon={Upload}
         label="Upload a document"
         meta="PDF · TXT · MD"
+        onLaunch={handlers?.['upload-document']}
       />
     </div>
   );
 }
 
-function EmptyCanvas({ primaryActions }: { primaryActions?: ReactNode }) {
+function EmptyCanvas({
+  emptyActionHandlers,
+  primaryActions,
+}: {
+  emptyActionHandlers?: WorkspaceEmptyActionHandlers;
+  primaryActions?: ReactNode;
+}) {
   return (
     <section
       className="relative min-w-0 flex-1 overflow-y-auto bg-[#eef1f5] bg-[radial-gradient(#cdd6e0_1.1px,transparent_1.1px)] bg-[position:-1px_-1px] bg-[size:24px_24px]"
@@ -212,22 +269,52 @@ function EmptyCanvas({ primaryActions }: { primaryActions?: ReactNode }) {
           Nuée won&apos;t fill this canvas with assumptions. Start a focused discussion, and approve
           what&apos;s worth keeping as a bubble.
         </p>
-        {primaryActions ?? <EmptyProjectActions />}
+        {primaryActions ?? <EmptyProjectActions handlers={emptyActionHandlers} />}
       </div>
     </section>
   );
 }
 
-function IntegrationPlaceholder({ view }: { view: Exclude<WorkspacePanelView, 'project'> }) {
-  const labels: Record<typeof view, string> = {
-    discussions: 'Discussion content connects here.',
-    documents: 'Document content connects here.',
-    inspector: 'Inspector content connects here.',
+function PanelEmptyState({
+  view,
+}: {
+  view: 'discussions' | 'documents' | 'inspector';
+}) {
+  const states: Record<
+    typeof view,
+    { description: string; icon: LucideIcon; title: string }
+  > = {
+    discussions: {
+      description: 'Start a discussion from the canvas when you are ready to explore a question.',
+      icon: MessageSquare,
+      title: 'No discussions yet',
+    },
+    documents: {
+      description: 'Uploaded project sources will appear here.',
+      icon: FileText,
+      title: 'No documents yet',
+    },
+    inspector: {
+      description: 'Select a bubble or context item to inspect its details.',
+      icon: Search,
+      title: 'Nothing selected',
+    },
   };
+  const state = states[view];
+  const Icon = state.icon;
 
   return (
-    <div className="flex flex-1 items-center justify-center px-7 text-center">
-      <p className="max-w-[220px] text-xs leading-[1.55] text-[#8b97a6]">{labels[view]}</p>
+    <div
+      className="flex flex-1 flex-col items-center justify-center px-7 text-center"
+      data-panel-empty={view}
+    >
+      <span className="mb-3 grid size-9 place-items-center rounded-[10px] bg-[#f2f5f9] text-[#7f8ea0]">
+        <Icon className="size-[17px]" strokeWidth={1.7} aria-hidden="true" />
+      </span>
+      <h3 className="text-[13px] font-semibold text-[#344050]">{state.title}</h3>
+      <p className="mt-1.5 max-w-[230px] text-xs leading-[1.55] text-[#8b97a6]">
+        {state.description}
+      </p>
     </div>
   );
 }
@@ -235,6 +322,7 @@ function IntegrationPlaceholder({ view }: { view: Exclude<WorkspacePanelView, 'p
 function WorkspacePanel({
   activeView,
   discussionCount,
+  inspectorSelection,
   panelSlots,
   project,
   onProjectSaved,
@@ -244,6 +332,7 @@ function WorkspacePanel({
 }: {
   activeView: WorkspacePanelView;
   discussionCount: number;
+  inspectorSelection: WorkspaceInspectorSelection | null;
   panelSlots?: WorkspacePanelSlots;
   project: Project;
   onProjectSaved: (project: Project) => void;
@@ -252,13 +341,20 @@ function WorkspacePanel({
   descriptionSaveDelayMs?: number;
 }) {
   const activeDefinition = panelDefinitions.find(({ view }) => view === activeView)!;
-  const slottedContent = panelSlots?.[activeView];
   const hasDefaultProjectEditor = panelSlots?.project === undefined;
+  const inspectorContent =
+    activeView === 'inspector' && inspectorSelection && panelSlots?.inspector !== undefined
+      ? typeof panelSlots.inspector === 'function'
+        ? panelSlots.inspector(inspectorSelection)
+        : panelSlots.inspector
+      : undefined;
 
   return (
     <section
       className="flex w-[min(336px,calc(100vw-52px))] shrink-0 flex-col border-l border-[#e1e6ec] bg-white sm:w-[336px]"
-      aria-label={`${activeDefinition.label} panel`}
+      aria-labelledby={`workspace-panel-tab-${activeView}`}
+      id="workspace-active-panel"
+      role="tabpanel"
     >
       <header className="flex min-h-[50px] items-center gap-2 border-b border-[#eef1f5] px-[18px] py-[13px]">
         <h2 className="text-sm font-semibold text-[#1e2733]">{activeDefinition.label}</h2>
@@ -283,12 +379,16 @@ function WorkspacePanel({
           />
         </div>
       )}
-      {activeView === 'project' && !hasDefaultProjectEditor && slottedContent}
-      {activeView !== 'project' &&
-        (slottedContent !== undefined ? (
-          slottedContent
+      {activeView === 'project' && !hasDefaultProjectEditor && panelSlots?.project}
+      {activeView === 'discussions' &&
+        (panelSlots?.discussions ?? <PanelEmptyState view="discussions" />)}
+      {activeView === 'documents' &&
+        (panelSlots?.documents ?? <PanelEmptyState view="documents" />)}
+      {activeView === 'inspector' &&
+        (inspectorSelection && inspectorContent != null ? (
+          inspectorContent
         ) : (
-          <IntegrationPlaceholder view={activeView} />
+          <PanelEmptyState view="inspector" />
         ))}
     </section>
   );
@@ -298,6 +398,9 @@ export function ProjectWorkspace({
   project,
   discussionCount = 0,
   panelSlots,
+  emptyActionHandlers,
+  inspectorSelection = null,
+  onInspectorSelectionInvalidated,
   primaryActions,
   requestDescriptionUpdate,
   descriptionSaveDelayMs,
@@ -308,6 +411,38 @@ export function ProjectWorkspace({
   const [activePanel, setActivePanel] = useState<WorkspacePanelView>(() =>
     getDefaultPanelView(discussionCount),
   );
+  const panelButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const validInspectorSelection =
+    inspectorSelection?.isValid === false ? null : inspectorSelection;
+
+  useEffect(() => {
+    if (inspectorSelection?.isValid === false) {
+      onInspectorSelectionInvalidated?.(inspectorSelection);
+    }
+  }, [inspectorSelection, onInspectorSelectionInvalidated]);
+
+  function handlePanelKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
+    let nextIndex: number | undefined;
+
+    if (event.key === 'ArrowDown' || event.key === 'ArrowRight') {
+      nextIndex = (index + 1) % panelDefinitions.length;
+    } else if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') {
+      nextIndex = (index - 1 + panelDefinitions.length) % panelDefinitions.length;
+    } else if (event.key === 'Home') {
+      nextIndex = 0;
+    } else if (event.key === 'End') {
+      nextIndex = panelDefinitions.length - 1;
+    }
+
+    if (nextIndex === undefined) {
+      return;
+    }
+
+    event.preventDefault();
+    const nextDefinition = panelDefinitions[nextIndex];
+    setActivePanel(nextDefinition.view);
+    panelButtonRefs.current[nextIndex]?.focus();
+  }
 
   const currentDescription = useMemo(
     () =>
@@ -327,14 +462,19 @@ export function ProjectWorkspace({
         <ProjectBar project={currentProject} descriptionStatus={descriptionStatus} />
 
         <div className="relative flex min-h-0 flex-1">
-          <EmptyCanvas primaryActions={primaryActions} />
+          <EmptyCanvas
+            emptyActionHandlers={emptyActionHandlers}
+            primaryActions={primaryActions}
+          />
 
           <aside className="flex shrink-0 bg-white" aria-label="Project tools">
             <nav
               className="flex w-[52px] shrink-0 flex-col items-center gap-1 border-l border-[#e1e6ec] bg-white pt-3"
               aria-label="Workspace panels"
+              aria-orientation="vertical"
+              role="tablist"
             >
-              {panelDefinitions.map(({ view, label, icon: Icon }) => {
+              {panelDefinitions.map(({ view, label, icon: Icon }, index) => {
                 const isActive = activePanel === view;
 
                 return (
@@ -346,9 +486,18 @@ export function ProjectWorkspace({
                     } ${focusRing}`}
                     type="button"
                     aria-label={label}
-                    aria-pressed={isActive}
+                    aria-controls="workspace-active-panel"
+                    aria-selected={isActive}
+                    data-active={isActive ? 'true' : 'false'}
+                    id={`workspace-panel-tab-${view}`}
+                    role="tab"
+                    tabIndex={isActive ? 0 : -1}
                     title={label}
                     onClick={() => setActivePanel(view)}
+                    onKeyDown={(event) => handlePanelKeyDown(event, index)}
+                    ref={(button) => {
+                      panelButtonRefs.current[index] = button;
+                    }}
                     key={view}
                   >
                     {isActive && (
@@ -366,6 +515,7 @@ export function ProjectWorkspace({
             <WorkspacePanel
               activeView={activePanel}
               discussionCount={discussionCount}
+              inspectorSelection={validInspectorSelection}
               panelSlots={panelSlots}
               project={currentProject}
               onProjectSaved={setCurrentProject}
