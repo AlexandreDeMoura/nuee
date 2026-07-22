@@ -6,15 +6,28 @@ import {
   type PointerEvent as ReactPointerEvent,
   type ReactNode,
 } from 'react';
-import { CircleAlert, CircleDot, Minus, Plus, RotateCcw } from 'lucide-react';
+import {
+  CircleAlert,
+  CircleDot,
+  CirclePlus,
+  Minus,
+  Plus,
+  RotateCcw,
+} from 'lucide-react';
 import {
   getProjectBubbles,
   updateProjectViewport,
   type Bubble,
+  type BubblePlacementInput,
   type Project,
   type ProjectViewportUpdateOptions,
   type UpdateProjectViewportInput,
 } from '../api';
+import {
+  CreateBubbleDialog,
+  type BubbleCreateRequest,
+  type BubblePlacementRequest,
+} from '../bubbles/CreateBubbleDialog';
 import { BubbleCard } from './BubbleCard';
 
 const MIN_ZOOM = 0.25;
@@ -43,11 +56,19 @@ export type ProjectViewportUpdateRequest = (
   options?: ProjectViewportUpdateOptions,
 ) => Promise<Project>;
 
+export interface CanvasEmptyStateActions {
+  onCreateBubble: () => void;
+}
+
 export interface CanvasSurfaceProps {
-  emptyState: ReactNode;
+  emptyState:
+    | ReactNode
+    | ((actions: CanvasEmptyStateActions) => ReactNode);
   initialViewport?: CanvasViewport;
   projectId: string;
+  requestBubbleCreate?: BubbleCreateRequest;
   requestBubbles?: BubbleListRequest;
+  requestBubblePlacement?: BubblePlacementRequest;
   requestViewportUpdate?: ProjectViewportUpdateRequest;
   viewportSaveDelayMs?: number;
 }
@@ -330,11 +351,32 @@ function CanvasZoomControls({
   );
 }
 
+function CanvasBubbleAction({ onCreate }: { onCreate: () => void }) {
+  return (
+    <div
+      className="pointer-events-auto absolute bottom-4 left-1/2 -translate-x-1/2 rounded-[13px] border border-[#e1e6ec] bg-white p-1.5 shadow-[0_8px_24px_-8px_rgba(30,39,51,0.28)]"
+      data-canvas-overlay
+    >
+      <button
+        className={`inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-[9px] px-[13px] py-2 text-[12.5px] font-medium text-[#5c6a7a] hover:bg-[#f4f6f9] hover:text-[#33538f] ${focusRing}`}
+        type="button"
+        aria-haspopup="dialog"
+        onClick={onCreate}
+      >
+        <CirclePlus className="size-[15px]" strokeWidth={1.8} aria-hidden="true" />
+        Bubble
+      </button>
+    </div>
+  );
+}
+
 export function CanvasSurface({
   emptyState,
   initialViewport = { x: 0, y: 0, zoom: 1 },
   projectId,
+  requestBubbleCreate,
   requestBubbles = getProjectBubbles,
+  requestBubblePlacement,
   requestViewportUpdate = updateProjectViewport,
   viewportSaveDelayMs = DEFAULT_VIEWPORT_SAVE_DELAY_MS,
 }: CanvasSurfaceProps) {
@@ -346,6 +388,9 @@ export function CanvasSurface({
   const [viewport, setViewport] = useState<CanvasViewport>(initialViewport);
   const [viewportSaveFailed, setViewportSaveFailed] = useState(false);
   const [isPanning, setIsPanning] = useState(false);
+  const [isCreateBubbleDialogOpen, setIsCreateBubbleDialogOpen] = useState(false);
+  const [createPlacementInput, setCreatePlacementInput] =
+    useState<BubblePlacementInput | null>(null);
   const surfaceRef = useRef<HTMLElement>(null);
   const activePanRef = useRef<ActivePan | null>(null);
   const latestViewportRef = useRef(initialViewport);
@@ -685,6 +730,42 @@ export function CanvasSurface({
     setRequestKey((key) => key + 1);
   }
 
+  function openCreateBubbleDialog() {
+    setIsCreateBubbleDialogOpen(true);
+  }
+
+  function handleBubbleCreated(bubble: Bubble) {
+    setLoadState((current) => ({
+      status: current.status === 'partial' ? 'partial' : 'ready',
+      bubbles: mergeBubbles(current.bubbles, [bubble]),
+    }));
+    setIsCreateBubbleDialogOpen(false);
+    setCreatePlacementInput(null);
+  }
+
+  useEffect(() => {
+    if (!isCreateBubbleDialogOpen) {
+      return;
+    }
+
+    const bounds = surfaceRef.current?.getBoundingClientRect();
+    const width = bounds?.width || surfaceRef.current?.clientWidth || 1024;
+    const height = bounds?.height || surfaceRef.current?.clientHeight || 768;
+
+    setCreatePlacementInput({
+      strategy: 'viewport',
+      viewport_x: -viewport.x / viewport.zoom,
+      viewport_y: -viewport.y / viewport.zoom,
+      viewport_width: width / viewport.zoom,
+      viewport_height: height / viewport.zoom,
+    });
+  }, [isCreateBubbleDialogOpen, viewport]);
+
+  const renderedEmptyState =
+    typeof emptyState === 'function'
+      ? emptyState({ onCreateBubble: openCreateBubbleDialog })
+      : emptyState;
+
   return (
     <section
       className={`relative min-w-0 flex-1 select-none overflow-hidden bg-[#eef1f5] ${
@@ -738,7 +819,9 @@ export function CanvasSurface({
             onRetry={retryBubbleLoad}
           />
         )}
-        {loadState.status === 'ready' && loadState.bubbles.length === 0 && emptyState}
+        {loadState.status === 'ready' &&
+          loadState.bubbles.length === 0 &&
+          renderedEmptyState}
       </div>
 
       {(loadState.status === 'partial' || loadState.status === 'failed') &&
@@ -757,12 +840,30 @@ export function CanvasSurface({
         onZoomOut={() => zoomAt((currentZoom) => currentZoom / ZOOM_STEP)}
       />
 
+      {loadState.bubbles.length > 0 && (
+        <CanvasBubbleAction onCreate={openCreateBubbleDialog} />
+      )}
+
       {viewportSaveFailed && (
         <CanvasViewportSaveError
           onRetry={() => {
             failedViewportRef.current = null;
             void persistViewport(latestViewportRef.current);
           }}
+        />
+      )}
+
+      {createPlacementInput && (
+        <CreateBubbleDialog
+          onCancel={() => {
+            setIsCreateBubbleDialogOpen(false);
+            setCreatePlacementInput(null);
+          }}
+          onCreated={handleBubbleCreated}
+          placementInput={createPlacementInput}
+          projectId={projectId}
+          requestCreate={requestBubbleCreate}
+          requestPlacement={requestBubblePlacement}
         />
       )}
     </section>

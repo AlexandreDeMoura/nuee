@@ -4,6 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { ProjectsService } from '../projects/projects.service';
 import { SqliteProjectRepository } from '../projects/sqlite-project.repository';
+import { BubblePlacementService } from './bubble-placement.service';
 import { BubblesController } from './bubbles.controller';
 import { BubblesService } from './bubbles.service';
 import { SqliteBubbleRepository } from './sqlite-bubble.repository';
@@ -23,6 +24,7 @@ describe('BubblesController', () => {
     projects = new ProjectsService(projectRepository);
     controller = new BubblesController(
       new BubblesService(projects, bubbleRepository),
+      new BubblePlacementService(projects, bubbleRepository),
     );
   });
 
@@ -100,6 +102,35 @@ describe('BubblesController', () => {
       NotFoundException,
     );
     expect(controller.list(other.id)).toEqual([]);
+  });
+
+  it('exposes project-scoped viewport and cluster placement operations', () => {
+    const project = projects.create({
+      title: 'Placement API',
+      description: 'Place bubbles without duplicating canvas geometry.',
+    });
+
+    expect(
+      controller.place(project.id, {
+        strategy: 'viewport',
+        viewport_x: 0,
+        viewport_y: 0,
+        viewport_width: 1000,
+        viewport_height: 800,
+      }),
+    ).toEqual({ position_x: 376, position_y: 323 });
+
+    const bubble = controller.create(project.id, {
+      title: 'Centered',
+      content: 'Already occupies the center.',
+      position_x: 376,
+      position_y: 323,
+    });
+
+    expect(controller.place(project.id, { strategy: 'cluster' })).toEqual({
+      position_x: bubble.position_x + 272,
+      position_y: bubble.position_y,
+    });
   });
 
   it('returns a stable validation error', () => {

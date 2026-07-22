@@ -28,6 +28,29 @@ export interface Bubble {
   source_message_ids: string[];
 }
 
+export interface CreateBubbleInput {
+  title: string;
+  summary?: string | null;
+  content: string;
+  position_x: number;
+  position_y: number;
+}
+
+export type BubblePlacementStrategy = 'viewport' | 'cluster';
+
+export interface BubblePlacementInput {
+  strategy: BubblePlacementStrategy;
+  viewport_x?: number;
+  viewport_y?: number;
+  viewport_width?: number;
+  viewport_height?: number;
+}
+
+export interface BubblePlacement {
+  position_x: number;
+  position_y: number;
+}
+
 interface ApiErrorBody {
   code?: string;
   message?: string;
@@ -103,6 +126,34 @@ export function getProjectBubbles(
   return requestJson<Bubble[]>(
     `/projects/${encodeURIComponent(projectId)}/bubbles`,
     { signal },
+  );
+}
+
+export function getBubblePlacement(
+  projectId: string,
+  input: BubblePlacementInput,
+): Promise<BubblePlacement> {
+  return requestJson<BubblePlacement>(
+    `/projects/${encodeURIComponent(projectId)}/bubbles/placement`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+    },
+  );
+}
+
+export function createBubble(
+  projectId: string,
+  input: CreateBubbleInput,
+): Promise<Bubble> {
+  return requestJson<Bubble>(
+    `/projects/${encodeURIComponent(projectId)}/bubbles`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+    },
   );
 }
 

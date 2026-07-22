@@ -21,6 +21,10 @@ import {
   type BubbleListRequest,
   type ProjectViewportUpdateRequest,
 } from '../canvas/CanvasSurface';
+import type {
+  BubbleCreateRequest,
+  BubblePlacementRequest,
+} from '../bubbles/CreateBubbleDialog';
 import {
   ProjectDescriptionEditor,
   type ProjectDescriptionSaveStatus,
@@ -65,7 +69,9 @@ export interface WorkspacePanelSlots {
 
 export interface ProjectWorkspaceProps {
   project: Project;
+  requestBubbleCreate?: BubbleCreateRequest;
   requestBubbles?: BubbleListRequest;
+  requestBubblePlacement?: BubblePlacementRequest;
   requestViewportUpdate?: ProjectViewportUpdateRequest;
   viewportSaveDelayMs?: number;
   discussionCount?: number;
@@ -444,7 +450,9 @@ function WorkspacePanel({
 
 export function ProjectWorkspace({
   project,
+  requestBubbleCreate,
   requestBubbles,
+  requestBubblePlacement,
   requestViewportUpdate,
   viewportSaveDelayMs,
   discussionCount = 0,
@@ -527,14 +535,18 @@ export function ProjectWorkspace({
 
         <div className="relative flex min-h-0 flex-1">
           <CanvasSurface
-            emptyState={
+            emptyState={({ onCreateBubble }) => (
               <EmptyCanvasContent
                 analyticsClient={analyticsClient}
-                emptyActionHandlers={emptyActionHandlers}
+                emptyActionHandlers={{
+                  ...emptyActionHandlers,
+                  'create-bubble':
+                    emptyActionHandlers?.['create-bubble'] ?? onCreateBubble,
+                }}
                 primaryActions={primaryActions}
                 projectId={currentProject.id}
               />
-            }
+            )}
             key={currentProject.id}
             initialViewport={{
               x: currentProject.canvas_viewport_x,
@@ -542,7 +554,9 @@ export function ProjectWorkspace({
               zoom: currentProject.canvas_zoom,
             }}
             projectId={currentProject.id}
+            requestBubbleCreate={requestBubbleCreate}
             requestBubbles={requestBubbles}
+            requestBubblePlacement={requestBubblePlacement}
             requestViewportUpdate={requestViewportUpdate}
             viewportSaveDelayMs={viewportSaveDelayMs}
           />

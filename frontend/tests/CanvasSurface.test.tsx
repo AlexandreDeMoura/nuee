@@ -127,6 +127,72 @@ describe('CanvasSurface', () => {
     expect(screen.getByText('Market is real but fragmented')).toBeTruthy();
   });
 
+  it('creates a bubble in the visible world area and appends it to the canvas', async () => {
+    const requestPlacement = vi.fn().mockResolvedValue({
+      position_x: 40,
+      position_y: 60,
+    });
+    const createdBubble = bubble({
+      id: 'created-in-view',
+      title: 'Created in view',
+      position_x: 40,
+      position_y: 60,
+    });
+    const requestCreate = vi.fn().mockResolvedValue(createdBubble);
+
+    render(
+      <CanvasSurface
+        emptyState={({ onCreateBubble }) => (
+          <button type="button" onClick={onCreateBubble}>
+            Create a bubble
+          </button>
+        )}
+        initialViewport={{ x: 100, y: -50, zoom: 2 }}
+        projectId={project.id}
+        requestBubbleCreate={requestCreate}
+        requestBubbles={async () => []}
+        requestBubblePlacement={requestPlacement}
+      />,
+    );
+
+    await screen.findByRole('button', { name: 'Create a bubble' });
+    const canvas = screen.getByRole('region', { name: 'Project canvas' });
+    vi.spyOn(canvas, 'getBoundingClientRect').mockReturnValue({
+      bottom: 600,
+      height: 600,
+      left: 0,
+      right: 800,
+      top: 0,
+      width: 800,
+      x: 0,
+      y: 0,
+      toJSON: () => ({}),
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Create a bubble' }));
+    fireEvent.change(screen.getByLabelText(/^Title/), {
+      target: { value: 'Created in view' },
+    });
+    fireEvent.change(screen.getByLabelText(/^Content/), {
+      target: { value: 'Visible knowledge' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Create bubble' }));
+
+    expect(await screen.findByText('Created in view')).toBeTruthy();
+    expect(requestPlacement).toHaveBeenCalledWith(project.id, {
+      strategy: 'viewport',
+      viewport_x: -50,
+      viewport_y: 25,
+      viewport_width: 400,
+      viewport_height: 300,
+    });
+    expect(requestCreate).toHaveBeenCalledWith(
+      project.id,
+      expect.objectContaining({ position_x: 40, position_y: 60 }),
+    );
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
   it('renders each bubble at its persisted world coordinates', async () => {
     render(
       <CanvasSurface

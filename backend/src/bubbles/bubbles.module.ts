@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { join } from 'node:path';
 import { ProjectsModule } from '../projects/projects.module';
 import { BUBBLE_REPOSITORY } from './bubble.types';
+import { BubblePlacementService } from './bubble-placement.service';
 import { BubblesController } from './bubbles.controller';
 import { BubblesService } from './bubbles.service';
 import { SqliteBubbleRepository } from './sqlite-bubble.repository';
@@ -12,6 +13,7 @@ import { SqliteBubbleRepository } from './sqlite-bubble.repository';
   controllers: [BubblesController],
   providers: [
     BubblesService,
+    BubblePlacementService,
     {
       provide: BUBBLE_REPOSITORY,
       inject: [ConfigService],
@@ -30,6 +32,6 @@ import { SqliteBubbleRepository } from './sqlite-bubble.repository';
       },
     },
   ],
-  exports: [BubblesService],
+  exports: [BubblesService, BubblePlacementService],
 })
 export class BubblesModule {}

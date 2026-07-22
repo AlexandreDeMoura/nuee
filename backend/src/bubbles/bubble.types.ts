@@ -34,6 +34,21 @@ export interface RepositionBubbleInput {
   position_y: number;
 }
 
+export type BubblePlacementStrategy = 'viewport' | 'cluster';
+
+export interface PlaceBubbleInput {
+  strategy: BubblePlacementStrategy;
+  viewport_x?: number;
+  viewport_y?: number;
+  viewport_width?: number;
+  viewport_height?: number;
+}
+
+export interface BubblePlacement {
+  position_x: number;
+  position_y: number;
+}
+
 export interface BubbleRepository {
   create(bubble: Bubble): Bubble;
   findAllByProjectId(projectId: string): Bubble[];

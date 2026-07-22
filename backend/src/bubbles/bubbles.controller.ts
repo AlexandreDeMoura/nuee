@@ -11,15 +11,21 @@ import {
 } from '@nestjs/common';
 import type {
   Bubble,
+  BubblePlacement,
   CreateBubbleInput,
+  PlaceBubbleInput,
   RepositionBubbleInput,
   UpdateBubbleInput,
 } from './bubble.types';
+import { BubblePlacementService } from './bubble-placement.service';
 import { BubblesService } from './bubbles.service';
 
 @Controller('projects/:projectId/bubbles')
 export class BubblesController {
-  constructor(private readonly bubbles: BubblesService) {}
+  constructor(
+    private readonly bubbles: BubblesService,
+    private readonly placements: BubblePlacementService,
+  ) {}
 
   @Post()
   create(
@@ -32,6 +38,14 @@ export class BubblesController {
   @Get()
   list(@Param('projectId') projectId: string): Bubble[] {
     return this.bubbles.list(projectId);
+  }
+
+  @Post('placement')
+  place(
+    @Param('projectId') projectId: string,
+    @Body() input: PlaceBubbleInput,
+  ): BubblePlacement {
+    return this.placements.place(projectId, input);
   }
 
   @Get(':bubbleId')

@@ -6,6 +6,10 @@ import type {
   BubbleListRequest,
   ProjectViewportUpdateRequest,
 } from '../canvas/CanvasSurface';
+import type {
+  BubbleCreateRequest,
+  BubblePlacementRequest,
+} from '../bubbles/CreateBubbleDialog';
 import { navigate } from '../utils/routing';
 import { ProjectWorkspace } from './ProjectWorkspace';
 
@@ -14,7 +18,9 @@ type ProjectRequest = (projectId: string, signal?: AbortSignal) => Promise<Proje
 export interface ProjectCanvasRouteProps {
   projectId: string;
   requestProject?: ProjectRequest;
+  requestBubbleCreate?: BubbleCreateRequest;
   requestBubbles?: BubbleListRequest;
+  requestBubblePlacement?: BubblePlacementRequest;
   requestViewportUpdate?: ProjectViewportUpdateRequest;
   viewportSaveDelayMs?: number;
   analyticsClient?: AnalyticsClient;
@@ -117,7 +123,9 @@ function ProjectRouteState({
 export function ProjectCanvasRoute({
   projectId,
   requestProject = getProject,
+  requestBubbleCreate,
   requestBubbles,
+  requestBubblePlacement,
   requestViewportUpdate,
   viewportSaveDelayMs,
   analyticsClient = analytics,
@@ -162,7 +170,9 @@ export function ProjectCanvasRoute({
       <ProjectWorkspace
         analyticsClient={analyticsClient}
         project={loadState.project}
+        requestBubbleCreate={requestBubbleCreate}
         requestBubbles={requestBubbles}
+        requestBubblePlacement={requestBubblePlacement}
         requestViewportUpdate={requestViewportUpdate}
         viewportSaveDelayMs={viewportSaveDelayMs}
       />
