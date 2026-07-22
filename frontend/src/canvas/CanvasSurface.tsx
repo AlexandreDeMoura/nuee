@@ -15,6 +15,7 @@ import {
   type ProjectViewportUpdateOptions,
   type UpdateProjectViewportInput,
 } from '../api';
+import { BubbleCard } from './BubbleCard';
 
 const MIN_ZOOM = 0.25;
 const MAX_ZOOM = 2;
@@ -52,9 +53,10 @@ export interface CanvasSurfaceProps {
 }
 
 type CanvasLoadState =
-  | { status: 'loading' }
+  | { status: 'loading'; bubbles: Bubble[] }
   | { status: 'ready'; bubbles: Bubble[] }
-  | { status: 'failed' };
+  | { status: 'partial'; bubbles: Bubble[] }
+  | { status: 'failed'; bubbles: Bubble[] };
 
 interface ActivePan {
   pointerId: number;
@@ -100,6 +102,72 @@ function normalizeWheelDelta(delta: number, deltaMode: number, pageSize: number)
   return delta;
 }
 
+function isRenderableBubble(value: unknown, projectId: string): value is Bubble {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const bubble = value as Partial<Bubble>;
+
+  return (
+    typeof bubble.id === 'string' &&
+    bubble.id.length > 0 &&
+    bubble.project_id === projectId &&
+    typeof bubble.title === 'string' &&
+    bubble.title.trim().length > 0 &&
+    (bubble.summary === null || typeof bubble.summary === 'string') &&
+    typeof bubble.content === 'string' &&
+    bubble.content.trim().length > 0 &&
+    typeof bubble.position_x === 'number' &&
+    Number.isFinite(bubble.position_x) &&
+    typeof bubble.position_y === 'number' &&
+    Number.isFinite(bubble.position_y) &&
+    typeof bubble.created_at === 'string' &&
+    typeof bubble.updated_at === 'string' &&
+    (bubble.source_kind === 'manual' || bubble.source_kind === 'discussion') &&
+    (bubble.source_discussion_id === null ||
+      typeof bubble.source_discussion_id === 'string') &&
+    Array.isArray(bubble.source_message_ids) &&
+    bubble.source_message_ids.every((id) => typeof id === 'string')
+  );
+}
+
+function renderableBubbles(records: unknown, projectId: string) {
+  if (!Array.isArray(records)) {
+    throw new Error('The bubble response was not a list.');
+  }
+
+  const seenIds = new Set<string>();
+  const bubbles: Bubble[] = [];
+  let invalidCount = 0;
+
+  for (const record of records) {
+    if (!isRenderableBubble(record, projectId) || seenIds.has(record.id)) {
+      invalidCount += 1;
+      continue;
+    }
+
+    seenIds.add(record.id);
+    bubbles.push(record);
+  }
+
+  return { bubbles, invalidCount };
+}
+
+function mergeBubbles(current: Bubble[], incoming: Bubble[]) {
+  const incomingById = new Map(incoming.map((bubble) => [bubble.id, bubble]));
+  const merged = current.map((bubble) => incomingById.get(bubble.id) ?? bubble);
+  const currentIds = new Set(current.map((bubble) => bubble.id));
+
+  for (const bubble of incoming) {
+    if (!currentIds.has(bubble.id)) {
+      merged.push(bubble);
+    }
+  }
+
+  return merged;
+}
+
 function CanvasLoadingState() {
   return (
     <div
@@ -143,6 +211,53 @@ function CanvasErrorState({ onRetry }: { onRetry: () => void }) {
         <RotateCcw className="size-[15px]" strokeWidth={1.8} aria-hidden="true" />
         Try again
       </button>
+    </div>
+  );
+}
+
+function CanvasBubbleLoadNotice({
+  hasBubbles,
+  isPartial,
+  onRetry,
+}: {
+  hasBubbles: boolean;
+  isPartial: boolean;
+  onRetry: () => void;
+}) {
+  return (
+    <div
+      className={`${
+        hasBubbles
+          ? 'pointer-events-auto absolute top-4 right-4 max-w-[350px]'
+          : 'pointer-events-auto max-w-[360px]'
+      } flex items-start gap-3 rounded-[12px] border border-[#ead5d2] bg-white/95 px-4 py-3.5 text-left shadow-[0_10px_28px_-16px_rgba(30,39,51,0.4)] backdrop-blur-sm`}
+      data-canvas-overlay
+      role="alert"
+    >
+      <CircleAlert
+        className="mt-0.5 size-[16px] shrink-0 text-[#b4544e]"
+        strokeWidth={1.8}
+        aria-hidden="true"
+      />
+      <div>
+        <p className="text-xs font-semibold text-[#704944]">
+          {isPartial
+            ? 'Some bubbles couldn’t be displayed.'
+            : 'We couldn’t refresh your bubbles.'}
+        </p>
+        <p className="mt-1 text-[11.5px] leading-[1.45] text-[#8b6864]">
+          {hasBubbles
+            ? 'The bubbles already shown remain available.'
+            : 'Your saved bubble data is still safe.'}
+        </p>
+        <button
+          className={`mt-2.5 cursor-pointer text-[11.5px] font-semibold text-[#8f4843] hover:text-[#6f3531] ${focusRing}`}
+          type="button"
+          onClick={onRetry}
+        >
+          Try again
+        </button>
+      </div>
     </div>
   );
 }
@@ -223,7 +338,10 @@ export function CanvasSurface({
   requestViewportUpdate = updateProjectViewport,
   viewportSaveDelayMs = DEFAULT_VIEWPORT_SAVE_DELAY_MS,
 }: CanvasSurfaceProps) {
-  const [loadState, setLoadState] = useState<CanvasLoadState>({ status: 'loading' });
+  const [loadState, setLoadState] = useState<CanvasLoadState>({
+    status: 'loading',
+    bubbles: [],
+  });
   const [requestKey, setRequestKey] = useState(0);
   const [viewport, setViewport] = useState<CanvasViewport>(initialViewport);
   const [viewportSaveFailed, setViewportSaveFailed] = useState(false);
@@ -240,6 +358,7 @@ export function CanvasSurface({
     viewport: CanvasViewport;
   } | null>(null);
   const mountedRef = useRef(true);
+  const loadedProjectIdRef = useRef(projectId);
 
   const persistViewport = useCallback(
     async function persist(
@@ -371,11 +490,26 @@ export function CanvasSurface({
 
   useEffect(() => {
     const controller = new AbortController();
+    const isNewProject = loadedProjectIdRef.current !== projectId;
+    loadedProjectIdRef.current = projectId;
+
+    setLoadState((current) => ({
+      status: 'loading',
+      bubbles: isNewProject ? [] : current.bubbles,
+    }));
 
     requestBubbles(projectId, controller.signal)
-      .then((bubbles) => {
+      .then((records) => {
         if (!controller.signal.aborted) {
-          setLoadState({ status: 'ready', bubbles });
+          const result = renderableBubbles(records, projectId);
+
+          setLoadState((current) => ({
+            status: result.invalidCount === 0 ? 'ready' : 'partial',
+            bubbles:
+              result.invalidCount === 0
+                ? result.bubbles
+                : mergeBubbles(current.bubbles, result.bubbles),
+          }));
         }
       })
       .catch((error: unknown) => {
@@ -384,19 +518,28 @@ export function CanvasSurface({
         }
 
         if (!controller.signal.aborted) {
-          setLoadState({ status: 'failed' });
+          setLoadState((current) => ({
+            status: 'failed',
+            bubbles: current.bubbles,
+          }));
         }
       });
 
     return () => controller.abort();
   }, [projectId, requestBubbles, requestKey]);
 
-  function isOverlayTarget(target: EventTarget | null) {
-    return target instanceof Element && target.closest('[data-canvas-overlay]') !== null;
+  function isInteractiveTarget(target: EventTarget | null) {
+    return (
+      target instanceof Element &&
+      target.closest('[data-canvas-overlay], [data-canvas-interactive]') !== null
+    );
   }
 
   function handlePointerDown(event: ReactPointerEvent<HTMLElement>) {
-    if ((event.button !== 0 && event.button !== 1) || isOverlayTarget(event.target)) {
+    if (
+      (event.button !== 0 && event.button !== 1) ||
+      isInteractiveTarget(event.target)
+    ) {
       return;
     }
 
@@ -534,6 +677,14 @@ export function CanvasSurface({
   const backgroundPositionX = viewport.x % scaledGridSize;
   const backgroundPositionY = viewport.y % scaledGridSize;
 
+  function retryBubbleLoad() {
+    setLoadState((current) => ({
+      status: 'loading',
+      bubbles: current.bubbles,
+    }));
+    setRequestKey((key) => key + 1);
+  }
+
   return (
     <section
       className={`relative min-w-0 flex-1 select-none overflow-hidden bg-[#eef1f5] ${
@@ -567,20 +718,37 @@ export function CanvasSurface({
           transform: `translate(${viewport.x}px, ${viewport.y}px) scale(${viewport.zoom})`,
           transformOrigin: '0 0',
         }}
-      />
+      >
+        {loadState.bubbles.map((bubble) => (
+          <BubbleCard bubble={bubble} key={bubble.id} />
+        ))}
+      </div>
 
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-6 py-10 lg:px-10">
-        {loadState.status === 'loading' && <CanvasLoadingState />}
-        {loadState.status === 'failed' && (
-          <CanvasErrorState
-            onRetry={() => {
-              setLoadState({ status: 'loading' });
-              setRequestKey((key) => key + 1);
-            }}
+        {loadState.status === 'loading' && loadState.bubbles.length === 0 && (
+          <CanvasLoadingState />
+        )}
+        {loadState.status === 'failed' && loadState.bubbles.length === 0 && (
+          <CanvasErrorState onRetry={retryBubbleLoad} />
+        )}
+        {loadState.status === 'partial' && loadState.bubbles.length === 0 && (
+          <CanvasBubbleLoadNotice
+            hasBubbles={false}
+            isPartial
+            onRetry={retryBubbleLoad}
           />
         )}
         {loadState.status === 'ready' && loadState.bubbles.length === 0 && emptyState}
       </div>
+
+      {(loadState.status === 'partial' || loadState.status === 'failed') &&
+        loadState.bubbles.length > 0 && (
+          <CanvasBubbleLoadNotice
+            hasBubbles
+            isPartial={loadState.status === 'partial'}
+            onRetry={retryBubbleLoad}
+          />
+        )}
 
       <CanvasZoomControls
         zoom={viewport.zoom}

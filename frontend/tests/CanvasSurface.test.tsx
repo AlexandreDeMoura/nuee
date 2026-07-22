@@ -27,6 +27,24 @@ const project: Project = {
   canvas_zoom: 1,
 };
 
+function bubble(overrides: Partial<Bubble> = {}): Bubble {
+  return {
+    id: 'bubble-1',
+    project_id: project.id,
+    title: 'Market is real but fragmented',
+    summary: 'Demand exists across six hubs, but buyers remain fragmented.',
+    content: 'A longer explanation of the market and its demand profile.',
+    position_x: 120,
+    position_y: -48,
+    created_at: '2026-07-19T10:00:00.000Z',
+    updated_at: '2026-07-20T10:00:00.000Z',
+    source_kind: 'manual',
+    source_discussion_id: null,
+    source_message_ids: [],
+    ...overrides,
+  };
+}
+
 function projectWithViewport(input: UpdateProjectViewportInput): Project {
   return { ...project, ...input };
 }
@@ -92,7 +110,6 @@ describe('CanvasSurface', () => {
   });
 
   it('does not present an empty project when bubble records exist', async () => {
-    const bubble = { id: 'bubble-1' } as Bubble;
     const pendingBubbles = deferred<Bubble[]>();
 
     render(
@@ -103,10 +120,101 @@ describe('CanvasSurface', () => {
       />,
     );
 
-    await act(async () => pendingBubbles.resolve([bubble]));
+    await act(async () => pendingBubbles.resolve([bubble()]));
 
     expect(screen.queryByText('Nothing on this canvas')).toBeNull();
-    expect(document.querySelectorAll('[data-bubble-id]')).toHaveLength(0);
+    expect(document.querySelectorAll('[data-bubble-id]')).toHaveLength(1);
+    expect(screen.getByText('Market is real but fragmented')).toBeTruthy();
+  });
+
+  it('renders each bubble at its persisted world coordinates', async () => {
+    render(
+      <CanvasSurface
+        emptyState={emptyState}
+        initialViewport={{ x: 40, y: 25, zoom: 1.2 }}
+        projectId="project-123"
+        requestBubbles={async () => [
+          bubble({ position_x: 182.5, position_y: -64 }),
+        ]}
+      />,
+    );
+
+    const card = await screen.findByRole('article', {
+      name: 'Market is real but fragmented',
+    });
+    const contentLayer = document.querySelector('[data-canvas-content]');
+
+    expect(card.style.left).toBe('182.5px');
+    expect(card.style.top).toBe('-64px');
+    expect(contentLayer?.getAttribute('style')).toContain(
+      'translate(40px, 25px) scale(1.2)',
+    );
+  });
+
+  it('keeps valid bubbles visible when part of a response cannot be rendered', async () => {
+    const requestBubbles = vi
+      .fn()
+      .mockResolvedValueOnce([
+        bubble(),
+        bubble({ id: 'wrong-project', project_id: 'project-elsewhere' }),
+      ])
+      .mockRejectedValueOnce(new Error('Unavailable'));
+
+    render(
+      <CanvasSurface
+        emptyState={emptyState}
+        projectId="project-123"
+        requestBubbles={requestBubbles}
+      />,
+    );
+
+    expect(
+      await screen.findByRole('article', {
+        name: 'Market is real but fragmented',
+      }),
+    ).toBeTruthy();
+    expect(screen.getByRole('alert').textContent).toContain(
+      'Some bubbles couldn’t be displayed.',
+    );
+    expect(document.querySelector('[data-bubble-id="wrong-project"]')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+
+    expect(await screen.findByText('We couldn’t refresh your bubbles.')).toBeTruthy();
+    expect(
+      screen.getByRole('article', { name: 'Market is real but fragmented' }),
+    ).toBeTruthy();
+  });
+
+  it('does not start a canvas pan from a bubble card', async () => {
+    render(
+      <CanvasSurface
+        emptyState={emptyState}
+        projectId="project-123"
+        requestBubbles={async () => [bubble()]}
+      />,
+    );
+
+    const canvas = screen.getByRole('region', { name: 'Project canvas' });
+    const card = await screen.findByRole('article', {
+      name: 'Market is real but fragmented',
+    });
+
+    fireEvent.pointerDown(card, {
+      button: 0,
+      clientX: 100,
+      clientY: 80,
+      pointerId: 17,
+    });
+    fireEvent.pointerMove(canvas, {
+      clientX: 150,
+      clientY: 120,
+      pointerId: 17,
+    });
+    fireEvent.pointerUp(canvas, { pointerId: 17 });
+
+    expect(canvas.getAttribute('data-canvas-x')).toBe('0');
+    expect(canvas.getAttribute('data-canvas-y')).toBe('0');
   });
 
   it('pans the viewport by dragging the canvas background', async () => {
