@@ -3,7 +3,11 @@ import { dirname } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { CREATE_PROJECTS_MIGRATION } from './migrations/001-create-projects';
-import { Project, ProjectRepository } from './project.types';
+import {
+  Project,
+  ProjectRepository,
+  UpdateProjectViewportInput,
+} from './project.types';
 
 interface ProjectRow {
   id: string;
@@ -98,6 +102,28 @@ export class SqliteProjectRepository
         `,
       )
       .run(description, updatedAt, id);
+
+    return result.changes === 0 ? undefined : this.findById(id);
+  }
+
+  updateViewport(
+    id: string,
+    viewport: UpdateProjectViewportInput,
+  ): Project | undefined {
+    const result = this.database
+      .prepare(
+        `
+          UPDATE projects
+          SET canvas_viewport_x = ?, canvas_viewport_y = ?, canvas_zoom = ?
+          WHERE id = ?
+        `,
+      )
+      .run(
+        viewport.canvas_viewport_x,
+        viewport.canvas_viewport_y,
+        viewport.canvas_zoom,
+        id,
+      );
 
     return result.changes === 0 ? undefined : this.findById(id);
   }

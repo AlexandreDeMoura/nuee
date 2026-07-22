@@ -16,7 +16,7 @@ describe('ProjectsController', () => {
     repository.onModuleDestroy();
   });
 
-  it('supports the create, list, read, and description-update operations', () => {
+  it('supports create, list, read, description-update, and viewport-update operations', () => {
     const created = controller.create({
       title: '  Project API  ',
       description: '  Initial description  ',
@@ -39,6 +39,18 @@ describe('ProjectsController', () => {
       id: created.id,
       title: 'Project API',
       description: 'Updated description',
+    });
+    expect(
+      controller.updateViewport(created.id, {
+        canvas_viewport_x: 72,
+        canvas_viewport_y: -31,
+        canvas_zoom: 0.8,
+      }),
+    ).toEqual({
+      ...controller.get(created.id),
+      canvas_viewport_x: 72,
+      canvas_viewport_y: -31,
+      canvas_zoom: 0.8,
     });
   });
 

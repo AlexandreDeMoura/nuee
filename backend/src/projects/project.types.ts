@@ -18,6 +18,12 @@ export interface UpdateProjectDescriptionInput {
   description: string;
 }
 
+export interface UpdateProjectViewportInput {
+  canvas_viewport_x: number;
+  canvas_viewport_y: number;
+  canvas_zoom: number;
+}
+
 export interface ProjectRepository {
   create(project: Project): Project;
   findAll(): Project[];
@@ -26,6 +32,10 @@ export interface ProjectRepository {
     id: string,
     description: string,
     updatedAt: string,
+  ): Project | undefined;
+  updateViewport(
+    id: string,
+    viewport: UpdateProjectViewportInput,
   ): Project | undefined;
 }
 

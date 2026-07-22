@@ -16,7 +16,11 @@ import {
   type AnalyticsClient,
   type AnalyticsEventProperties,
 } from '../analytics';
-import { CanvasSurface, type BubbleListRequest } from '../canvas/CanvasSurface';
+import {
+  CanvasSurface,
+  type BubbleListRequest,
+  type ProjectViewportUpdateRequest,
+} from '../canvas/CanvasSurface';
 import {
   ProjectDescriptionEditor,
   type ProjectDescriptionSaveStatus,
@@ -62,6 +66,8 @@ export interface WorkspacePanelSlots {
 export interface ProjectWorkspaceProps {
   project: Project;
   requestBubbles?: BubbleListRequest;
+  requestViewportUpdate?: ProjectViewportUpdateRequest;
+  viewportSaveDelayMs?: number;
   discussionCount?: number;
   panelSlots?: WorkspacePanelSlots;
   emptyActionHandlers?: WorkspaceEmptyActionHandlers;
@@ -439,6 +445,8 @@ function WorkspacePanel({
 export function ProjectWorkspace({
   project,
   requestBubbles,
+  requestViewportUpdate,
+  viewportSaveDelayMs,
   discussionCount = 0,
   panelSlots,
   emptyActionHandlers,
@@ -528,8 +536,15 @@ export function ProjectWorkspace({
               />
             }
             key={currentProject.id}
+            initialViewport={{
+              x: currentProject.canvas_viewport_x,
+              y: currentProject.canvas_viewport_y,
+              zoom: currentProject.canvas_zoom,
+            }}
             projectId={currentProject.id}
             requestBubbles={requestBubbles}
+            requestViewportUpdate={requestViewportUpdate}
+            viewportSaveDelayMs={viewportSaveDelayMs}
           />
 
           <aside className="flex shrink-0 bg-white" aria-label="Project tools">

@@ -1,7 +1,7 @@
 import { act } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import type { Bubble } from '../src/api';
+import type { Bubble, Project, UpdateProjectViewportInput } from '../src/api';
 import { CanvasSurface } from '../src/canvas/CanvasSurface';
 
 function deferred<T>() {
@@ -16,9 +16,29 @@ function deferred<T>() {
 }
 
 const emptyState = <p>Nothing on this canvas</p>;
+const project: Project = {
+  id: 'project-123',
+  title: 'Canvas project',
+  description: 'A project with a persisted canvas.',
+  created_at: '2026-07-20T10:00:00.000Z',
+  updated_at: '2026-07-20T10:00:00.000Z',
+  canvas_viewport_x: 0,
+  canvas_viewport_y: 0,
+  canvas_zoom: 1,
+};
+
+function projectWithViewport(input: UpdateProjectViewportInput): Project {
+  return { ...project, ...input };
+}
+
+const requestViewportUpdate = async (
+  _projectId: string,
+  input: UpdateProjectViewportInput,
+) => projectWithViewport(input);
 
 afterEach(() => {
   cleanup();
+  vi.useRealTimers();
   vi.restoreAllMocks();
 });
 
@@ -95,6 +115,7 @@ describe('CanvasSurface', () => {
         emptyState={emptyState}
         projectId="project-123"
         requestBubbles={async () => []}
+        requestViewportUpdate={requestViewportUpdate}
       />,
     );
 
@@ -128,6 +149,7 @@ describe('CanvasSurface', () => {
           emptyState={emptyState}
           projectId="project-123"
           requestBubbles={async () => []}
+          requestViewportUpdate={requestViewportUpdate}
         />
       </div>,
     );
@@ -169,5 +191,186 @@ describe('CanvasSurface', () => {
     expect(parentWheelListener).not.toHaveBeenCalled();
 
     rendered.unmount();
+  });
+
+  it('restores a persisted project viewport on mount', async () => {
+    render(
+      <CanvasSurface
+        emptyState={emptyState}
+        initialViewport={{ x: 184.5, y: -96, zoom: 1.35 }}
+        projectId="project-123"
+        requestBubbles={async () => []}
+        requestViewportUpdate={requestViewportUpdate}
+      />,
+    );
+
+    await screen.findByText('Nothing on this canvas');
+    const canvas = screen.getByRole('region', { name: 'Project canvas' });
+
+    expect(canvas.getAttribute('data-canvas-x')).toBe('184.5');
+    expect(canvas.getAttribute('data-canvas-y')).toBe('-96');
+    expect(canvas.getAttribute('data-canvas-zoom')).toBe('1.35');
+    expect(screen.getByRole('button', { name: 'Reset zoom to 100%' }).textContent).toBe(
+      '135%',
+    );
+  });
+
+  it('coalesces a continuous gesture into one viewport write', async () => {
+    vi.useFakeTimers();
+    const requestUpdate = vi.fn(
+      async (_projectId: string, input: UpdateProjectViewportInput) =>
+        projectWithViewport(input),
+    );
+
+    render(
+      <CanvasSurface
+        emptyState={emptyState}
+        projectId="project-123"
+        requestBubbles={async () => []}
+        requestViewportUpdate={requestUpdate}
+        viewportSaveDelayMs={400}
+      />,
+    );
+
+    await act(async () => undefined);
+    const canvas = screen.getByRole('region', { name: 'Project canvas' });
+
+    for (const [deltaX, deltaY] of [
+      [10, 20],
+      [5, -2],
+      [-3, 4],
+    ]) {
+      fireEvent(
+        canvas,
+        new WheelEvent('wheel', {
+          bubbles: true,
+          cancelable: true,
+          deltaX,
+          deltaY,
+        }),
+      );
+    }
+
+    expect(requestUpdate).not.toHaveBeenCalled();
+
+    await act(async () => {
+      vi.advanceTimersByTime(400);
+      await Promise.resolve();
+    });
+
+    expect(requestUpdate).toHaveBeenCalledTimes(1);
+    expect(requestUpdate).toHaveBeenCalledWith(
+      'project-123',
+      {
+        canvas_viewport_x: -12,
+        canvas_viewport_y: -22,
+        canvas_zoom: 1,
+      },
+      { keepalive: false },
+    );
+  });
+
+  it('flushes the latest pending viewport before SPA navigation', async () => {
+    vi.useFakeTimers();
+    const requestUpdate = vi.fn(
+      async (_projectId: string, input: UpdateProjectViewportInput) =>
+        projectWithViewport(input),
+    );
+
+    render(
+      <CanvasSurface
+        emptyState={emptyState}
+        projectId="project-123"
+        requestBubbles={async () => []}
+        requestViewportUpdate={requestUpdate}
+        viewportSaveDelayMs={10_000}
+      />,
+    );
+
+    await act(async () => undefined);
+    const canvas = screen.getByRole('region', { name: 'Project canvas' });
+    fireEvent.pointerDown(canvas, {
+      button: 0,
+      clientX: 40,
+      clientY: 50,
+      pointerId: 9,
+    });
+    fireEvent.pointerMove(canvas, {
+      clientX: 73,
+      clientY: 68,
+      pointerId: 9,
+    });
+    fireEvent.pointerUp(canvas, { pointerId: 9 });
+
+    await act(async () => {
+      window.dispatchEvent(new PopStateEvent('popstate'));
+      await Promise.resolve();
+    });
+
+    expect(requestUpdate).toHaveBeenCalledTimes(1);
+    expect(requestUpdate).toHaveBeenCalledWith(
+      'project-123',
+      {
+        canvas_viewport_x: 33,
+        canvas_viewport_y: 18,
+        canvas_zoom: 1,
+      },
+      { keepalive: true },
+    );
+  });
+
+  it('retains the unsaved viewport after failure and retries that exact state', async () => {
+    vi.useFakeTimers();
+    const requestUpdate = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Unavailable'))
+      .mockImplementationOnce(
+        async (_projectId: string, input: UpdateProjectViewportInput) =>
+          projectWithViewport(input),
+      );
+
+    render(
+      <CanvasSurface
+        emptyState={emptyState}
+        projectId="project-123"
+        requestBubbles={async () => []}
+        requestViewportUpdate={requestUpdate}
+        viewportSaveDelayMs={0}
+      />,
+    );
+
+    await act(async () => undefined);
+    const canvas = screen.getByRole('region', { name: 'Project canvas' });
+    fireEvent(
+      canvas,
+      new WheelEvent('wheel', {
+        bubbles: true,
+        cancelable: true,
+        deltaX: 25,
+        deltaY: -14,
+      }),
+    );
+
+    await act(async () => {
+      vi.runAllTimers();
+      await Promise.resolve();
+    });
+
+    expect(screen.getByRole('alert').textContent).toContain(
+      'Couldn’t save this canvas view.',
+    );
+    expect(canvas.getAttribute('data-canvas-x')).toBe('-25');
+    expect(canvas.getAttribute('data-canvas-y')).toBe('14');
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Retry save' }));
+      await Promise.resolve();
+    });
+
+    expect(requestUpdate).toHaveBeenCalledTimes(2);
+    expect(requestUpdate.mock.calls[1]?.[1]).toEqual(
+      requestUpdate.mock.calls[0]?.[1],
+    );
+    expect(screen.queryByText('Couldn’t save this canvas view.')).toBeNull();
   });
 });

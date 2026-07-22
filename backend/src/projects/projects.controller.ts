@@ -3,6 +3,7 @@ import type {
   CreateProjectInput,
   Project,
   UpdateProjectDescriptionInput,
+  UpdateProjectViewportInput,
 } from './project.types';
 import { ProjectsService } from './projects.service';
 
@@ -31,5 +32,13 @@ export class ProjectsController {
     @Body() input: UpdateProjectDescriptionInput,
   ): Project {
     return this.projects.updateDescription(projectId, input);
+  }
+
+  @Patch(':projectId/viewport')
+  updateViewport(
+    @Param('projectId') projectId: string,
+    @Body() input: UpdateProjectViewportInput,
+  ): Project {
+    return this.projects.updateViewport(projectId, input);
   }
 }

@@ -26,6 +26,27 @@ afterEach(() => {
 });
 
 describe('workspace integration contracts', () => {
+  it('restores the viewport supplied by the loaded project', async () => {
+    render(
+      <ProjectWorkspace
+        project={{
+          ...project,
+          canvas_viewport_x: 96,
+          canvas_viewport_y: -144,
+          canvas_zoom: 0.75,
+        }}
+        requestBubbles={requestEmptyBubbles}
+      />,
+    );
+
+    await screen.findByRole('button', { name: 'Start a discussion' });
+    const canvas = screen.getByRole('region', { name: 'Project canvas' });
+
+    expect(canvas.getAttribute('data-canvas-x')).toBe('96');
+    expect(canvas.getAttribute('data-canvas-y')).toBe('-144');
+    expect(canvas.getAttribute('data-canvas-zoom')).toBe('0.75');
+  });
+
   it('dispatches each empty-canvas action to its owning feature callback', async () => {
     const startDiscussion = vi.fn();
     const createBubble = vi.fn();

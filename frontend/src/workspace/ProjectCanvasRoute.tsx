@@ -2,7 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { CircleAlert, CircleDot, RotateCcw } from 'lucide-react';
 import { ApiError, getProject, type Project } from '../api';
 import { analytics, trackAnalytics, type AnalyticsClient } from '../analytics';
-import type { BubbleListRequest } from '../canvas/CanvasSurface';
+import type {
+  BubbleListRequest,
+  ProjectViewportUpdateRequest,
+} from '../canvas/CanvasSurface';
 import { navigate } from '../utils/routing';
 import { ProjectWorkspace } from './ProjectWorkspace';
 
@@ -12,6 +15,8 @@ export interface ProjectCanvasRouteProps {
   projectId: string;
   requestProject?: ProjectRequest;
   requestBubbles?: BubbleListRequest;
+  requestViewportUpdate?: ProjectViewportUpdateRequest;
+  viewportSaveDelayMs?: number;
   analyticsClient?: AnalyticsClient;
 }
 
@@ -113,6 +118,8 @@ export function ProjectCanvasRoute({
   projectId,
   requestProject = getProject,
   requestBubbles,
+  requestViewportUpdate,
+  viewportSaveDelayMs,
   analyticsClient = analytics,
 }: ProjectCanvasRouteProps) {
   const [loadState, setLoadState] = useState<ProjectLoadState>({ status: 'loading' });
@@ -156,6 +163,8 @@ export function ProjectCanvasRoute({
         analyticsClient={analyticsClient}
         project={loadState.project}
         requestBubbles={requestBubbles}
+        requestViewportUpdate={requestViewportUpdate}
+        viewportSaveDelayMs={viewportSaveDelayMs}
       />
     );
   }

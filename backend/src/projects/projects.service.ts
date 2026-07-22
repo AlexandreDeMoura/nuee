@@ -11,9 +11,12 @@ import type {
   Project,
   ProjectRepository,
   UpdateProjectDescriptionInput,
+  UpdateProjectViewportInput,
 } from './project.types';
 
 const MAX_DESCRIPTION_LENGTH = 280;
+const MIN_CANVAS_ZOOM = 0.25;
+const MAX_CANVAS_ZOOM = 2;
 
 @Injectable()
 export class ProjectsService {
@@ -75,6 +78,21 @@ export class ProjectsService {
     return updatedProject;
   }
 
+  updateViewport(id: string, input: UpdateProjectViewportInput): Project {
+    if (!this.projects.findById(id)) {
+      throw this.notFound(id);
+    }
+
+    const viewport = this.validViewport(input);
+    const updatedProject = this.projects.updateViewport(id, viewport);
+
+    if (!updatedProject) {
+      throw this.notFound(id);
+    }
+
+    return updatedProject;
+  }
+
   private requiredText(value: unknown, field: 'title'): string {
     if (typeof value !== 'string' || value.trim().length === 0) {
       throw new BadRequestException({
@@ -113,6 +131,42 @@ export class ProjectsService {
     }
 
     return description;
+  }
+
+  private validViewport(
+    input: UpdateProjectViewportInput,
+  ): UpdateProjectViewportInput {
+    const fieldErrors: Record<string, string> = {};
+
+    if (!this.isFiniteNumber(input?.canvas_viewport_x)) {
+      fieldErrors.canvas_viewport_x = 'Viewport X must be a finite number.';
+    }
+
+    if (!this.isFiniteNumber(input?.canvas_viewport_y)) {
+      fieldErrors.canvas_viewport_y = 'Viewport Y must be a finite number.';
+    }
+
+    if (
+      !this.isFiniteNumber(input?.canvas_zoom) ||
+      input.canvas_zoom < MIN_CANVAS_ZOOM ||
+      input.canvas_zoom > MAX_CANVAS_ZOOM
+    ) {
+      fieldErrors.canvas_zoom = `Zoom must be between ${MIN_CANVAS_ZOOM} and ${MAX_CANVAS_ZOOM}.`;
+    }
+
+    if (Object.keys(fieldErrors).length > 0) {
+      throw new BadRequestException({
+        code: 'PROJECT_VALIDATION_FAILED',
+        message: 'Project input is invalid.',
+        field_errors: fieldErrors,
+      });
+    }
+
+    return input;
+  }
+
+  private isFiniteNumber(value: unknown): value is number {
+    return typeof value === 'number' && Number.isFinite(value);
   }
 
   private nextTimestamp(previousTimestamp: string): string {

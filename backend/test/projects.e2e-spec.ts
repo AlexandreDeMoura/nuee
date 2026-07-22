@@ -120,12 +120,30 @@ describe('Project creation journey (e2e)', () => {
       new Date(createdProject.updated_at).getTime(),
     );
 
+    const viewportResponse = await request(app.getHttpServer())
+      .patch(`/projects/${createdProject.id}/viewport`)
+      .send({
+        canvas_viewport_x: 186,
+        canvas_viewport_y: -94.5,
+        canvas_zoom: 1.25,
+      })
+      .expect(200);
+
+    const projectWithViewport = viewportResponse.body as typeof createdProject;
+    expect(projectWithViewport).toEqual({
+      ...updatedProject,
+      canvas_viewport_x: 186,
+      canvas_viewport_y: -94.5,
+      canvas_zoom: 1.25,
+    });
+    expect(projectWithViewport.updated_at).toBe(updatedProject.updated_at);
+
     await app.close();
     app = await startApplication();
 
     await request(app.getHttpServer())
       .get(`/projects/${createdProject.id}`)
       .expect(200)
-      .expect(updatedProject);
+      .expect(projectWithViewport);
   });
 });

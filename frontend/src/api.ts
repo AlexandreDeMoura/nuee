@@ -42,6 +42,16 @@ export interface UpdateProjectDescriptionInput {
   description: string;
 }
 
+export interface UpdateProjectViewportInput {
+  canvas_viewport_x: number;
+  canvas_viewport_y: number;
+  canvas_zoom: number;
+}
+
+export interface ProjectViewportUpdateOptions {
+  keepalive?: boolean;
+}
+
 export class ApiError extends Error {
   readonly status: number;
   readonly code?: string;
@@ -116,6 +126,22 @@ export function updateProjectDescription(
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(input),
       signal,
+    },
+  );
+}
+
+export function updateProjectViewport(
+  projectId: string,
+  input: UpdateProjectViewportInput,
+  options: ProjectViewportUpdateOptions = {},
+): Promise<Project> {
+  return requestJson<Project>(
+    `/projects/${encodeURIComponent(projectId)}/viewport`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+      keepalive: options.keepalive,
     },
   );
 }

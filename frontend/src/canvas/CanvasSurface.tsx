@@ -7,12 +7,20 @@ import {
   type ReactNode,
 } from 'react';
 import { CircleAlert, CircleDot, Minus, Plus, RotateCcw } from 'lucide-react';
-import { getProjectBubbles, type Bubble } from '../api';
+import {
+  getProjectBubbles,
+  updateProjectViewport,
+  type Bubble,
+  type Project,
+  type ProjectViewportUpdateOptions,
+  type UpdateProjectViewportInput,
+} from '../api';
 
 const MIN_ZOOM = 0.25;
 const MAX_ZOOM = 2;
 const ZOOM_STEP = 1.2;
 const GRID_SIZE = 24;
+const DEFAULT_VIEWPORT_SAVE_DELAY_MS = 500;
 
 const focusRing =
   '[-webkit-tap-highlight-color:transparent] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/30';
@@ -28,10 +36,19 @@ export type BubbleListRequest = (
   signal?: AbortSignal,
 ) => Promise<Bubble[]>;
 
+export type ProjectViewportUpdateRequest = (
+  projectId: string,
+  input: UpdateProjectViewportInput,
+  options?: ProjectViewportUpdateOptions,
+) => Promise<Project>;
+
 export interface CanvasSurfaceProps {
   emptyState: ReactNode;
+  initialViewport?: CanvasViewport;
   projectId: string;
   requestBubbles?: BubbleListRequest;
+  requestViewportUpdate?: ProjectViewportUpdateRequest;
+  viewportSaveDelayMs?: number;
 }
 
 type CanvasLoadState =
@@ -49,6 +66,26 @@ interface ActivePan {
 
 function clampZoom(zoom: number) {
   return Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, zoom));
+}
+
+function isSameViewport(first: CanvasViewport, second: CanvasViewport) {
+  return first.x === second.x && first.y === second.y && first.zoom === second.zoom;
+}
+
+function projectViewport(project: Project): CanvasViewport {
+  return {
+    x: project.canvas_viewport_x,
+    y: project.canvas_viewport_y,
+    zoom: project.canvas_zoom,
+  };
+}
+
+function viewportInput(viewport: CanvasViewport): UpdateProjectViewportInput {
+  return {
+    canvas_viewport_x: viewport.x,
+    canvas_viewport_y: viewport.y,
+    canvas_zoom: viewport.zoom,
+  };
 }
 
 function normalizeWheelDelta(delta: number, deltaMode: number, pageSize: number) {
@@ -110,6 +147,26 @@ function CanvasErrorState({ onRetry }: { onRetry: () => void }) {
   );
 }
 
+function CanvasViewportSaveError({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div
+      className="pointer-events-auto absolute top-4 left-1/2 flex -translate-x-1/2 items-center gap-3 rounded-[10px] border border-[#ead5d2] bg-white/95 px-3.5 py-2.5 text-xs text-[#79504c] shadow-[0_8px_24px_-14px_rgba(30,39,51,0.4)] backdrop-blur-sm"
+      data-canvas-overlay
+      role="alert"
+    >
+      <CircleAlert className="size-[15px] shrink-0 text-[#b4544e]" strokeWidth={1.8} aria-hidden="true" />
+      <span>Couldn’t save this canvas view.</span>
+      <button
+        className={`cursor-pointer font-semibold text-[#8f4843] hover:text-[#6f3531] ${focusRing}`}
+        type="button"
+        onClick={onRetry}
+      >
+        Retry save
+      </button>
+    </div>
+  );
+}
+
 function CanvasZoomControls({
   zoom,
   onReset,
@@ -160,15 +217,157 @@ function CanvasZoomControls({
 
 export function CanvasSurface({
   emptyState,
+  initialViewport = { x: 0, y: 0, zoom: 1 },
   projectId,
   requestBubbles = getProjectBubbles,
+  requestViewportUpdate = updateProjectViewport,
+  viewportSaveDelayMs = DEFAULT_VIEWPORT_SAVE_DELAY_MS,
 }: CanvasSurfaceProps) {
   const [loadState, setLoadState] = useState<CanvasLoadState>({ status: 'loading' });
   const [requestKey, setRequestKey] = useState(0);
-  const [viewport, setViewport] = useState<CanvasViewport>({ x: 0, y: 0, zoom: 1 });
+  const [viewport, setViewport] = useState<CanvasViewport>(initialViewport);
+  const [viewportSaveFailed, setViewportSaveFailed] = useState(false);
   const [isPanning, setIsPanning] = useState(false);
   const surfaceRef = useRef<HTMLElement>(null);
   const activePanRef = useRef<ActivePan | null>(null);
+  const latestViewportRef = useRef(initialViewport);
+  const persistedViewportRef = useRef(initialViewport);
+  const failedViewportRef = useRef<CanvasViewport | null>(null);
+  const saveTimeoutRef = useRef<number | null>(null);
+  const saveInFlightRef = useRef(false);
+  const pendingSaveRef = useRef<{
+    keepalive: boolean;
+    viewport: CanvasViewport;
+  } | null>(null);
+  const mountedRef = useRef(true);
+
+  const persistViewport = useCallback(
+    async function persist(
+      requestedViewport: CanvasViewport,
+      keepalive = false,
+    ): Promise<void> {
+      if (saveInFlightRef.current) {
+        pendingSaveRef.current = {
+          keepalive: keepalive || (pendingSaveRef.current?.keepalive ?? false),
+          viewport: requestedViewport,
+        };
+        return;
+      }
+
+      if (isSameViewport(requestedViewport, persistedViewportRef.current)) {
+        return;
+      }
+
+      saveInFlightRef.current = true;
+
+      if (mountedRef.current) {
+        setViewportSaveFailed(false);
+      }
+
+      try {
+        const updatedProject = await requestViewportUpdate(
+          projectId,
+          viewportInput(requestedViewport),
+          { keepalive },
+        );
+        persistedViewportRef.current = projectViewport(updatedProject);
+        failedViewportRef.current = null;
+
+        if (mountedRef.current) {
+          setViewportSaveFailed(false);
+        }
+      } catch {
+        if (isSameViewport(latestViewportRef.current, requestedViewport)) {
+          failedViewportRef.current = requestedViewport;
+
+          if (mountedRef.current) {
+            setViewportSaveFailed(true);
+          }
+        }
+      } finally {
+        saveInFlightRef.current = false;
+        const pendingSave = pendingSaveRef.current;
+        pendingSaveRef.current = null;
+
+        if (
+          pendingSave &&
+          !isSameViewport(pendingSave.viewport, persistedViewportRef.current)
+        ) {
+          void persist(pendingSave.viewport, pendingSave.keepalive);
+        }
+      }
+    },
+    [projectId, requestViewportUpdate],
+  );
+
+  const applyViewport = useCallback(
+    (update: (current: CanvasViewport) => CanvasViewport) => {
+      setViewport((current) => {
+        const nextViewport = update(current);
+
+        if (isSameViewport(current, nextViewport)) {
+          return current;
+        }
+
+        latestViewportRef.current = nextViewport;
+        return nextViewport;
+      });
+    },
+    [],
+  );
+
+  const flushViewport = useCallback(() => {
+    if (saveTimeoutRef.current !== null) {
+      window.clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = null;
+    }
+
+    failedViewportRef.current = null;
+    void persistViewport(latestViewportRef.current, true);
+  }, [persistViewport]);
+
+  useEffect(() => {
+    latestViewportRef.current = viewport;
+
+    if (isSameViewport(viewport, persistedViewportRef.current)) {
+      failedViewportRef.current = null;
+      setViewportSaveFailed(false);
+      return;
+    }
+
+    if (
+      failedViewportRef.current &&
+      isSameViewport(viewport, failedViewportRef.current)
+    ) {
+      return;
+    }
+
+    setViewportSaveFailed(false);
+    saveTimeoutRef.current = window.setTimeout(() => {
+      saveTimeoutRef.current = null;
+      void persistViewport(viewport);
+    }, viewportSaveDelayMs);
+
+    return () => {
+      if (saveTimeoutRef.current !== null) {
+        window.clearTimeout(saveTimeoutRef.current);
+        saveTimeoutRef.current = null;
+      }
+    };
+  }, [persistViewport, viewport, viewportSaveDelayMs]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+    window.addEventListener('pagehide', flushViewport);
+    window.addEventListener('popstate', flushViewport);
+
+    return () => {
+      mountedRef.current = false;
+      window.removeEventListener('pagehide', flushViewport);
+      window.removeEventListener('popstate', flushViewport);
+      flushViewport();
+    };
+  }, [flushViewport]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -226,7 +425,7 @@ export function CanvasSurface({
 
     event.preventDefault();
     event.stopPropagation();
-    setViewport((current) => ({
+    applyViewport((current) => ({
       ...current,
       x: activePan.startViewportX + event.clientX - activePan.startClientX,
       y: activePan.startViewportY + event.clientY - activePan.startClientY,
@@ -257,7 +456,7 @@ export function CanvasSurface({
       clientX?: number,
       clientY?: number,
     ) => {
-      setViewport((current) => {
+      applyViewport((current) => {
         const resolvedZoom =
           typeof nextZoomValue === 'function'
             ? nextZoomValue(current.zoom)
@@ -287,7 +486,7 @@ export function CanvasSurface({
         };
       });
     },
-    [],
+    [applyViewport],
   );
 
   const handleWheel = useCallback(
@@ -311,13 +510,13 @@ export function CanvasSurface({
         return;
       }
 
-      setViewport((current) => ({
+      applyViewport((current) => ({
         ...current,
         x: current.x - deltaX,
         y: current.y - deltaY,
       }));
     },
-    [zoomAt],
+    [applyViewport, zoomAt],
   );
 
   useEffect(() => {
@@ -389,6 +588,15 @@ export function CanvasSurface({
         onZoomIn={() => zoomAt((currentZoom) => currentZoom * ZOOM_STEP)}
         onZoomOut={() => zoomAt((currentZoom) => currentZoom / ZOOM_STEP)}
       />
+
+      {viewportSaveFailed && (
+        <CanvasViewportSaveError
+          onRetry={() => {
+            failedViewportRef.current = null;
+            void persistViewport(latestViewportRef.current);
+          }}
+        />
+      )}
     </section>
   );
 }
