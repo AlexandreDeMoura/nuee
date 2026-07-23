@@ -291,6 +291,53 @@ describe('CanvasSurface', () => {
     expect(canvas.getAttribute('data-canvas-y')).toBe('0');
   });
 
+  it('selects a bubble without moving it and clears selection from the canvas background', async () => {
+    const onBubbleSelectionChange = vi.fn();
+
+    render(
+      <CanvasSurface
+        emptyState={emptyState}
+        projectId={project.id}
+        requestBubbles={async () => [bubble()]}
+        onBubbleSelectionChange={onBubbleSelectionChange}
+      />,
+    );
+
+    const card = await screen.findByRole('article', {
+      name: 'Market is real but fragmented',
+    });
+    const canvas = screen.getByRole('region', { name: 'Project canvas' });
+
+    fireEvent.pointerDown(card, {
+      button: 0,
+      clientX: 100,
+      clientY: 80,
+      pointerId: 18,
+    });
+    fireEvent.pointerUp(canvas, {
+      clientX: 100,
+      clientY: 80,
+      pointerId: 18,
+    });
+
+    expect(card.getAttribute('data-bubble-selected')).toBe('true');
+    expect(card.style.left).toBe('120px');
+    expect(card.style.top).toBe('-48px');
+    expect(onBubbleSelectionChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ id: 'bubble-1' }),
+    );
+
+    fireEvent.pointerDown(canvas, {
+      button: 0,
+      clientX: 20,
+      clientY: 20,
+      pointerId: 19,
+    });
+
+    expect(card.getAttribute('data-bubble-selected')).toBe('false');
+    expect(onBubbleSelectionChange).toHaveBeenLastCalledWith(null);
+  });
+
   it('drags one bubble optimistically in world coordinates and persists only its final position', async () => {
     const pendingPosition = deferred<Bubble>();
     const requestPositionUpdate = vi.fn(() => pendingPosition.promise);

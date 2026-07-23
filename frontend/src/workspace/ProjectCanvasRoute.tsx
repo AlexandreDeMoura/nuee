@@ -11,6 +11,7 @@ import type {
   BubbleCreateRequest,
   BubblePlacementRequest,
 } from '../bubbles/CreateBubbleDialog';
+import type { BubbleUpdateRequest } from '../bubbles/BubbleInspector';
 import { navigate } from '../utils/routing';
 import { ProjectWorkspace } from './ProjectWorkspace';
 
@@ -23,8 +24,10 @@ export interface ProjectCanvasRouteProps {
   requestBubbles?: BubbleListRequest;
   requestBubblePlacement?: BubblePlacementRequest;
   requestBubblePositionUpdate?: BubblePositionUpdateRequest;
+  requestBubbleUpdate?: BubbleUpdateRequest;
   requestViewportUpdate?: ProjectViewportUpdateRequest;
   viewportSaveDelayMs?: number;
+  bubbleSaveDelayMs?: number;
   analyticsClient?: AnalyticsClient;
 }
 
@@ -129,8 +132,10 @@ export function ProjectCanvasRoute({
   requestBubbles,
   requestBubblePlacement,
   requestBubblePositionUpdate,
+  requestBubbleUpdate,
   requestViewportUpdate,
   viewportSaveDelayMs,
+  bubbleSaveDelayMs,
   analyticsClient = analytics,
 }: ProjectCanvasRouteProps) {
   const [loadState, setLoadState] = useState<ProjectLoadState>({ status: 'loading' });
@@ -177,8 +182,10 @@ export function ProjectCanvasRoute({
         requestBubbles={requestBubbles}
         requestBubblePlacement={requestBubblePlacement}
         requestBubblePositionUpdate={requestBubblePositionUpdate}
+        requestBubbleUpdate={requestBubbleUpdate}
         requestViewportUpdate={requestViewportUpdate}
         viewportSaveDelayMs={viewportSaveDelayMs}
+        bubbleSaveDelayMs={bubbleSaveDelayMs}
       />
     );
   }

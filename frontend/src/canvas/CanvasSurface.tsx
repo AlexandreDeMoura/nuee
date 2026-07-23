@@ -85,6 +85,8 @@ export interface CanvasSurfaceProps {
   requestBubblePlacement?: BubblePlacementRequest;
   requestBubblePositionUpdate?: BubblePositionUpdateRequest;
   requestViewportUpdate?: ProjectViewportUpdateRequest;
+  onBubbleSelectionChange?: (bubble: Bubble | null) => void;
+  updatedBubbles?: Bubble[];
   viewportSaveDelayMs?: number;
 }
 
@@ -457,6 +459,8 @@ export function CanvasSurface({
   requestBubblePlacement,
   requestBubblePositionUpdate = updateBubblePosition,
   requestViewportUpdate = updateProjectViewport,
+  onBubbleSelectionChange,
+  updatedBubbles = [],
   viewportSaveDelayMs = DEFAULT_VIEWPORT_SAVE_DELAY_MS,
 }: CanvasSurfaceProps) {
   const [loadState, setLoadState] = useState<CanvasLoadState>({
@@ -468,6 +472,7 @@ export function CanvasSurface({
   const [viewportSaveFailed, setViewportSaveFailed] = useState(false);
   const [isPanning, setIsPanning] = useState(false);
   const [draggingBubbleId, setDraggingBubbleId] = useState<string | null>(null);
+  const [selectedBubbleId, setSelectedBubbleId] = useState<string | null>(null);
   const [positionSaves, setPositionSaves] = useState<
     Record<string, BubblePositionSave>
   >({});
@@ -490,6 +495,18 @@ export function CanvasSurface({
   } | null>(null);
   const mountedRef = useRef(true);
   const loadedProjectIdRef = useRef(projectId);
+  const selectedBubbleIdRef = useRef<string | null>(null);
+  const onBubbleSelectionChangeRef = useRef(onBubbleSelectionChange);
+
+  useEffect(() => {
+    onBubbleSelectionChangeRef.current = onBubbleSelectionChange;
+  }, [onBubbleSelectionChange]);
+
+  const selectBubble = useCallback((bubble: Bubble | null) => {
+    selectedBubbleIdRef.current = bubble?.id ?? null;
+    setSelectedBubbleId(bubble?.id ?? null);
+    onBubbleSelectionChangeRef.current?.(bubble);
+  }, []);
 
   const setLocalBubblePosition = useCallback(
     (bubbleId: string, position: BubblePosition) => {
@@ -740,6 +757,16 @@ export function CanvasSurface({
         if (!controller.signal.aborted) {
           const result = renderableBubbles(records, projectId);
 
+          if (
+            result.invalidCount === 0 &&
+            selectedBubbleIdRef.current &&
+            !result.bubbles.some(
+              (bubble) => bubble.id === selectedBubbleIdRef.current,
+            )
+          ) {
+            selectBubble(null);
+          }
+
           setLoadState((current) => {
             const localBubbles = new Map(
               current.bubbles.map((bubble) => [bubble.id, bubble]),
@@ -784,7 +811,24 @@ export function CanvasSurface({
       });
 
     return () => controller.abort();
-  }, [projectId, requestBubbles, requestKey]);
+  }, [projectId, requestBubbles, requestKey, selectBubble]);
+
+  const updatedBubblesById = new Map(
+    updatedBubbles
+      .filter((bubble) => isRenderableBubble(bubble, projectId))
+      .map((bubble) => [bubble.id, bubble]),
+  );
+  const displayedBubbles = loadState.bubbles.map((bubble) => {
+    const updatedBubble = updatedBubblesById.get(bubble.id);
+
+    return updatedBubble
+      ? {
+          ...updatedBubble,
+          position_x: bubble.position_x,
+          position_y: bubble.position_y,
+        }
+      : bubble;
+  });
 
   function isInteractiveTarget(target: EventTarget | null) {
     return (
@@ -801,6 +845,11 @@ export function CanvasSurface({
       event.button !== 0 ||
       positionSavesRef.current[bubble.id]?.status === 'saving'
     ) {
+      if (event.button === 0) {
+        event.preventDefault();
+        event.stopPropagation();
+        selectBubble(bubble);
+      }
       return;
     }
 
@@ -840,6 +889,11 @@ export function CanvasSurface({
 
     event.preventDefault();
     event.stopPropagation();
+
+    if (event.button === 0) {
+      selectBubble(null);
+    }
+
     activePanRef.current = {
       pointerId: event.pointerId,
       startClientX: event.clientX,
@@ -919,6 +973,14 @@ export function CanvasSurface({
       activeDrag.currentPosition.y !== activeDrag.startPosition.y;
 
     if (!didMove) {
+      const selectedBubble = displayedBubbles.find(
+        (bubble) => bubble.id === activeDrag.bubbleId,
+      );
+
+      if (selectedBubble) {
+        selectBubble(selectedBubble);
+      }
+
       return true;
     }
 
@@ -1108,7 +1170,7 @@ export function CanvasSurface({
     ([, save]) => save.status === 'error',
   );
   const failedPositionBubble = failedPositionSaveEntry
-    ? loadState.bubbles.find(
+    ? displayedBubbles.find(
         (bubble) => bubble.id === failedPositionSaveEntry[0],
       )
     : undefined;
@@ -1155,7 +1217,7 @@ export function CanvasSurface({
           transformOrigin: '0 0',
         }}
       >
-        {loadState.bubbles.map((bubble) => {
+        {displayedBubbles.map((bubble) => {
           const positionSave = positionSaves[bubble.id];
           const status =
             draggingBubbleId === bubble.id
@@ -1165,7 +1227,9 @@ export function CanvasSurface({
           return (
             <BubbleCard
               bubble={bubble}
+              isSelected={selectedBubbleId === bubble.id}
               key={bubble.id}
+              onActivate={() => selectBubble(bubble)}
               onPointerDown={(event) =>
                 handleBubblePointerDown(event, bubble)
               }

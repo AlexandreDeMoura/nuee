@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { Bubble } from '../src/api';
 import { BubbleCard, type BubbleCardStatus } from '../src/canvas/BubbleCard';
 import { getBubbleCardPreview } from '../src/canvas/bubbleCardPreview';
@@ -68,4 +68,27 @@ describe('BubbleCard', () => {
       );
     },
   );
+
+  it('exposes the primary selected state and supports keyboard inspection', () => {
+    const onActivate = vi.fn();
+    render(
+      <BubbleCard
+        bubble={bubble()}
+        isSelected
+        onActivate={onActivate}
+      />,
+    );
+
+    const card = screen.getByRole('article', {
+      name: 'Last-mile is the make-or-break',
+    });
+
+    expect(card.getAttribute('data-bubble-selected')).toBe('true');
+    expect(screen.getByText('SELECTED')).toBeTruthy();
+
+    fireEvent.keyDown(card, { key: 'Enter' });
+    fireEvent.keyDown(card, { key: ' ' });
+
+    expect(onActivate).toHaveBeenCalledTimes(2);
+  });
 });

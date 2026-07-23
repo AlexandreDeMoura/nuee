@@ -1,4 +1,8 @@
-import type { CSSProperties, PointerEventHandler } from 'react';
+import type {
+  CSSProperties,
+  KeyboardEventHandler,
+  PointerEventHandler,
+} from 'react';
 import type { Bubble } from '../api';
 import { formatUpdatedAt } from '../utils/date';
 import { getBubbleCardPreview } from './bubbleCardPreview';
@@ -7,6 +11,8 @@ export type BubbleCardStatus = 'default' | 'dragging' | 'saving' | 'error';
 
 export interface BubbleCardProps {
   bubble: Bubble;
+  isSelected?: boolean;
+  onActivate?: () => void;
   onPointerDown?: PointerEventHandler<HTMLElement>;
   status?: BubbleCardStatus;
 }
@@ -31,6 +37,8 @@ const stateLabels: Record<BubbleCardStatus, string> = {
 
 export function BubbleCard({
   bubble,
+  isSelected = false,
+  onActivate,
   onPointerDown,
   status = 'default',
 }: BubbleCardProps) {
@@ -38,27 +46,43 @@ export function BubbleCard({
     left: bubble.position_x,
     top: bubble.position_y,
   };
-  const stateLabel = stateLabels[status];
+  const stateLabel =
+    status === 'default' && isSelected ? 'SELECTED' : stateLabels[status];
+  const stateClasses =
+    status === 'default' && isSelected
+      ? 'z-10 cursor-grab border-2 border-[#3f63a8] shadow-[0_0_0_4px_rgba(63,99,168,0.16),0_18px_38px_-12px_rgba(63,99,168,0.45)]'
+      : cardStateClasses[status];
+  const handleKeyDown: KeyboardEventHandler<HTMLElement> = (event) => {
+    if ((event.key === 'Enter' || event.key === ' ') && onActivate) {
+      event.preventDefault();
+      onActivate();
+    }
+  };
 
   return (
     <article
-      className={`pointer-events-auto absolute flex h-[154px] w-[248px] flex-col overflow-hidden rounded-[20px] border bg-[linear-gradient(180deg,#ffffff,#fbfcfe)] px-4 pt-[15px] pb-[13px] text-left transition-[border-color,box-shadow,opacity,transform] duration-150 motion-reduce:transition-none ${cardStateClasses[status]}`}
+      className={`pointer-events-auto absolute flex h-[154px] w-[248px] flex-col overflow-hidden rounded-[20px] border bg-[linear-gradient(180deg,#ffffff,#fbfcfe)] px-4 pt-[15px] pb-[13px] text-left transition-[border-color,box-shadow,opacity,transform] duration-150 motion-reduce:transition-none ${stateClasses}`}
       aria-busy={status === 'saving' ? 'true' : undefined}
       aria-labelledby={`bubble-title-${bubble.id}`}
       data-bubble-id={bubble.id}
+      data-bubble-selected={isSelected ? 'true' : 'false'}
       data-bubble-state={status}
       data-canvas-interactive
+      onKeyDown={handleKeyDown}
       onPointerDown={onPointerDown}
       style={position}
+      tabIndex={0}
     >
       <div className="mb-2 flex min-h-[18px] items-center gap-[7px]">
         <span
           className={`rounded-[5px] px-1.5 py-0.5 text-[9px] leading-[14px] font-semibold tracking-[0.1em] [font-family:'IBM_Plex_Mono',ui-monospace,monospace] ${
             status === 'error'
               ? 'bg-[#f9eeee] text-[#a95f57]'
-              : status === 'default'
+              : status === 'default' && !isSelected
                 ? 'bg-[#f2f5f9] text-[#7b8899]'
-                : 'bg-[#eef2fa] text-[#3f63a8]'
+                : isSelected && status === 'default'
+                  ? 'bg-[#3f63a8] text-white'
+                  : 'bg-[#eef2fa] text-[#3f63a8]'
           }`}
         >
           {stateLabel}

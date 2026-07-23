@@ -1,6 +1,14 @@
+import { act } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import type { Project } from '../src/api';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
+import type { Bubble, Project, UpdateBubbleInput } from '../src/api';
+import type { AnalyticsClient } from '../src/analytics';
 import {
   ProjectWorkspace,
   type WorkspaceInspectorSelection,
@@ -18,6 +26,35 @@ const project: Project = {
 };
 
 const requestEmptyBubbles = async () => [];
+
+function deferred<T>() {
+  let resolve: (value: T) => void = () => undefined;
+  let reject: (reason?: unknown) => void = () => undefined;
+  const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise;
+    reject = rejectPromise;
+  });
+
+  return { promise, resolve, reject };
+}
+
+function bubble(overrides: Partial<Bubble> = {}): Bubble {
+  return {
+    id: 'bubble-1',
+    project_id: project.id,
+    title: 'Market is real but fragmented',
+    summary: 'Demand exists, but buyers remain fragmented.',
+    content: 'Complete market knowledge.',
+    position_x: 120,
+    position_y: -48,
+    created_at: '2026-07-19T10:00:00.000Z',
+    updated_at: '2026-07-20T10:00:00.000Z',
+    source_kind: 'manual',
+    source_discussion_id: null,
+    source_message_ids: [],
+    ...overrides,
+  };
+}
 
 afterEach(() => {
   cleanup();
@@ -167,6 +204,164 @@ describe('workspace integration contracts', () => {
     expect(screen.queryByText('Inspecting bubble-42')).toBeNull();
     expect(screen.getByText('Nothing selected')).toBeTruthy();
     expect(onInvalidated).toHaveBeenCalledWith(invalidSelection);
+  });
+
+  it('opens the Inspector from a selected bubble and ignores a stale edit response after selection changes', async () => {
+    const firstSave = deferred<Bubble>();
+    const requestUpdate = vi.fn(
+      (
+        projectId: string,
+        bubbleId: string,
+        input: UpdateBubbleInput,
+        signal?: AbortSignal,
+      ) => {
+        void projectId;
+        void bubbleId;
+        void input;
+        void signal;
+        return firstSave.promise;
+      },
+    );
+    const track = vi.fn<AnalyticsClient['track']>();
+    const secondBubble = bubble({
+      id: 'bubble-2',
+      title: 'Regulatory lead time',
+      summary: null,
+      content: 'Licensing requires nine to fourteen months.',
+      position_x: 420,
+      position_y: 160,
+    });
+
+    render(
+      <ProjectWorkspace
+        analyticsClient={{ track }}
+        bubbleSaveDelayMs={0}
+        project={project}
+        requestBubbles={async () => [bubble(), secondBubble]}
+        requestBubbleUpdate={requestUpdate}
+      />,
+    );
+
+    const firstCard = await screen.findByRole('article', {
+      name: 'Market is real but fragmented',
+    });
+    fireEvent.keyDown(firstCard, { key: 'Enter' });
+
+    expect(screen.getByRole('tab', { name: 'Inspector' }).getAttribute('aria-selected')).toBe(
+      'true',
+    );
+    expect(firstCard.getAttribute('data-bubble-selected')).toBe('true');
+    expect(
+      document.querySelector('[data-inspector-bubble-id="bubble-1"]'),
+    ).toBeTruthy();
+    expect(track).toHaveBeenCalledWith('bubble_inspected', {
+      project_id: project.id,
+      bubble_id: 'bubble-1',
+    });
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit bubble' }));
+    fireEvent.change(screen.getByLabelText(/^Title/), {
+      target: { value: 'A response that will become stale' },
+    });
+    await waitFor(() => expect(requestUpdate).toHaveBeenCalledTimes(1));
+    const firstSignal = requestUpdate.mock.calls[0]?.[3];
+
+    const secondCard = screen.getByRole('article', {
+      name: 'Regulatory lead time',
+    });
+    fireEvent.keyDown(secondCard, { key: 'Enter' });
+
+    expect(firstSignal?.aborted).toBe(true);
+    expect(firstCard.getAttribute('data-bubble-selected')).toBe('false');
+    expect(secondCard.getAttribute('data-bubble-selected')).toBe('true');
+    const secondInspector = document.querySelector(
+      '[data-inspector-bubble-id="bubble-2"]',
+    );
+    expect(secondInspector).toBeTruthy();
+    expect(secondInspector?.textContent).toContain(
+      'Licensing requires nine to fourteen months.',
+    );
+
+    await act(async () => {
+      firstSave.resolve(
+        bubble({
+          title: 'A response that will become stale',
+          updated_at: '2026-07-23T10:00:00.000Z',
+        }),
+      );
+    });
+
+    expect(
+      document.querySelector('[data-inspector-bubble-id="bubble-2"]'),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('article', { name: 'Market is real but fragmented' }),
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole('article', {
+        name: 'A response that will become stale',
+      }),
+    ).toBeNull();
+  });
+
+  it('refreshes the selected Inspector and canvas card after a successful edit', async () => {
+    const updatedBubble = bubble({
+      title: 'Updated market thesis',
+      summary: 'The fragmented market can still support focused entry.',
+      content: 'Complete revised market knowledge.',
+      updated_at: '2026-07-23T10:00:00.000Z',
+    });
+    const requestUpdate = vi.fn().mockResolvedValue(updatedBubble);
+
+    render(
+      <ProjectWorkspace
+        bubbleSaveDelayMs={0}
+        project={project}
+        requestBubbles={async () => [bubble()]}
+        requestBubbleUpdate={requestUpdate}
+      />,
+    );
+
+    const card = await screen.findByRole('article', {
+      name: 'Market is real but fragmented',
+    });
+    const originalLeft = card.style.left;
+    const originalTop = card.style.top;
+    fireEvent.keyDown(card, { key: 'Enter' });
+    fireEvent.click(screen.getByRole('button', { name: 'Edit bubble' }));
+    fireEvent.change(screen.getByLabelText(/^Title/), {
+      target: { value: updatedBubble.title },
+    });
+    fireEvent.change(screen.getByLabelText(/^Summary/), {
+      target: { value: updatedBubble.summary },
+    });
+    fireEvent.change(screen.getByLabelText(/^Content/), {
+      target: { value: updatedBubble.content },
+    });
+
+    const updatedCard = await screen.findByRole('article', {
+      name: 'Updated market thesis',
+    });
+    expect(updatedCard.style.left).toBe(originalLeft);
+    expect(updatedCard.style.top).toBe(originalTop);
+
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Done editing' }).hasAttribute('disabled')).toBe(
+        false,
+      ),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Done editing' }));
+
+    const inspector = document.querySelector(
+      '[data-inspector-bubble-id="bubble-1"]',
+    );
+    expect(inspector?.textContent).toContain('Updated market thesis');
+    expect(inspector?.textContent).toContain(
+      'The fragmented market can still support focused entry.',
+    );
+    expect(inspector?.textContent).toContain(
+      'Complete revised market knowledge.',
+    );
   });
 
   it('supports focus-moving keyboard navigation and named native tooltips', () => {

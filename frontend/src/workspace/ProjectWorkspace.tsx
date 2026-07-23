@@ -1,4 +1,12 @@
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
   ChevronLeft,
@@ -9,7 +17,7 @@ import {
   Search,
   Upload,
 } from 'lucide-react';
-import type { Project } from '../api';
+import type { Bubble, Project } from '../api';
 import {
   analytics,
   trackAnalytics,
@@ -26,6 +34,10 @@ import type {
   BubbleCreateRequest,
   BubblePlacementRequest,
 } from '../bubbles/CreateBubbleDialog';
+import {
+  BubbleInspector,
+  type BubbleUpdateRequest,
+} from '../bubbles/BubbleInspector';
 import {
   ProjectDescriptionEditor,
   type ProjectDescriptionSaveStatus,
@@ -74,8 +86,10 @@ export interface ProjectWorkspaceProps {
   requestBubbles?: BubbleListRequest;
   requestBubblePlacement?: BubblePlacementRequest;
   requestBubblePositionUpdate?: BubblePositionUpdateRequest;
+  requestBubbleUpdate?: BubbleUpdateRequest;
   requestViewportUpdate?: ProjectViewportUpdateRequest;
   viewportSaveDelayMs?: number;
+  bubbleSaveDelayMs?: number;
   discussionCount?: number;
   panelSlots?: WorkspacePanelSlots;
   emptyActionHandlers?: WorkspaceEmptyActionHandlers;
@@ -376,6 +390,7 @@ function WorkspacePanel({
   activeView,
   discussionCount,
   inspectorSelection,
+  selectedBubble,
   panelSlots,
   project,
   onProjectSaved,
@@ -383,10 +398,14 @@ function WorkspacePanel({
   requestDescriptionUpdate,
   descriptionSaveDelayMs,
   analyticsClient,
+  requestBubbleUpdate,
+  bubbleSaveDelayMs,
+  onBubbleUpdated,
 }: {
   activeView: WorkspacePanelView;
   discussionCount: number;
   inspectorSelection: WorkspaceInspectorSelection | null;
+  selectedBubble: Bubble | null;
   panelSlots?: WorkspacePanelSlots;
   project: Project;
   onProjectSaved: (project: Project) => void;
@@ -394,6 +413,9 @@ function WorkspacePanel({
   requestDescriptionUpdate?: ProjectDescriptionUpdateRequest;
   descriptionSaveDelayMs?: number;
   analyticsClient: AnalyticsClient;
+  requestBubbleUpdate?: BubbleUpdateRequest;
+  bubbleSaveDelayMs?: number;
+  onBubbleUpdated: (bubble: Bubble) => void;
 }) {
   const activeDefinition = panelDefinitions.find(({ view }) => view === activeView)!;
   const hasDefaultProjectEditor = panelSlots?.project === undefined;
@@ -443,6 +465,16 @@ function WorkspacePanel({
       {activeView === 'inspector' &&
         (inspectorSelection && inspectorContent != null ? (
           inspectorContent
+        ) : inspectorSelection?.kind === 'bubble' &&
+          selectedBubble?.id === inspectorSelection.id ? (
+          <BubbleInspector
+            analyticsClient={analyticsClient}
+            bubble={selectedBubble}
+            key={selectedBubble.id}
+            onBubbleUpdated={onBubbleUpdated}
+            requestUpdate={requestBubbleUpdate}
+            saveDelayMs={bubbleSaveDelayMs}
+          />
         ) : (
           <PanelEmptyState view="inspector" />
         ))}
@@ -456,8 +488,10 @@ export function ProjectWorkspace({
   requestBubbles,
   requestBubblePlacement,
   requestBubblePositionUpdate,
+  requestBubbleUpdate,
   requestViewportUpdate,
   viewportSaveDelayMs,
+  bubbleSaveDelayMs,
   discussionCount = 0,
   panelSlots,
   emptyActionHandlers,
@@ -474,9 +508,19 @@ export function ProjectWorkspace({
   const [activePanel, setActivePanel] = useState<WorkspacePanelView>(() =>
     getDefaultPanelView(discussionCount),
   );
+  const [selectedBubble, setSelectedBubble] = useState<Bubble | null>(null);
+  const [updatedBubbles, setUpdatedBubbles] = useState<
+    Record<string, Bubble>
+  >({});
   const panelButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const canvasInspectorSelection: WorkspaceInspectorSelection | null =
+    selectedBubble
+      ? { id: selectedBubble.id, kind: 'bubble' }
+      : null;
   const validInspectorSelection =
-    inspectorSelection?.isValid === false ? null : inspectorSelection;
+    inspectorSelection?.isValid === false
+      ? null
+      : inspectorSelection ?? canvasInspectorSelection;
 
   useEffect(() => {
     if (inspectorSelection?.isValid === false) {
@@ -518,6 +562,47 @@ export function ProjectWorkspace({
       view,
     });
   }
+
+  const handleBubbleSelectionChange = useCallback(
+    (bubble: Bubble | null) => {
+      setSelectedBubble(bubble);
+
+      if (!bubble) {
+        return;
+      }
+
+      trackAnalytics(analyticsClient, 'bubble_inspected', {
+        project_id: currentProject.id,
+        bubble_id: bubble.id,
+      });
+
+      if (activePanel !== 'inspector') {
+        setActivePanel('inspector');
+        trackAnalytics(analyticsClient, 'project_panel_viewed', {
+          project_id: currentProject.id,
+          view: 'inspector',
+        });
+      }
+    },
+    [activePanel, analyticsClient, currentProject.id],
+  );
+
+  const handleBubbleUpdated = useCallback(
+    (bubble: Bubble) => {
+      if (bubble.project_id !== currentProject.id) {
+        return;
+      }
+
+      setSelectedBubble((current) =>
+        current?.id === bubble.id ? bubble : current,
+      );
+      setUpdatedBubbles((current) => ({
+        ...current,
+        [bubble.id]: bubble,
+      }));
+    },
+    [currentProject.id],
+  );
 
   const currentDescription = useMemo(
     () =>
@@ -563,6 +648,8 @@ export function ProjectWorkspace({
             requestBubblePlacement={requestBubblePlacement}
             requestBubblePositionUpdate={requestBubblePositionUpdate}
             requestViewportUpdate={requestViewportUpdate}
+            onBubbleSelectionChange={handleBubbleSelectionChange}
+            updatedBubbles={Object.values(updatedBubbles)}
             viewportSaveDelayMs={viewportSaveDelayMs}
           />
 
@@ -616,12 +703,16 @@ export function ProjectWorkspace({
               analyticsClient={analyticsClient}
               discussionCount={discussionCount}
               inspectorSelection={validInspectorSelection}
+              selectedBubble={selectedBubble}
               panelSlots={panelSlots}
               project={currentProject}
               onProjectSaved={setCurrentProject}
               onDescriptionStatusChange={setDescriptionStatus}
               requestDescriptionUpdate={requestDescriptionUpdate}
               descriptionSaveDelayMs={descriptionSaveDelayMs}
+              requestBubbleUpdate={requestBubbleUpdate}
+              bubbleSaveDelayMs={bubbleSaveDelayMs}
+              onBubbleUpdated={handleBubbleUpdated}
             />
           </aside>
         </div>

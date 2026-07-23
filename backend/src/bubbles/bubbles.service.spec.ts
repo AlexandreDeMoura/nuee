@@ -339,4 +339,31 @@ describe('BubblesService', () => {
     expect(service.get(project.id, created.id)).toEqual(repositioned);
     expect(repositioned.updated_at).toBe(created.updated_at);
   });
+
+  it('persists edited bubble content when the repository is reopened', () => {
+    jest.setSystemTime(new Date('2026-07-21T09:00:00.000Z'));
+    const project = createProject();
+    const created = service.create(project.id, {
+      title: 'Original title',
+      summary: 'Original summary',
+      content: 'Original content',
+      position_x: 10,
+      position_y: -20,
+    });
+    jest.setSystemTime(new Date('2026-07-21T10:00:00.000Z'));
+    const updated = service.update(project.id, created.id, {
+      title: 'Persisted title',
+      summary: null,
+      content: 'Persisted current knowledge.',
+    });
+
+    bubbleRepository.onModuleDestroy();
+    bubbleRepository = new SqliteBubbleRepository(databasePath);
+    service = new BubblesService(projects, bubbleRepository);
+
+    expect(service.get(project.id, created.id)).toEqual(updated);
+    expect(updated.updated_at).toBe('2026-07-21T10:00:00.000Z');
+    expect(updated.position_x).toBe(created.position_x);
+    expect(updated.position_y).toBe(created.position_y);
+  });
 });
