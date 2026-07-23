@@ -202,6 +202,62 @@ describe('CanvasSurface', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
+  it('records manual creation only after a failed save retry succeeds', async () => {
+    const track = vi.fn<AnalyticsClient['track']>();
+    const createdBubble = bubble({
+      id: 'created-after-retry',
+      title: 'Created after retry',
+    });
+    const requestCreate = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Unavailable'))
+      .mockResolvedValueOnce(createdBubble);
+
+    render(
+      <CanvasSurface
+        analyticsClient={{ track }}
+        emptyState={({ onCreateBubble }) => (
+          <button type="button" onClick={onCreateBubble}>
+            Create a bubble
+          </button>
+        )}
+        projectId={project.id}
+        requestBubbleCreate={requestCreate}
+        requestBubbles={async () => []}
+        requestBubblePlacement={async () => ({
+          position_x: 120,
+          position_y: -48,
+        })}
+      />,
+    );
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Create a bubble' }));
+    fireEvent.change(screen.getByLabelText(/^Title/), {
+      target: { value: createdBubble.title },
+    });
+    fireEvent.change(screen.getByLabelText(/^Content/), {
+      target: { value: createdBubble.content },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Create bubble' }));
+
+    await screen.findByText('Couldn’t create the bubble');
+    expect(track).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+
+    expect(await screen.findByText(createdBubble.title)).toBeTruthy();
+    expect(track.mock.calls).toEqual([
+      [
+        'bubble_created',
+        {
+          project_id: project.id,
+          bubble_id: createdBubble.id,
+          source_kind: 'manual',
+        },
+      ],
+    ]);
+  });
+
   it('renders each bubble at its persisted world coordinates', async () => {
     render(
       <CanvasSurface
@@ -290,6 +346,7 @@ describe('CanvasSurface', () => {
   });
 
   it('restores the last saved arrangement when Compact fails and retries the same batch', async () => {
+    const track = vi.fn<AnalyticsClient['track']>();
     const pendingCompact = deferred<Bubble[]>();
     const first = bubble({
       id: 'bubble-first',
@@ -314,6 +371,7 @@ describe('CanvasSurface', () => {
 
     render(
       <CanvasSurface
+        analyticsClient={{ track }}
         emptyState={emptyState}
         projectId={project.id}
         requestBubbles={async () => [first, second]}
@@ -340,6 +398,7 @@ describe('CanvasSurface', () => {
     expect(screen.getByRole('alert').textContent).toContain(
       'The previous layout was restored.',
     );
+    expect(track).not.toHaveBeenCalled();
 
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
@@ -353,6 +412,15 @@ describe('CanvasSurface', () => {
     expect(firstCard.style.left).toBe('172px');
     expect(firstCard.style.top).toBe('50px');
     expect(screen.queryByText(/previous layout was restored/i)).toBeNull();
+    expect(track.mock.calls).toEqual([
+      [
+        'bubble_compact_layout_applied',
+        {
+          project_id: project.id,
+          bubble_ids: [first.id],
+        },
+      ],
+    ]);
   });
 
   it('keeps valid bubbles visible when part of a response cannot be rendered', async () => {
@@ -472,6 +540,7 @@ describe('CanvasSurface', () => {
   });
 
   it('hands feature-selected identifiers and current live records back without moving bubbles', async () => {
+    const track = vi.fn<AnalyticsClient['track']>();
     const firstBubble = bubble();
     const secondBubble = bubble({
       id: 'bubble-2',
@@ -496,6 +565,7 @@ describe('CanvasSurface', () => {
     const onBubbleSelectionChange = vi.fn();
     const rendered = render(
       <CanvasSurface
+        analyticsClient={{ track }}
         bubbleLinks={[link]}
         emptyState={emptyState}
         projectId={project.id}
@@ -515,9 +585,11 @@ describe('CanvasSurface', () => {
 
     expect(firstCard.getAttribute('data-bubble-selected')).toBe('true');
     expect(secondCard.getAttribute('data-bubble-linked')).toBe('true');
+    track.mockClear();
 
     rendered.rerender(
       <CanvasSurface
+        analyticsClient={{ track }}
         bubbleLinks={[link]}
         emptyState={emptyState}
         multiSelection={{
@@ -582,9 +654,23 @@ describe('CanvasSurface', () => {
       'A longer explanation of the market and its demand profile.',
     );
     expect(onBubbleSelectionChange).toHaveBeenCalledTimes(1);
+    expect(track.mock.calls).toEqual([
+      [
+        'bubble_multi_selection_started',
+        { project_id: project.id },
+      ],
+      [
+        'bubble_multi_selection_confirmed',
+        {
+          project_id: project.id,
+          bubble_ids: ['bubble-2', 'bubble-1'],
+        },
+      ],
+    ]);
   });
 
   it('cancels multi-selection with Escape and restores the previous normal selection', async () => {
+    const track = vi.fn<AnalyticsClient['track']>();
     const firstBubble = bubble();
     const secondBubble = bubble({
       id: 'bubble-2',
@@ -605,6 +691,7 @@ describe('CanvasSurface', () => {
     const onCancel = vi.fn();
     const rendered = render(
       <CanvasSurface
+        analyticsClient={{ track }}
         bubbleLinks={[link]}
         emptyState={emptyState}
         projectId={project.id}
@@ -616,9 +703,11 @@ describe('CanvasSurface', () => {
       name: firstBubble.title,
     });
     fireEvent.keyDown(firstCard, { key: 'Enter' });
+    track.mockClear();
 
     rendered.rerender(
       <CanvasSurface
+        analyticsClient={{ track }}
         bubbleLinks={[link]}
         emptyState={emptyState}
         multiSelection={{
@@ -634,9 +723,23 @@ describe('CanvasSurface', () => {
     fireEvent.keyDown(window, { key: 'Escape' });
 
     expect(onCancel).toHaveBeenCalledTimes(1);
+    expect(track.mock.calls).toEqual([
+      [
+        'bubble_multi_selection_started',
+        { project_id: project.id },
+      ],
+      [
+        'bubble_multi_selection_cancelled',
+        {
+          project_id: project.id,
+          bubble_ids: ['bubble-2'],
+        },
+      ],
+    ]);
 
     rendered.rerender(
       <CanvasSurface
+        analyticsClient={{ track }}
         bubbleLinks={[link]}
         emptyState={emptyState}
         projectId={project.id}
@@ -928,8 +1031,11 @@ describe('CanvasSurface', () => {
   });
 
   it('restores a persisted project viewport on mount', async () => {
+    const track = vi.fn<AnalyticsClient['track']>();
+
     render(
       <CanvasSurface
+        analyticsClient={{ track }}
         emptyState={emptyState}
         initialViewport={{ x: 184.5, y: -96, zoom: 1.35 }}
         projectId="project-123"
@@ -947,6 +1053,12 @@ describe('CanvasSurface', () => {
     expect(screen.getByRole('button', { name: 'Reset zoom to 100%' }).textContent).toBe(
       '135%',
     );
+    expect(track.mock.calls).toEqual([
+      [
+        'canvas_viewport_restored',
+        { project_id: project.id },
+      ],
+    ]);
   });
 
   it('coalesces a continuous gesture into one viewport write', async () => {

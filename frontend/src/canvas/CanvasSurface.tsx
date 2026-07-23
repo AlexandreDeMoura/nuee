@@ -51,6 +51,7 @@ const ZOOM_STEP = 1.2;
 const GRID_SIZE = 24;
 const DEFAULT_VIEWPORT_SAVE_DELAY_MS = 500;
 const EMPTY_DELETED_BUBBLE_IDS: string[] = [];
+const DEFAULT_VIEWPORT: CanvasViewport = { x: 0, y: 0, zoom: 1 };
 
 const focusRing =
   '[-webkit-tap-highlight-color:transparent] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/30';
@@ -664,11 +665,27 @@ export function CanvasSurface({
   const loadedProjectIdRef = useRef(projectId);
   const selectedBubbleIdRef = useRef<string | null>(null);
   const onBubbleSelectionChangeRef = useRef(onBubbleSelectionChange);
-  const wasMultiSelectionActiveRef = useRef(multiSelection !== null);
+  const wasMultiSelectionActiveRef = useRef(false);
+  const multiSelectionOutcomeTrackedRef = useRef(false);
+  const restoredViewportProjectIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     onBubbleSelectionChangeRef.current = onBubbleSelectionChange;
   }, [onBubbleSelectionChange]);
+
+  useEffect(() => {
+    if (
+      restoredViewportProjectIdRef.current === projectId ||
+      isSameViewport(initialViewport, DEFAULT_VIEWPORT)
+    ) {
+      return;
+    }
+
+    restoredViewportProjectIdRef.current = projectId;
+    trackAnalytics(analyticsClient, 'canvas_viewport_restored', {
+      project_id: projectId,
+    });
+  }, [analyticsClient, initialViewport, projectId]);
 
   const selectBubble = useCallback((bubble: Bubble | null) => {
     selectedBubbleIdRef.current = bubble?.id ?? null;
@@ -876,6 +893,10 @@ export function CanvasSurface({
           })),
         );
         replaceCompactLayoutSave(null);
+        trackAnalytics(analyticsClient, 'bubble_compact_layout_applied', {
+          project_id: projectId,
+          bubble_ids: requestedPositions.map((position) => position.bubble_id),
+        });
       } catch {
         if (
           mountedRef.current &&
@@ -890,6 +911,7 @@ export function CanvasSurface({
       }
     },
     [
+      analyticsClient,
       projectId,
       replaceCompactLayoutSave,
       requestBubblePositionsUpdate,
@@ -1127,12 +1149,74 @@ export function CanvasSurface({
     () => new Set(displayedBubbles.map((bubble) => bubble.id)),
     [displayedBubbles],
   );
-  const activeMultiSelectedBubbleIds = multiSelectedBubbleIds.filter((id) =>
-    displayedBubbleIds.has(id),
+  const activeMultiSelectedBubbleIds = useMemo(
+    () => multiSelectedBubbleIds.filter((id) => displayedBubbleIds.has(id)),
+    [displayedBubbleIds, multiSelectedBubbleIds],
   );
   const activeMultiSelectedBubbleIdSet = new Set(
     activeMultiSelectedBubbleIds,
   );
+  const completeMultiSelection = useCallback(
+    (
+      event:
+        | 'bubble_multi_selection_cancelled'
+        | 'bubble_multi_selection_confirmed',
+      bubbleIds: string[],
+    ) => {
+      if (multiSelectionOutcomeTrackedRef.current) {
+        return;
+      }
+
+      multiSelectionOutcomeTrackedRef.current = true;
+      trackAnalytics(analyticsClient, event, {
+        project_id: projectId,
+        bubble_ids: bubbleIds,
+      });
+    },
+    [analyticsClient, projectId],
+  );
+  const cancelMultiSelection = useCallback(() => {
+    if (!multiSelection) {
+      return;
+    }
+
+    completeMultiSelection(
+      'bubble_multi_selection_cancelled',
+      activeMultiSelectedBubbleIds,
+    );
+    multiSelection.onCancel();
+  }, [
+    activeMultiSelectedBubbleIds,
+    completeMultiSelection,
+    multiSelection,
+  ]);
+  const confirmMultiSelection = useCallback(() => {
+    if (!multiSelection) {
+      return;
+    }
+
+    const bubblesById = new Map(
+      displayedBubbles.map((bubble) => [bubble.id, bubble]),
+    );
+    const selectedBubbles = activeMultiSelectedBubbleIds.flatMap((id) => {
+      const selectedBubble = bubblesById.get(id);
+      return selectedBubble ? [selectedBubble] : [];
+    });
+    const bubbleIds = selectedBubbles.map((bubble) => bubble.id);
+
+    completeMultiSelection('bubble_multi_selection_confirmed', bubbleIds);
+    multiSelection.onConfirm({
+      projectId,
+      bubbleIds,
+      bubbles: selectedBubbles,
+    });
+  }, [
+    activeMultiSelectedBubbleIds,
+    completeMultiSelection,
+    displayedBubbles,
+    multiSelection,
+    projectId,
+  ]);
 
   useEffect(() => {
     const wasActive = wasMultiSelectionActiveRef.current;
@@ -1141,12 +1225,17 @@ export function CanvasSurface({
       setMultiSelectedBubbleIds([
         ...new Set(multiSelection.initialBubbleIds ?? []),
       ]);
+      multiSelectionOutcomeTrackedRef.current = false;
+      trackAnalytics(analyticsClient, 'bubble_multi_selection_started', {
+        project_id: projectId,
+      });
     } else if (!multiSelection && wasActive) {
       setMultiSelectedBubbleIds([]);
+      multiSelectionOutcomeTrackedRef.current = false;
     }
 
     wasMultiSelectionActiveRef.current = multiSelection !== null;
-  }, [multiSelection]);
+  }, [analyticsClient, multiSelection, projectId]);
 
   useEffect(() => {
     if (!multiSelection) {
@@ -1159,12 +1248,12 @@ export function CanvasSurface({
       }
 
       event.preventDefault();
-      multiSelection.onCancel();
+      cancelMultiSelection();
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [multiSelection]);
+  }, [cancelMultiSelection, multiSelection]);
 
   useEffect(() => {
     if (
@@ -1518,6 +1607,11 @@ export function CanvasSurface({
       status: current.status === 'partial' ? 'partial' : 'ready',
       bubbles: mergeBubbles(current.bubbles, [bubble]),
     }));
+    trackAnalytics(analyticsClient, 'bubble_created', {
+      project_id: projectId,
+      bubble_id: bubble.id,
+      source_kind: 'manual',
+    });
     setIsCreateBubbleDialogOpen(false);
     setCreatePlacementInput(null);
   }
@@ -1561,26 +1655,6 @@ export function CanvasSurface({
     );
   }
 
-  function confirmMultiSelection() {
-    if (!multiSelection) {
-      return;
-    }
-
-    const bubblesById = new Map(
-      displayedBubbles.map((bubble) => [bubble.id, bubble]),
-    );
-    const selectedBubbles = activeMultiSelectedBubbleIds.flatMap((id) => {
-      const selectedBubble = bubblesById.get(id);
-      return selectedBubble ? [selectedBubble] : [];
-    });
-
-    multiSelection.onConfirm({
-      projectId,
-      bubbleIds: selectedBubbles.map((bubble) => bubble.id),
-      bubbles: selectedBubbles,
-    });
-  }
-
   function compactLayout() {
     if (
       displayedBubbles.length < 2 ||
@@ -1607,6 +1681,10 @@ export function CanvasSurface({
 
     if (changedPositions.length === 0) {
       replaceCompactLayoutSave(null);
+      trackAnalytics(analyticsClient, 'bubble_compact_layout_applied', {
+        project_id: projectId,
+        bubble_ids: requestedPositions.map((position) => position.bubble_id),
+      });
       return;
     }
 
@@ -1716,7 +1794,7 @@ export function CanvasSurface({
           confirmLabel={multiSelection.confirmLabel ?? 'Confirm selection'}
           instruction={multiSelection.instruction ?? 'Select bubbles'}
           selectedCount={activeMultiSelectedBubbleIds.length}
-          onCancel={multiSelection.onCancel}
+          onCancel={cancelMultiSelection}
           onConfirm={confirmMultiSelection}
         />
       )}

@@ -16,6 +16,11 @@ export interface AnalyticsEventProperties {
     project_id: string;
     action: 'start_discussion' | 'create_bubble' | 'upload_document';
   };
+  bubble_created: {
+    project_id: string;
+    bubble_id: string;
+    source_kind: 'manual' | 'discussion';
+  };
   bubble_moved: {
     project_id: string;
     bubble_id: string;
@@ -41,6 +46,24 @@ export interface AnalyticsEventProperties {
     project_id: string;
     bubble_a_id: string;
     bubble_b_id: string;
+  };
+  bubble_multi_selection_started: {
+    project_id: string;
+  };
+  bubble_multi_selection_cancelled: {
+    project_id: string;
+    bubble_ids: string[];
+  };
+  bubble_multi_selection_confirmed: {
+    project_id: string;
+    bubble_ids: string[];
+  };
+  bubble_compact_layout_applied: {
+    project_id: string;
+    bubble_ids: string[];
+  };
+  canvas_viewport_restored: {
+    project_id: string;
   };
 }
 
