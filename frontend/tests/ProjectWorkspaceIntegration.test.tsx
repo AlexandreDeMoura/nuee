@@ -6,6 +6,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react';
 import type {
   Bubble,
@@ -429,6 +430,69 @@ describe('workspace integration contracts', () => {
       'bubble-2',
       'bubble-1',
     );
+  });
+
+  it('removes a deleted bubble, its link state, and stale Inspector selection', async () => {
+    const secondBubble = bubble({
+      id: 'bubble-2',
+      title: 'Regulatory lead time',
+      position_x: 420,
+    });
+    const link: BubbleLink = {
+      id: 'link-1',
+      project_id: project.id,
+      bubble_a_id: 'bubble-1',
+      bubble_b_id: 'bubble-2',
+      created_at: '2026-07-23T10:00:00.000Z',
+    };
+    const requestDelete = vi.fn().mockResolvedValue(undefined);
+    const track = vi.fn<AnalyticsClient['track']>();
+
+    render(
+      <ProjectWorkspace
+        analyticsClient={{ track }}
+        project={project}
+        requestBubbleDelete={requestDelete}
+        requestBubbles={async () => [bubble(), secondBubble]}
+        requestBubbleLinks={async () => [link]}
+      />,
+    );
+
+    const firstCard = await screen.findByRole('article', {
+      name: 'Market is real but fragmented',
+    });
+    fireEvent.keyDown(firstCard, { key: 'Enter' });
+    fireEvent.click(screen.getByRole('button', { name: 'Delete bubble' }));
+    fireEvent.click(
+      within(screen.getByRole('alertdialog')).getByRole('button', {
+        name: 'Delete bubble',
+      }),
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('article', {
+          name: 'Market is real but fragmented',
+        }),
+      ).toBeNull(),
+    );
+    expect(screen.getByText('Nothing selected')).toBeTruthy();
+
+    const retainedCard = screen.getByRole('article', {
+      name: 'Regulatory lead time',
+    });
+    fireEvent.keyDown(retainedCard, { key: 'Enter' });
+    expect(retainedCard.getAttribute('data-bubble-linked')).toBe('false');
+    expect(screen.getByText('No bubbles are directly linked yet.')).toBeTruthy();
+    expect(requestDelete).toHaveBeenCalledWith(
+      project.id,
+      'bubble-1',
+      expect.any(AbortSignal),
+    );
+    expect(track).toHaveBeenCalledWith('bubble_deleted', {
+      project_id: project.id,
+      bubble_id: 'bubble-1',
+    });
   });
 
   it('supports focus-moving keyboard navigation and named native tooltips', () => {

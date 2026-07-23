@@ -111,4 +111,66 @@ describe('Manual bubble links (e2e)', () => {
       .expect(200)
       .expect([]);
   });
+
+  it('deletes a bubble and all of its links while retaining other bubbles after reload', async () => {
+    const projectResponse = await request(app!.getHttpServer())
+      .post('/projects')
+      .send({
+        title: 'Deletion cleanup',
+        description: 'Keep unrelated project knowledge intact.',
+      })
+      .expect(201);
+    const projectId = (projectResponse.body as { id: string }).id;
+
+    const deletedResponse = await request(app!.getHttpServer())
+      .post(`/projects/${projectId}/bubbles`)
+      .send({ title: 'Delete me', content: 'Temporary knowledge.' })
+      .expect(201);
+    const firstRetainedResponse = await request(app!.getHttpServer())
+      .post(`/projects/${projectId}/bubbles`)
+      .send({ title: 'Keep first', content: 'Durable knowledge.' })
+      .expect(201);
+    const secondRetainedResponse = await request(app!.getHttpServer())
+      .post(`/projects/${projectId}/bubbles`)
+      .send({ title: 'Keep second', content: 'More durable knowledge.' })
+      .expect(201);
+    const deletedId = (deletedResponse.body as { id: string }).id;
+    const firstRetainedId = (firstRetainedResponse.body as { id: string }).id;
+    const secondRetainedId = (secondRetainedResponse.body as { id: string }).id;
+
+    await request(app!.getHttpServer())
+      .post(`/projects/${projectId}/bubble-links`)
+      .send({ bubble_a_id: deletedId, bubble_b_id: firstRetainedId })
+      .expect(201);
+    await request(app!.getHttpServer())
+      .post(`/projects/${projectId}/bubble-links`)
+      .send({ bubble_a_id: secondRetainedId, bubble_b_id: deletedId })
+      .expect(201);
+
+    await request(app!.getHttpServer())
+      .delete(`/projects/${projectId}/bubbles/${deletedId}`)
+      .expect(204);
+
+    await app!.close();
+    app = await startApplication();
+
+    await request(app.getHttpServer())
+      .get(`/projects/${projectId}/bubble-links`)
+      .expect(200)
+      .expect([]);
+    const retainedBubblesResponse = await request(app.getHttpServer())
+      .get(`/projects/${projectId}/bubbles`)
+      .expect(200);
+    const retainedIds = (
+      retainedBubblesResponse.body as Array<{ id: string }>
+    ).map((bubble) => bubble.id);
+
+    expect(retainedIds).toEqual([firstRetainedId, secondRetainedId]);
+    await request(app.getHttpServer())
+      .get(`/projects/${projectId}`)
+      .expect(200);
+    await request(app.getHttpServer())
+      .get(`/projects/${projectId}/bubbles/${deletedId}`)
+      .expect(404);
+  });
 });

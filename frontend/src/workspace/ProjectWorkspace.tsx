@@ -41,6 +41,7 @@ import type {
 } from '../bubbles/CreateBubbleDialog';
 import {
   BubbleInspector,
+  type BubbleDeleteRequest,
   type BubbleLinkCreateRequest,
   type BubbleLinkDeleteRequest,
   type BubbleUpdateRequest,
@@ -93,6 +94,7 @@ export interface ProjectWorkspaceProps {
   requestBubbles?: BubbleListRequest;
   requestBubblePlacement?: BubblePlacementRequest;
   requestBubblePositionUpdate?: BubblePositionUpdateRequest;
+  requestBubbleDelete?: BubbleDeleteRequest;
   requestBubbleUpdate?: BubbleUpdateRequest;
   requestBubbleLinks?: BubbleLinkListRequest;
   requestBubbleLinkCreate?: BubbleLinkCreateRequest;
@@ -419,6 +421,7 @@ function WorkspacePanel({
   descriptionSaveDelayMs,
   analyticsClient,
   requestBubbleUpdate,
+  requestBubbleDelete,
   requestBubbleLinkCreate,
   requestBubbleLinkDelete,
   bubbleSaveDelayMs,
@@ -427,6 +430,7 @@ function WorkspacePanel({
   onBubbleLinkCreated,
   onBubbleLinkRemoved,
   onRetryBubbleLinks,
+  onBubbleDeleted,
   onBubbleUpdated,
 }: {
   activeView: WorkspacePanelView;
@@ -441,6 +445,7 @@ function WorkspacePanel({
   descriptionSaveDelayMs?: number;
   analyticsClient: AnalyticsClient;
   requestBubbleUpdate?: BubbleUpdateRequest;
+  requestBubbleDelete?: BubbleDeleteRequest;
   requestBubbleLinkCreate?: BubbleLinkCreateRequest;
   requestBubbleLinkDelete?: BubbleLinkDeleteRequest;
   bubbleSaveDelayMs?: number;
@@ -449,6 +454,7 @@ function WorkspacePanel({
   onBubbleLinkCreated: (link: BubbleLink) => void;
   onBubbleLinkRemoved: (link: BubbleLink) => void;
   onRetryBubbleLinks: () => void;
+  onBubbleDeleted: (bubble: Bubble) => void;
   onBubbleUpdated: (bubble: Bubble) => void;
 }) {
   const activeDefinition = panelDefinitions.find(({ view }) => view === activeView)!;
@@ -510,9 +516,11 @@ function WorkspacePanel({
             linkLoadStatus={bubbleLinkLoadState.status}
             onBubbleLinkCreated={onBubbleLinkCreated}
             onBubbleLinkRemoved={onBubbleLinkRemoved}
+            onBubbleDeleted={onBubbleDeleted}
             onBubbleUpdated={onBubbleUpdated}
             onRetryBubbleLinks={onRetryBubbleLinks}
             requestCreateLink={requestBubbleLinkCreate}
+            requestDelete={requestBubbleDelete}
             requestDeleteLink={requestBubbleLinkDelete}
             requestUpdate={requestBubbleUpdate}
             saveDelayMs={bubbleSaveDelayMs}
@@ -530,6 +538,7 @@ export function ProjectWorkspace({
   requestBubbles,
   requestBubblePlacement,
   requestBubblePositionUpdate,
+  requestBubbleDelete,
   requestBubbleUpdate,
   requestBubbleLinks = getBubbleLinks,
   requestBubbleLinkCreate,
@@ -557,11 +566,13 @@ export function ProjectWorkspace({
   const [updatedBubbles, setUpdatedBubbles] = useState<
     Record<string, Bubble>
   >({});
+  const [deletedBubbleIds, setDeletedBubbleIds] = useState<string[]>([]);
   const [availableBubbles, setAvailableBubbles] = useState<Bubble[]>([]);
   const [bubbleLinkLoadState, setBubbleLinkLoadState] =
     useState<BubbleLinkLoadState>({ status: 'loading', links: [] });
   const [bubbleLinkRequestKey, setBubbleLinkRequestKey] = useState(0);
   const panelButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const deletedBubbleIdsRef = useRef(deletedBubbleIds);
   const canvasInspectorSelection: WorkspaceInspectorSelection | null =
     selectedBubble
       ? { id: selectedBubble.id, kind: 'bubble' }
@@ -586,8 +597,14 @@ export function ProjectWorkspace({
           return;
         }
 
+        const deletedIds = new Set(deletedBubbleIdsRef.current);
+        const currentLinks = links.filter(
+          (link) =>
+            !deletedIds.has(link.bubble_a_id) &&
+            !deletedIds.has(link.bubble_b_id),
+        );
         const seenPairs = new Set<string>();
-        const validLinks = links.filter((link) => {
+        const validLinks = currentLinks.filter((link) => {
           const pair = `${link.bubble_a_id}\0${link.bubble_b_id}`;
           const isValid =
             link.project_id === currentProject.id &&
@@ -606,7 +623,7 @@ export function ProjectWorkspace({
           return isValid;
         });
 
-        if (validLinks.length !== links.length) {
+        if (validLinks.length !== currentLinks.length) {
           throw new Error('The bubble link response contained invalid records.');
         }
 
@@ -726,6 +743,36 @@ export function ProjectWorkspace({
     }));
   }, []);
 
+  const handleBubbleDeleted = useCallback((bubble: Bubble) => {
+    setSelectedBubble((current) =>
+      current?.id === bubble.id ? null : current,
+    );
+    setUpdatedBubbles((current) => {
+      if (!(bubble.id in current)) {
+        return current;
+      }
+
+      const next = { ...current };
+      delete next[bubble.id];
+      return next;
+    });
+    const nextDeletedBubbleIds = deletedBubbleIdsRef.current.includes(bubble.id)
+      ? deletedBubbleIdsRef.current
+      : [...deletedBubbleIdsRef.current, bubble.id];
+    deletedBubbleIdsRef.current = nextDeletedBubbleIds;
+    setDeletedBubbleIds(nextDeletedBubbleIds);
+    setAvailableBubbles((current) =>
+      current.filter((candidate) => candidate.id !== bubble.id),
+    );
+    setBubbleLinkLoadState((current) => ({
+      status: current.status,
+      links: current.links.filter(
+        (link) =>
+          link.bubble_a_id !== bubble.id && link.bubble_b_id !== bubble.id,
+      ),
+    }));
+  }, []);
+
   const handleRetryBubbleLinks = useCallback(() => {
     setBubbleLinkLoadState((current) => ({
       status: 'loading',
@@ -759,6 +806,7 @@ export function ProjectWorkspace({
           <CanvasSurface
             analyticsClient={analyticsClient}
             bubbleLinks={bubbleLinkLoadState.links}
+            deletedBubbleIds={deletedBubbleIds}
             emptyState={({ onCreateBubble }) => (
               <EmptyCanvasContent
                 analyticsClient={analyticsClient}
@@ -849,11 +897,13 @@ export function ProjectWorkspace({
               requestDescriptionUpdate={requestDescriptionUpdate}
               descriptionSaveDelayMs={descriptionSaveDelayMs}
               requestBubbleUpdate={requestBubbleUpdate}
+              requestBubbleDelete={requestBubbleDelete}
               requestBubbleLinkCreate={requestBubbleLinkCreate}
               requestBubbleLinkDelete={requestBubbleLinkDelete}
               bubbleSaveDelayMs={bubbleSaveDelayMs}
               onBubbleLinkCreated={handleBubbleLinkCreated}
               onBubbleLinkRemoved={handleBubbleLinkRemoved}
+              onBubbleDeleted={handleBubbleDeleted}
               onRetryBubbleLinks={handleRetryBubbleLinks}
               onBubbleUpdated={handleBubbleUpdated}
             />

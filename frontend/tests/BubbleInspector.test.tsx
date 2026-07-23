@@ -6,6 +6,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react';
 import type { Bubble, BubbleLink } from '../src/api';
 import type { AnalyticsClient } from '../src/analytics';
@@ -333,5 +334,87 @@ describe('BubbleInspector', () => {
       'bubble-1',
       'bubble-2',
     );
+  });
+
+  it('confirms deletion with frozen-context guidance and records success', async () => {
+    const requestDelete = vi.fn().mockResolvedValue(undefined);
+    const onBubbleDeleted = vi.fn();
+    const track = vi.fn<AnalyticsClient['track']>();
+
+    render(
+      <BubbleInspector
+        analyticsClient={{ track }}
+        bubble={bubble()}
+        onBubbleDeleted={onBubbleDeleted}
+        onBubbleUpdated={vi.fn()}
+        requestDelete={requestDelete}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Delete bubble' }));
+
+    const confirmation = screen.getByRole('alertdialog');
+    expect(confirmation.textContent).toContain(
+      'Delete “Last-mile is the make-or-break”?',
+    );
+    expect(confirmation.textContent).toContain(
+      'Its source discussion and any frozen copies already captured in existing discussions stay intact.',
+    );
+
+    fireEvent.click(
+      within(confirmation).getByRole('button', { name: 'Delete bubble' }),
+    );
+
+    await waitFor(() =>
+      expect(onBubbleDeleted).toHaveBeenCalledWith(bubble()),
+    );
+    expect(requestDelete).toHaveBeenCalledWith(
+      'project-123',
+      'bubble-1',
+      expect.any(AbortSignal),
+    );
+    expect(track).toHaveBeenCalledWith('bubble_deleted', {
+      project_id: 'project-123',
+      bubble_id: 'bubble-1',
+    });
+  });
+
+  it('keeps the deletion confirmation recoverable after a failed request', async () => {
+    const requestDelete = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Unavailable'))
+      .mockResolvedValueOnce(undefined);
+    const onBubbleDeleted = vi.fn();
+
+    render(
+      <BubbleInspector
+        bubble={bubble()}
+        onBubbleDeleted={onBubbleDeleted}
+        onBubbleUpdated={vi.fn()}
+        requestDelete={requestDelete}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Delete bubble' }));
+    const confirmation = screen.getByRole('alertdialog');
+    fireEvent.click(
+      within(confirmation).getByRole('button', { name: 'Delete bubble' }),
+    );
+
+    expect(
+      await screen.findByText('Couldn’t delete the bubble. Try again.'),
+    ).toBeTruthy();
+    expect(screen.getByRole('alertdialog')).toBeTruthy();
+
+    fireEvent.click(
+      within(screen.getByRole('alertdialog')).getByRole('button', {
+        name: 'Delete bubble',
+      }),
+    );
+
+    await waitFor(() =>
+      expect(onBubbleDeleted).toHaveBeenCalledWith(bubble()),
+    );
+    expect(requestDelete).toHaveBeenCalledTimes(2);
   });
 });

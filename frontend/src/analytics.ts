@@ -28,6 +28,10 @@ export interface AnalyticsEventProperties {
     project_id: string;
     bubble_id: string;
   };
+  bubble_deleted: {
+    project_id: string;
+    bubble_id: string;
+  };
   bubble_link_created: {
     project_id: string;
     bubble_a_id: string;

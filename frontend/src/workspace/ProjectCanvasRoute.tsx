@@ -12,6 +12,7 @@ import type {
   BubblePlacementRequest,
 } from '../bubbles/CreateBubbleDialog';
 import type {
+  BubbleDeleteRequest,
   BubbleLinkCreateRequest,
   BubbleLinkDeleteRequest,
   BubbleUpdateRequest,
@@ -31,6 +32,7 @@ export interface ProjectCanvasRouteProps {
   requestBubbles?: BubbleListRequest;
   requestBubblePlacement?: BubblePlacementRequest;
   requestBubblePositionUpdate?: BubblePositionUpdateRequest;
+  requestBubbleDelete?: BubbleDeleteRequest;
   requestBubbleUpdate?: BubbleUpdateRequest;
   requestBubbleLinks?: BubbleLinkListRequest;
   requestBubbleLinkCreate?: BubbleLinkCreateRequest;
@@ -142,6 +144,7 @@ export function ProjectCanvasRoute({
   requestBubbles,
   requestBubblePlacement,
   requestBubblePositionUpdate,
+  requestBubbleDelete,
   requestBubbleUpdate,
   requestBubbleLinks,
   requestBubbleLinkCreate,
@@ -195,6 +198,7 @@ export function ProjectCanvasRoute({
         requestBubbles={requestBubbles}
         requestBubblePlacement={requestBubblePlacement}
         requestBubblePositionUpdate={requestBubblePositionUpdate}
+        requestBubbleDelete={requestBubbleDelete}
         requestBubbleUpdate={requestBubbleUpdate}
         requestBubbleLinks={requestBubbleLinks}
         requestBubbleLinkCreate={requestBubbleLinkCreate}

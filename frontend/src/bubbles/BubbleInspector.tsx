@@ -16,9 +16,11 @@ import {
   Pencil,
   Plus,
   RotateCcw,
+  Trash2,
 } from 'lucide-react';
 import {
   createBubbleLink,
+  deleteBubble,
   deleteBubbleLink,
   updateBubble,
   type Bubble,
@@ -57,6 +59,12 @@ export type BubbleLinkDeleteRequest = (
   secondBubbleId: string,
 ) => Promise<void>;
 
+export type BubbleDeleteRequest = (
+  projectId: string,
+  bubbleId: string,
+  signal?: AbortSignal,
+) => Promise<void>;
+
 export type BubbleLinkLoadStatus = 'loading' | 'ready' | 'error';
 
 export type BubbleInspectorSaveStatus =
@@ -70,11 +78,13 @@ export interface BubbleInspectorProps {
   availableBubbles?: Bubble[];
   bubbleLinks?: BubbleLink[];
   linkLoadStatus?: BubbleLinkLoadStatus;
+  onBubbleDeleted?: (bubble: Bubble) => void;
   onBubbleUpdated: (bubble: Bubble) => void;
   onBubbleLinkCreated?: (link: BubbleLink) => void;
   onBubbleLinkRemoved?: (link: BubbleLink) => void;
   onRetryBubbleLinks?: () => void;
   requestCreateLink?: BubbleLinkCreateRequest;
+  requestDelete?: BubbleDeleteRequest;
   requestDeleteLink?: BubbleLinkDeleteRequest;
   requestUpdate?: BubbleUpdateRequest;
   saveDelayMs?: number;
@@ -171,11 +181,13 @@ export function BubbleInspector({
   availableBubbles = [],
   bubbleLinks = [],
   linkLoadStatus = 'ready',
+  onBubbleDeleted,
   onBubbleUpdated,
   onBubbleLinkCreated,
   onBubbleLinkRemoved,
   onRetryBubbleLinks,
   requestCreateLink = createBubbleLink,
+  requestDelete = deleteBubble,
   requestDeleteLink = deleteBubbleLink,
   requestUpdate = updateBubble,
   saveDelayMs = DEFAULT_SAVE_DELAY_MS,
@@ -192,15 +204,26 @@ export function BubbleInspector({
   const [selectedLinkTargetId, setSelectedLinkTargetId] = useState('');
   const [pendingLinkId, setPendingLinkId] = useState<string | null>(null);
   const [linkActionError, setLinkActionError] = useState<string | null>(null);
+  const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
+    useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [hasDeleteError, setHasDeleteError] = useState(false);
   const draftRef = useRef(draft);
   const persistedBubbleRef = useRef(bubble);
   const mountedRef = useRef(true);
   const requestIdRef = useRef(0);
   const activeControllerRef = useRef<AbortController | null>(null);
+  const deleteControllerRef = useRef<AbortController | null>(null);
+  const deleteDialogRef = useRef<HTMLDivElement>(null);
+  const deleteCancelButtonRef = useRef<HTMLButtonElement>(null);
+  const isDeletingRef = useRef(false);
+  const onBubbleDeletedRef = useRef(onBubbleDeleted);
   const onBubbleUpdatedRef = useRef(onBubbleUpdated);
   const titleId = useId();
   const summaryId = useId();
   const contentId = useId();
+  const deleteTitleId = useId();
+  const deleteDescriptionId = useId();
 
   const normalizedDraft = normalizeDraft(draft);
   const isTitleEmpty = normalizedDraft.title.length === 0;
@@ -239,6 +262,10 @@ export function BubbleInspector({
   );
 
   useEffect(() => {
+    onBubbleDeletedRef.current = onBubbleDeleted;
+  }, [onBubbleDeleted]);
+
+  useEffect(() => {
     onBubbleUpdatedRef.current = onBubbleUpdated;
   }, [onBubbleUpdated]);
 
@@ -249,8 +276,77 @@ export function BubbleInspector({
       mountedRef.current = false;
       requestIdRef.current += 1;
       activeControllerRef.current?.abort();
+      deleteControllerRef.current?.abort();
     };
   }, []);
+
+  useEffect(() => {
+    if (!isDeleteConfirmationOpen) {
+      return;
+    }
+
+    const previouslyFocused =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    const previousOverflow = document.body.style.overflow;
+
+    document.body.style.overflow = 'hidden';
+    deleteCancelButtonRef.current?.focus();
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+
+        if (!isDeletingRef.current) {
+          setIsDeleteConfirmationOpen(false);
+          setHasDeleteError(false);
+        }
+
+        return;
+      }
+
+      if (event.key !== 'Tab') {
+        return;
+      }
+
+      const focusableElements = deleteDialogRef.current
+        ? Array.from(
+            deleteDialogRef.current.querySelectorAll<HTMLElement>(
+              'button:not(:disabled), [tabindex]:not([tabindex="-1"])',
+            ),
+          )
+        : [];
+
+      if (focusableElements.length === 0) {
+        event.preventDefault();
+        deleteDialogRef.current?.focus();
+        return;
+      }
+
+      const first = focusableElements[0];
+      const last = focusableElements[focusableElements.length - 1];
+
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+
+      if (previouslyFocused?.isConnected) {
+        previouslyFocused.focus();
+      }
+    };
+  }, [isDeleteConfirmationOpen]);
 
   const publishStatus = useCallback((nextStatus: BubbleInspectorSaveStatus) => {
     setStatus((current) => current === nextStatus ? current : nextStatus);
@@ -408,6 +504,59 @@ export function BubbleInspector({
 
     setFailedDraftSignature(null);
     void saveDraft(draftRef.current);
+  };
+
+  const closeDeleteConfirmation = () => {
+    if (isDeletingRef.current) {
+      return;
+    }
+
+    setIsDeleteConfirmationOpen(false);
+    setHasDeleteError(false);
+  };
+
+  const confirmDelete = async () => {
+    if (isDeletingRef.current) {
+      return;
+    }
+
+    const controller = new AbortController();
+    isDeletingRef.current = true;
+    deleteControllerRef.current = controller;
+    setIsDeleting(true);
+    setHasDeleteError(false);
+
+    try {
+      await requestDelete(
+        persistedBubble.project_id,
+        persistedBubble.id,
+        controller.signal,
+      );
+
+      if (!mountedRef.current || controller.signal.aborted) {
+        return;
+      }
+
+      trackAnalytics(analyticsClient, 'bubble_deleted', {
+        project_id: persistedBubble.project_id,
+        bubble_id: persistedBubble.id,
+      });
+      setIsDeleteConfirmationOpen(false);
+      onBubbleDeletedRef.current?.(persistedBubbleRef.current);
+    } catch (error: unknown) {
+      if (
+        mountedRef.current &&
+        !(error instanceof DOMException && error.name === 'AbortError')
+      ) {
+        setHasDeleteError(true);
+      }
+    } finally {
+      if (mountedRef.current && deleteControllerRef.current === controller) {
+        isDeletingRef.current = false;
+        deleteControllerRef.current = null;
+        setIsDeleting(false);
+      }
+    }
   };
 
   const addLink = async () => {
@@ -681,16 +830,116 @@ export function BubbleInspector({
           </section>
         </div>
 
-        <div className="shrink-0 border-t border-[#eef1f5] bg-[#fafbfc] px-[18px] py-[13px]">
+        <div className="flex shrink-0 gap-2 border-t border-[#eef1f5] bg-[#fafbfc] px-[18px] py-[13px]">
           <button
-            className={`inline-flex min-h-9 w-full cursor-pointer items-center justify-center gap-2 rounded-[9px] bg-[#3f63a8] px-3 py-2 text-[12.5px] font-semibold text-white shadow-[0_6px_16px_-8px_rgba(63,99,168,0.7)] hover:bg-[#33538f] ${focusRing}`}
+            className={`inline-flex min-h-9 flex-1 cursor-pointer items-center justify-center gap-2 rounded-[9px] bg-[#3f63a8] px-3 py-2 text-[12.5px] font-semibold text-white shadow-[0_6px_16px_-8px_rgba(63,99,168,0.7)] hover:bg-[#33538f] ${focusRing}`}
             type="button"
             onClick={() => setIsEditing(true)}
           >
             <Pencil className="size-[14px]" strokeWidth={1.8} aria-hidden="true" />
             Edit bubble
           </button>
+          <button
+            className={`grid min-h-9 w-10 shrink-0 cursor-pointer place-items-center rounded-[9px] border border-[#ecd4d1] bg-white text-[#b4544e] hover:bg-[#fbf1f0] ${focusRing}`}
+            type="button"
+            aria-label="Delete bubble"
+            title="Delete bubble"
+            onClick={() => {
+              setHasDeleteError(false);
+              setIsDeleteConfirmationOpen(true);
+            }}
+          >
+            <Trash2 className="size-[15px]" strokeWidth={1.8} aria-hidden="true" />
+          </button>
         </div>
+
+        {isDeleteConfirmationOpen && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-[#1e2733]/45 p-4 backdrop-blur-[1.5px]"
+            data-canvas-overlay
+            onMouseDown={(event) => {
+              if (event.target === event.currentTarget) {
+                closeDeleteConfirmation();
+              }
+            }}
+          >
+            <div
+              className="w-full max-w-[472px] overflow-hidden rounded-2xl border border-[#e1e6ec] bg-white shadow-[0_24px_60px_-18px_rgba(20,28,40,0.55)]"
+              ref={deleteDialogRef}
+              role="alertdialog"
+              aria-modal="true"
+              aria-labelledby={deleteTitleId}
+              aria-describedby={deleteDescriptionId}
+              aria-busy={isDeleting}
+              tabIndex={-1}
+            >
+              <div className="flex gap-3.5 px-5 pt-5 pb-[18px] sm:px-[22px]">
+                <span className="grid size-[38px] shrink-0 place-items-center rounded-[10px] bg-[#fbf1f0] text-[#b4544e]">
+                  <Trash2
+                    className="size-[19px]"
+                    strokeWidth={1.8}
+                    aria-hidden="true"
+                  />
+                </span>
+                <div className="min-w-0">
+                  <h2
+                    className="m-0 break-words text-[15px] leading-[1.4] font-semibold text-[#1e2733]"
+                    id={deleteTitleId}
+                  >
+                    Delete “{persistedBubble.title}”?
+                  </h2>
+                  <p
+                    className="mt-1.5 mb-0 text-[12.5px] leading-[1.55] text-[#5c6a7a]"
+                    id={deleteDescriptionId}
+                  >
+                    It&apos;s removed from the canvas and unlinked from other
+                    bubbles. Its source discussion and any frozen copies already
+                    captured in existing discussions stay intact.
+                  </p>
+                  {hasDeleteError && (
+                    <p
+                      className="mt-3 mb-0 flex items-start gap-1.5 text-[11.5px] leading-[1.45] text-[#b4544e]"
+                      role="alert"
+                    >
+                      <CircleAlert
+                        className="mt-px size-[13px] shrink-0"
+                        strokeWidth={1.9}
+                        aria-hidden="true"
+                      />
+                      Couldn&apos;t delete the bubble. Try again.
+                    </p>
+                  )}
+                </div>
+              </div>
+              <div className="flex justify-end gap-2.5 border-t border-[#eef1f5] bg-[#fafbfc] px-5 py-3.5 sm:px-[22px]">
+                <button
+                  className={`min-h-9 rounded-[9px] border border-[#e1e6ec] bg-white px-[15px] py-2 text-[12.5px] font-semibold text-[#5c6a7a] disabled:cursor-not-allowed disabled:text-[#b6c0cc] ${focusRing}`}
+                  type="button"
+                  disabled={isDeleting}
+                  onClick={closeDeleteConfirmation}
+                  ref={deleteCancelButtonRef}
+                >
+                  Cancel
+                </button>
+                <button
+                  className={`inline-flex min-h-9 items-center justify-center gap-1.5 rounded-[9px] bg-[#b4544e] px-[18px] py-2 text-[12.5px] font-semibold text-white hover:bg-[#9d443f] disabled:cursor-wait disabled:bg-[#cf8d88] ${focusRing}`}
+                  type="button"
+                  disabled={isDeleting}
+                  onClick={() => void confirmDelete()}
+                >
+                  {isDeleting && (
+                    <LoaderCircle
+                      className="size-3 animate-spin motion-reduce:animate-none"
+                      strokeWidth={1.8}
+                      aria-hidden="true"
+                    />
+                  )}
+                  {isDeleting ? 'Deleting…' : 'Delete bubble'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }

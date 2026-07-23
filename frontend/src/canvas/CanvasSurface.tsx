@@ -44,6 +44,7 @@ const MAX_ZOOM = 2;
 const ZOOM_STEP = 1.2;
 const GRID_SIZE = 24;
 const DEFAULT_VIEWPORT_SAVE_DELAY_MS = 500;
+const EMPTY_DELETED_BUBBLE_IDS: string[] = [];
 
 const focusRing =
   '[-webkit-tap-highlight-color:transparent] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/30';
@@ -90,6 +91,7 @@ export interface CanvasSurfaceProps {
   onBubbleSelectionChange?: (bubble: Bubble | null) => void;
   onBubblesChange?: (bubbles: Bubble[]) => void;
   bubbleLinks?: BubbleLink[];
+  deletedBubbleIds?: string[];
   updatedBubbles?: Bubble[];
   viewportSaveDelayMs?: number;
 }
@@ -466,6 +468,7 @@ export function CanvasSurface({
   onBubbleSelectionChange,
   onBubblesChange,
   bubbleLinks = [],
+  deletedBubbleIds = EMPTY_DELETED_BUBBLE_IDS,
   updatedBubbles = [],
   viewportSaveDelayMs = DEFAULT_VIEWPORT_SAVE_DELAY_MS,
 }: CanvasSurfaceProps) {
@@ -820,24 +823,39 @@ export function CanvasSurface({
   }, [projectId, requestBubbles, requestKey, selectBubble]);
 
   const displayedBubbles = useMemo(() => {
+    const deletedBubbleIdSet = new Set(deletedBubbleIds);
     const updatedBubblesById = new Map(
       updatedBubbles
         .filter((bubble) => isRenderableBubble(bubble, projectId))
         .map((bubble) => [bubble.id, bubble]),
     );
 
-    return loadState.bubbles.map((bubble) => {
-      const updatedBubble = updatedBubblesById.get(bubble.id);
+    return loadState.bubbles.flatMap((bubble) => {
+      if (deletedBubbleIdSet.has(bubble.id)) {
+        return [];
+      }
 
-      return updatedBubble
-        ? {
-            ...updatedBubble,
-            position_x: bubble.position_x,
-            position_y: bubble.position_y,
-          }
-        : bubble;
+      const updatedBubble = updatedBubblesById.get(bubble.id);
+      return [
+        updatedBubble
+          ? {
+              ...updatedBubble,
+              position_x: bubble.position_x,
+              position_y: bubble.position_y,
+            }
+          : bubble,
+      ];
     });
-  }, [loadState.bubbles, projectId, updatedBubbles]);
+  }, [deletedBubbleIds, loadState.bubbles, projectId, updatedBubbles]);
+
+  useEffect(() => {
+    if (
+      selectedBubbleIdRef.current &&
+      deletedBubbleIds.includes(selectedBubbleIdRef.current)
+    ) {
+      selectBubble(null);
+    }
+  }, [deletedBubbleIds, selectBubble]);
 
   useEffect(() => {
     onBubblesChange?.(displayedBubbles);
@@ -1273,13 +1291,13 @@ export function CanvasSurface({
       </div>
 
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-6 py-10 lg:px-10">
-        {loadState.status === 'loading' && loadState.bubbles.length === 0 && (
+        {loadState.status === 'loading' && displayedBubbles.length === 0 && (
           <CanvasLoadingState />
         )}
-        {loadState.status === 'failed' && loadState.bubbles.length === 0 && (
+        {loadState.status === 'failed' && displayedBubbles.length === 0 && (
           <CanvasErrorState onRetry={retryBubbleLoad} />
         )}
-        {loadState.status === 'partial' && loadState.bubbles.length === 0 && (
+        {loadState.status === 'partial' && displayedBubbles.length === 0 && (
           <CanvasBubbleLoadNotice
             hasBubbles={false}
             isPartial
@@ -1287,12 +1305,12 @@ export function CanvasSurface({
           />
         )}
         {loadState.status === 'ready' &&
-          loadState.bubbles.length === 0 &&
+          displayedBubbles.length === 0 &&
           renderedEmptyState}
       </div>
 
       {(loadState.status === 'partial' || loadState.status === 'failed') &&
-        loadState.bubbles.length > 0 && (
+        displayedBubbles.length > 0 && (
           <CanvasBubbleLoadNotice
             hasBubbles
             isPartial={loadState.status === 'partial'}
@@ -1307,7 +1325,7 @@ export function CanvasSurface({
         onZoomOut={() => zoomAt((currentZoom) => currentZoom / ZOOM_STEP)}
       />
 
-      {loadState.bubbles.length > 0 && (
+      {displayedBubbles.length > 0 && (
         <CanvasBubbleAction onCreate={openCreateBubbleDialog} />
       )}
 

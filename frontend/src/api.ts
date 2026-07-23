@@ -217,6 +217,20 @@ export function updateBubble(
   );
 }
 
+export function deleteBubble(
+  projectId: string,
+  bubbleId: string,
+  signal?: AbortSignal,
+): Promise<void> {
+  return requestJson<void>(
+    `/projects/${encodeURIComponent(projectId)}/bubbles/${encodeURIComponent(bubbleId)}`,
+    {
+      method: 'DELETE',
+      signal,
+    },
+  );
+}
+
 export function getBubbleLinks(
   projectId: string,
   signal?: AbortSignal,
