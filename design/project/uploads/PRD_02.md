@@ -114,3 +114,77 @@ This PRD owns the infinite canvas, bubble presentation and lifecycle, manual lin
 - **Direct links only versus transitive neighborhoods:** Highlighting all reachable bubbles may create visual noise and imply a semantic graph the MVP does not support. The current leaning is to highlight only directly linked bubbles.
 - **Expected scale:** “Infinite canvas” describes navigation, not capacity. Without a stated performance target, implementation choices may be either over-engineered or inadequate. Before release, the team should establish an expected upper bound for MVP testing based on observed projects and benchmark that many visible cards.
 - **Concurrent edits across tabs:** Two open tabs could overwrite bubble content or position with stale data. Full collaborative conflict resolution is out of scope, but silent last-write-wins may surprise users. The current leaning is optimistic concurrency for content edits when feasible and last-write-wins for viewport and position updates.
+
+## Commit Plan
+
+The commits below are ordered so each one leaves the application in a coherent state and establishes contracts needed by the next slice. The design references are `1.c` (populated canvas inside the project shell), `3.a` (bubble selected with primary and secondary-linked states), `3.b` (manual create dialog and delete confirmation), and `3.c` (feature-initiated multi-selection and the persistent Compact-layout action).
+
+1. **`feat(bubbles): add the persistent bubble domain and API`**
+   - Add the migration and entity for `id`, `project_id`, `title`, `summary`, `content`, `position_x`, `position_y`, `created_at`, `updated_at`, `source_kind`, `source_discussion_id`, and `source_message_ids`, with an internal manual `source_kind` for canvas-created bubbles.
+   - Add typed project-scoped create, read, update, reposition, and delete operations in NestJS. Keep content edits and position updates on separate endpoints so repositioning never touches `updated_at`.
+   - Enforce cross-project rejection from the first commit rather than retrofitting it: a bubble cannot be read, edited, moved, or deleted through another project's routes.
+   - Cover field defaults, validation, the content-versus-position split, `updated_at` semantics, cross-project rejection, and missing bubble identifiers with service/controller tests.
+
+2. **`feat(canvas): render the pan-and-zoom canvas surface`**
+   - Render the effectively infinite surface inside the project workspace's central area, filling the shell without displacing the project bar, primary actions, or right panel.
+   - Add the interaction controller for pointer, mouse, and trackpad pan and zoom, capturing gestures so the surrounding application never scrolls or zooms unintentionally.
+   - Add canvas loading, empty, and load-failure/retry states that resolve in place instead of navigating the user away from the project. No bubbles are rendered yet.
+
+3. **`feat(canvas): persist and restore the project viewport`**
+   - Write `canvas_viewport_x`, `canvas_viewport_y`, and `canvas_zoom` to the project record with debounced or throttled persistence so continuous gestures do not create excessive writes.
+   - Flush the latest stable viewport before navigation and restore it when the project is reopened; viewport-only changes must not reorder the project list.
+   - Test restore-after-reload, write coalescing during a continuous gesture, flush-on-navigation, and failure without loss of the last persisted viewport.
+
+4. **`feat(canvas): render bubble cards from the project`**
+   - Build the bubble card from design `1.c`: title plus one-sentence summary or a deterministic preview derived from the beginning of the content, with the constrained width and height and preview truncation proposed by this PRD.
+   - Load the project's bubbles onto the canvas at their persisted positions and handle partial load failure without replacing already-rendered data.
+   - Scaffold the card visual states used by later slices: default, hover, dragging, saving, and error.
+
+5. **`feat(bubbles): create bubbles manually from the canvas`**
+   - Implement the manual create dialog from design `3.b` with required `title` and `content`, optional `summary`, whitespace-only validation, and entered values preserved after a recoverable save error.
+   - Implement viewport-centered deterministic placement with collision avoidance, so a new bubble lands in the visible working area and can be moved immediately.
+   - Build the placement rule as a reusable project-scoped service and expose it as the external placement operation, since the Extraction PRD's requirement is the same geometry and should not reimplement canvas math.
+   - Add component and service tests for validation, save failure and retry, deterministic placement, and non-overlapping results.
+
+6. **`feat(canvas): drag bubbles with persisted positions`**
+   - Update the card optimistically during drag, resolve final canvas coordinates, and persist the final position through the position endpoint only.
+   - On save failure, show a visible recoverable error with retry while retaining the unsaved local position until the user leaves or explicitly reverts.
+   - Assert that moving one bubble never changes another bubble's stored position and that a completed drag does not change content `updated_at`.
+
+7. **`feat(bubbles): inspect and edit bubbles through the Inspector`**
+   - Add primary selection state with its distinct visual treatment from design `3.a` and supply the selected bubble's full title, summary, content, source information, and last content-updated date through the Inspector slots wired in `a5ac345f`.
+   - Implement the title, summary, and content edit flow, keeping the save model consistent with the project-description editor, and refresh or clear Inspector data when the selection changes or the bubble is edited.
+   - Guarantee frozen-context compatibility: saved edits replace the current record only and must not alter snapshots stored in existing discussions.
+   - Test persisted reloads, `updated_at` semantics, stale-response protection, and Inspector refresh on selection change.
+
+8. **`feat(links): add symmetric manual bubble links`**
+   - Add the project-scoped link model with `id`, `project_id`, `bubble_a_id`, `bubble_b_id`, and `created_at`, using canonical ordering or an equivalent constraint so the same pair cannot be stored twice in either argument order.
+   - Add link creation and removal from the Inspector, restricted to bubbles in the same project and never to the bubble itself.
+   - Apply the secondary linked state from design `3.a` when exactly one bubble is selected, highlighting direct links only and leaving unrelated bubbles unchanged. Links are never drawn as permanent connecting lines.
+
+9. **`feat(bubbles): delete bubbles with link cleanup`**
+   - Add the delete confirmation from design `3.b`, stating clearly that existing frozen discussion context is retained.
+   - Cascade removal of every link record referencing the deleted bubble, and invalidate Inspector and selection state so no stale details remain.
+   - Sequenced after links deliberately so the cascade is built and tested in one place. Assert that deletion leaves source discussions, messages, other bubbles, and frozen copies intact.
+
+10. **`feat(canvas): support feature-initiated multi-selection`**
+    - Implement the explicit multi-selection mode from design `3.c`, entered by an owning feature rather than by ambient canvas interaction.
+    - Return selected bubble identifiers and live records to the initiating feature at confirmation time without copying or mutating bubble content; frozen snapshots are not created here.
+    - Restore the previous normal interaction state on cancel without changing bubble data or positions, and suppress secondary linked highlighting while the mode is active unless a linked bubble is itself selected.
+    - Keep this the integration seam the Discussion Context PRD consumes, following the same contract pattern as `a5ac345f`.
+
+11. **`feat(canvas): add the deterministic compact layout`**
+    - Add the persistent Compact-layout action from design `3.c`, available whenever the project contains at least two bubbles.
+    - Implement a deterministic grid or masonry layout with stable ordering, a configured minimum gap, no overlapping rectangles, and no further movement once a valid arrangement is reached.
+    - Add the project-scoped batch position endpoint with transactional behavior where the datastore permits, and roll back to the last saved arrangement on failure so partial UI state is never mistaken for success.
+    - Assert that compaction changes positions only, leaving titles, summaries, contents, links, sources, and content `updated_at` untouched.
+
+12. **`feat(analytics): instrument the bubble-canvas funnel`**
+    - Emit the PRD's events through the existing typed analytics boundary from `487a1aa5`: manual creation, inspection, edit, delete, drag completion, link creation and removal, multi-selection start/cancel/confirm, Compact layout, and viewport restoration.
+    - Attach the correct project and bubble identifiers with minimal event-specific properties, and never log full bubble content in payloads.
+    - Add event-contract tests asserting that failed saves emit no success event and that retries do not duplicate events.
+
+13. **`test(bubbles): cover the bubble-canvas journey + end of PRD "Bubble Canvas"`**
+    - Add an end-to-end test for `open project → create bubble → move → edit → link → inspect → compact → reload`, mirroring `3e02a33d`.
+    - Assert that positions, links, zoom, and viewport survive reload, that deletion cleans up links without touching discussions, and that a cancelled multi-selection leaves the canvas unchanged.
+    - Run the repository's build, lint, unit, and end-to-end commands. Visual comparison and final interaction QA remain manual against designs `1.c`, `3.a`, `3.b`, and `3.c`.
