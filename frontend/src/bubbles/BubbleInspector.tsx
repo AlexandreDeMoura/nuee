@@ -906,7 +906,7 @@ export function BubbleInspector({
                         strokeWidth={1.9}
                         aria-hidden="true"
                       />
-                      Couldn&apos;t delete the bubble. Try again.
+                      Couldn’t delete the bubble. Try again.
                     </p>
                   )}
                 </div>
