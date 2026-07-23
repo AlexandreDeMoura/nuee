@@ -1,7 +1,12 @@
 import { act } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import type { Bubble, Project, UpdateProjectViewportInput } from '../src/api';
+import type {
+  Bubble,
+  Project,
+  UpdateProjectViewportInput,
+} from '../src/api';
+import type { AnalyticsClient } from '../src/analytics';
 import { CanvasSurface } from '../src/canvas/CanvasSurface';
 
 function deferred<T>() {
@@ -258,6 +263,9 @@ describe('CanvasSurface', () => {
         emptyState={emptyState}
         projectId="project-123"
         requestBubbles={async () => [bubble()]}
+        requestBubblePositionUpdate={async (_projectId, _bubbleId, input) =>
+          bubble({ position_x: input.position_x, position_y: input.position_y })
+        }
       />,
     );
 
@@ -281,6 +289,187 @@ describe('CanvasSurface', () => {
 
     expect(canvas.getAttribute('data-canvas-x')).toBe('0');
     expect(canvas.getAttribute('data-canvas-y')).toBe('0');
+  });
+
+  it('drags one bubble optimistically in world coordinates and persists only its final position', async () => {
+    const pendingPosition = deferred<Bubble>();
+    const requestPositionUpdate = vi.fn(() => pendingPosition.promise);
+    const untouchedBubble = bubble({
+      id: 'bubble-2',
+      title: 'Untouched bubble',
+      position_x: 400,
+      position_y: 300,
+    });
+
+    render(
+      <CanvasSurface
+        emptyState={emptyState}
+        initialViewport={{ x: 80, y: -40, zoom: 2 }}
+        projectId={project.id}
+        requestBubbles={async () => [bubble(), untouchedBubble]}
+        requestBubblePositionUpdate={requestPositionUpdate}
+      />,
+    );
+
+    const movedCard = await screen.findByRole('article', {
+      name: 'Market is real but fragmented',
+    });
+    const untouchedCard = screen.getByRole('article', {
+      name: 'Untouched bubble',
+    });
+    const canvas = screen.getByRole('region', { name: 'Project canvas' });
+
+    fireEvent.pointerDown(movedCard, {
+      button: 0,
+      clientX: 100,
+      clientY: 80,
+      pointerId: 21,
+    });
+    fireEvent.pointerMove(canvas, {
+      clientX: 180,
+      clientY: 140,
+      pointerId: 21,
+    });
+
+    expect(movedCard.getAttribute('data-bubble-state')).toBe('dragging');
+    expect(movedCard.style.left).toBe('160px');
+    expect(movedCard.style.top).toBe('-18px');
+    expect(untouchedCard.style.left).toBe('400px');
+    expect(untouchedCard.style.top).toBe('300px');
+    expect(requestPositionUpdate).not.toHaveBeenCalled();
+
+    fireEvent.pointerUp(canvas, { pointerId: 21 });
+
+    expect(requestPositionUpdate).toHaveBeenCalledWith(
+      project.id,
+      'bubble-1',
+      { position_x: 160, position_y: -18 },
+    );
+    expect(movedCard.getAttribute('data-bubble-state')).toBe('saving');
+
+    await act(async () => {
+      pendingPosition.resolve(
+        bubble({ position_x: 160, position_y: -18 }),
+      );
+    });
+
+    expect(movedCard.getAttribute('data-bubble-state')).toBe('default');
+    expect(untouchedCard.style.left).toBe('400px');
+    expect(untouchedCard.style.top).toBe('300px');
+  });
+
+  it('retains a failed local move and retries the exact position before recording analytics', async () => {
+    const track = vi.fn<AnalyticsClient['track']>();
+    const movedBubble = bubble({ position_x: 155, position_y: -13 });
+    const requestPositionUpdate = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Unavailable'))
+      .mockResolvedValueOnce(movedBubble);
+
+    render(
+      <CanvasSurface
+        analyticsClient={{ track }}
+        emptyState={emptyState}
+        projectId={project.id}
+        requestBubbles={async () => [bubble()]}
+        requestBubblePositionUpdate={requestPositionUpdate}
+      />,
+    );
+
+    const card = await screen.findByRole('article', {
+      name: 'Market is real but fragmented',
+    });
+    const canvas = screen.getByRole('region', { name: 'Project canvas' });
+
+    fireEvent.pointerDown(card, {
+      button: 0,
+      clientX: 20,
+      clientY: 30,
+      pointerId: 22,
+    });
+    fireEvent.pointerMove(canvas, {
+      clientX: 55,
+      clientY: 65,
+      pointerId: 22,
+    });
+
+    await act(async () => {
+      fireEvent.pointerUp(canvas, { pointerId: 22 });
+      await Promise.resolve();
+    });
+
+    expect(card.style.left).toBe('155px');
+    expect(card.style.top).toBe('-13px');
+    expect(card.getAttribute('data-bubble-state')).toBe('error');
+    expect(screen.getByRole('alert').textContent).toContain(
+      'Couldn’t save “Market is real but fragmented” position.',
+    );
+    expect(track).not.toHaveBeenCalled();
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+      await Promise.resolve();
+    });
+
+    expect(requestPositionUpdate).toHaveBeenCalledTimes(2);
+    expect(requestPositionUpdate.mock.calls[1]).toEqual(
+      requestPositionUpdate.mock.calls[0],
+    );
+    expect(card.getAttribute('data-bubble-state')).toBe('default');
+    expect(screen.queryByText(/Couldn’t save .* position/)).toBeNull();
+    expect(track).toHaveBeenCalledWith('bubble_moved', {
+      project_id: project.id,
+      bubble_id: 'bubble-1',
+    });
+    expect(track).toHaveBeenCalledTimes(1);
+  });
+
+  it('lets the user explicitly revert a failed move to the persisted position', async () => {
+    const requestPositionUpdate = vi
+      .fn()
+      .mockRejectedValue(new Error('Unavailable'));
+
+    render(
+      <CanvasSurface
+        emptyState={emptyState}
+        projectId={project.id}
+        requestBubbles={async () => [bubble()]}
+        requestBubblePositionUpdate={requestPositionUpdate}
+      />,
+    );
+
+    const card = await screen.findByRole('article', {
+      name: 'Market is real but fragmented',
+    });
+    const canvas = screen.getByRole('region', { name: 'Project canvas' });
+
+    fireEvent.pointerDown(card, {
+      button: 0,
+      clientX: 10,
+      clientY: 10,
+      pointerId: 23,
+    });
+    fireEvent.pointerMove(canvas, {
+      clientX: 60,
+      clientY: 70,
+      pointerId: 23,
+    });
+
+    await act(async () => {
+      fireEvent.pointerUp(canvas, { pointerId: 23 });
+      await Promise.resolve();
+    });
+
+    expect(card.style.left).toBe('170px');
+    expect(card.style.top).toBe('12px');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Revert' }));
+
+    expect(card.style.left).toBe('120px');
+    expect(card.style.top).toBe('-48px');
+    expect(card.getAttribute('data-bubble-state')).toBe('default');
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(requestPositionUpdate).toHaveBeenCalledTimes(1);
   });
 
   it('pans the viewport by dragging the canvas background', async () => {

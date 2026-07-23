@@ -16,6 +16,10 @@ export interface AnalyticsEventProperties {
     project_id: string;
     action: 'start_discussion' | 'create_bubble' | 'upload_document';
   };
+  bubble_moved: {
+    project_id: string;
+    bubble_id: string;
+  };
 }
 
 export type AnalyticsEventName = keyof AnalyticsEventProperties;

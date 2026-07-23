@@ -36,6 +36,11 @@ export interface CreateBubbleInput {
   position_y: number;
 }
 
+export interface UpdateBubblePositionInput {
+  position_x: number;
+  position_y: number;
+}
+
 export type BubblePlacementStrategy = 'viewport' | 'cluster';
 
 export interface BubblePlacementInput {
@@ -151,6 +156,21 @@ export function createBubble(
     `/projects/${encodeURIComponent(projectId)}/bubbles`,
     {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+    },
+  );
+}
+
+export function updateBubblePosition(
+  projectId: string,
+  bubbleId: string,
+  input: UpdateBubblePositionInput,
+): Promise<Bubble> {
+  return requestJson<Bubble>(
+    `/projects/${encodeURIComponent(projectId)}/bubbles/${encodeURIComponent(bubbleId)}/position`,
+    {
+      method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(input),
     },

@@ -327,11 +327,16 @@ describe('BubblesService', () => {
       position_x: 10,
       position_y: -20,
     });
+    const repositioned = service.reposition(project.id, created.id, {
+      position_x: -144.5,
+      position_y: 280,
+    });
 
     bubbleRepository.onModuleDestroy();
     bubbleRepository = new SqliteBubbleRepository(databasePath);
     service = new BubblesService(projects, bubbleRepository);
 
-    expect(service.get(project.id, created.id)).toEqual(created);
+    expect(service.get(project.id, created.id)).toEqual(repositioned);
+    expect(repositioned.updated_at).toBe(created.updated_at);
   });
 });

@@ -16,13 +16,20 @@ import {
 } from 'lucide-react';
 import {
   getProjectBubbles,
+  updateBubblePosition,
   updateProjectViewport,
   type Bubble,
   type BubblePlacementInput,
   type Project,
   type ProjectViewportUpdateOptions,
+  type UpdateBubblePositionInput,
   type UpdateProjectViewportInput,
 } from '../api';
+import {
+  analytics,
+  trackAnalytics,
+  type AnalyticsClient,
+} from '../analytics';
 import {
   CreateBubbleDialog,
   type BubbleCreateRequest,
@@ -56,6 +63,12 @@ export type ProjectViewportUpdateRequest = (
   options?: ProjectViewportUpdateOptions,
 ) => Promise<Project>;
 
+export type BubblePositionUpdateRequest = (
+  projectId: string,
+  bubbleId: string,
+  input: UpdateBubblePositionInput,
+) => Promise<Bubble>;
+
 export interface CanvasEmptyStateActions {
   onCreateBubble: () => void;
 }
@@ -66,9 +79,11 @@ export interface CanvasSurfaceProps {
     | ((actions: CanvasEmptyStateActions) => ReactNode);
   initialViewport?: CanvasViewport;
   projectId: string;
+  analyticsClient?: AnalyticsClient;
   requestBubbleCreate?: BubbleCreateRequest;
   requestBubbles?: BubbleListRequest;
   requestBubblePlacement?: BubblePlacementRequest;
+  requestBubblePositionUpdate?: BubblePositionUpdateRequest;
   requestViewportUpdate?: ProjectViewportUpdateRequest;
   viewportSaveDelayMs?: number;
 }
@@ -85,6 +100,29 @@ interface ActivePan {
   startClientY: number;
   startViewportX: number;
   startViewportY: number;
+}
+
+interface BubblePosition {
+  x: number;
+  y: number;
+}
+
+interface ActiveBubbleDrag {
+  bubbleId: string;
+  pointerId: number;
+  startClientX: number;
+  startClientY: number;
+  startPosition: BubblePosition;
+  currentPosition: BubblePosition;
+  persistedPosition: BubblePosition;
+  zoom: number;
+}
+
+interface BubblePositionSave {
+  attempt: number;
+  persistedPosition: BubblePosition;
+  requestedPosition: BubblePosition;
+  status: 'saving' | 'error';
 }
 
 function clampZoom(zoom: number) {
@@ -303,6 +341,45 @@ function CanvasViewportSaveError({ onRetry }: { onRetry: () => void }) {
   );
 }
 
+function BubblePositionSaveError({
+  bubbleTitle,
+  onRetry,
+  onRevert,
+}: {
+  bubbleTitle: string;
+  onRetry: () => void;
+  onRevert: () => void;
+}) {
+  return (
+    <div
+      className="pointer-events-auto absolute top-4 left-4 flex max-w-[380px] items-center gap-3 rounded-[10px] border border-[#ead5d2] bg-white/95 px-3.5 py-2.5 text-xs text-[#79504c] shadow-[0_8px_24px_-14px_rgba(30,39,51,0.4)] backdrop-blur-sm"
+      data-canvas-overlay
+      role="alert"
+    >
+      <CircleAlert
+        className="size-[15px] shrink-0 text-[#b4544e]"
+        strokeWidth={1.8}
+        aria-hidden="true"
+      />
+      <span>Couldn’t save “{bubbleTitle}” position.</span>
+      <button
+        className={`shrink-0 cursor-pointer font-semibold text-[#8f4843] hover:text-[#6f3531] ${focusRing}`}
+        type="button"
+        onClick={onRetry}
+      >
+        Retry
+      </button>
+      <button
+        className={`shrink-0 cursor-pointer font-semibold text-[#6f7782] hover:text-[#414c59] ${focusRing}`}
+        type="button"
+        onClick={onRevert}
+      >
+        Revert
+      </button>
+    </div>
+  );
+}
+
 function CanvasZoomControls({
   zoom,
   onReset,
@@ -374,9 +451,11 @@ export function CanvasSurface({
   emptyState,
   initialViewport = { x: 0, y: 0, zoom: 1 },
   projectId,
+  analyticsClient = analytics,
   requestBubbleCreate,
   requestBubbles = getProjectBubbles,
   requestBubblePlacement,
+  requestBubblePositionUpdate = updateBubblePosition,
   requestViewportUpdate = updateProjectViewport,
   viewportSaveDelayMs = DEFAULT_VIEWPORT_SAVE_DELAY_MS,
 }: CanvasSurfaceProps) {
@@ -388,11 +467,18 @@ export function CanvasSurface({
   const [viewport, setViewport] = useState<CanvasViewport>(initialViewport);
   const [viewportSaveFailed, setViewportSaveFailed] = useState(false);
   const [isPanning, setIsPanning] = useState(false);
+  const [draggingBubbleId, setDraggingBubbleId] = useState<string | null>(null);
+  const [positionSaves, setPositionSaves] = useState<
+    Record<string, BubblePositionSave>
+  >({});
   const [isCreateBubbleDialogOpen, setIsCreateBubbleDialogOpen] = useState(false);
   const [createPlacementInput, setCreatePlacementInput] =
     useState<BubblePlacementInput | null>(null);
   const surfaceRef = useRef<HTMLElement>(null);
   const activePanRef = useRef<ActivePan | null>(null);
+  const activeBubbleDragRef = useRef<ActiveBubbleDrag | null>(null);
+  const positionSavesRef = useRef<Record<string, BubblePositionSave>>({});
+  const positionSaveAttemptRef = useRef(0);
   const latestViewportRef = useRef(initialViewport);
   const persistedViewportRef = useRef(initialViewport);
   const failedViewportRef = useRef<CanvasViewport | null>(null);
@@ -404,6 +490,112 @@ export function CanvasSurface({
   } | null>(null);
   const mountedRef = useRef(true);
   const loadedProjectIdRef = useRef(projectId);
+
+  const setLocalBubblePosition = useCallback(
+    (bubbleId: string, position: BubblePosition) => {
+      setLoadState((current) => ({
+        ...current,
+        bubbles: current.bubbles.map((bubble) =>
+          bubble.id === bubbleId
+            ? {
+                ...bubble,
+                position_x: position.x,
+                position_y: position.y,
+              }
+            : bubble,
+        ),
+      }));
+    },
+    [],
+  );
+
+  const replacePositionSave = useCallback(
+    (bubbleId: string, save: BubblePositionSave | null) => {
+      const nextSaves = { ...positionSavesRef.current };
+
+      if (save) {
+        nextSaves[bubbleId] = save;
+      } else {
+        delete nextSaves[bubbleId];
+      }
+
+      positionSavesRef.current = nextSaves;
+      setPositionSaves(nextSaves);
+    },
+    [],
+  );
+
+  const persistBubblePosition = useCallback(
+    async (
+      bubbleId: string,
+      requestedPosition: BubblePosition,
+      persistedPosition: BubblePosition,
+    ) => {
+      const attempt = ++positionSaveAttemptRef.current;
+      replacePositionSave(bubbleId, {
+        attempt,
+        persistedPosition,
+        requestedPosition,
+        status: 'saving',
+      });
+
+      try {
+        const updatedBubble = await requestBubblePositionUpdate(
+          projectId,
+          bubbleId,
+          {
+            position_x: requestedPosition.x,
+            position_y: requestedPosition.y,
+          },
+        );
+
+        if (
+          updatedBubble.id !== bubbleId ||
+          updatedBubble.project_id !== projectId ||
+          !Number.isFinite(updatedBubble.position_x) ||
+          !Number.isFinite(updatedBubble.position_y)
+        ) {
+          throw new Error('The saved bubble position response was invalid.');
+        }
+
+        if (
+          !mountedRef.current ||
+          positionSavesRef.current[bubbleId]?.attempt !== attempt
+        ) {
+          return;
+        }
+
+        setLocalBubblePosition(bubbleId, {
+          x: updatedBubble.position_x,
+          y: updatedBubble.position_y,
+        });
+        replacePositionSave(bubbleId, null);
+        trackAnalytics(analyticsClient, 'bubble_moved', {
+          project_id: projectId,
+          bubble_id: bubbleId,
+        });
+      } catch {
+        if (
+          mountedRef.current &&
+          positionSavesRef.current[bubbleId]?.attempt === attempt
+        ) {
+          replacePositionSave(bubbleId, {
+            attempt,
+            persistedPosition,
+            requestedPosition,
+            status: 'error',
+          });
+        }
+      }
+    },
+    [
+      analyticsClient,
+      projectId,
+      replacePositionSave,
+      requestBubblePositionUpdate,
+      setLocalBubblePosition,
+    ],
+  );
 
   const persistViewport = useCallback(
     async function persist(
@@ -548,13 +740,34 @@ export function CanvasSurface({
         if (!controller.signal.aborted) {
           const result = renderableBubbles(records, projectId);
 
-          setLoadState((current) => ({
-            status: result.invalidCount === 0 ? 'ready' : 'partial',
-            bubbles:
-              result.invalidCount === 0
-                ? result.bubbles
-                : mergeBubbles(current.bubbles, result.bubbles),
-          }));
+          setLoadState((current) => {
+            const localBubbles = new Map(
+              current.bubbles.map((bubble) => [bubble.id, bubble]),
+            );
+            const activeBubbleId = activeBubbleDragRef.current?.bubbleId;
+            const loadedBubbles = result.bubbles.map((bubble) => {
+              const hasUnsavedPosition =
+                bubble.id === activeBubbleId ||
+                positionSavesRef.current[bubble.id] !== undefined;
+              const localBubble = localBubbles.get(bubble.id);
+
+              return hasUnsavedPosition && localBubble
+                ? {
+                    ...bubble,
+                    position_x: localBubble.position_x,
+                    position_y: localBubble.position_y,
+                  }
+                : bubble;
+            });
+
+            return {
+              status: result.invalidCount === 0 ? 'ready' : 'partial',
+              bubbles:
+                result.invalidCount === 0
+                  ? loadedBubbles
+                  : mergeBubbles(current.bubbles, loadedBubbles),
+            };
+          });
         }
       })
       .catch((error: unknown) => {
@@ -578,6 +791,43 @@ export function CanvasSurface({
       target instanceof Element &&
       target.closest('[data-canvas-overlay], [data-canvas-interactive]') !== null
     );
+  }
+
+  function handleBubblePointerDown(
+    event: ReactPointerEvent<HTMLElement>,
+    bubble: Bubble,
+  ) {
+    if (
+      event.button !== 0 ||
+      positionSavesRef.current[bubble.id]?.status === 'saving'
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const failedSave = positionSavesRef.current[bubble.id];
+    const startPosition = {
+      x: bubble.position_x,
+      y: bubble.position_y,
+    };
+
+    activeBubbleDragRef.current = {
+      bubbleId: bubble.id,
+      pointerId: event.pointerId,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startPosition,
+      currentPosition: startPosition,
+      persistedPosition: failedSave?.persistedPosition ?? startPosition,
+      zoom: viewport.zoom,
+    };
+    setDraggingBubbleId(bubble.id);
+
+    if (typeof surfaceRef.current?.setPointerCapture === 'function') {
+      surfaceRef.current.setPointerCapture(event.pointerId);
+    }
   }
 
   function handlePointerDown(event: ReactPointerEvent<HTMLElement>) {
@@ -605,6 +855,26 @@ export function CanvasSurface({
   }
 
   function handlePointerMove(event: ReactPointerEvent<HTMLElement>) {
+    const activeDrag = activeBubbleDragRef.current;
+
+    if (activeDrag?.pointerId === event.pointerId) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const nextPosition = {
+        x:
+          activeDrag.startPosition.x +
+          (event.clientX - activeDrag.startClientX) / activeDrag.zoom,
+        y:
+          activeDrag.startPosition.y +
+          (event.clientY - activeDrag.startClientY) / activeDrag.zoom,
+      };
+
+      activeDrag.currentPosition = nextPosition;
+      setLocalBubblePosition(activeDrag.bubbleId, nextPosition);
+      return;
+    }
+
     const activePan = activePanRef.current;
 
     if (!activePan || activePan.pointerId !== event.pointerId) {
@@ -620,7 +890,60 @@ export function CanvasSurface({
     }));
   }
 
+  function releasePointerCapture(pointerId: number) {
+    const surface = surfaceRef.current;
+
+    if (
+      typeof surface?.hasPointerCapture === 'function' &&
+      surface.hasPointerCapture(pointerId)
+    ) {
+      surface.releasePointerCapture(pointerId);
+    }
+  }
+
+  function finishBubbleDrag(event: ReactPointerEvent<HTMLElement>) {
+    const activeDrag = activeBubbleDragRef.current;
+
+    if (!activeDrag || activeDrag.pointerId !== event.pointerId) {
+      return false;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    activeBubbleDragRef.current = null;
+    setDraggingBubbleId(null);
+    releasePointerCapture(event.pointerId);
+
+    const didMove =
+      activeDrag.currentPosition.x !== activeDrag.startPosition.x ||
+      activeDrag.currentPosition.y !== activeDrag.startPosition.y;
+
+    if (!didMove) {
+      return true;
+    }
+
+    const returnedToPersistedPosition =
+      activeDrag.currentPosition.x === activeDrag.persistedPosition.x &&
+      activeDrag.currentPosition.y === activeDrag.persistedPosition.y;
+
+    if (returnedToPersistedPosition) {
+      replacePositionSave(activeDrag.bubbleId, null);
+      return true;
+    }
+
+    void persistBubblePosition(
+      activeDrag.bubbleId,
+      activeDrag.currentPosition,
+      activeDrag.persistedPosition,
+    );
+    return true;
+  }
+
   function finishPointerPan(event: ReactPointerEvent<HTMLElement>) {
+    if (finishBubbleDrag(event)) {
+      return;
+    }
+
     if (activePanRef.current?.pointerId !== event.pointerId) {
       return;
     }
@@ -636,6 +959,22 @@ export function CanvasSurface({
     ) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
+  }
+
+  function cancelPointerInteraction(event: ReactPointerEvent<HTMLElement>) {
+    const activeDrag = activeBubbleDragRef.current;
+
+    if (activeDrag?.pointerId === event.pointerId) {
+      event.preventDefault();
+      event.stopPropagation();
+      setLocalBubblePosition(activeDrag.bubbleId, activeDrag.startPosition);
+      activeBubbleDragRef.current = null;
+      setDraggingBubbleId(null);
+      releasePointerCapture(event.pointerId);
+      return;
+    }
+
+    finishPointerPan(event);
   }
 
   const zoomAt = useCallback(
@@ -765,6 +1104,14 @@ export function CanvasSurface({
     typeof emptyState === 'function'
       ? emptyState({ onCreateBubble: openCreateBubbleDialog })
       : emptyState;
+  const failedPositionSaveEntry = Object.entries(positionSaves).find(
+    ([, save]) => save.status === 'error',
+  );
+  const failedPositionBubble = failedPositionSaveEntry
+    ? loadState.bubbles.find(
+        (bubble) => bubble.id === failedPositionSaveEntry[0],
+      )
+    : undefined;
 
   return (
     <section
@@ -776,10 +1123,18 @@ export function CanvasSurface({
       data-canvas-y={viewport.y}
       data-canvas-zoom={viewport.zoom}
       onLostPointerCapture={() => {
+        const activeDrag = activeBubbleDragRef.current;
+
+        if (activeDrag) {
+          setLocalBubblePosition(activeDrag.bubbleId, activeDrag.startPosition);
+          activeBubbleDragRef.current = null;
+          setDraggingBubbleId(null);
+        }
+
         activePanRef.current = null;
         setIsPanning(false);
       }}
-      onPointerCancel={finishPointerPan}
+      onPointerCancel={cancelPointerInteraction}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={finishPointerPan}
@@ -800,9 +1155,24 @@ export function CanvasSurface({
           transformOrigin: '0 0',
         }}
       >
-        {loadState.bubbles.map((bubble) => (
-          <BubbleCard bubble={bubble} key={bubble.id} />
-        ))}
+        {loadState.bubbles.map((bubble) => {
+          const positionSave = positionSaves[bubble.id];
+          const status =
+            draggingBubbleId === bubble.id
+              ? 'dragging'
+              : (positionSave?.status ?? 'default');
+
+          return (
+            <BubbleCard
+              bubble={bubble}
+              key={bubble.id}
+              onPointerDown={(event) =>
+                handleBubblePointerDown(event, bubble)
+              }
+              status={status}
+            />
+          );
+        })}
       </div>
 
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-6 py-10 lg:px-10">
@@ -849,6 +1219,25 @@ export function CanvasSurface({
           onRetry={() => {
             failedViewportRef.current = null;
             void persistViewport(latestViewportRef.current);
+          }}
+        />
+      )}
+
+      {failedPositionSaveEntry && failedPositionBubble && (
+        <BubblePositionSaveError
+          bubbleTitle={failedPositionBubble.title}
+          onRetry={() => {
+            const [bubbleId, save] = failedPositionSaveEntry;
+            void persistBubblePosition(
+              bubbleId,
+              save.requestedPosition,
+              save.persistedPosition,
+            );
+          }}
+          onRevert={() => {
+            const [bubbleId, save] = failedPositionSaveEntry;
+            setLocalBubblePosition(bubbleId, save.persistedPosition);
+            replacePositionSave(bubbleId, null);
           }}
         />
       )}

@@ -19,6 +19,7 @@ import {
 import {
   CanvasSurface,
   type BubbleListRequest,
+  type BubblePositionUpdateRequest,
   type ProjectViewportUpdateRequest,
 } from '../canvas/CanvasSurface';
 import type {
@@ -72,6 +73,7 @@ export interface ProjectWorkspaceProps {
   requestBubbleCreate?: BubbleCreateRequest;
   requestBubbles?: BubbleListRequest;
   requestBubblePlacement?: BubblePlacementRequest;
+  requestBubblePositionUpdate?: BubblePositionUpdateRequest;
   requestViewportUpdate?: ProjectViewportUpdateRequest;
   viewportSaveDelayMs?: number;
   discussionCount?: number;
@@ -453,6 +455,7 @@ export function ProjectWorkspace({
   requestBubbleCreate,
   requestBubbles,
   requestBubblePlacement,
+  requestBubblePositionUpdate,
   requestViewportUpdate,
   viewportSaveDelayMs,
   discussionCount = 0,
@@ -535,6 +538,7 @@ export function ProjectWorkspace({
 
         <div className="relative flex min-h-0 flex-1">
           <CanvasSurface
+            analyticsClient={analyticsClient}
             emptyState={({ onCreateBubble }) => (
               <EmptyCanvasContent
                 analyticsClient={analyticsClient}
@@ -557,6 +561,7 @@ export function ProjectWorkspace({
             requestBubbleCreate={requestBubbleCreate}
             requestBubbles={requestBubbles}
             requestBubblePlacement={requestBubblePlacement}
+            requestBubblePositionUpdate={requestBubblePositionUpdate}
             requestViewportUpdate={requestViewportUpdate}
             viewportSaveDelayMs={viewportSaveDelayMs}
           />

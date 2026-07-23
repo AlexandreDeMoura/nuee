@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react';
+import type { CSSProperties, PointerEventHandler } from 'react';
 import type { Bubble } from '../api';
 import { formatUpdatedAt } from '../utils/date';
 import { getBubbleCardPreview } from './bubbleCardPreview';
@@ -7,18 +7,19 @@ export type BubbleCardStatus = 'default' | 'dragging' | 'saving' | 'error';
 
 export interface BubbleCardProps {
   bubble: Bubble;
+  onPointerDown?: PointerEventHandler<HTMLElement>;
   status?: BubbleCardStatus;
 }
 
 const cardStateClasses: Record<BubbleCardStatus, string> = {
   default:
-    'border-[#e1e6ec] shadow-[0_2px_4px_rgba(30,39,51,0.05),0_12px_26px_-14px_rgba(30,39,51,0.25)] hover:-translate-y-0.5 hover:border-[#c4cfdb] hover:shadow-[0_4px_8px_rgba(30,39,51,0.07),0_18px_32px_-14px_rgba(30,39,51,0.3)]',
+    'cursor-grab border-[#e1e6ec] shadow-[0_2px_4px_rgba(30,39,51,0.05),0_12px_26px_-14px_rgba(30,39,51,0.25)] hover:-translate-y-0.5 hover:border-[#c4cfdb] hover:shadow-[0_4px_8px_rgba(30,39,51,0.07),0_18px_32px_-14px_rgba(30,39,51,0.3)]',
   dragging:
     'z-20 -translate-y-1 cursor-grabbing border-[#8da6d3] shadow-[0_0_0_3px_rgba(63,99,168,0.1),0_22px_42px_-14px_rgba(63,99,168,0.42)]',
   saving:
-    'border-[#a9bde0] opacity-85 shadow-[0_0_0_3px_rgba(63,99,168,0.07),0_12px_26px_-14px_rgba(30,39,51,0.25)]',
+    'cursor-wait border-[#a9bde0] opacity-85 shadow-[0_0_0_3px_rgba(63,99,168,0.07),0_12px_26px_-14px_rgba(30,39,51,0.25)]',
   error:
-    'border-[#d7a9a4] shadow-[0_0_0_3px_rgba(180,84,78,0.08),0_12px_26px_-14px_rgba(30,39,51,0.25)]',
+    'cursor-grab border-[#d7a9a4] shadow-[0_0_0_3px_rgba(180,84,78,0.08),0_12px_26px_-14px_rgba(30,39,51,0.25)]',
 };
 
 const stateLabels: Record<BubbleCardStatus, string> = {
@@ -28,7 +29,11 @@ const stateLabels: Record<BubbleCardStatus, string> = {
   error: 'SAVE FAILED',
 };
 
-export function BubbleCard({ bubble, status = 'default' }: BubbleCardProps) {
+export function BubbleCard({
+  bubble,
+  onPointerDown,
+  status = 'default',
+}: BubbleCardProps) {
   const position: CSSProperties = {
     left: bubble.position_x,
     top: bubble.position_y,
@@ -43,6 +48,7 @@ export function BubbleCard({ bubble, status = 'default' }: BubbleCardProps) {
       data-bubble-id={bubble.id}
       data-bubble-state={status}
       data-canvas-interactive
+      onPointerDown={onPointerDown}
       style={position}
     >
       <div className="mb-2 flex min-h-[18px] items-center gap-[7px]">

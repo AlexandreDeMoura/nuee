@@ -4,6 +4,7 @@ import { ApiError, getProject, type Project } from '../api';
 import { analytics, trackAnalytics, type AnalyticsClient } from '../analytics';
 import type {
   BubbleListRequest,
+  BubblePositionUpdateRequest,
   ProjectViewportUpdateRequest,
 } from '../canvas/CanvasSurface';
 import type {
@@ -21,6 +22,7 @@ export interface ProjectCanvasRouteProps {
   requestBubbleCreate?: BubbleCreateRequest;
   requestBubbles?: BubbleListRequest;
   requestBubblePlacement?: BubblePlacementRequest;
+  requestBubblePositionUpdate?: BubblePositionUpdateRequest;
   requestViewportUpdate?: ProjectViewportUpdateRequest;
   viewportSaveDelayMs?: number;
   analyticsClient?: AnalyticsClient;
@@ -126,6 +128,7 @@ export function ProjectCanvasRoute({
   requestBubbleCreate,
   requestBubbles,
   requestBubblePlacement,
+  requestBubblePositionUpdate,
   requestViewportUpdate,
   viewportSaveDelayMs,
   analyticsClient = analytics,
@@ -173,6 +176,7 @@ export function ProjectCanvasRoute({
         requestBubbleCreate={requestBubbleCreate}
         requestBubbles={requestBubbles}
         requestBubblePlacement={requestBubblePlacement}
+        requestBubblePositionUpdate={requestBubblePositionUpdate}
         requestViewportUpdate={requestViewportUpdate}
         viewportSaveDelayMs={viewportSaveDelayMs}
       />
