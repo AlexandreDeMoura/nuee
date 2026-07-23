@@ -7,7 +7,12 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react';
-import type { Bubble, Project, UpdateBubbleInput } from '../src/api';
+import type {
+  Bubble,
+  BubbleLink,
+  Project,
+  UpdateBubbleInput,
+} from '../src/api';
 import type { AnalyticsClient } from '../src/analytics';
 import {
   ProjectWorkspace,
@@ -361,6 +366,68 @@ describe('workspace integration contracts', () => {
     );
     expect(inspector?.textContent).toContain(
       'Complete revised market knowledge.',
+    );
+  });
+
+  it('highlights only direct symmetric links and updates after unlinking', async () => {
+    const secondBubble = bubble({
+      id: 'bubble-2',
+      title: 'Regulatory lead time',
+      position_x: 420,
+    });
+    const thirdBubble = bubble({
+      id: 'bubble-3',
+      title: 'Unrelated operations note',
+      position_x: 720,
+    });
+    const link: BubbleLink = {
+      id: 'link-1',
+      project_id: project.id,
+      bubble_a_id: 'bubble-1',
+      bubble_b_id: 'bubble-2',
+      created_at: '2026-07-23T10:00:00.000Z',
+    };
+    const requestDeleteLink = vi.fn().mockResolvedValue(undefined);
+
+    render(
+      <ProjectWorkspace
+        project={project}
+        requestBubbles={async () => [bubble(), secondBubble, thirdBubble]}
+        requestBubbleLinks={async () => [link]}
+        requestBubbleLinkDelete={requestDeleteLink}
+      />,
+    );
+
+    const firstCard = await screen.findByRole('article', {
+      name: 'Market is real but fragmented',
+    });
+    const secondCard = screen.getByRole('article', {
+      name: 'Regulatory lead time',
+    });
+    const thirdCard = screen.getByRole('article', {
+      name: 'Unrelated operations note',
+    });
+
+    fireEvent.keyDown(secondCard, { key: 'Enter' });
+
+    expect(firstCard.getAttribute('data-bubble-linked')).toBe('true');
+    expect(secondCard.getAttribute('data-bubble-selected')).toBe('true');
+    expect(thirdCard.getAttribute('data-bubble-linked')).toBe('false');
+    expect(document.querySelector('[data-canvas-content] svg')).toBeNull();
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Unlink Market is real but fragmented',
+      }),
+    );
+
+    await waitFor(() =>
+      expect(firstCard.getAttribute('data-bubble-linked')).toBe('false'),
+    );
+    expect(requestDeleteLink).toHaveBeenCalledWith(
+      project.id,
+      'bubble-2',
+      'bubble-1',
     );
   });
 

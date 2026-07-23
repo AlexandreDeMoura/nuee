@@ -11,6 +11,7 @@ export type BubbleCardStatus = 'default' | 'dragging' | 'saving' | 'error';
 
 export interface BubbleCardProps {
   bubble: Bubble;
+  isLinked?: boolean;
   isSelected?: boolean;
   onActivate?: () => void;
   onPointerDown?: PointerEventHandler<HTMLElement>;
@@ -37,6 +38,7 @@ const stateLabels: Record<BubbleCardStatus, string> = {
 
 export function BubbleCard({
   bubble,
+  isLinked = false,
   isSelected = false,
   onActivate,
   onPointerDown,
@@ -47,10 +49,16 @@ export function BubbleCard({
     top: bubble.position_y,
   };
   const stateLabel =
-    status === 'default' && isSelected ? 'SELECTED' : stateLabels[status];
+    status === 'default' && isSelected
+      ? 'SELECTED'
+      : status === 'default' && isLinked
+        ? 'LINKED'
+        : stateLabels[status];
   const stateClasses =
     status === 'default' && isSelected
       ? 'z-10 cursor-grab border-2 border-[#3f63a8] shadow-[0_0_0_4px_rgba(63,99,168,0.16),0_18px_38px_-12px_rgba(63,99,168,0.45)]'
+      : status === 'default' && isLinked
+        ? 'z-[5] cursor-grab border-2 border-[#89a5d2] bg-[linear-gradient(180deg,#f9fbff,#f3f7fd)] shadow-[0_0_0_3px_rgba(105,137,190,0.12),0_14px_30px_-14px_rgba(63,99,168,0.3)]'
       : cardStateClasses[status];
   const handleKeyDown: KeyboardEventHandler<HTMLElement> = (event) => {
     if ((event.key === 'Enter' || event.key === ' ') && onActivate) {
@@ -65,6 +73,7 @@ export function BubbleCard({
       aria-busy={status === 'saving' ? 'true' : undefined}
       aria-labelledby={`bubble-title-${bubble.id}`}
       data-bubble-id={bubble.id}
+      data-bubble-linked={isLinked ? 'true' : 'false'}
       data-bubble-selected={isSelected ? 'true' : 'false'}
       data-bubble-state={status}
       data-canvas-interactive
@@ -78,7 +87,7 @@ export function BubbleCard({
           className={`rounded-[5px] px-1.5 py-0.5 text-[9px] leading-[14px] font-semibold tracking-[0.1em] [font-family:'IBM_Plex_Mono',ui-monospace,monospace] ${
             status === 'error'
               ? 'bg-[#f9eeee] text-[#a95f57]'
-              : status === 'default' && !isSelected
+              : status === 'default' && !isSelected && !isLinked
                 ? 'bg-[#f2f5f9] text-[#7b8899]'
                 : isSelected && status === 'default'
                   ? 'bg-[#3f63a8] text-white'

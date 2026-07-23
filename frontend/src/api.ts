@@ -28,6 +28,19 @@ export interface Bubble {
   source_message_ids: string[];
 }
 
+export interface BubbleLink {
+  id: string;
+  project_id: string;
+  bubble_a_id: string;
+  bubble_b_id: string;
+  created_at: string;
+}
+
+export interface CreateBubbleLinkInput {
+  bubble_a_id: string;
+  bubble_b_id: string;
+}
+
 export interface CreateBubbleInput {
   title: string;
   summary?: string | null;
@@ -119,6 +132,10 @@ async function requestJson<T>(path: string, init: RequestInit = {}): Promise<T> 
     throw new ApiError(response.status, body);
   }
 
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
   return response.json() as Promise<T>;
 }
 
@@ -197,6 +214,41 @@ export function updateBubble(
       body: JSON.stringify(input),
       signal,
     },
+  );
+}
+
+export function getBubbleLinks(
+  projectId: string,
+  signal?: AbortSignal,
+): Promise<BubbleLink[]> {
+  return requestJson<BubbleLink[]>(
+    `/projects/${encodeURIComponent(projectId)}/bubble-links`,
+    { signal },
+  );
+}
+
+export function createBubbleLink(
+  projectId: string,
+  input: CreateBubbleLinkInput,
+): Promise<BubbleLink> {
+  return requestJson<BubbleLink>(
+    `/projects/${encodeURIComponent(projectId)}/bubble-links`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+    },
+  );
+}
+
+export function deleteBubbleLink(
+  projectId: string,
+  firstBubbleId: string,
+  secondBubbleId: string,
+): Promise<void> {
+  return requestJson<void>(
+    `/projects/${encodeURIComponent(projectId)}/bubble-links/${encodeURIComponent(firstBubbleId)}/${encodeURIComponent(secondBubbleId)}`,
+    { method: 'DELETE' },
   );
 }
 

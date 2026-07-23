@@ -7,7 +7,7 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react';
-import type { Bubble } from '../src/api';
+import type { Bubble, BubbleLink } from '../src/api';
 import type { AnalyticsClient } from '../src/analytics';
 import { BubbleInspector } from '../src/bubbles/BubbleInspector';
 
@@ -37,6 +37,17 @@ function bubble(overrides: Partial<Bubble> = {}): Bubble {
     source_kind: 'discussion',
     source_discussion_id: 'discussion-1',
     source_message_ids: ['message-1', 'message-2'],
+    ...overrides,
+  };
+}
+
+function bubbleLink(overrides: Partial<BubbleLink> = {}): BubbleLink {
+  return {
+    id: 'link-1',
+    project_id: 'project-123',
+    bubble_a_id: 'bubble-1',
+    bubble_b_id: 'bubble-2',
+    created_at: '2026-07-23T10:00:00.000Z',
     ...overrides,
   };
 }
@@ -240,5 +251,87 @@ describe('BubbleInspector', () => {
       );
     });
     expect(onBubbleUpdated).not.toHaveBeenCalled();
+  });
+
+  it('creates a manual link from same-project candidates and records success', async () => {
+    const secondBubble = bubble({
+      id: 'bubble-2',
+      title: 'Regulatory lead time',
+    });
+    const createdLink = bubbleLink();
+    const requestCreateLink = vi.fn().mockResolvedValue(createdLink);
+    const onBubbleLinkCreated = vi.fn();
+    const track = vi.fn<AnalyticsClient['track']>();
+
+    render(
+      <BubbleInspector
+        analyticsClient={{ track }}
+        availableBubbles={[bubble(), secondBubble]}
+        bubble={bubble()}
+        onBubbleLinkCreated={onBubbleLinkCreated}
+        onBubbleUpdated={vi.fn()}
+        requestCreateLink={requestCreateLink}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText('Bubble to link'), {
+      target: { value: secondBubble.id },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Link' }));
+
+    await waitFor(() =>
+      expect(onBubbleLinkCreated).toHaveBeenCalledWith(createdLink),
+    );
+    expect(requestCreateLink).toHaveBeenCalledWith('project-123', {
+      bubble_a_id: 'bubble-1',
+      bubble_b_id: 'bubble-2',
+    });
+    expect(track).toHaveBeenCalledWith('bubble_link_created', {
+      project_id: 'project-123',
+      bubble_a_id: 'bubble-1',
+      bubble_b_id: 'bubble-2',
+    });
+  });
+
+  it('lists direct links and removes either endpoint order', async () => {
+    const secondBubble = bubble({
+      id: 'bubble-2',
+      title: 'Regulatory lead time',
+    });
+    const reversedLink = bubbleLink({
+      bubble_a_id: 'bubble-2',
+      bubble_b_id: 'bubble-1',
+    });
+    const requestDeleteLink = vi.fn().mockResolvedValue(undefined);
+    const onBubbleLinkRemoved = vi.fn();
+
+    render(
+      <BubbleInspector
+        availableBubbles={[bubble(), secondBubble]}
+        bubble={bubble()}
+        bubbleLinks={[reversedLink]}
+        onBubbleLinkRemoved={onBubbleLinkRemoved}
+        onBubbleUpdated={vi.fn()}
+        requestDeleteLink={requestDeleteLink}
+      />,
+    );
+
+    expect(screen.getByText('Regulatory lead time')).toBeTruthy();
+    expect(
+      (screen.getByLabelText('Bubble to link') as HTMLSelectElement).disabled,
+    ).toBe(true);
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Unlink Regulatory lead time' }),
+    );
+
+    await waitFor(() =>
+      expect(onBubbleLinkRemoved).toHaveBeenCalledWith(reversedLink),
+    );
+    expect(requestDeleteLink).toHaveBeenCalledWith(
+      'project-123',
+      'bubble-1',
+      'bubble-2',
+    );
   });
 });

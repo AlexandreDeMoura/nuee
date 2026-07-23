@@ -11,9 +11,16 @@ import type {
   BubbleCreateRequest,
   BubblePlacementRequest,
 } from '../bubbles/CreateBubbleDialog';
-import type { BubbleUpdateRequest } from '../bubbles/BubbleInspector';
+import type {
+  BubbleLinkCreateRequest,
+  BubbleLinkDeleteRequest,
+  BubbleUpdateRequest,
+} from '../bubbles/BubbleInspector';
 import { navigate } from '../utils/routing';
-import { ProjectWorkspace } from './ProjectWorkspace';
+import {
+  ProjectWorkspace,
+  type BubbleLinkListRequest,
+} from './ProjectWorkspace';
 
 type ProjectRequest = (projectId: string, signal?: AbortSignal) => Promise<Project>;
 
@@ -25,6 +32,9 @@ export interface ProjectCanvasRouteProps {
   requestBubblePlacement?: BubblePlacementRequest;
   requestBubblePositionUpdate?: BubblePositionUpdateRequest;
   requestBubbleUpdate?: BubbleUpdateRequest;
+  requestBubbleLinks?: BubbleLinkListRequest;
+  requestBubbleLinkCreate?: BubbleLinkCreateRequest;
+  requestBubbleLinkDelete?: BubbleLinkDeleteRequest;
   requestViewportUpdate?: ProjectViewportUpdateRequest;
   viewportSaveDelayMs?: number;
   bubbleSaveDelayMs?: number;
@@ -133,6 +143,9 @@ export function ProjectCanvasRoute({
   requestBubblePlacement,
   requestBubblePositionUpdate,
   requestBubbleUpdate,
+  requestBubbleLinks,
+  requestBubbleLinkCreate,
+  requestBubbleLinkDelete,
   requestViewportUpdate,
   viewportSaveDelayMs,
   bubbleSaveDelayMs,
@@ -183,6 +196,9 @@ export function ProjectCanvasRoute({
         requestBubblePlacement={requestBubblePlacement}
         requestBubblePositionUpdate={requestBubblePositionUpdate}
         requestBubbleUpdate={requestBubbleUpdate}
+        requestBubbleLinks={requestBubbleLinks}
+        requestBubbleLinkCreate={requestBubbleLinkCreate}
+        requestBubbleLinkDelete={requestBubbleLinkDelete}
         requestViewportUpdate={requestViewportUpdate}
         viewportSaveDelayMs={viewportSaveDelayMs}
         bubbleSaveDelayMs={bubbleSaveDelayMs}

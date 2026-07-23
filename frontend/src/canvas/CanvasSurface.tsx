@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
@@ -19,6 +20,7 @@ import {
   updateBubblePosition,
   updateProjectViewport,
   type Bubble,
+  type BubbleLink,
   type BubblePlacementInput,
   type Project,
   type ProjectViewportUpdateOptions,
@@ -86,6 +88,8 @@ export interface CanvasSurfaceProps {
   requestBubblePositionUpdate?: BubblePositionUpdateRequest;
   requestViewportUpdate?: ProjectViewportUpdateRequest;
   onBubbleSelectionChange?: (bubble: Bubble | null) => void;
+  onBubblesChange?: (bubbles: Bubble[]) => void;
+  bubbleLinks?: BubbleLink[];
   updatedBubbles?: Bubble[];
   viewportSaveDelayMs?: number;
 }
@@ -460,6 +464,8 @@ export function CanvasSurface({
   requestBubblePositionUpdate = updateBubblePosition,
   requestViewportUpdate = updateProjectViewport,
   onBubbleSelectionChange,
+  onBubblesChange,
+  bubbleLinks = [],
   updatedBubbles = [],
   viewportSaveDelayMs = DEFAULT_VIEWPORT_SAVE_DELAY_MS,
 }: CanvasSurfaceProps) {
@@ -813,22 +819,45 @@ export function CanvasSurface({
     return () => controller.abort();
   }, [projectId, requestBubbles, requestKey, selectBubble]);
 
-  const updatedBubblesById = new Map(
-    updatedBubbles
-      .filter((bubble) => isRenderableBubble(bubble, projectId))
-      .map((bubble) => [bubble.id, bubble]),
-  );
-  const displayedBubbles = loadState.bubbles.map((bubble) => {
-    const updatedBubble = updatedBubblesById.get(bubble.id);
+  const displayedBubbles = useMemo(() => {
+    const updatedBubblesById = new Map(
+      updatedBubbles
+        .filter((bubble) => isRenderableBubble(bubble, projectId))
+        .map((bubble) => [bubble.id, bubble]),
+    );
 
-    return updatedBubble
-      ? {
-          ...updatedBubble,
-          position_x: bubble.position_x,
-          position_y: bubble.position_y,
-        }
-      : bubble;
-  });
+    return loadState.bubbles.map((bubble) => {
+      const updatedBubble = updatedBubblesById.get(bubble.id);
+
+      return updatedBubble
+        ? {
+            ...updatedBubble,
+            position_x: bubble.position_x,
+            position_y: bubble.position_y,
+          }
+        : bubble;
+    });
+  }, [loadState.bubbles, projectId, updatedBubbles]);
+
+  useEffect(() => {
+    onBubblesChange?.(displayedBubbles);
+  }, [displayedBubbles, onBubblesChange]);
+
+  const linkedBubbleIds = new Set<string>();
+
+  if (selectedBubbleId) {
+    for (const link of bubbleLinks) {
+      if (link.project_id !== projectId) {
+        continue;
+      }
+
+      if (link.bubble_a_id === selectedBubbleId) {
+        linkedBubbleIds.add(link.bubble_b_id);
+      } else if (link.bubble_b_id === selectedBubbleId) {
+        linkedBubbleIds.add(link.bubble_a_id);
+      }
+    }
+  }
 
   function isInteractiveTarget(target: EventTarget | null) {
     return (
@@ -1227,6 +1256,10 @@ export function CanvasSurface({
           return (
             <BubbleCard
               bubble={bubble}
+              isLinked={
+                selectedBubbleId !== bubble.id &&
+                linkedBubbleIds.has(bubble.id)
+              }
               isSelected={selectedBubbleId === bubble.id}
               key={bubble.id}
               onActivate={() => selectBubble(bubble)}

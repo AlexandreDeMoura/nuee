@@ -202,6 +202,10 @@ describe('CreateProjectDialog', () => {
       .mockResolvedValueOnce({
         ok: true,
         json: async () => [],
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => [],
       });
     vi.stubGlobal('fetch', fetchMock);
 
@@ -215,7 +219,7 @@ describe('CreateProjectDialog', () => {
 
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(await screen.findByText("Nothing here yet — that's on purpose.")).toBeTruthy();
-    expect(fetchMock).toHaveBeenCalledTimes(4);
+    expect(fetchMock).toHaveBeenCalledTimes(5);
     expect(fetchMock.mock.calls[1]?.[1]).toMatchObject({
       method: 'POST',
       body: JSON.stringify({
@@ -226,6 +230,9 @@ describe('CreateProjectDialog', () => {
     expect(fetchMock.mock.calls[2]?.[0]).toBe('http://localhost:3000/projects/project-123');
     expect(fetchMock.mock.calls[3]?.[0]).toBe(
       'http://localhost:3000/projects/project-123/bubbles',
+    );
+    expect(fetchMock.mock.calls[4]?.[0]).toBe(
+      'http://localhost:3000/projects/project-123/bubble-links',
     );
   });
 });

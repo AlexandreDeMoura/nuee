@@ -91,4 +91,16 @@ describe('BubbleCard', () => {
 
     expect(onActivate).toHaveBeenCalledTimes(2);
   });
+
+  it('exposes a distinct secondary state for a directly linked bubble', () => {
+    render(<BubbleCard bubble={bubble()} isLinked />);
+
+    const card = screen.getByRole('article', {
+      name: 'Last-mile is the make-or-break',
+    });
+
+    expect(card.getAttribute('data-bubble-linked')).toBe('true');
+    expect(card.getAttribute('data-bubble-selected')).toBe('false');
+    expect(screen.getByText('LINKED')).toBeTruthy();
+  });
 });

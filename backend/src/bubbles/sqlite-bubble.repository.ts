@@ -4,10 +4,13 @@ import { DatabaseSync } from 'node:sqlite';
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import type {
   Bubble,
+  BubbleLink,
+  BubbleLinkRepository,
   BubbleRepository,
   BubbleSourceKind,
 } from './bubble.types';
 import { CREATE_BUBBLES_MIGRATION } from './migrations/002-create-bubbles';
+import { CREATE_BUBBLE_LINKS_MIGRATION } from './migrations/003-create-bubble-links';
 
 interface BubbleRow {
   id: string;
@@ -24,9 +27,17 @@ interface BubbleRow {
   source_message_ids: string;
 }
 
+interface BubbleLinkRow {
+  id: string;
+  project_id: string;
+  bubble_a_id: string;
+  bubble_b_id: string;
+  created_at: string;
+}
+
 @Injectable()
 export class SqliteBubbleRepository
-  implements BubbleRepository, OnModuleDestroy
+  implements BubbleRepository, BubbleLinkRepository, OnModuleDestroy
 {
   private readonly database: DatabaseSync;
 
@@ -38,6 +49,7 @@ export class SqliteBubbleRepository
     this.database = new DatabaseSync(databasePath);
     this.database.exec('PRAGMA foreign_keys = ON;');
     this.database.exec(CREATE_BUBBLES_MIGRATION);
+    this.database.exec(CREATE_BUBBLE_LINKS_MIGRATION);
   }
 
   create(bubble: Bubble): Bubble {
@@ -159,6 +171,76 @@ export class SqliteBubbleRepository
     const result = this.database
       .prepare('DELETE FROM bubbles WHERE project_id = ? AND id = ?')
       .run(projectId, id);
+
+    return result.changes > 0;
+  }
+
+  createLink(link: BubbleLink): BubbleLink {
+    this.database
+      .prepare(
+        `
+          INSERT INTO bubble_links (
+            id,
+            project_id,
+            bubble_a_id,
+            bubble_b_id,
+            created_at
+          ) VALUES (?, ?, ?, ?, ?)
+          ON CONFLICT (project_id, bubble_a_id, bubble_b_id) DO NOTHING
+        `,
+      )
+      .run(
+        link.id,
+        link.project_id,
+        link.bubble_a_id,
+        link.bubble_b_id,
+        link.created_at,
+      );
+
+    return (
+      this.findLink(link.project_id, link.bubble_a_id, link.bubble_b_id) ?? link
+    );
+  }
+
+  findAllLinksByProjectId(projectId: string): BubbleLink[] {
+    return this.database
+      .prepare(
+        `
+          SELECT *
+          FROM bubble_links
+          WHERE project_id = ?
+          ORDER BY created_at ASC, id ASC
+        `,
+      )
+      .all(projectId) as unknown as BubbleLinkRow[];
+  }
+
+  findLink(
+    projectId: string,
+    bubbleAId: string,
+    bubbleBId: string,
+  ): BubbleLink | undefined {
+    return this.database
+      .prepare(
+        `
+          SELECT *
+          FROM bubble_links
+          WHERE project_id = ? AND bubble_a_id = ? AND bubble_b_id = ?
+        `,
+      )
+      .get(projectId, bubbleAId, bubbleBId) as unknown as
+      BubbleLinkRow | undefined;
+  }
+
+  deleteLink(projectId: string, bubbleAId: string, bubbleBId: string): boolean {
+    const result = this.database
+      .prepare(
+        `
+          DELETE FROM bubble_links
+          WHERE project_id = ? AND bubble_a_id = ? AND bubble_b_id = ?
+        `,
+      )
+      .run(projectId, bubbleAId, bubbleBId);
 
     return result.changes > 0;
   }

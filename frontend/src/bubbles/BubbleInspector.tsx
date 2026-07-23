@@ -9,14 +9,21 @@ import {
   CircleAlert,
   CircleCheck,
   CircleHelp,
+  Link2,
+  Link2Off,
   LoaderCircle,
   MessageSquare,
   Pencil,
+  Plus,
   RotateCcw,
 } from 'lucide-react';
 import {
+  createBubbleLink,
+  deleteBubbleLink,
   updateBubble,
   type Bubble,
+  type BubbleLink,
+  type CreateBubbleLinkInput,
   type UpdateBubbleInput,
 } from '../api';
 import {
@@ -39,6 +46,19 @@ export type BubbleUpdateRequest = (
   signal?: AbortSignal,
 ) => Promise<Bubble>;
 
+export type BubbleLinkCreateRequest = (
+  projectId: string,
+  input: CreateBubbleLinkInput,
+) => Promise<BubbleLink>;
+
+export type BubbleLinkDeleteRequest = (
+  projectId: string,
+  firstBubbleId: string,
+  secondBubbleId: string,
+) => Promise<void>;
+
+export type BubbleLinkLoadStatus = 'loading' | 'ready' | 'error';
+
 export type BubbleInspectorSaveStatus =
   | 'dirty'
   | 'saving'
@@ -47,7 +67,15 @@ export type BubbleInspectorSaveStatus =
 
 export interface BubbleInspectorProps {
   bubble: Bubble;
+  availableBubbles?: Bubble[];
+  bubbleLinks?: BubbleLink[];
+  linkLoadStatus?: BubbleLinkLoadStatus;
   onBubbleUpdated: (bubble: Bubble) => void;
+  onBubbleLinkCreated?: (link: BubbleLink) => void;
+  onBubbleLinkRemoved?: (link: BubbleLink) => void;
+  onRetryBubbleLinks?: () => void;
+  requestCreateLink?: BubbleLinkCreateRequest;
+  requestDeleteLink?: BubbleLinkDeleteRequest;
   requestUpdate?: BubbleUpdateRequest;
   saveDelayMs?: number;
   analyticsClient?: AnalyticsClient;
@@ -140,7 +168,15 @@ function assertSavedBubble(
 
 export function BubbleInspector({
   bubble,
+  availableBubbles = [],
+  bubbleLinks = [],
+  linkLoadStatus = 'ready',
   onBubbleUpdated,
+  onBubbleLinkCreated,
+  onBubbleLinkRemoved,
+  onRetryBubbleLinks,
+  requestCreateLink = createBubbleLink,
+  requestDeleteLink = deleteBubbleLink,
   requestUpdate = updateBubble,
   saveDelayMs = DEFAULT_SAVE_DELAY_MS,
   analyticsClient = analytics,
@@ -153,6 +189,9 @@ export function BubbleInspector({
   const [failedDraftSignature, setFailedDraftSignature] =
     useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [selectedLinkTargetId, setSelectedLinkTargetId] = useState('');
+  const [pendingLinkId, setPendingLinkId] = useState<string | null>(null);
+  const [linkActionError, setLinkActionError] = useState<string | null>(null);
   const draftRef = useRef(draft);
   const persistedBubbleRef = useRef(bubble);
   const mountedRef = useRef(true);
@@ -169,6 +208,35 @@ export function BubbleInspector({
   const isValid = !isTitleEmpty && !isContentEmpty;
   const hasChanges = !isSameContent(persistedBubble, normalizedDraft);
   const presentedStatus = statusPresentation[status];
+  const linkedEntries = bubbleLinks.flatMap((link) => {
+    const linkedBubbleId =
+      link.bubble_a_id === bubble.id
+        ? link.bubble_b_id
+        : link.bubble_b_id === bubble.id
+          ? link.bubble_a_id
+          : null;
+
+    if (!linkedBubbleId || link.project_id !== bubble.project_id) {
+      return [];
+    }
+
+    return [{
+      bubble:
+        availableBubbles.find((candidate) => candidate.id === linkedBubbleId) ??
+        null,
+      linkedBubbleId,
+      link,
+    }];
+  });
+  const linkedBubbleIds = new Set(
+    linkedEntries.map(({ linkedBubbleId }) => linkedBubbleId),
+  );
+  const linkCandidates = availableBubbles.filter(
+    (candidate) =>
+      candidate.project_id === bubble.project_id &&
+      candidate.id !== bubble.id &&
+      !linkedBubbleIds.has(candidate.id),
+  );
 
   useEffect(() => {
     onBubbleUpdatedRef.current = onBubbleUpdated;
@@ -342,6 +410,83 @@ export function BubbleInspector({
     void saveDraft(draftRef.current);
   };
 
+  const addLink = async () => {
+    if (!selectedLinkTargetId || pendingLinkId) {
+      return;
+    }
+
+    const targetId = selectedLinkTargetId;
+    setPendingLinkId(targetId);
+    setLinkActionError(null);
+
+    try {
+      const link = await requestCreateLink(bubble.project_id, {
+        bubble_a_id: bubble.id,
+        bubble_b_id: targetId,
+      });
+      const endpointIds = new Set([link.bubble_a_id, link.bubble_b_id]);
+
+      if (
+        link.project_id !== bubble.project_id ||
+        endpointIds.size !== 2 ||
+        !endpointIds.has(bubble.id) ||
+        !endpointIds.has(targetId)
+      ) {
+        throw new Error('The saved bubble link response was invalid.');
+      }
+
+      onBubbleLinkCreated?.(link);
+      trackAnalytics(analyticsClient, 'bubble_link_created', {
+        project_id: bubble.project_id,
+        bubble_a_id: link.bubble_a_id,
+        bubble_b_id: link.bubble_b_id,
+      });
+
+      if (mountedRef.current) {
+        setSelectedLinkTargetId('');
+      }
+    } catch {
+      if (mountedRef.current) {
+        setLinkActionError('Couldn’t add this link. Try again.');
+      }
+    } finally {
+      if (mountedRef.current) {
+        setPendingLinkId(null);
+      }
+    }
+  };
+
+  const removeLink = async (link: BubbleLink, linkedBubbleId: string) => {
+    if (pendingLinkId) {
+      return;
+    }
+
+    setPendingLinkId(linkedBubbleId);
+    setLinkActionError(null);
+
+    try {
+      await requestDeleteLink(
+        bubble.project_id,
+        bubble.id,
+        linkedBubbleId,
+      );
+      onBubbleLinkRemoved?.(link);
+      trackAnalytics(analyticsClient, 'bubble_link_removed', {
+        project_id: bubble.project_id,
+        bubble_a_id: link.bubble_a_id,
+        bubble_b_id: link.bubble_b_id,
+      });
+    } catch {
+      if (mountedRef.current) {
+        setLinkActionError('Couldn’t remove this link. Try again.');
+      }
+    } finally {
+      if (mountedRef.current) {
+        setPendingLinkId(null);
+      }
+    }
+  };
+
   if (!isEditing) {
     return (
       <div
@@ -405,6 +550,135 @@ export function BubbleInspector({
               </dd>
             </div>
           </dl>
+
+          <section
+            className="mt-5 border-t border-[#eef1f5] pt-4"
+            aria-labelledby={`bubble-links-title-${persistedBubble.id}`}
+          >
+            <div className="flex items-center gap-2">
+              <Link2
+                className="size-[14px] text-[#6681b5]"
+                strokeWidth={1.8}
+                aria-hidden="true"
+              />
+              <h4
+                className="text-[10px] font-semibold tracking-[0.09em] text-[#7b8899] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]"
+                id={`bubble-links-title-${persistedBubble.id}`}
+              >
+                MANUAL LINKS
+              </h4>
+              {linkLoadStatus === 'ready' && (
+                <span className="ml-auto text-[10px] text-[#9aa6b4] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
+                  {linkedEntries.length}
+                </span>
+              )}
+            </div>
+
+            {linkLoadStatus === 'loading' && (
+              <p className="mt-3 flex items-center gap-2 text-[11.5px] text-[#8b97a6]" role="status">
+                <LoaderCircle
+                  className="size-[13px] animate-spin motion-reduce:animate-none"
+                  strokeWidth={1.8}
+                  aria-hidden="true"
+                />
+                Loading links…
+              </p>
+            )}
+
+            {linkLoadStatus === 'error' && (
+              <div className="mt-3 rounded-[9px] border border-[#ecd4d1] bg-[#fbf1f0] p-3" role="alert">
+                <p className="text-[11.5px] font-semibold text-[#a44a44]">
+                  Couldn’t load manual links
+                </p>
+                {onRetryBubbleLinks && (
+                  <button
+                    className={`mt-2 inline-flex min-h-8 cursor-pointer items-center gap-1.5 rounded-[8px] border border-[#e2c0bc] bg-white px-2.5 py-1.5 text-[11.5px] font-semibold text-[#a44a44] hover:bg-[#fdf8f8] ${focusRing}`}
+                    type="button"
+                    onClick={onRetryBubbleLinks}
+                  >
+                    <RotateCcw className="size-[13px]" strokeWidth={1.8} aria-hidden="true" />
+                    Retry
+                  </button>
+                )}
+              </div>
+            )}
+
+            {linkLoadStatus === 'ready' && (
+              <>
+                {linkedEntries.length === 0 ? (
+                  <p className="mt-3 text-[11.5px] leading-[1.5] text-[#8b97a6]">
+                    No bubbles are directly linked yet.
+                  </p>
+                ) : (
+                  <ul className="mt-3 space-y-2" aria-label="Linked bubbles">
+                    {linkedEntries.map(({ bubble: linkedBubble, linkedBubbleId, link }) => (
+                      <li
+                        className="flex items-center gap-2 rounded-[9px] border border-[#e1e6ec] bg-[#fafbfc] px-2.5 py-2"
+                        key={link.id}
+                      >
+                        <span className="min-w-0 flex-1 truncate text-[11.5px] font-medium text-[#3a4453]">
+                          {linkedBubble?.title ?? linkedBubbleId}
+                        </span>
+                        <button
+                          className={`grid size-7 shrink-0 cursor-pointer place-items-center rounded-[7px] text-[#8b97a6] hover:bg-[#f9eeee] hover:text-[#a44a44] disabled:cursor-wait disabled:opacity-50 ${focusRing}`}
+                          type="button"
+                          aria-label={`Unlink ${linkedBubble?.title ?? linkedBubbleId}`}
+                          disabled={pendingLinkId !== null}
+                          onClick={() => void removeLink(link, linkedBubbleId)}
+                        >
+                          {pendingLinkId === linkedBubbleId ? (
+                            <LoaderCircle className="size-[13px] animate-spin motion-reduce:animate-none" strokeWidth={1.8} aria-hidden="true" />
+                          ) : (
+                            <Link2Off className="size-[13px]" strokeWidth={1.8} aria-hidden="true" />
+                          )}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                <div className="mt-3 flex items-stretch gap-2">
+                  <select
+                    className={`min-h-9 min-w-0 flex-1 rounded-[9px] border border-[#dbe1e9] bg-white px-2.5 text-[11.5px] text-[#3a4453] disabled:cursor-not-allowed disabled:text-[#9aa6b4] ${focusRing}`}
+                    aria-label="Bubble to link"
+                    disabled={pendingLinkId !== null || linkCandidates.length === 0}
+                    value={selectedLinkTargetId}
+                    onChange={(event) => {
+                      setSelectedLinkTargetId(event.target.value);
+                      setLinkActionError(null);
+                    }}
+                  >
+                    <option value="">
+                      {linkCandidates.length === 0
+                        ? 'No bubbles available'
+                        : 'Choose a bubble…'}
+                    </option>
+                    {linkCandidates.map((candidate) => (
+                      <option key={candidate.id} value={candidate.id}>
+                        {candidate.title}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    className={`inline-flex min-h-9 shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-[9px] border border-[#cdd8ea] bg-[#f6f8fc] px-3 text-[11.5px] font-semibold text-[#33538f] hover:border-[#aebed8] hover:bg-[#eef2fa] disabled:cursor-not-allowed disabled:opacity-50 ${focusRing}`}
+                    type="button"
+                    disabled={!selectedLinkTargetId || pendingLinkId !== null}
+                    onClick={() => void addLink()}
+                  >
+                    <Plus className="size-[13px]" strokeWidth={1.9} aria-hidden="true" />
+                    Link
+                  </button>
+                </div>
+
+                {linkActionError && (
+                  <p className="mt-2 flex items-center gap-1.5 text-[11px] text-[#b4544e]" role="alert">
+                    <CircleAlert className="size-3 shrink-0" strokeWidth={2} aria-hidden="true" />
+                    {linkActionError}
+                  </p>
+                )}
+              </>
+            )}
+          </section>
         </div>
 
         <div className="shrink-0 border-t border-[#eef1f5] bg-[#fafbfc] px-[18px] py-[13px]">

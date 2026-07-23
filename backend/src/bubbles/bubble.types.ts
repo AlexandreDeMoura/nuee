@@ -49,6 +49,19 @@ export interface BubblePlacement {
   position_y: number;
 }
 
+export interface BubbleLink {
+  id: string;
+  project_id: string;
+  bubble_a_id: string;
+  bubble_b_id: string;
+  created_at: string;
+}
+
+export interface CreateBubbleLinkInput {
+  bubble_a_id: string;
+  bubble_b_id: string;
+}
+
 export interface BubbleRepository {
   create(bubble: Bubble): Bubble;
   findAllByProjectId(projectId: string): Bubble[];
@@ -67,4 +80,16 @@ export interface BubbleRepository {
   delete(projectId: string, id: string): boolean;
 }
 
+export interface BubbleLinkRepository {
+  createLink(link: BubbleLink): BubbleLink;
+  findAllLinksByProjectId(projectId: string): BubbleLink[];
+  findLink(
+    projectId: string,
+    bubbleAId: string,
+    bubbleBId: string,
+  ): BubbleLink | undefined;
+  deleteLink(projectId: string, bubbleAId: string, bubbleBId: string): boolean;
+}
+
 export const BUBBLE_REPOSITORY = Symbol('BUBBLE_REPOSITORY');
+export const BUBBLE_LINK_REPOSITORY = Symbol('BUBBLE_LINK_REPOSITORY');
