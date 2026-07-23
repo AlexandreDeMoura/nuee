@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from 'react';
 import {
+  Check,
   CircleAlert,
   CircleDot,
   CirclePlus,
@@ -76,6 +77,24 @@ export interface CanvasEmptyStateActions {
   onCreateBubble: () => void;
 }
 
+export interface CanvasMultiSelectionResult {
+  projectId: string;
+  bubbleIds: readonly string[];
+  bubbles: readonly Bubble[];
+}
+
+/**
+ * A feature owns the lifetime of this controlled selection flow. It should
+ * stop supplying the value after either callback completes.
+ */
+export interface CanvasMultiSelection {
+  confirmLabel?: string;
+  initialBubbleIds?: readonly string[];
+  instruction?: string;
+  onCancel: () => void;
+  onConfirm: (selection: CanvasMultiSelectionResult) => void;
+}
+
 export interface CanvasSurfaceProps {
   emptyState:
     | ReactNode
@@ -91,6 +110,7 @@ export interface CanvasSurfaceProps {
   onBubbleSelectionChange?: (bubble: Bubble | null) => void;
   onBubblesChange?: (bubbles: Bubble[]) => void;
   bubbleLinks?: BubbleLink[];
+  multiSelection?: CanvasMultiSelection | null;
   deletedBubbleIds?: string[];
   updatedBubbles?: Bubble[];
   viewportSaveDelayMs?: number;
@@ -455,6 +475,69 @@ function CanvasBubbleAction({ onCreate }: { onCreate: () => void }) {
   );
 }
 
+function CanvasMultiSelectionBar({
+  confirmLabel,
+  instruction,
+  selectedCount,
+  onCancel,
+  onConfirm,
+}: {
+  confirmLabel: string;
+  instruction: string;
+  selectedCount: number;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  return (
+    <>
+      <div
+        className="pointer-events-auto absolute inset-x-0 top-0 z-30 flex min-h-[52px] items-center gap-3 border-b border-[#3f63a8]/20 bg-[linear-gradient(180deg,rgba(63,99,168,0.13),rgba(238,244,250,0.88))] px-5 backdrop-blur-sm"
+        data-canvas-overlay
+        role="toolbar"
+        aria-label="Bubble selection"
+      >
+        <span className="inline-flex min-w-0 items-center gap-2 text-[12.5px] font-semibold text-[#33538f]">
+          <Check className="size-[15px] shrink-0" strokeWidth={2} aria-hidden="true" />
+          <span className="truncate">{instruction}</span>
+        </span>
+        <span
+          className="shrink-0 rounded-md bg-white/75 px-2 py-[3px] text-[10.5px] font-medium text-[#5c7cb5] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]"
+          aria-live="polite"
+        >
+          {selectedCount} SELECTED
+        </span>
+        <span className="ml-auto flex shrink-0 items-center gap-2">
+          <button
+            className={`min-h-8 cursor-pointer rounded-[9px] border border-[#d3dae2] bg-white px-3.5 text-xs font-semibold text-[#5c6a7a] hover:bg-[#f6f8fc] hover:text-[#344050] ${focusRing}`}
+            type="button"
+            onClick={onCancel}
+          >
+            Cancel
+          </button>
+          <button
+            className={`inline-flex min-h-8 cursor-pointer items-center gap-2 rounded-[9px] bg-[#3f63a8] px-3.5 text-xs font-semibold text-white shadow-[0_6px_16px_-8px_rgba(63,99,168,0.7)] hover:bg-[#33538f] disabled:cursor-default disabled:bg-[#aebbd1] disabled:shadow-none ${focusRing}`}
+            type="button"
+            aria-label={`${confirmLabel} (${selectedCount} selected)`}
+            disabled={selectedCount === 0}
+            onClick={onConfirm}
+          >
+            {confirmLabel}
+            <span className="font-medium opacity-75 [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
+              {selectedCount}
+            </span>
+          </button>
+        </span>
+      </div>
+      <div
+        className="pointer-events-none absolute bottom-5 left-1/2 z-30 -translate-x-1/2 rounded-[10px] border border-[#d3dae2] bg-white/90 px-3.5 py-2 text-[10.5px] font-medium text-[#5c7cb5] shadow-[0_6px_18px_-10px_rgba(30,39,51,0.3)] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]"
+        aria-hidden="true"
+      >
+        CLICK BUBBLES TO TOGGLE · ESC TO CANCEL
+      </div>
+    </>
+  );
+}
+
 export function CanvasSurface({
   emptyState,
   initialViewport = { x: 0, y: 0, zoom: 1 },
@@ -468,6 +551,7 @@ export function CanvasSurface({
   onBubbleSelectionChange,
   onBubblesChange,
   bubbleLinks = [],
+  multiSelection = null,
   deletedBubbleIds = EMPTY_DELETED_BUBBLE_IDS,
   updatedBubbles = [],
   viewportSaveDelayMs = DEFAULT_VIEWPORT_SAVE_DELAY_MS,
@@ -482,6 +566,9 @@ export function CanvasSurface({
   const [isPanning, setIsPanning] = useState(false);
   const [draggingBubbleId, setDraggingBubbleId] = useState<string | null>(null);
   const [selectedBubbleId, setSelectedBubbleId] = useState<string | null>(null);
+  const [multiSelectedBubbleIds, setMultiSelectedBubbleIds] = useState<string[]>(
+    () => [...new Set(multiSelection?.initialBubbleIds ?? [])],
+  );
   const [positionSaves, setPositionSaves] = useState<
     Record<string, BubblePositionSave>
   >({});
@@ -506,6 +593,7 @@ export function CanvasSurface({
   const loadedProjectIdRef = useRef(projectId);
   const selectedBubbleIdRef = useRef<string | null>(null);
   const onBubbleSelectionChangeRef = useRef(onBubbleSelectionChange);
+  const wasMultiSelectionActiveRef = useRef(multiSelection !== null);
 
   useEffect(() => {
     onBubbleSelectionChangeRef.current = onBubbleSelectionChange;
@@ -848,6 +936,50 @@ export function CanvasSurface({
     });
   }, [deletedBubbleIds, loadState.bubbles, projectId, updatedBubbles]);
 
+  const isMultiSelectionActive = multiSelection !== null;
+  const displayedBubbleIds = useMemo(
+    () => new Set(displayedBubbles.map((bubble) => bubble.id)),
+    [displayedBubbles],
+  );
+  const activeMultiSelectedBubbleIds = multiSelectedBubbleIds.filter((id) =>
+    displayedBubbleIds.has(id),
+  );
+  const activeMultiSelectedBubbleIdSet = new Set(
+    activeMultiSelectedBubbleIds,
+  );
+
+  useEffect(() => {
+    const wasActive = wasMultiSelectionActiveRef.current;
+
+    if (multiSelection && !wasActive) {
+      setMultiSelectedBubbleIds([
+        ...new Set(multiSelection.initialBubbleIds ?? []),
+      ]);
+    } else if (!multiSelection && wasActive) {
+      setMultiSelectedBubbleIds([]);
+    }
+
+    wasMultiSelectionActiveRef.current = multiSelection !== null;
+  }, [multiSelection]);
+
+  useEffect(() => {
+    if (!multiSelection) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape') {
+        return;
+      }
+
+      event.preventDefault();
+      multiSelection.onCancel();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [multiSelection]);
+
   useEffect(() => {
     if (
       selectedBubbleIdRef.current &&
@@ -863,7 +995,7 @@ export function CanvasSurface({
 
   const linkedBubbleIds = new Set<string>();
 
-  if (selectedBubbleId) {
+  if (selectedBubbleId && !isMultiSelectionActive) {
     for (const link of bubbleLinks) {
       if (link.project_id !== projectId) {
         continue;
@@ -888,6 +1020,19 @@ export function CanvasSurface({
     event: ReactPointerEvent<HTMLElement>,
     bubble: Bubble,
   ) {
+    if (isMultiSelectionActive) {
+      if (event.button === 0) {
+        event.preventDefault();
+        event.stopPropagation();
+        setMultiSelectedBubbleIds((current) =>
+          current.includes(bubble.id)
+            ? current.filter((id) => id !== bubble.id)
+            : [...current, bubble.id],
+        );
+      }
+      return;
+    }
+
     if (
       event.button !== 0 ||
       positionSavesRef.current[bubble.id]?.status === 'saving'
@@ -937,7 +1082,7 @@ export function CanvasSurface({
     event.preventDefault();
     event.stopPropagation();
 
-    if (event.button === 0) {
+    if (event.button === 0 && !isMultiSelectionActive) {
       selectBubble(null);
     }
 
@@ -1222,6 +1367,34 @@ export function CanvasSurface({
       )
     : undefined;
 
+  function toggleMultiSelectedBubble(bubbleId: string) {
+    setMultiSelectedBubbleIds((current) =>
+      current.includes(bubbleId)
+        ? current.filter((id) => id !== bubbleId)
+        : [...current, bubbleId],
+    );
+  }
+
+  function confirmMultiSelection() {
+    if (!multiSelection) {
+      return;
+    }
+
+    const bubblesById = new Map(
+      displayedBubbles.map((bubble) => [bubble.id, bubble]),
+    );
+    const selectedBubbles = activeMultiSelectedBubbleIds.flatMap((id) => {
+      const selectedBubble = bubblesById.get(id);
+      return selectedBubble ? [selectedBubble] : [];
+    });
+
+    multiSelection.onConfirm({
+      projectId,
+      bubbleIds: selectedBubbles.map((bubble) => bubble.id),
+      bubbles: selectedBubbles,
+    });
+  }
+
   return (
     <section
       className={`relative min-w-0 flex-1 select-none overflow-hidden bg-[#eef1f5] ${
@@ -1231,6 +1404,7 @@ export function CanvasSurface({
       data-canvas-x={viewport.x}
       data-canvas-y={viewport.y}
       data-canvas-zoom={viewport.zoom}
+      data-selection-mode={isMultiSelectionActive ? 'multiple' : 'single'}
       onLostPointerCapture={() => {
         const activeDrag = activeBubbleDragRef.current;
 
@@ -1275,12 +1449,22 @@ export function CanvasSurface({
             <BubbleCard
               bubble={bubble}
               isLinked={
+                !isMultiSelectionActive &&
                 selectedBubbleId !== bubble.id &&
                 linkedBubbleIds.has(bubble.id)
               }
-              isSelected={selectedBubbleId === bubble.id}
+              isMultiSelecting={isMultiSelectionActive}
+              isSelected={
+                isMultiSelectionActive
+                  ? activeMultiSelectedBubbleIdSet.has(bubble.id)
+                  : selectedBubbleId === bubble.id
+              }
               key={bubble.id}
-              onActivate={() => selectBubble(bubble)}
+              onActivate={() =>
+                isMultiSelectionActive
+                  ? toggleMultiSelectedBubble(bubble.id)
+                  : selectBubble(bubble)
+              }
               onPointerDown={(event) =>
                 handleBubblePointerDown(event, bubble)
               }
@@ -1289,6 +1473,16 @@ export function CanvasSurface({
           );
         })}
       </div>
+
+      {multiSelection && (
+        <CanvasMultiSelectionBar
+          confirmLabel={multiSelection.confirmLabel ?? 'Confirm selection'}
+          instruction={multiSelection.instruction ?? 'Select bubbles'}
+          selectedCount={activeMultiSelectedBubbleIds.length}
+          onCancel={multiSelection.onCancel}
+          onConfirm={confirmMultiSelection}
+        />
+      )}
 
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-6 py-10 lg:px-10">
         {loadState.status === 'loading' && displayedBubbles.length === 0 && (
@@ -1325,7 +1519,7 @@ export function CanvasSurface({
         onZoomOut={() => zoomAt((currentZoom) => currentZoom / ZOOM_STEP)}
       />
 
-      {displayedBubbles.length > 0 && (
+      {displayedBubbles.length > 0 && !isMultiSelectionActive && (
         <CanvasBubbleAction onCreate={openCreateBubbleDialog} />
       )}
 

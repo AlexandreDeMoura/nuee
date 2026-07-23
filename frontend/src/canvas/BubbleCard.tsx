@@ -3,6 +3,7 @@ import type {
   KeyboardEventHandler,
   PointerEventHandler,
 } from 'react';
+import { Check } from 'lucide-react';
 import type { Bubble } from '../api';
 import { formatUpdatedAt } from '../utils/date';
 import { getBubbleCardPreview } from './bubbleCardPreview';
@@ -12,6 +13,7 @@ export type BubbleCardStatus = 'default' | 'dragging' | 'saving' | 'error';
 export interface BubbleCardProps {
   bubble: Bubble;
   isLinked?: boolean;
+  isMultiSelecting?: boolean;
   isSelected?: boolean;
   onActivate?: () => void;
   onPointerDown?: PointerEventHandler<HTMLElement>;
@@ -39,6 +41,7 @@ const stateLabels: Record<BubbleCardStatus, string> = {
 export function BubbleCard({
   bubble,
   isLinked = false,
+  isMultiSelecting = false,
   isSelected = false,
   onActivate,
   onPointerDown,
@@ -56,9 +59,13 @@ export function BubbleCard({
         : stateLabels[status];
   const stateClasses =
     status === 'default' && isSelected
-      ? 'z-10 cursor-grab border-2 border-[#3f63a8] shadow-[0_0_0_4px_rgba(63,99,168,0.16),0_18px_38px_-12px_rgba(63,99,168,0.45)]'
+      ? `z-10 border-2 border-[#3f63a8] shadow-[0_0_0_4px_rgba(63,99,168,0.16),0_18px_38px_-12px_rgba(63,99,168,0.45)] ${
+          isMultiSelecting ? 'cursor-pointer' : 'cursor-grab'
+        }`
       : status === 'default' && isLinked
         ? 'z-[5] cursor-grab border-2 border-[#89a5d2] bg-[linear-gradient(180deg,#f9fbff,#f3f7fd)] shadow-[0_0_0_3px_rgba(105,137,190,0.12),0_14px_30px_-14px_rgba(63,99,168,0.3)]'
+        : status === 'default' && isMultiSelecting
+          ? 'cursor-pointer border-[#d7deea] opacity-90 shadow-[0_8px_20px_-14px_rgba(30,39,51,0.25)] hover:opacity-100'
       : cardStateClasses[status];
   const handleKeyDown: KeyboardEventHandler<HTMLElement> = (event) => {
     if ((event.key === 'Enter' || event.key === ' ') && onActivate) {
@@ -69,19 +76,36 @@ export function BubbleCard({
 
   return (
     <article
-      className={`pointer-events-auto absolute flex h-[154px] w-[248px] flex-col overflow-hidden rounded-[20px] border bg-[linear-gradient(180deg,#ffffff,#fbfcfe)] px-4 pt-[15px] pb-[13px] text-left transition-[border-color,box-shadow,opacity,transform] duration-150 motion-reduce:transition-none ${stateClasses}`}
+      className={`pointer-events-auto absolute flex h-[154px] w-[248px] flex-col rounded-[20px] border bg-[linear-gradient(180deg,#ffffff,#fbfcfe)] px-4 pt-[15px] pb-[13px] text-left transition-[border-color,box-shadow,opacity,transform] duration-150 motion-reduce:transition-none ${
+        isMultiSelecting ? 'overflow-visible' : 'overflow-hidden'
+      } ${stateClasses}`}
       aria-busy={status === 'saving' ? 'true' : undefined}
+      aria-checked={isMultiSelecting ? isSelected : undefined}
       aria-labelledby={`bubble-title-${bubble.id}`}
       data-bubble-id={bubble.id}
       data-bubble-linked={isLinked ? 'true' : 'false'}
+      data-bubble-multi-selecting={isMultiSelecting ? 'true' : 'false'}
       data-bubble-selected={isSelected ? 'true' : 'false'}
       data-bubble-state={status}
       data-canvas-interactive
       onKeyDown={handleKeyDown}
       onPointerDown={onPointerDown}
+      role={isMultiSelecting ? 'checkbox' : undefined}
       style={position}
       tabIndex={0}
     >
+      {isMultiSelecting && (
+        <span
+          className={`absolute -top-2.5 -left-2.5 grid size-6 place-items-center rounded-full border-2 shadow-[0_2px_6px_rgba(30,39,51,0.18)] ${
+            isSelected
+              ? 'border-white bg-[#3f63a8] text-white'
+              : 'border-[#c4cdd8] bg-white text-transparent'
+          }`}
+          aria-hidden="true"
+        >
+          {isSelected && <Check className="size-3" strokeWidth={3} />}
+        </span>
+      )}
       <div className="mb-2 flex min-h-[18px] items-center gap-[7px]">
         <span
           className={`rounded-[5px] px-1.5 py-0.5 text-[9px] leading-[14px] font-semibold tracking-[0.1em] [font-family:'IBM_Plex_Mono',ui-monospace,monospace] ${

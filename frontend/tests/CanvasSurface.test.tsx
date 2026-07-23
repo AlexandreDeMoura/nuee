@@ -3,11 +3,15 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type {
   Bubble,
+  BubbleLink,
   Project,
   UpdateProjectViewportInput,
 } from '../src/api';
 import type { AnalyticsClient } from '../src/analytics';
-import { CanvasSurface } from '../src/canvas/CanvasSurface';
+import {
+  CanvasSurface,
+  type CanvasMultiSelectionResult,
+} from '../src/canvas/CanvasSurface';
 
 function deferred<T>() {
   let resolve: (value: T) => void = () => undefined;
@@ -336,6 +340,197 @@ describe('CanvasSurface', () => {
 
     expect(card.getAttribute('data-bubble-selected')).toBe('false');
     expect(onBubbleSelectionChange).toHaveBeenLastCalledWith(null);
+  });
+
+  it('hands feature-selected identifiers and current live records back without moving bubbles', async () => {
+    const firstBubble = bubble();
+    const secondBubble = bubble({
+      id: 'bubble-2',
+      title: 'Regulatory lead time',
+      content: 'Licensing requires nine to fourteen months.',
+      position_x: 420,
+      position_y: 160,
+    });
+    const link: BubbleLink = {
+      id: 'link-1',
+      project_id: project.id,
+      bubble_a_id: 'bubble-1',
+      bubble_b_id: 'bubble-2',
+      created_at: '2026-07-20T12:00:00.000Z',
+    };
+    const requestBubbles = vi.fn().mockResolvedValue([
+      firstBubble,
+      secondBubble,
+    ]);
+    const requestPositionUpdate = vi.fn();
+    const onConfirm = vi.fn<(selection: CanvasMultiSelectionResult) => void>();
+    const onBubbleSelectionChange = vi.fn();
+    const rendered = render(
+      <CanvasSurface
+        bubbleLinks={[link]}
+        emptyState={emptyState}
+        projectId={project.id}
+        requestBubbles={requestBubbles}
+        requestBubblePositionUpdate={requestPositionUpdate}
+        onBubbleSelectionChange={onBubbleSelectionChange}
+      />,
+    );
+
+    const firstCard = await screen.findByRole('article', {
+      name: firstBubble.title,
+    });
+    const secondCard = screen.getByRole('article', {
+      name: secondBubble.title,
+    });
+    fireEvent.keyDown(firstCard, { key: 'Enter' });
+
+    expect(firstCard.getAttribute('data-bubble-selected')).toBe('true');
+    expect(secondCard.getAttribute('data-bubble-linked')).toBe('true');
+
+    rendered.rerender(
+      <CanvasSurface
+        bubbleLinks={[link]}
+        emptyState={emptyState}
+        multiSelection={{
+          confirmLabel: 'Add to discussion',
+          initialBubbleIds: ['bubble-2', 'other-project-bubble'],
+          instruction: 'Select bubbles to add as context',
+          onCancel: vi.fn(),
+          onConfirm,
+        }}
+        projectId={project.id}
+        requestBubbles={requestBubbles}
+        requestBubblePositionUpdate={requestPositionUpdate}
+        onBubbleSelectionChange={onBubbleSelectionChange}
+      />,
+    );
+
+    const firstOption = screen.getByRole('checkbox', {
+      name: firstBubble.title,
+    });
+    const secondOption = screen.getByRole('checkbox', {
+      name: secondBubble.title,
+    });
+    const canvas = screen.getByRole('region', { name: 'Project canvas' });
+
+    expect(canvas.getAttribute('data-selection-mode')).toBe('multiple');
+    expect(firstOption.getAttribute('aria-checked')).toBe('false');
+    expect(secondOption.getAttribute('aria-checked')).toBe('true');
+    expect(secondOption.getAttribute('data-bubble-linked')).toBe('false');
+    expect(screen.getByText('1 SELECTED')).toBeTruthy();
+
+    fireEvent.pointerDown(firstOption, {
+      button: 0,
+      clientX: 100,
+      clientY: 80,
+      pointerId: 31,
+    });
+    fireEvent.pointerMove(canvas, {
+      clientX: 170,
+      clientY: 150,
+      pointerId: 31,
+    });
+    fireEvent.pointerUp(canvas, { pointerId: 31 });
+
+    expect(firstOption.style.left).toBe('120px');
+    expect(firstOption.style.top).toBe('-48px');
+    expect(requestPositionUpdate).not.toHaveBeenCalled();
+    expect(screen.getByText('2 SELECTED')).toBeTruthy();
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Add to discussion (2 selected)',
+      }),
+    );
+
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+    const result = onConfirm.mock.calls[0]?.[0];
+    expect(result?.projectId).toBe(project.id);
+    expect(result?.bubbleIds).toEqual(['bubble-2', 'bubble-1']);
+    expect(result?.bubbles[0]).toBe(secondBubble);
+    expect(result?.bubbles[1]).toBe(firstBubble);
+    expect(firstBubble.content).toBe(
+      'A longer explanation of the market and its demand profile.',
+    );
+    expect(onBubbleSelectionChange).toHaveBeenCalledTimes(1);
+  });
+
+  it('cancels multi-selection with Escape and restores the previous normal selection', async () => {
+    const firstBubble = bubble();
+    const secondBubble = bubble({
+      id: 'bubble-2',
+      title: 'Regulatory lead time',
+      position_x: 420,
+    });
+    const link: BubbleLink = {
+      id: 'link-1',
+      project_id: project.id,
+      bubble_a_id: 'bubble-1',
+      bubble_b_id: 'bubble-2',
+      created_at: '2026-07-20T12:00:00.000Z',
+    };
+    const requestBubbles = vi.fn().mockResolvedValue([
+      firstBubble,
+      secondBubble,
+    ]);
+    const onCancel = vi.fn();
+    const rendered = render(
+      <CanvasSurface
+        bubbleLinks={[link]}
+        emptyState={emptyState}
+        projectId={project.id}
+        requestBubbles={requestBubbles}
+      />,
+    );
+
+    const firstCard = await screen.findByRole('article', {
+      name: firstBubble.title,
+    });
+    fireEvent.keyDown(firstCard, { key: 'Enter' });
+
+    rendered.rerender(
+      <CanvasSurface
+        bubbleLinks={[link]}
+        emptyState={emptyState}
+        multiSelection={{
+          initialBubbleIds: ['bubble-2'],
+          onCancel,
+          onConfirm: vi.fn(),
+        }}
+        projectId={project.id}
+        requestBubbles={requestBubbles}
+      />,
+    );
+
+    fireEvent.keyDown(window, { key: 'Escape' });
+
+    expect(onCancel).toHaveBeenCalledTimes(1);
+
+    rendered.rerender(
+      <CanvasSurface
+        bubbleLinks={[link]}
+        emptyState={emptyState}
+        projectId={project.id}
+        requestBubbles={requestBubbles}
+      />,
+    );
+
+    const restoredFirstCard = screen.getByRole('article', {
+      name: firstBubble.title,
+    });
+    const restoredSecondCard = screen.getByRole('article', {
+      name: secondBubble.title,
+    });
+
+    expect(
+      screen.getByRole('region', { name: 'Project canvas' }).getAttribute(
+        'data-selection-mode',
+      ),
+    ).toBe('single');
+    expect(restoredFirstCard.getAttribute('data-bubble-selected')).toBe('true');
+    expect(restoredSecondCard.getAttribute('data-bubble-linked')).toBe('true');
+    expect(restoredFirstCard.style.left).toBe('120px');
+    expect(restoredFirstCard.style.top).toBe('-48px');
   });
 
   it('drags one bubble optimistically in world coordinates and persists only its final position', async () => {

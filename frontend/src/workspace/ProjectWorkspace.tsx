@@ -33,6 +33,7 @@ import {
   CanvasSurface,
   type BubbleListRequest,
   type BubblePositionUpdateRequest,
+  type CanvasMultiSelection,
   type ProjectViewportUpdateRequest,
 } from '../canvas/CanvasSurface';
 import type {
@@ -100,6 +101,7 @@ export interface ProjectWorkspaceProps {
   requestBubbleLinkCreate?: BubbleLinkCreateRequest;
   requestBubbleLinkDelete?: BubbleLinkDeleteRequest;
   requestViewportUpdate?: ProjectViewportUpdateRequest;
+  canvasMultiSelection?: CanvasMultiSelection | null;
   viewportSaveDelayMs?: number;
   bubbleSaveDelayMs?: number;
   discussionCount?: number;
@@ -544,6 +546,7 @@ export function ProjectWorkspace({
   requestBubbleLinkCreate,
   requestBubbleLinkDelete,
   requestViewportUpdate,
+  canvasMultiSelection = null,
   viewportSaveDelayMs,
   bubbleSaveDelayMs,
   discussionCount = 0,
@@ -806,6 +809,7 @@ export function ProjectWorkspace({
           <CanvasSurface
             analyticsClient={analyticsClient}
             bubbleLinks={bubbleLinkLoadState.links}
+            multiSelection={canvasMultiSelection}
             deletedBubbleIds={deletedBubbleIds}
             emptyState={({ onCreateBubble }) => (
               <EmptyCanvasContent
@@ -837,7 +841,14 @@ export function ProjectWorkspace({
             viewportSaveDelayMs={viewportSaveDelayMs}
           />
 
-          <aside className="flex shrink-0 bg-white" aria-label="Project tools">
+          <aside
+            className={`flex shrink-0 bg-white transition-opacity duration-150 motion-reduce:transition-none ${
+              canvasMultiSelection ? 'pointer-events-none opacity-40' : ''
+            }`}
+            aria-label="Project tools"
+            aria-hidden={canvasMultiSelection ? 'true' : undefined}
+            inert={canvasMultiSelection ? true : undefined}
+          >
             <nav
               className="flex w-[52px] shrink-0 flex-col items-center gap-1 border-l border-[#e1e6ec] bg-white pt-3"
               aria-label="Workspace panels"

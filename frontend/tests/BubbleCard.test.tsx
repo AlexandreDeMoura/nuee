@@ -103,4 +103,27 @@ describe('BubbleCard', () => {
     expect(card.getAttribute('data-bubble-selected')).toBe('false');
     expect(screen.getByText('LINKED')).toBeTruthy();
   });
+
+  it('becomes a keyboard-toggleable checkbox during multi-selection', () => {
+    const onActivate = vi.fn();
+    render(
+      <BubbleCard
+        bubble={bubble()}
+        isMultiSelecting
+        isSelected
+        onActivate={onActivate}
+      />,
+    );
+
+    const card = screen.getByRole('checkbox', {
+      name: 'Last-mile is the make-or-break',
+    });
+
+    expect(card.getAttribute('aria-checked')).toBe('true');
+    expect(card.getAttribute('data-bubble-multi-selecting')).toBe('true');
+
+    fireEvent.keyDown(card, { key: ' ' });
+
+    expect(onActivate).toHaveBeenCalledTimes(1);
+  });
 });

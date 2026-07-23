@@ -5,6 +5,7 @@ import { analytics, trackAnalytics, type AnalyticsClient } from '../analytics';
 import type {
   BubbleListRequest,
   BubblePositionUpdateRequest,
+  CanvasMultiSelection,
   ProjectViewportUpdateRequest,
 } from '../canvas/CanvasSurface';
 import type {
@@ -38,6 +39,7 @@ export interface ProjectCanvasRouteProps {
   requestBubbleLinkCreate?: BubbleLinkCreateRequest;
   requestBubbleLinkDelete?: BubbleLinkDeleteRequest;
   requestViewportUpdate?: ProjectViewportUpdateRequest;
+  canvasMultiSelection?: CanvasMultiSelection | null;
   viewportSaveDelayMs?: number;
   bubbleSaveDelayMs?: number;
   analyticsClient?: AnalyticsClient;
@@ -150,6 +152,7 @@ export function ProjectCanvasRoute({
   requestBubbleLinkCreate,
   requestBubbleLinkDelete,
   requestViewportUpdate,
+  canvasMultiSelection = null,
   viewportSaveDelayMs,
   bubbleSaveDelayMs,
   analyticsClient = analytics,
@@ -193,6 +196,7 @@ export function ProjectCanvasRoute({
     return (
       <ProjectWorkspace
         analyticsClient={analyticsClient}
+        canvasMultiSelection={canvasMultiSelection}
         project={loadState.project}
         requestBubbleCreate={requestBubbleCreate}
         requestBubbles={requestBubbles}

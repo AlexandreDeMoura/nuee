@@ -432,6 +432,41 @@ describe('workspace integration contracts', () => {
     );
   });
 
+  it('passes an owning feature multi-selection flow to the canvas and suspends workspace tools', async () => {
+    const onCancel = vi.fn();
+
+    render(
+      <ProjectWorkspace
+        canvasMultiSelection={{
+          instruction: 'Choose discussion context',
+          onCancel,
+          onConfirm: vi.fn(),
+        }}
+        project={project}
+        requestBubbles={async () => [bubble()]}
+      />,
+    );
+
+    await screen.findByRole('checkbox', {
+      name: 'Market is real but fragmented',
+    });
+
+    expect(
+      screen.getByRole('region', { name: 'Project canvas' }).getAttribute(
+        'data-selection-mode',
+      ),
+    ).toBe('multiple');
+    expect(
+      document
+        .querySelector('aside[aria-label="Project tools"]')
+        ?.getAttribute('aria-hidden'),
+    ).toBe('true');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(onCancel).toHaveBeenCalledTimes(1);
+  });
+
   it('removes a deleted bubble, its link state, and stale Inspector selection', async () => {
     const secondBubble = bubble({
       id: 'bubble-2',
