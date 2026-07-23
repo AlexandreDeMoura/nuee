@@ -204,6 +204,88 @@ describe('BubblesService', () => {
     );
   });
 
+  it('repositions a project batch atomically without changing bubble content metadata', () => {
+    jest.setSystemTime(new Date('2026-07-21T09:00:00.000Z'));
+    const project = createProject();
+    const first = service.create(project.id, {
+      title: 'First',
+      summary: 'First summary',
+      content: 'First content',
+      position_x: 10,
+      position_y: 20,
+    });
+    const second = service.create(project.id, {
+      title: 'Second',
+      content: 'Second content',
+      position_x: 400,
+      position_y: 500,
+    });
+
+    const repositioned = service.repositionMany(project.id, {
+      positions: [
+        { bubble_id: second.id, position_x: 282, position_y: 20 },
+        { bubble_id: first.id, position_x: 10, position_y: 198 },
+      ],
+    });
+
+    expect(repositioned).toEqual([
+      { ...second, position_x: 282, position_y: 20 },
+      { ...first, position_x: 10, position_y: 198 },
+    ]);
+    expect(repositioned[0]).toMatchObject({
+      title: second.title,
+      summary: second.summary,
+      content: second.content,
+      source_kind: second.source_kind,
+      updated_at: second.updated_at,
+    });
+    expect(repositioned[1]).toMatchObject({
+      title: first.title,
+      summary: first.summary,
+      content: first.content,
+      source_kind: first.source_kind,
+      updated_at: first.updated_at,
+    });
+  });
+
+  it('rejects an invalid or cross-project position batch before changing any bubble', () => {
+    const project = createProject('Owner');
+    const otherProject = createProject('Other');
+    const first = service.create(project.id, {
+      title: 'First',
+      content: 'First content',
+      position_x: 10,
+      position_y: 20,
+    });
+    const other = service.create(otherProject.id, {
+      title: 'Other project',
+      content: 'Other content',
+      position_x: 30,
+      position_y: 40,
+    });
+
+    expect(() =>
+      service.repositionMany(project.id, {
+        positions: [
+          { bubble_id: first.id, position_x: 100, position_y: 200 },
+          { bubble_id: other.id, position_x: 300, position_y: 400 },
+        ],
+      }),
+    ).toThrow(NotFoundException);
+    expect(service.get(project.id, first.id)).toEqual(first);
+    expect(service.get(otherProject.id, other.id)).toEqual(other);
+
+    expect(() =>
+      service.repositionMany(project.id, {
+        positions: [
+          { bubble_id: first.id, position_x: 1, position_y: 2 },
+          { bubble_id: first.id, position_x: 3, position_y: 4 },
+        ],
+      }),
+    ).toThrow(BadRequestException);
+    expect(service.get(project.id, first.id)).toEqual(first);
+  });
+
   it.each([
     [
       { position_x: '0', position_y: 1 },
@@ -252,6 +334,10 @@ describe('BubblesService', () => {
         service.reposition(otherProject.id, bubble.id, {
           position_x: 1,
           position_y: 2,
+        }),
+      () =>
+        service.repositionMany(otherProject.id, {
+          positions: [{ bubble_id: bubble.id, position_x: 1, position_y: 2 }],
         }),
       () => service.delete(otherProject.id, bubble.id),
     ];

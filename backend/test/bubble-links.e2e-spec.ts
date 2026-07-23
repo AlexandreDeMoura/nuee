@@ -173,4 +173,104 @@ describe('Manual bubble links (e2e)', () => {
       .get(`/projects/${projectId}/bubbles/${deletedId}`)
       .expect(404);
   });
+
+  it('persists a position batch as one project-scoped operation without touching content timestamps', async () => {
+    const projectResponse = await request(app!.getHttpServer())
+      .post('/projects')
+      .send({
+        title: 'Compact layout',
+        description: 'Persist compact bubble positions together.',
+      })
+      .expect(201);
+    const otherProjectResponse = await request(app!.getHttpServer())
+      .post('/projects')
+      .send({
+        title: 'Other layout',
+        description: 'Must remain isolated.',
+      })
+      .expect(201);
+    const projectId = (projectResponse.body as { id: string }).id;
+    const otherProjectId = (otherProjectResponse.body as { id: string }).id;
+
+    const firstResponse = await request(app!.getHttpServer())
+      .post(`/projects/${projectId}/bubbles`)
+      .send({
+        title: 'First',
+        content: 'First compacted bubble.',
+        position_x: 10,
+        position_y: 20,
+      })
+      .expect(201);
+    const secondResponse = await request(app!.getHttpServer())
+      .post(`/projects/${projectId}/bubbles`)
+      .send({
+        title: 'Second',
+        content: 'Second compacted bubble.',
+        position_x: 700,
+        position_y: 500,
+      })
+      .expect(201);
+    const otherResponse = await request(app!.getHttpServer())
+      .post(`/projects/${otherProjectId}/bubbles`)
+      .send({
+        title: 'Other',
+        content: 'A bubble in another project.',
+      })
+      .expect(201);
+    const first = firstResponse.body as {
+      id: string;
+      updated_at: string;
+    };
+    const second = secondResponse.body as {
+      id: string;
+      updated_at: string;
+    };
+    const otherId = (otherResponse.body as { id: string }).id;
+
+    const batch = [
+      { bubble_id: first.id, position_x: 10, position_y: 20 },
+      { bubble_id: second.id, position_x: 282, position_y: 20 },
+    ];
+    const response = await request(app!.getHttpServer())
+      .patch(`/projects/${projectId}/bubbles/positions`)
+      .send({ positions: batch })
+      .expect(200);
+
+    expect(response.body).toEqual([
+      expect.objectContaining({
+        id: first.id,
+        position_x: 10,
+        position_y: 20,
+        updated_at: first.updated_at,
+      }),
+      expect.objectContaining({
+        id: second.id,
+        position_x: 282,
+        position_y: 20,
+        updated_at: second.updated_at,
+      }),
+    ]);
+
+    await request(app!.getHttpServer())
+      .patch(`/projects/${projectId}/bubbles/positions`)
+      .send({
+        positions: [
+          { bubble_id: first.id, position_x: 999, position_y: 999 },
+          { bubble_id: otherId, position_x: 500, position_y: 500 },
+        ],
+      })
+      .expect(404);
+
+    const retainedFirstResponse = await request(app!.getHttpServer())
+      .get(`/projects/${projectId}/bubbles/${first.id}`)
+      .expect(200);
+
+    expect(retainedFirstResponse.body).toEqual(
+      expect.objectContaining({
+        position_x: 10,
+        position_y: 20,
+        updated_at: first.updated_at,
+      }),
+    );
+  });
 });

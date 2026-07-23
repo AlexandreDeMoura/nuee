@@ -7,6 +7,7 @@ import { Check } from 'lucide-react';
 import type { Bubble } from '../api';
 import { formatUpdatedAt } from '../utils/date';
 import { getBubbleCardPreview } from './bubbleCardPreview';
+import { BUBBLE_CARD_HEIGHT, BUBBLE_CARD_WIDTH } from './compactLayout';
 
 export type BubbleCardStatus = 'default' | 'dragging' | 'saving' | 'error';
 
@@ -48,8 +49,10 @@ export function BubbleCard({
   status = 'default',
 }: BubbleCardProps) {
   const position: CSSProperties = {
+    height: BUBBLE_CARD_HEIGHT,
     left: bubble.position_x,
     top: bubble.position_y,
+    width: BUBBLE_CARD_WIDTH,
   };
   const stateLabel =
     status === 'default' && isSelected
@@ -76,7 +79,7 @@ export function BubbleCard({
 
   return (
     <article
-      className={`pointer-events-auto absolute flex h-[154px] w-[248px] flex-col rounded-[20px] border bg-[linear-gradient(180deg,#ffffff,#fbfcfe)] px-4 pt-[15px] pb-[13px] text-left transition-[border-color,box-shadow,opacity,transform] duration-150 motion-reduce:transition-none ${
+      className={`pointer-events-auto absolute flex flex-col rounded-[20px] border bg-[linear-gradient(180deg,#ffffff,#fbfcfe)] px-4 pt-[15px] pb-[13px] text-left transition-[border-color,box-shadow,opacity,transform] duration-150 motion-reduce:transition-none ${
         isMultiSelecting ? 'overflow-visible' : 'overflow-hidden'
       } ${stateClasses}`}
       aria-busy={status === 'saving' ? 'true' : undefined}

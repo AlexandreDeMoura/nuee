@@ -8,7 +8,9 @@ import { randomUUID } from 'node:crypto';
 import { ProjectsService } from '../projects/projects.service';
 import { BUBBLE_REPOSITORY } from './bubble.types';
 import type {
+  BatchRepositionBubblesInput,
   Bubble,
+  BubblePositionUpdate,
   BubbleRepository,
   CreateBubbleInput,
   RepositionBubbleInput,
@@ -122,6 +124,61 @@ export class BubblesService {
     }
 
     return updatedBubble;
+  }
+
+  repositionMany(
+    projectId: string,
+    input: BatchRepositionBubblesInput,
+  ): Bubble[] {
+    this.projects.get(projectId);
+
+    if (!Array.isArray(input?.positions) || input.positions.length === 0) {
+      throw this.validationError({
+        positions: 'At least one bubble position must be provided.',
+      });
+    }
+
+    const bubbleIds = new Set<string>();
+    const positions: BubblePositionUpdate[] = input.positions.map(
+      (position, index) => {
+        const bubbleId = position?.bubble_id;
+
+        if (typeof bubbleId !== 'string' || bubbleId.trim().length === 0) {
+          throw this.validationError({
+            [`positions.${index}.bubble_id`]: 'Bubble identifier is required.',
+          });
+        }
+
+        if (bubbleIds.has(bubbleId)) {
+          throw this.validationError({
+            [`positions.${index}.bubble_id`]:
+              'Each bubble may only appear once.',
+          });
+        }
+
+        bubbleIds.add(bubbleId);
+
+        return {
+          bubble_id: bubbleId,
+          position_x: this.requiredCoordinate(
+            position.position_x,
+            'position_x',
+          ),
+          position_y: this.requiredCoordinate(
+            position.position_y,
+            'position_y',
+          ),
+        };
+      },
+    );
+
+    for (const position of positions) {
+      if (!this.bubbles.findByProjectAndId(projectId, position.bubble_id)) {
+        throw this.notFound(projectId, position.bubble_id);
+      }
+    }
+
+    return this.bubbles.updatePositions(projectId, positions);
   }
 
   delete(projectId: string, bubbleId: string): void {

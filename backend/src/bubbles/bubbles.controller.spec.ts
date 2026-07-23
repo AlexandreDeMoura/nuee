@@ -80,6 +80,24 @@ describe('BubblesController', () => {
     });
     expect(repositioned.updated_at).toBe(updated.updated_at);
 
+    const batchRepositioned = controller.repositionMany(project.id, {
+      positions: [
+        {
+          bubble_id: created.id,
+          position_x: -120,
+          position_y: 240,
+        },
+      ],
+    });
+    expect(batchRepositioned).toEqual([
+      {
+        ...repositioned,
+        position_x: -120,
+        position_y: 240,
+      },
+    ]);
+    expect(batchRepositioned[0].updated_at).toBe(updated.updated_at);
+
     expect(controller.delete(project.id, created.id)).toBeUndefined();
     expect(controller.list(project.id)).toEqual([]);
   });

@@ -54,6 +54,14 @@ export interface UpdateBubblePositionInput {
   position_y: number;
 }
 
+export interface BubblePositionUpdate extends UpdateBubblePositionInput {
+  bubble_id: string;
+}
+
+export interface BatchUpdateBubblePositionsInput {
+  positions: BubblePositionUpdate[];
+}
+
 export interface UpdateBubbleInput {
   title: string;
   summary: string | null;
@@ -192,6 +200,20 @@ export function updateBubblePosition(
 ): Promise<Bubble> {
   return requestJson<Bubble>(
     `/projects/${encodeURIComponent(projectId)}/bubbles/${encodeURIComponent(bubbleId)}/position`,
+    {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(input),
+    },
+  );
+}
+
+export function updateBubblePositions(
+  projectId: string,
+  input: BatchUpdateBubblePositionsInput,
+): Promise<Bubble[]> {
+  return requestJson<Bubble[]>(
+    `/projects/${encodeURIComponent(projectId)}/bubbles/positions`,
     {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },

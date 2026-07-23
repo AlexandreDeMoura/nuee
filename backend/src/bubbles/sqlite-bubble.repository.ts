@@ -6,6 +6,7 @@ import type {
   Bubble,
   BubbleLink,
   BubbleLinkRepository,
+  BubblePositionUpdate,
   BubbleRepository,
   BubbleSourceKind,
 } from './bubble.types';
@@ -165,6 +166,55 @@ export class SqliteBubbleRepository
     return result.changes === 0
       ? undefined
       : this.findByProjectAndId(projectId, id);
+  }
+
+  updatePositions(
+    projectId: string,
+    positions: BubblePositionUpdate[],
+  ): Bubble[] {
+    const statement = this.database.prepare(
+      `
+        UPDATE bubbles
+        SET position_x = ?, position_y = ?
+        WHERE project_id = ? AND id = ?
+      `,
+    );
+
+    this.database.exec('BEGIN IMMEDIATE;');
+
+    try {
+      for (const position of positions) {
+        const result = statement.run(
+          position.position_x,
+          position.position_y,
+          projectId,
+          position.bubble_id,
+        );
+
+        if (result.changes === 0) {
+          throw new Error(
+            `Bubble "${position.bubble_id}" was not available for batch positioning.`,
+          );
+        }
+      }
+
+      this.database.exec('COMMIT;');
+    } catch (error) {
+      this.database.exec('ROLLBACK;');
+      throw error;
+    }
+
+    return positions.map((position) => {
+      const bubble = this.findByProjectAndId(projectId, position.bubble_id);
+
+      if (!bubble) {
+        throw new Error(
+          `Bubble "${position.bubble_id}" was not available after batch positioning.`,
+        );
+      }
+
+      return bubble;
+    });
   }
 
   delete(projectId: string, id: string): boolean {

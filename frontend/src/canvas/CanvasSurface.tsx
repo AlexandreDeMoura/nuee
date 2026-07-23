@@ -12,6 +12,7 @@ import {
   CircleAlert,
   CircleDot,
   CirclePlus,
+  LayoutGrid,
   Minus,
   Plus,
   RotateCcw,
@@ -19,9 +20,12 @@ import {
 import {
   getProjectBubbles,
   updateBubblePosition,
+  updateBubblePositions,
   updateProjectViewport,
+  type BatchUpdateBubblePositionsInput,
   type Bubble,
   type BubbleLink,
+  type BubblePositionUpdate,
   type BubblePlacementInput,
   type Project,
   type ProjectViewportUpdateOptions,
@@ -39,6 +43,7 @@ import {
   type BubblePlacementRequest,
 } from '../bubbles/CreateBubbleDialog';
 import { BubbleCard } from './BubbleCard';
+import { getCompactBubblePositions } from './compactLayout';
 
 const MIN_ZOOM = 0.25;
 const MAX_ZOOM = 2;
@@ -73,6 +78,11 @@ export type BubblePositionUpdateRequest = (
   input: UpdateBubblePositionInput,
 ) => Promise<Bubble>;
 
+export type BubblePositionsUpdateRequest = (
+  projectId: string,
+  input: BatchUpdateBubblePositionsInput,
+) => Promise<Bubble[]>;
+
 export interface CanvasEmptyStateActions {
   onCreateBubble: () => void;
 }
@@ -106,6 +116,7 @@ export interface CanvasSurfaceProps {
   requestBubbles?: BubbleListRequest;
   requestBubblePlacement?: BubblePlacementRequest;
   requestBubblePositionUpdate?: BubblePositionUpdateRequest;
+  requestBubblePositionsUpdate?: BubblePositionsUpdateRequest;
   requestViewportUpdate?: ProjectViewportUpdateRequest;
   onBubbleSelectionChange?: (bubble: Bubble | null) => void;
   onBubblesChange?: (bubbles: Bubble[]) => void;
@@ -150,6 +161,13 @@ interface BubblePositionSave {
   attempt: number;
   persistedPosition: BubblePosition;
   requestedPosition: BubblePosition;
+  status: 'saving' | 'error';
+}
+
+interface CompactLayoutSave {
+  attempt: number;
+  persistedPositions: BubblePositionUpdate[];
+  requestedPositions: BubblePositionUpdate[];
   status: 'saving' | 'error';
 }
 
@@ -408,6 +426,34 @@ function BubblePositionSaveError({
   );
 }
 
+function CompactLayoutSaveError({
+  onRetry,
+}: {
+  onRetry: () => void;
+}) {
+  return (
+    <div
+      className="pointer-events-auto absolute top-4 left-4 flex max-w-[380px] items-center gap-3 rounded-[10px] border border-[#ead5d2] bg-white/95 px-3.5 py-2.5 text-xs text-[#79504c] shadow-[0_8px_24px_-14px_rgba(30,39,51,0.4)] backdrop-blur-sm"
+      data-canvas-overlay
+      role="alert"
+    >
+      <CircleAlert
+        className="size-[15px] shrink-0 text-[#b4544e]"
+        strokeWidth={1.8}
+        aria-hidden="true"
+      />
+      <span>Couldn’t save the compact layout. The previous layout was restored.</span>
+      <button
+        className={`shrink-0 cursor-pointer font-semibold text-[#8f4843] hover:text-[#6f3531] ${focusRing}`}
+        type="button"
+        onClick={onRetry}
+      >
+        Retry
+      </button>
+    </div>
+  );
+}
+
 function CanvasZoomControls({
   zoom,
   onReset,
@@ -456,10 +502,20 @@ function CanvasZoomControls({
   );
 }
 
-function CanvasBubbleAction({ onCreate }: { onCreate: () => void }) {
+function CanvasBubbleActions({
+  canCompact,
+  isCompacting,
+  onCompact,
+  onCreate,
+}: {
+  canCompact: boolean;
+  isCompacting: boolean;
+  onCompact: () => void;
+  onCreate: () => void;
+}) {
   return (
     <div
-      className="pointer-events-auto absolute bottom-4 left-1/2 -translate-x-1/2 rounded-[13px] border border-[#e1e6ec] bg-white p-1.5 shadow-[0_8px_24px_-8px_rgba(30,39,51,0.28)]"
+      className="pointer-events-auto absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center rounded-[13px] border border-[#e1e6ec] bg-white p-1.5 shadow-[0_8px_24px_-8px_rgba(30,39,51,0.28)]"
       data-canvas-overlay
     >
       <button
@@ -470,6 +526,16 @@ function CanvasBubbleAction({ onCreate }: { onCreate: () => void }) {
       >
         <CirclePlus className="size-[15px]" strokeWidth={1.8} aria-hidden="true" />
         Bubble
+      </button>
+      <span className="mx-1 h-5 w-px bg-[#e1e6ec]" aria-hidden="true" />
+      <button
+        className={`inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-[9px] px-[13px] py-2 text-[12.5px] font-medium text-[#5c6a7a] hover:bg-[#f4f6f9] hover:text-[#33538f] disabled:cursor-default disabled:text-[#b6c0cc] disabled:hover:bg-transparent ${focusRing}`}
+        type="button"
+        disabled={!canCompact}
+        onClick={onCompact}
+      >
+        <LayoutGrid className="size-[15px]" strokeWidth={1.8} aria-hidden="true" />
+        {isCompacting ? 'Compacting…' : 'Compact'}
       </button>
     </div>
   );
@@ -547,6 +613,7 @@ export function CanvasSurface({
   requestBubbles = getProjectBubbles,
   requestBubblePlacement,
   requestBubblePositionUpdate = updateBubblePosition,
+  requestBubblePositionsUpdate = updateBubblePositions,
   requestViewportUpdate = updateProjectViewport,
   onBubbleSelectionChange,
   onBubblesChange,
@@ -572,6 +639,8 @@ export function CanvasSurface({
   const [positionSaves, setPositionSaves] = useState<
     Record<string, BubblePositionSave>
   >({});
+  const [compactLayoutSave, setCompactLayoutSave] =
+    useState<CompactLayoutSave | null>(null);
   const [isCreateBubbleDialogOpen, setIsCreateBubbleDialogOpen] = useState(false);
   const [createPlacementInput, setCreatePlacementInput] =
     useState<BubblePlacementInput | null>(null);
@@ -580,6 +649,8 @@ export function CanvasSurface({
   const activeBubbleDragRef = useRef<ActiveBubbleDrag | null>(null);
   const positionSavesRef = useRef<Record<string, BubblePositionSave>>({});
   const positionSaveAttemptRef = useRef(0);
+  const compactLayoutSaveAttemptRef = useRef(0);
+  const compactLayoutSaveRef = useRef<CompactLayoutSave | null>(null);
   const latestViewportRef = useRef(initialViewport);
   const persistedViewportRef = useRef(initialViewport);
   const failedViewportRef = useRef<CanvasViewport | null>(null);
@@ -623,6 +694,30 @@ export function CanvasSurface({
     [],
   );
 
+  const setLocalBubblePositions = useCallback(
+    (positions: readonly BubblePositionUpdate[]) => {
+      const positionsById = new Map(
+        positions.map((position) => [position.bubble_id, position]),
+      );
+
+      setLoadState((current) => ({
+        ...current,
+        bubbles: current.bubbles.map((bubble) => {
+          const position = positionsById.get(bubble.id);
+
+          return position
+            ? {
+                ...bubble,
+                position_x: position.position_x,
+                position_y: position.position_y,
+              }
+            : bubble;
+        }),
+      }));
+    },
+    [],
+  );
+
   const replacePositionSave = useCallback(
     (bubbleId: string, save: BubblePositionSave | null) => {
       const nextSaves = { ...positionSavesRef.current };
@@ -635,6 +730,14 @@ export function CanvasSurface({
 
       positionSavesRef.current = nextSaves;
       setPositionSaves(nextSaves);
+    },
+    [],
+  );
+
+  const replaceCompactLayoutSave = useCallback(
+    (save: CompactLayoutSave | null) => {
+      compactLayoutSaveRef.current = save;
+      setCompactLayoutSave(save);
     },
     [],
   );
@@ -708,6 +811,89 @@ export function CanvasSurface({
       replacePositionSave,
       requestBubblePositionUpdate,
       setLocalBubblePosition,
+    ],
+  );
+
+  const persistCompactLayout = useCallback(
+    async (
+      requestedPositions: BubblePositionUpdate[],
+      persistedPositions: BubblePositionUpdate[],
+    ) => {
+      const attempt = ++compactLayoutSaveAttemptRef.current;
+      const saving: CompactLayoutSave = {
+        attempt,
+        persistedPositions,
+        requestedPositions,
+        status: 'saving',
+      };
+
+      setLocalBubblePositions(requestedPositions);
+      replaceCompactLayoutSave(saving);
+
+      try {
+        const updatedBubbles = await requestBubblePositionsUpdate(projectId, {
+          positions: requestedPositions,
+        });
+        const expectedById = new Map(
+          requestedPositions.map((position) => [
+            position.bubble_id,
+            position,
+          ]),
+        );
+        const seenIds = new Set<string>();
+
+        if (
+          !Array.isArray(updatedBubbles) ||
+          updatedBubbles.length !== requestedPositions.length ||
+          updatedBubbles.some((bubble) => {
+            const expected = expectedById.get(bubble.id);
+            const isInvalid =
+              !isRenderableBubble(bubble, projectId) ||
+              !expected ||
+              seenIds.has(bubble.id) ||
+              bubble.position_x !== expected.position_x ||
+              bubble.position_y !== expected.position_y;
+
+            seenIds.add(bubble.id);
+            return isInvalid;
+          })
+        ) {
+          throw new Error('The saved compact layout response was invalid.');
+        }
+
+        if (
+          !mountedRef.current ||
+          compactLayoutSaveRef.current?.attempt !== attempt
+        ) {
+          return;
+        }
+
+        setLocalBubblePositions(
+          updatedBubbles.map((bubble) => ({
+            bubble_id: bubble.id,
+            position_x: bubble.position_x,
+            position_y: bubble.position_y,
+          })),
+        );
+        replaceCompactLayoutSave(null);
+      } catch {
+        if (
+          mountedRef.current &&
+          compactLayoutSaveRef.current?.attempt === attempt
+        ) {
+          setLocalBubblePositions(persistedPositions);
+          replaceCompactLayoutSave({
+            ...saving,
+            status: 'error',
+          });
+        }
+      }
+    },
+    [
+      projectId,
+      replaceCompactLayoutSave,
+      requestBubblePositionsUpdate,
+      setLocalBubblePositions,
     ],
   );
 
@@ -1395,6 +1581,55 @@ export function CanvasSurface({
     });
   }
 
+  function compactLayout() {
+    if (
+      displayedBubbles.length < 2 ||
+      draggingBubbleId !== null ||
+      Object.keys(positionSavesRef.current).length > 0 ||
+      compactLayoutSaveRef.current?.status === 'saving'
+    ) {
+      return;
+    }
+
+    const requestedPositions = getCompactBubblePositions(displayedBubbles);
+    const bubblesById = new Map(
+      displayedBubbles.map((bubble) => [bubble.id, bubble]),
+    );
+    const changedPositions = requestedPositions.filter((position) => {
+      const bubble = bubblesById.get(position.bubble_id);
+
+      return (
+        bubble &&
+        (bubble.position_x !== position.position_x ||
+          bubble.position_y !== position.position_y)
+      );
+    });
+
+    if (changedPositions.length === 0) {
+      replaceCompactLayoutSave(null);
+      return;
+    }
+
+    const persistedPositions = changedPositions.map((position) => {
+      const bubble = bubblesById.get(position.bubble_id)!;
+
+      return {
+        bubble_id: bubble.id,
+        position_x: bubble.position_x,
+        position_y: bubble.position_y,
+      };
+    });
+
+    void persistCompactLayout(changedPositions, persistedPositions);
+  }
+
+  const isCompactLayoutSaving = compactLayoutSave?.status === 'saving';
+  const canCompactLayout =
+    displayedBubbles.length >= 2 &&
+    draggingBubbleId === null &&
+    Object.keys(positionSaves).length === 0 &&
+    !isCompactLayoutSaving;
+
   return (
     <section
       className={`relative min-w-0 flex-1 select-none overflow-hidden bg-[#eef1f5] ${
@@ -1443,7 +1678,9 @@ export function CanvasSurface({
           const status =
             draggingBubbleId === bubble.id
               ? 'dragging'
-              : (positionSave?.status ?? 'default');
+              : isCompactLayoutSaving
+                ? 'saving'
+                : (positionSave?.status ?? 'default');
 
           return (
             <BubbleCard
@@ -1520,7 +1757,12 @@ export function CanvasSurface({
       />
 
       {displayedBubbles.length > 0 && !isMultiSelectionActive && (
-        <CanvasBubbleAction onCreate={openCreateBubbleDialog} />
+        <CanvasBubbleActions
+          canCompact={canCompactLayout}
+          isCompacting={isCompactLayoutSaving}
+          onCompact={compactLayout}
+          onCreate={openCreateBubbleDialog}
+        />
       )}
 
       {viewportSaveFailed && (
@@ -1547,6 +1789,17 @@ export function CanvasSurface({
             const [bubbleId, save] = failedPositionSaveEntry;
             setLocalBubblePosition(bubbleId, save.persistedPosition);
             replacePositionSave(bubbleId, null);
+          }}
+        />
+      )}
+
+      {compactLayoutSave?.status === 'error' && (
+        <CompactLayoutSaveError
+          onRetry={() => {
+            void persistCompactLayout(
+              compactLayoutSave.requestedPositions,
+              compactLayoutSave.persistedPositions,
+            );
           }}
         />
       )}

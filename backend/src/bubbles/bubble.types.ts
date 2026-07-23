@@ -34,6 +34,14 @@ export interface RepositionBubbleInput {
   position_y: number;
 }
 
+export interface BubblePositionUpdate extends RepositionBubbleInput {
+  bubble_id: string;
+}
+
+export interface BatchRepositionBubblesInput {
+  positions: BubblePositionUpdate[];
+}
+
 export type BubblePlacementStrategy = 'viewport' | 'cluster';
 
 export interface PlaceBubbleInput {
@@ -77,6 +85,10 @@ export interface BubbleRepository {
     positionX: number,
     positionY: number,
   ): Bubble | undefined;
+  updatePositions(
+    projectId: string,
+    positions: BubblePositionUpdate[],
+  ): Bubble[];
   delete(projectId: string, id: string): boolean;
 }
 

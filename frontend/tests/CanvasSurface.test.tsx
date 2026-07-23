@@ -226,6 +226,135 @@ describe('CanvasSurface', () => {
     );
   });
 
+  it('offers Compact for two bubbles and persists their changed positions as one batch', async () => {
+    const first = bubble({
+      id: 'bubble-first',
+      position_x: 700,
+      position_y: 500,
+    });
+    const second = bubble({
+      id: 'bubble-second',
+      title: 'Spatially first',
+      position_x: -100,
+      position_y: 50,
+      created_at: '2026-07-20T11:00:00.000Z',
+    });
+    const compactedFirst = {
+      ...first,
+      position_x: 172,
+      position_y: 50,
+    };
+    const requestPositionsUpdate = vi
+      .fn()
+      .mockResolvedValue([compactedFirst]);
+
+    render(
+      <CanvasSurface
+        emptyState={emptyState}
+        projectId={project.id}
+        requestBubbles={async () => [first, second]}
+        requestBubblePositionsUpdate={requestPositionsUpdate}
+      />,
+    );
+
+    const firstCard = await screen.findByRole('article', {
+      name: first.title,
+    });
+    const secondCard = screen.getByRole('article', {
+      name: second.title,
+    });
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Compact' }));
+      await Promise.resolve();
+    });
+
+    expect(requestPositionsUpdate).toHaveBeenCalledWith(project.id, {
+      positions: [
+        {
+          bubble_id: first.id,
+          position_x: 172,
+          position_y: 50,
+        },
+      ],
+    });
+    expect(firstCard.style.left).toBe('172px');
+    expect(firstCard.style.top).toBe('50px');
+    expect(secondCard.style.left).toBe('-100px');
+    expect(secondCard.style.top).toBe('50px');
+    expect(firstCard.textContent).toContain(first.title);
+    expect(firstCard.textContent).toContain(first.summary);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Compact' }));
+    expect(requestPositionsUpdate).toHaveBeenCalledTimes(1);
+  });
+
+  it('restores the last saved arrangement when Compact fails and retries the same batch', async () => {
+    const pendingCompact = deferred<Bubble[]>();
+    const first = bubble({
+      id: 'bubble-first',
+      position_x: 700,
+      position_y: 500,
+    });
+    const second = bubble({
+      id: 'bubble-second',
+      title: 'Spatially first',
+      position_x: -100,
+      position_y: 50,
+    });
+    const compactedFirst = {
+      ...first,
+      position_x: 172,
+      position_y: 50,
+    };
+    const requestPositionsUpdate = vi
+      .fn()
+      .mockImplementationOnce(() => pendingCompact.promise)
+      .mockResolvedValueOnce([compactedFirst]);
+
+    render(
+      <CanvasSurface
+        emptyState={emptyState}
+        projectId={project.id}
+        requestBubbles={async () => [first, second]}
+        requestBubblePositionsUpdate={requestPositionsUpdate}
+      />,
+    );
+
+    const firstCard = await screen.findByRole('article', {
+      name: first.title,
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Compact' }));
+
+    expect(firstCard.style.left).toBe('172px');
+    expect(firstCard.style.top).toBe('50px');
+    expect(firstCard.getAttribute('data-bubble-state')).toBe('saving');
+
+    await act(async () => {
+      pendingCompact.reject(new Error('Unavailable'));
+      await Promise.resolve();
+    });
+
+    expect(firstCard.style.left).toBe('700px');
+    expect(firstCard.style.top).toBe('500px');
+    expect(screen.getByRole('alert').textContent).toContain(
+      'The previous layout was restored.',
+    );
+
+    await act(async () => {
+      fireEvent.click(screen.getByRole('button', { name: 'Retry' }));
+      await Promise.resolve();
+    });
+
+    expect(requestPositionsUpdate).toHaveBeenCalledTimes(2);
+    expect(requestPositionsUpdate.mock.calls[1]).toEqual(
+      requestPositionsUpdate.mock.calls[0],
+    );
+    expect(firstCard.style.left).toBe('172px');
+    expect(firstCard.style.top).toBe('50px');
+    expect(screen.queryByText(/previous layout was restored/i)).toBeNull();
+  });
+
   it('keeps valid bubbles visible when part of a response cannot be rendered', async () => {
     const requestBubbles = vi
       .fn()

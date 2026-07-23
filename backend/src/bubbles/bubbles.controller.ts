@@ -10,6 +10,7 @@ import {
   Post,
 } from '@nestjs/common';
 import type {
+  BatchRepositionBubblesInput,
   Bubble,
   BubblePlacement,
   CreateBubbleInput,
@@ -46,6 +47,14 @@ export class BubblesController {
     @Body() input: PlaceBubbleInput,
   ): BubblePlacement {
     return this.placements.place(projectId, input);
+  }
+
+  @Patch('positions')
+  repositionMany(
+    @Param('projectId') projectId: string,
+    @Body() input: BatchRepositionBubblesInput,
+  ): Bubble[] {
+    return this.bubbles.repositionMany(projectId, input);
   }
 
   @Get(':bubbleId')

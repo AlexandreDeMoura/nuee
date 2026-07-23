@@ -33,6 +33,7 @@ import {
   CanvasSurface,
   type BubbleListRequest,
   type BubblePositionUpdateRequest,
+  type BubblePositionsUpdateRequest,
   type CanvasMultiSelection,
   type ProjectViewportUpdateRequest,
 } from '../canvas/CanvasSurface';
@@ -95,6 +96,7 @@ export interface ProjectWorkspaceProps {
   requestBubbles?: BubbleListRequest;
   requestBubblePlacement?: BubblePlacementRequest;
   requestBubblePositionUpdate?: BubblePositionUpdateRequest;
+  requestBubblePositionsUpdate?: BubblePositionsUpdateRequest;
   requestBubbleDelete?: BubbleDeleteRequest;
   requestBubbleUpdate?: BubbleUpdateRequest;
   requestBubbleLinks?: BubbleLinkListRequest;
@@ -540,6 +542,7 @@ export function ProjectWorkspace({
   requestBubbles,
   requestBubblePlacement,
   requestBubblePositionUpdate,
+  requestBubblePositionsUpdate,
   requestBubbleDelete,
   requestBubbleUpdate,
   requestBubbleLinks = getBubbleLinks,
@@ -834,6 +837,7 @@ export function ProjectWorkspace({
             requestBubbles={requestBubbles}
             requestBubblePlacement={requestBubblePlacement}
             requestBubblePositionUpdate={requestBubblePositionUpdate}
+            requestBubblePositionsUpdate={requestBubblePositionsUpdate}
             requestViewportUpdate={requestViewportUpdate}
             onBubbleSelectionChange={handleBubbleSelectionChange}
             onBubblesChange={setAvailableBubbles}
