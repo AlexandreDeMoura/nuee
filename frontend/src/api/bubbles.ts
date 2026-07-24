@@ -8,16 +8,11 @@ import type {
   BubbleSourceKind,
   CreateBubbleInput as SharedCreateBubbleInput,
   CreateBubbleLinkInput,
-  CreateProjectInput,
   PlaceBubbleInput,
-  Project,
   RepositionBubbleInput,
   UpdateBubbleInput as SharedUpdateBubbleInput,
-  UpdateProjectDescriptionInput,
-  UpdateProjectViewportInput,
 } from '@nuee/shared-types';
-
-const API_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replace(/\/$/, '');
+import { requestJson } from './client';
 
 export type {
   Bubble,
@@ -27,10 +22,6 @@ export type {
   BubblePositionUpdate,
   BubbleSourceKind,
   CreateBubbleLinkInput,
-  CreateProjectInput,
-  Project,
-  UpdateProjectDescriptionInput,
-  UpdateProjectViewportInput,
 };
 
 type WithRequired<T, K extends keyof T> = T & Required<Pick<T, K>>;
@@ -43,63 +34,6 @@ export type UpdateBubblePositionInput = RepositionBubbleInput;
 export type BatchUpdateBubblePositionsInput = BatchRepositionBubblesInput;
 export type UpdateBubbleInput = Required<SharedUpdateBubbleInput>;
 export type BubblePlacementInput = PlaceBubbleInput;
-
-interface ApiErrorBody {
-  code?: string;
-  message?: string;
-}
-
-export interface ProjectViewportUpdateOptions {
-  keepalive?: boolean;
-}
-
-export class ApiError extends Error {
-  readonly status: number;
-  readonly code?: string;
-
-  constructor(status: number, body?: ApiErrorBody) {
-    super(body?.message ?? `API request failed with status ${status}.`);
-    this.name = 'ApiError';
-    this.status = status;
-    this.code = body?.code;
-  }
-}
-
-async function requestJson<T>(path: string, init: RequestInit = {}): Promise<T> {
-  const headers = new Headers(init.headers);
-  headers.set('Accept', 'application/json');
-
-  const response = await fetch(`${API_URL}${path}`, {
-    ...init,
-    headers,
-  });
-
-  if (!response.ok) {
-    let body: ApiErrorBody | undefined;
-
-    try {
-      body = (await response.json()) as ApiErrorBody;
-    } catch {
-      body = undefined;
-    }
-
-    throw new ApiError(response.status, body);
-  }
-
-  if (response.status === 204) {
-    return undefined as T;
-  }
-
-  return response.json() as Promise<T>;
-}
-
-export function getProjects(signal?: AbortSignal): Promise<Project[]> {
-  return requestJson<Project[]>('/projects', { signal });
-}
-
-export function getProject(projectId: string, signal?: AbortSignal): Promise<Project> {
-  return requestJson<Project>(`/projects/${encodeURIComponent(projectId)}`, { signal });
-}
 
 export function getProjectBubbles(
   projectId: string,
@@ -231,45 +165,5 @@ export function deleteBubbleLink(
   return requestJson<void>(
     `/projects/${encodeURIComponent(projectId)}/bubble-links/${encodeURIComponent(firstBubbleId)}/${encodeURIComponent(secondBubbleId)}`,
     { method: 'DELETE' },
-  );
-}
-
-export function createProject(input: CreateProjectInput): Promise<Project> {
-  return requestJson<Project>('/projects', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(input),
-  });
-}
-
-export function updateProjectDescription(
-  projectId: string,
-  input: UpdateProjectDescriptionInput,
-  signal?: AbortSignal,
-): Promise<Project> {
-  return requestJson<Project>(
-    `/projects/${encodeURIComponent(projectId)}/description`,
-    {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(input),
-      signal,
-    },
-  );
-}
-
-export function updateProjectViewport(
-  projectId: string,
-  input: UpdateProjectViewportInput,
-  options: ProjectViewportUpdateOptions = {},
-): Promise<Project> {
-  return requestJson<Project>(
-    `/projects/${encodeURIComponent(projectId)}/viewport`,
-    {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(input),
-      keepalive: options.keepalive,
-    },
   );
 }
