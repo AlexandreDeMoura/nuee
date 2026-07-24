@@ -1,106 +1,52 @@
+import type {
+  BatchRepositionBubblesInput,
+  Bubble,
+  BubbleLink,
+  BubblePlacement,
+  BubblePlacementStrategy,
+  BubblePositionUpdate,
+  BubbleSourceKind,
+  CreateBubbleInput as SharedCreateBubbleInput,
+  CreateBubbleLinkInput,
+  CreateProjectInput,
+  PlaceBubbleInput,
+  Project,
+  RepositionBubbleInput,
+  UpdateBubbleInput as SharedUpdateBubbleInput,
+  UpdateProjectDescriptionInput,
+  UpdateProjectViewportInput,
+} from '@nuee/shared-types';
+
 const API_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replace(/\/$/, '');
 
-export interface Project {
-  id: string;
-  title: string;
-  description: string;
-  created_at: string;
-  updated_at: string;
-  canvas_viewport_x: number;
-  canvas_viewport_y: number;
-  canvas_zoom: number;
-}
+export type {
+  Bubble,
+  BubbleLink,
+  BubblePlacement,
+  BubblePlacementStrategy,
+  BubblePositionUpdate,
+  BubbleSourceKind,
+  CreateBubbleLinkInput,
+  CreateProjectInput,
+  Project,
+  UpdateProjectDescriptionInput,
+  UpdateProjectViewportInput,
+};
 
-export type BubbleSourceKind = 'manual' | 'discussion';
+type WithRequired<T, K extends keyof T> = T & Required<Pick<T, K>>;
 
-export interface Bubble {
-  id: string;
-  project_id: string;
-  title: string;
-  summary: string | null;
-  content: string;
-  position_x: number;
-  position_y: number;
-  created_at: string;
-  updated_at: string;
-  source_kind: BubbleSourceKind;
-  source_discussion_id: string | null;
-  source_message_ids: string[];
-}
-
-export interface BubbleLink {
-  id: string;
-  project_id: string;
-  bubble_a_id: string;
-  bubble_b_id: string;
-  created_at: string;
-}
-
-export interface CreateBubbleLinkInput {
-  bubble_a_id: string;
-  bubble_b_id: string;
-}
-
-export interface CreateBubbleInput {
-  title: string;
-  summary?: string | null;
-  content: string;
-  position_x: number;
-  position_y: number;
-}
-
-export interface UpdateBubblePositionInput {
-  position_x: number;
-  position_y: number;
-}
-
-export interface BubblePositionUpdate extends UpdateBubblePositionInput {
-  bubble_id: string;
-}
-
-export interface BatchUpdateBubblePositionsInput {
-  positions: BubblePositionUpdate[];
-}
-
-export interface UpdateBubbleInput {
-  title: string;
-  summary: string | null;
-  content: string;
-}
-
-export type BubblePlacementStrategy = 'viewport' | 'cluster';
-
-export interface BubblePlacementInput {
-  strategy: BubblePlacementStrategy;
-  viewport_x?: number;
-  viewport_y?: number;
-  viewport_width?: number;
-  viewport_height?: number;
-}
-
-export interface BubblePlacement {
-  position_x: number;
-  position_y: number;
-}
+export type CreateBubbleInput = WithRequired<
+  SharedCreateBubbleInput,
+  'position_x' | 'position_y'
+>;
+export type UpdateBubblePositionInput = RepositionBubbleInput;
+export type BatchUpdateBubblePositionsInput = BatchRepositionBubblesInput;
+export type UpdateBubbleInput = Required<SharedUpdateBubbleInput>;
+export type BubblePlacementInput = PlaceBubbleInput;
 
 interface ApiErrorBody {
   code?: string;
   message?: string;
-}
-
-export interface CreateProjectInput {
-  title: string;
-  description: string;
-}
-
-export interface UpdateProjectDescriptionInput {
-  description: string;
-}
-
-export interface UpdateProjectViewportInput {
-  canvas_viewport_x: number;
-  canvas_viewport_y: number;
-  canvas_zoom: number;
 }
 
 export interface ProjectViewportUpdateOptions {

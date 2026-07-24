@@ -1,28 +1,11 @@
-export interface Project {
-  id: string;
-  title: string;
-  description: string;
-  created_at: string;
-  updated_at: string;
-  canvas_viewport_x: number;
-  canvas_viewport_y: number;
-  canvas_zoom: number;
-}
+import type { Project, UpdateProjectViewportInput } from '@nuee/shared-types';
 
-export interface CreateProjectInput {
-  title: string;
-  description: string;
-}
-
-export interface UpdateProjectDescriptionInput {
-  description: string;
-}
-
-export interface UpdateProjectViewportInput {
-  canvas_viewport_x: number;
-  canvas_viewport_y: number;
-  canvas_zoom: number;
-}
+export type {
+  CreateProjectInput,
+  Project,
+  UpdateProjectDescriptionInput,
+  UpdateProjectViewportInput,
+} from '@nuee/shared-types';
 
 export interface ProjectRepository {
   create(project: Project): Project;
