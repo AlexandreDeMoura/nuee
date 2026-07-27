@@ -5,6 +5,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BubblesModule } from './bubbles/bubbles.module';
 import { DatabaseModule } from './database/database.module';
+import { DiscussionsModule } from './discussions/discussions.module';
 import { ProjectsModule } from './projects/projects.module';
 
 @Module({
@@ -16,6 +17,7 @@ import { ProjectsModule } from './projects/projects.module';
     DatabaseModule,
     ProjectsModule,
     BubblesModule,
+    DiscussionsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

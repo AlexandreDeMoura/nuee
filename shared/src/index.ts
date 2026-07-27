@@ -97,6 +97,7 @@ export interface CreateBubbleLinkInput {
 }
 
 export type DiscussionRole = 'user' | 'assistant';
+export type DiscussionMessageStatus = 'pending' | 'completed' | 'failed';
 
 /**
  * An immutable context package assembled by the Discussion Context feature.
@@ -120,6 +121,8 @@ export interface DiscussionMessage {
   role: DiscussionRole;
   content: string;
   created_at: string;
+  status: DiscussionMessageStatus;
+  request_id: string | null;
 }
 
 export interface CreateDiscussionInput {

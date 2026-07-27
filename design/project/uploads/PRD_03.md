@@ -141,3 +141,155 @@ This PRD owns the discussion modal, message lifecycle, AI response generation, A
 - **Concurrent tabs:** Two tabs can submit messages or change Active status in conflicting order. Full real-time synchronization is out of scope, but duplicate or reordered messages are unacceptable. The current leaning is server-authoritative chronological ordering, idempotent submissions, and last-qualifying-activity-wins Active calculation.
 - **Model selection ownership:** The MVP source does not define whether users choose a model globally, per project, or per message. This PRD should consume the application's selected model through an external configuration contract rather than introduce a new model-selector feature.
 - **Privacy and analytics:** Message content is highly sensitive project data. Product analytics need lifecycle and latency signals without collecting reasoning text. The current leaning is identifier- and metadata-only analytics, with content excluded by default.
+
+## Commit Plan
+
+A pragmatic, incremental sequence grounded in the existing architecture (per-feature NestJS
+modules with controller / service / repository-port / sqlite-repo / migrations / spec; a single
+`shared/src/index.ts` contract; injectable `frontend/src/api/*` modules feeding feature folders).
+Each commit is independently reviewable and must leave build, lint, and the affected side's unit
+tests (plus backend e2e where noted) green. Backend lands before the frontend that consumes it.
+
+### Seams and defaults decided for the MVP
+
+These resolve open questions so the slices below stay small; each is a deliberate boundary, not a
+product change, and is called out for review.
+
+- **Write-first creation, no empty discussions.** The modal opens client-side as an unsaved draft;
+  the discussion row and its first user message are created **atomically in one request**. Nothing
+  is persisted until the first prompt is submitted, so there is no empty-discussion cleanup and the
+  panel/list never shows abandoned rows (satisfies criteria 2, 6, 19; open questions "First prompt
+  timing" / "Empty discussions").
+- **Frozen context is an opaque, injected payload.** Discussion Context (separate PRD) is not built
+  here. The create contract accepts a `frozen_context` package, persists it verbatim, and forwards
+  it to the model unchanged. A thin temporary default builder supplies the project-description
+  snapshot so discussions function standalone; it is clearly marked for replacement. The renderer
+  treats context badges as immutable references and never resolves live sources.
+- **AI behind a `ModelClient` port.** No AI dependency exists in the repo today. All orchestration
+  depends on a port so services and tests use a deterministic fake; the real provider-backed
+  implementation and its typed config land in a separate commit. Adding one official SDK is the
+  "demonstrated need" exception to the no-new-dependency rule.
+- **Single activity field.** A derived `last_activity_at` drives both ordering and Active
+  (latest-qualifying-activity-wins); message rows keep immutable `created_at`. Qualifying activity =
+  create, explicit open, new message. Minimize/extraction/scroll do not bump it.
+- **One Minimize/Close control**, one persisted outcome (hide; discussion stays in the panel).
+- **Soft deletion internally**, no trash/restore UI. Bubble provenance is preserved on cascade.
+- **Failures are attempt records, not AI messages.** A generation-attempt row / message status
+  carries pending/failed state and an idempotency key so retries and repeated events never duplicate
+  the user turn or the AI answer; the immutable transcript is never polluted by an error "message".
+
+### Phase A — Backend
+
+1. **`feat: add discussion + message contracts to shared-types`**
+   Add `Discussion`, `DiscussionMessage`, `DiscussionRole`, `FrozenContext` (opaque),
+   `CreateDiscussionInput` (project id + frozen context + first prompt), `SendMessageInput`
+   (content + idempotency key), and list/summary DTOs to `shared/src/index.ts`. Contracts only;
+   unblocks both sides. *Verify: build.*
+
+2. **`feat(backend): discussions persistence layer`**
+   Migrations `004-create-discussions` and `005-create-discussion-messages` (registered in
+   `database.migrations.ts`), `discussion.types.ts` repository ports, `sqlite-discussion.repository.ts`,
+   and repo specs. Schema: discussions (`id`, `project_id`, `title` nullable/placeholder,
+   `frozen_context` JSON, `created_at`, `updated_at`, `last_activity_at`, `deleted_at`); messages
+   (`id`, `discussion_id`, `role`, `content`, `created_at`, `status`, `request_id` for idempotency).
+   FK cascade project→discussion→messages; STRICT tables, CHECK constraints, project-scoped indexes
+   mirroring the bubbles precedent. Unique `(discussion_id, request_id)` enforces idempotency in the
+   store. *Verify: backend build, lint, unit.*
+
+3. **`feat(backend): ModelClient port + deterministic fake`**
+   Introduce a cross-cutting `ai/` module exporting the `ModelClient` port (generate answer, generate
+   title) and an in-repo deterministic fake used by tests and dev. No network, no new dependency yet.
+   Keeps the whole discussion flow testable before the real provider exists. *Verify: backend build,
+   lint, unit.*
+
+4. **`feat(backend): discussion lifecycle service + controller (no live model yet)`**
+   `discussions.service.ts` + `discussions.controller.ts` (`projects/:projectId/discussions`).
+   Create (atomic discussion + first user message + persisted frozen context + placeholder title),
+   list (project-scoped, ordered by `last_activity_at`, Active = latest), get, record-open activity
+   bump, soft-delete. Cross-project rejection (criterion 39); stable error codes / field errors
+   mirroring `BubblesService`; last-write-wins. Send-message path persists the user message first,
+   records a pending attempt, calls the `ModelClient` port, and appends exactly one AI message on
+   success; idempotency key makes retries and duplicate events safe (criteria 9–14, 27–29, 36).
+   Defensive context-size guard returns an actionable error rather than silently truncating.
+   *Verify: backend build, lint, unit + discussions e2e journey in `backend/test/`.*
+
+5. **`feat(backend): provider-backed ModelClient + typed AI config`**
+   Real `ModelClient` implementation behind the port (official SDK dependency added here), plus the
+   typed/validated config path (provider, model id, API key, focused-response system-prompt budget,
+   frontend origin already present). Focused-response instruction (~1-minute soft budget, no hard
+   truncation). Graceful translation of provider/timeout failures into the stable
+   `AI_GENERATION_FAILED` app error; swap DI binding for non-test env. *Verify: backend build, lint,
+   unit (fake), e2e (fake); manual smoke against real provider separately.*
+
+6. **`feat(backend): asynchronous discussion title generation`**
+   `POST /discussions/:id/title` — idempotent, runs once after the first completed exchange, persists
+   the concise single-line title, and is a no-op if already titled. Does not block the first answer
+   (client calls it after receiving the AI message). Deterministic temporary placeholder until then;
+   failure leaves the discussion usable (criteria 19–21). *Verify: backend build, lint, unit, e2e.*
+
+### Phase B — Frontend
+
+7. **`feat(frontend): discussions api client module`**
+   `frontend/src/api/discussions.ts` (create, list, get, sendMessage, retry, generateTitle,
+   recordOpen, delete) + `api/index.ts` barrel; injectable request fns, types derived from
+   `@nuee/shared-types`, `ApiError` normalization, abort support. *Verify: frontend build, lint,
+   unit against fakes.*
+
+8. **`feat(frontend): discussion modal shell, overlay + single-visible controller`**
+   New `frontend/src/discussions/` feature. Centered modal over the canvas with blur/de-emphasis,
+   focus trap, pointer-leak prevention; single-visible controller (opening/creating another replaces
+   the visible one without deleting it); one Minimize/Close control; write-first empty draft modal
+   with a usable prompt input. Wired into `ProjectWorkspace` as an overlay slot; opening a project
+   still lands on the canvas (criteria 2, 4–8, 31). *Verify: frontend build, lint, unit.*
+
+9. **`feat(frontend): message lifecycle + composer`**
+   Prompt composer (whitespace validation, multiline, accessible keyboard submit), pending state that
+   blocks duplicate submission, single-append user+AI messages, chronological render with
+   loading/empty/pending/failed states, failed-attempt distinct from a completed answer, and retry
+   that reuses the idempotency key (no duplicate turn, at most one answer). Plain-text rendering for
+   now (criteria 9–14, 32). *Verify: frontend build, lint, unit covering failure/retry/abort/stale/
+   invalid-response branches.*
+
+10. **`feat(frontend): discussions panel list, ordering, Active + lifecycle`**
+    Feed project-scoped records into the existing right-panel Discussions view (title, activity,
+    Active badge, open/delete): order by `last_activity_at`, Active = latest, explicit open moves to
+    Active, minimize/extraction do not. Reopen restores persisted history, title, and frozen-context
+    badges; reload preserves persisted messages and never shows an unpersisted answer as completed
+    (criteria 25–32). *Verify: frontend build, lint, unit.*
+
+11. **`feat(frontend): title display, safe rich-response renderer + context badges`**
+    Controlled renderer for the approved rich-text subset (paragraphs, headings, lists, tables, code,
+    citations) with sanitization of unsupported/unsafe markup; generated title in header + panel with
+    temporary placeholder; render immutable context badges and Extract-knowledge entry points (header
+    + below each AI response) passing discussion/message ids only — no synthesis here (criteria 15–18,
+    20–22). *Verify: frontend build, lint, unit.*
+
+12. **`feat(frontend): deletion flow with confirmation`**
+    Confirm step + project-scoped delete from modal and panel; on success close the modal, remove the
+    list item, clear invalid UI state, and recalculate Active; deleted discussions no longer open via
+    the former route; bubbles created from the discussion survive with preserved provenance
+    (criteria 33–36). *Verify: frontend build, lint, unit; backend e2e for cascade/provenance.*
+
+### Phase C — Cross-cutting close-out
+
+13. **`feat: discussion accessibility + analytics`**
+    Modal semantics, screen-reader message-role labels, visible focus states, non-color-only Active/
+    error indicators, reduced-motion. Instrument the lifecycle and model-request outcomes (create,
+    first prompt, response complete/fail, title gen, open, minimize, delete, Active change) with
+    identifiers/timestamps/model metadata/latency only — never message content, frozen context, or
+    titles (criteria 40, 92, 94). *Verify: full build, lint, unit, e2e.*
+
+14. **`docs: record discussions module boundaries`**
+    Update `BACKEND_ARCHITECTURE_ANALYSIS.md` / `ARCHITECTURE_ANALYSIS.md`, and `CLAUDE.md` +
+    `AGENTS.md` if a boundary moved (new `discussions/` feature ownership on both sides, cross-cutting
+    `ai/` module, discussions activity/Active model, frozen-context and Knowledge-Extraction seams).
+
+### Notes on sequencing
+
+- Commits 3–4 deliberately introduce the `ModelClient` port and its fake **before** the real
+  provider so the full discussion flow is exercised by deterministic tests; only commit 5 touches the
+  network and adds a dependency.
+- Frontend commits 8–12 each ship a demoable slice; a reviewer can stop after any of them with a
+  coherent product state.
+- Streaming stays internal-only if used; the product contract remains a completed response with a
+  pending state throughout (out-of-scope confirmed).

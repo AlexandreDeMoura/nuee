@@ -1,17 +1,17 @@
 import type {
   Discussion,
   DiscussionMessage,
+  DiscussionMessageStatus,
   FrozenContext,
 } from '@nuee/shared-types';
 
 export type {
   Discussion,
   DiscussionMessage,
+  DiscussionMessageStatus,
   DiscussionRole,
   FrozenContext,
 } from '@nuee/shared-types';
-
-export type DiscussionMessageStatus = 'pending' | 'completed' | 'failed';
 
 export interface PersistedDiscussion extends Omit<
   Discussion,
@@ -22,10 +22,7 @@ export interface PersistedDiscussion extends Omit<
   deleted_at: string | null;
 }
 
-export interface PersistedDiscussionMessage extends DiscussionMessage {
-  status: DiscussionMessageStatus;
-  request_id: string | null;
-}
+export type PersistedDiscussionMessage = DiscussionMessage;
 
 export interface DiscussionRepository {
   createWithFirstMessage(
