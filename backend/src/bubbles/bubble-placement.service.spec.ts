@@ -1,5 +1,4 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -27,9 +26,7 @@ describe('BubblePlacementService', () => {
   beforeEach(() => {
     temporaryDirectory = mkdtempSync(join(tmpdir(), 'nuee-placement-'));
     const databasePath = join(temporaryDirectory, 'placement.sqlite');
-    databaseProvider = new DatabaseProvider(
-      new ConfigService({ PROJECT_DATABASE_PATH: databasePath }),
-    );
+    databaseProvider = new DatabaseProvider({ databasePath });
     projectRepository = new SqliteProjectRepository(databaseProvider);
     bubbleRepository = new SqliteBubbleRepository(databaseProvider);
     projects = new ProjectsService(projectRepository);

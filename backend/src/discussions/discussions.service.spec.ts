@@ -5,7 +5,6 @@ import {
   PayloadTooLargeException,
   ServiceUnavailableException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import type {
   GenerateAnswerInput,
   ModelClient,
@@ -53,9 +52,7 @@ describe('DiscussionsService', () => {
   beforeEach(() => {
     jest.useFakeTimers();
     jest.setSystemTime(new Date('2026-07-27T10:00:00.000Z'));
-    databaseProvider = new DatabaseProvider(
-      new ConfigService({ PROJECT_DATABASE_PATH: ':memory:' }),
-    );
+    databaseProvider = new DatabaseProvider({ databasePath: ':memory:' });
     projects = new ProjectsService(
       new SqliteProjectRepository(databaseProvider),
     );

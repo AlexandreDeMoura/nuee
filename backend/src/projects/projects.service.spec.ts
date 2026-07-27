@@ -1,5 +1,4 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -13,9 +12,7 @@ describe('ProjectsService', () => {
   let service: ProjectsService;
 
   function openDatabase(databasePath: string): void {
-    databaseProvider = new DatabaseProvider(
-      new ConfigService({ PROJECT_DATABASE_PATH: databasePath }),
-    );
+    databaseProvider = new DatabaseProvider({ databasePath });
     repository = new SqliteProjectRepository(databaseProvider);
     service = new ProjectsService(repository);
   }

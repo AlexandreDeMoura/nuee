@@ -1,4 +1,10 @@
 import { Test, type TestingModule } from '@nestjs/testing';
+import { ConfigModule } from '@nestjs/config';
+import {
+  aiConfig,
+  appConfig,
+  validateEnvironment,
+} from '../config/configuration';
 import { AiModule } from './ai.module';
 import {
   FAKE_MODEL_ID,
@@ -76,7 +82,14 @@ describe('FakeModelClient', () => {
 
   it('exports the deterministic fake through the ModelClient port', async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [AiModule],
+      imports: [
+        ConfigModule.forRoot({
+          isGlobal: true,
+          load: [appConfig, aiConfig],
+          validate: validateEnvironment,
+        }),
+        AiModule,
+      ],
     }).compile();
 
     const modelClient = module.get<ModelClient>(MODEL_CLIENT);

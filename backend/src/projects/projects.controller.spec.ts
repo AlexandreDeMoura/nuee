@@ -1,5 +1,4 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { DatabaseProvider } from '../database/database.provider';
 import { SqliteProjectRepository } from './sqlite-project.repository';
 import { ProjectsController } from './projects.controller';
@@ -11,9 +10,7 @@ describe('ProjectsController', () => {
   let repository: SqliteProjectRepository;
 
   beforeEach(() => {
-    databaseProvider = new DatabaseProvider(
-      new ConfigService({ PROJECT_DATABASE_PATH: ':memory:' }),
-    );
+    databaseProvider = new DatabaseProvider({ databasePath: ':memory:' });
     repository = new SqliteProjectRepository(databaseProvider);
     controller = new ProjectsController(new ProjectsService(repository));
   });

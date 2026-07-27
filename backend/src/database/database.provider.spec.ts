@@ -1,4 +1,3 @@
-import { ConfigService } from '@nestjs/config';
 import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -24,9 +23,7 @@ describe('DatabaseProvider', () => {
   });
 
   it('owns one configured connection shared by feature repositories', () => {
-    databaseProvider = new DatabaseProvider(
-      new ConfigService({ PROJECT_DATABASE_PATH: databasePath }),
-    );
+    databaseProvider = new DatabaseProvider({ databasePath });
 
     new SqliteProjectRepository(databaseProvider);
     new SqliteBubbleRepository(databaseProvider);
@@ -61,9 +58,7 @@ describe('DatabaseProvider', () => {
   });
 
   it('closes its connection during module shutdown', () => {
-    databaseProvider = new DatabaseProvider(
-      new ConfigService({ PROJECT_DATABASE_PATH: ':memory:' }),
-    );
+    databaseProvider = new DatabaseProvider({ databasePath: ':memory:' });
     const connection = databaseProvider.connection;
 
     databaseProvider.onModuleDestroy();

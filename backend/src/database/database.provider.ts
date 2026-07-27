@@ -1,15 +1,19 @@
 import { mkdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
-import { Injectable, OnModuleDestroy } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Inject, Injectable, OnModuleDestroy } from '@nestjs/common';
+import type { ConfigType } from '@nestjs/config';
+import { appConfig } from '../config/configuration';
 import { runDatabaseMigrations } from './database.migrations';
 
 @Injectable()
 export class DatabaseProvider implements OnModuleDestroy {
   readonly connection: DatabaseSync;
 
-  constructor(config: ConfigService) {
+  constructor(
+    @Inject(appConfig.KEY)
+    config: Pick<ConfigType<typeof appConfig>, 'databasePath'>,
+  ) {
     const defaultDatabasePath = join(
       __dirname,
       '..',
@@ -17,8 +21,7 @@ export class DatabaseProvider implements OnModuleDestroy {
       'data',
       'nuee.sqlite',
     );
-    const databasePath =
-      config.get<string>('PROJECT_DATABASE_PATH') ?? defaultDatabasePath;
+    const databasePath = config.databasePath ?? defaultDatabasePath;
 
     if (databasePath !== ':memory:') {
       mkdirSync(dirname(databasePath), { recursive: true });

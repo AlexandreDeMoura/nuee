@@ -25,6 +25,25 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## Configuration
+
+The backend validates its environment before constructing application
+providers. Tests bind the deterministic `ModelClient` fake; every non-test
+environment binds the OpenAI Responses API client and therefore requires
+`OPENAI_API_KEY`.
+
+| Variable                          | Default                    | Purpose                                                                              |
+| --------------------------------- | -------------------------- | ------------------------------------------------------------------------------------ |
+| `NODE_ENV`                        | `development`              | `development`, `test`, or `production`                                               |
+| `PORT`                            | `3000`                     | Backend HTTP port                                                                    |
+| `FRONTEND_URL`                    | `http://localhost:5173`    | Exact HTTP(S) origin allowed by CORS                                                 |
+| `PROJECT_DATABASE_PATH`           | `backend/data/nuee.sqlite` | SQLite file path; `:memory:` is supported by tests                                   |
+| `AI_PROVIDER`                     | `openai`                   | AI provider; OpenAI is the only supported value                                      |
+| `AI_MODEL`                        | `gpt-5.6-sol`              | OpenAI model ID sent to the Responses API                                            |
+| `OPENAI_API_KEY`                  | none                       | Required outside `NODE_ENV=test`                                                     |
+| `AI_FOCUSED_RESPONSE_WORD_BUDGET` | `200`                      | Soft prompt target for approximately one-minute answers; it does not truncate output |
+| `AI_REQUEST_TIMEOUT_MS`           | `60000`                    | Per-attempt OpenAI SDK timeout                                                       |
+
 ## Project setup
 
 ```bash

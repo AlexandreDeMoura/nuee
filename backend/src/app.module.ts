@@ -4,6 +4,11 @@ import { AiModule } from './ai/ai.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BubblesModule } from './bubbles/bubbles.module';
+import {
+  aiConfig,
+  appConfig,
+  validateEnvironment,
+} from './config/configuration';
 import { DatabaseModule } from './database/database.module';
 import { DiscussionsModule } from './discussions/discussions.module';
 import { ProjectsModule } from './projects/projects.module';
@@ -12,6 +17,9 @@ import { ProjectsModule } from './projects/projects.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      cache: true,
+      load: [appConfig, aiConfig],
+      validate: validateEnvironment,
     }),
     AiModule,
     DatabaseModule,

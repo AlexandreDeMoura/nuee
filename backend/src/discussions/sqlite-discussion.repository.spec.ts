@@ -1,4 +1,3 @@
-import { ConfigService } from '@nestjs/config';
 import { DatabaseProvider } from '../database/database.provider';
 import { SqliteProjectRepository } from '../projects/sqlite-project.repository';
 import type { Project } from '../projects/project.types';
@@ -14,9 +13,7 @@ describe('SqliteDiscussionRepository', () => {
   let repository: SqliteDiscussionRepository;
 
   beforeEach(() => {
-    databaseProvider = new DatabaseProvider(
-      new ConfigService({ PROJECT_DATABASE_PATH: ':memory:' }),
-    );
+    databaseProvider = new DatabaseProvider({ databasePath: ':memory:' });
     projects = new SqliteProjectRepository(databaseProvider);
     repository = new SqliteDiscussionRepository(databaseProvider);
   });
