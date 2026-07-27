@@ -1,7 +1,6 @@
 import type { DatabaseSync } from 'node:sqlite';
 import { Injectable } from '@nestjs/common';
 import { DatabaseProvider } from '../database/database.provider';
-import { CREATE_PROJECTS_MIGRATION } from './migrations/001-create-projects';
 import {
   Project,
   ProjectRepository,
@@ -25,7 +24,6 @@ export class SqliteProjectRepository implements ProjectRepository {
 
   constructor(databaseProvider: DatabaseProvider) {
     this.database = databaseProvider.connection;
-    this.database.exec(CREATE_PROJECTS_MIGRATION);
   }
 
   create(project: Project): Project {

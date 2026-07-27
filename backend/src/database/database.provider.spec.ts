@@ -35,6 +35,9 @@ describe('DatabaseProvider', () => {
       databaseProvider.connection.prepare('PRAGMA foreign_keys;').get(),
     ).toEqual({ foreign_keys: 1 });
     expect(
+      databaseProvider.connection.prepare('PRAGMA busy_timeout;').get(),
+    ).toEqual({ timeout: 5000 });
+    expect(
       databaseProvider.connection
         .prepare(
           `
@@ -49,6 +52,7 @@ describe('DatabaseProvider', () => {
       { name: 'bubble_links' },
       { name: 'bubbles' },
       { name: 'projects' },
+      { name: 'schema_migrations' },
     ]);
   });
 

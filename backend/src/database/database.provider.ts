@@ -3,6 +3,7 @@ import { join, dirname } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { runDatabaseMigrations } from './database.migrations';
 
 @Injectable()
 export class DatabaseProvider implements OnModuleDestroy {
@@ -23,8 +24,18 @@ export class DatabaseProvider implements OnModuleDestroy {
       mkdirSync(dirname(databasePath), { recursive: true });
     }
 
-    this.connection = new DatabaseSync(databasePath);
-    this.connection.exec('PRAGMA foreign_keys = ON;');
+    const connection = new DatabaseSync(databasePath);
+
+    try {
+      connection.exec('PRAGMA busy_timeout = 5000;');
+      connection.exec('PRAGMA foreign_keys = ON;');
+      runDatabaseMigrations(connection);
+    } catch (error) {
+      connection.close();
+      throw error;
+    }
+
+    this.connection = connection;
   }
 
   onModuleDestroy(): void {

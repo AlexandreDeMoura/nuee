@@ -9,8 +9,6 @@ import type {
   BubbleRepository,
   BubbleSourceKind,
 } from './bubble.types';
-import { CREATE_BUBBLES_MIGRATION } from './migrations/002-create-bubbles';
-import { CREATE_BUBBLE_LINKS_MIGRATION } from './migrations/003-create-bubble-links';
 
 interface BubbleRow {
   id: string;
@@ -43,8 +41,6 @@ export class SqliteBubbleRepository
 
   constructor(databaseProvider: DatabaseProvider) {
     this.database = databaseProvider.connection;
-    this.database.exec(CREATE_BUBBLES_MIGRATION);
-    this.database.exec(CREATE_BUBBLE_LINKS_MIGRATION);
   }
 
   create(bubble: Bubble): Bubble {
