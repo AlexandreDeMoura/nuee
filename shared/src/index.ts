@@ -95,3 +95,50 @@ export interface CreateBubbleLinkInput {
   bubble_a_id: string;
   bubble_b_id: string;
 }
+
+export type DiscussionRole = 'user' | 'assistant';
+
+/**
+ * An immutable context package assembled by the Discussion Context feature.
+ * Discussion consumers persist and forward it without interpreting its shape.
+ */
+export type FrozenContext = Record<string, unknown>;
+
+export interface Discussion {
+  id: string;
+  project_id: string;
+  title: string;
+  frozen_context: FrozenContext;
+  created_at: string;
+  updated_at: string;
+  last_activity_at: string;
+}
+
+export interface DiscussionMessage {
+  id: string;
+  discussion_id: string;
+  role: DiscussionRole;
+  content: string;
+  created_at: string;
+}
+
+export interface CreateDiscussionInput {
+  project_id: string;
+  frozen_context: FrozenContext;
+  first_prompt: string;
+}
+
+export interface SendMessageInput {
+  content: string;
+  idempotency_key: string;
+}
+
+export type DiscussionSummary = Omit<Discussion, 'frozen_context'> & {
+  is_active: boolean;
+};
+
+export interface DiscussionDetails extends Discussion {
+  messages: DiscussionMessage[];
+}
+
+export type DiscussionListResponse = DiscussionSummary[];
