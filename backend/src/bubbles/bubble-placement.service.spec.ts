@@ -1,7 +1,9 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { DatabaseProvider } from '../database/database.provider';
 import { ProjectsService } from '../projects/projects.service';
 import { SqliteProjectRepository } from '../projects/sqlite-project.repository';
 import {
@@ -15,6 +17,7 @@ import { SqliteBubbleRepository } from './sqlite-bubble.repository';
 
 describe('BubblePlacementService', () => {
   let temporaryDirectory: string;
+  let databaseProvider: DatabaseProvider;
   let projectRepository: SqliteProjectRepository;
   let bubbleRepository: SqliteBubbleRepository;
   let projects: ProjectsService;
@@ -24,16 +27,18 @@ describe('BubblePlacementService', () => {
   beforeEach(() => {
     temporaryDirectory = mkdtempSync(join(tmpdir(), 'nuee-placement-'));
     const databasePath = join(temporaryDirectory, 'placement.sqlite');
-    projectRepository = new SqliteProjectRepository(databasePath);
-    bubbleRepository = new SqliteBubbleRepository(databasePath);
+    databaseProvider = new DatabaseProvider(
+      new ConfigService({ PROJECT_DATABASE_PATH: databasePath }),
+    );
+    projectRepository = new SqliteProjectRepository(databaseProvider);
+    bubbleRepository = new SqliteBubbleRepository(databaseProvider);
     projects = new ProjectsService(projectRepository);
     bubbles = new BubblesService(projects, bubbleRepository);
     placements = new BubblePlacementService(projects, bubbleRepository);
   });
 
   afterEach(() => {
-    bubbleRepository.onModuleDestroy();
-    projectRepository.onModuleDestroy();
+    databaseProvider.onModuleDestroy();
     rmSync(temporaryDirectory, { recursive: true, force: true });
   });
 

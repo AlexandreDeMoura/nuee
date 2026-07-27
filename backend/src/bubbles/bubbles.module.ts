@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { join } from 'node:path';
 import { ProjectsModule } from '../projects/projects.module';
 import { BUBBLE_LINK_REPOSITORY, BUBBLE_REPOSITORY } from './bubble.types';
 import { BubblePlacementService } from './bubble-placement.service';
@@ -16,23 +14,7 @@ import { SqliteBubbleRepository } from './sqlite-bubble.repository';
   providers: [
     BubblesService,
     BubblePlacementService,
-    {
-      provide: SqliteBubbleRepository,
-      inject: [ConfigService],
-      useFactory: (config: ConfigService): SqliteBubbleRepository => {
-        const defaultDatabasePath = join(
-          __dirname,
-          '..',
-          '..',
-          'data',
-          'nuee.sqlite',
-        );
-
-        return new SqliteBubbleRepository(
-          config.get<string>('PROJECT_DATABASE_PATH') ?? defaultDatabasePath,
-        );
-      },
-    },
+    SqliteBubbleRepository,
     {
       provide: BUBBLE_REPOSITORY,
       useExisting: SqliteBubbleRepository,

@@ -1,7 +1,9 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { DatabaseProvider } from '../database/database.provider';
 import { ProjectsService } from '../projects/projects.service';
 import { SqliteProjectRepository } from '../projects/sqlite-project.repository';
 import { BubblesService } from './bubbles.service';
@@ -10,24 +12,31 @@ import { SqliteBubbleRepository } from './sqlite-bubble.repository';
 describe('BubblesService', () => {
   let temporaryDirectory: string;
   let databasePath: string;
+  let databaseProvider: DatabaseProvider;
   let projectRepository: SqliteProjectRepository;
   let bubbleRepository: SqliteBubbleRepository;
   let projects: ProjectsService;
   let service: BubblesService;
 
+  function openRepositories(): void {
+    databaseProvider = new DatabaseProvider(
+      new ConfigService({ PROJECT_DATABASE_PATH: databasePath }),
+    );
+    projectRepository = new SqliteProjectRepository(databaseProvider);
+    bubbleRepository = new SqliteBubbleRepository(databaseProvider);
+    projects = new ProjectsService(projectRepository);
+    service = new BubblesService(projects, bubbleRepository);
+  }
+
   beforeEach(() => {
     jest.useFakeTimers();
     temporaryDirectory = mkdtempSync(join(tmpdir(), 'nuee-bubbles-'));
     databasePath = join(temporaryDirectory, 'bubbles.sqlite');
-    projectRepository = new SqliteProjectRepository(databasePath);
-    bubbleRepository = new SqliteBubbleRepository(databasePath);
-    projects = new ProjectsService(projectRepository);
-    service = new BubblesService(projects, bubbleRepository);
+    openRepositories();
   });
 
   afterEach(() => {
-    bubbleRepository.onModuleDestroy();
-    projectRepository.onModuleDestroy();
+    databaseProvider.onModuleDestroy();
     rmSync(temporaryDirectory, { recursive: true, force: true });
     jest.useRealTimers();
   });
@@ -418,9 +427,8 @@ describe('BubblesService', () => {
       position_y: 280,
     });
 
-    bubbleRepository.onModuleDestroy();
-    bubbleRepository = new SqliteBubbleRepository(databasePath);
-    service = new BubblesService(projects, bubbleRepository);
+    databaseProvider.onModuleDestroy();
+    openRepositories();
 
     expect(service.get(project.id, created.id)).toEqual(repositioned);
     expect(repositioned.updated_at).toBe(created.updated_at);
@@ -443,9 +451,8 @@ describe('BubblesService', () => {
       content: 'Persisted current knowledge.',
     });
 
-    bubbleRepository.onModuleDestroy();
-    bubbleRepository = new SqliteBubbleRepository(databasePath);
-    service = new BubblesService(projects, bubbleRepository);
+    databaseProvider.onModuleDestroy();
+    openRepositories();
 
     expect(service.get(project.id, created.id)).toEqual(updated);
     expect(updated.updated_at).toBe('2026-07-21T10:00:00.000Z');

@@ -1,22 +1,32 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { DatabaseProvider } from '../database/database.provider';
 import { SqliteProjectRepository } from './sqlite-project.repository';
 import { ProjectsService } from './projects.service';
 
 describe('ProjectsService', () => {
+  let databaseProvider: DatabaseProvider;
   let repository: SqliteProjectRepository;
   let service: ProjectsService;
 
+  function openDatabase(databasePath: string): void {
+    databaseProvider = new DatabaseProvider(
+      new ConfigService({ PROJECT_DATABASE_PATH: databasePath }),
+    );
+    repository = new SqliteProjectRepository(databaseProvider);
+    service = new ProjectsService(repository);
+  }
+
   beforeEach(() => {
     jest.useFakeTimers();
-    repository = new SqliteProjectRepository(':memory:');
-    service = new ProjectsService(repository);
+    openDatabase(':memory:');
   });
 
   afterEach(() => {
-    repository.onModuleDestroy();
+    databaseProvider.onModuleDestroy();
     jest.useRealTimers();
   });
 
@@ -205,22 +215,20 @@ describe('ProjectsService', () => {
     const temporaryDirectory = mkdtempSync(join(tmpdir(), 'nuee-projects-'));
     const databasePath = join(temporaryDirectory, 'projects.sqlite');
 
-    repository.onModuleDestroy();
-    repository = new SqliteProjectRepository(databasePath);
-    service = new ProjectsService(repository);
+    databaseProvider.onModuleDestroy();
+    openDatabase(databasePath);
     const created = service.create({
       title: 'Persistent project',
       description: 'Survives a process restart.',
     });
 
-    repository.onModuleDestroy();
-    repository = new SqliteProjectRepository(databasePath);
-    service = new ProjectsService(repository);
+    databaseProvider.onModuleDestroy();
+    openDatabase(databasePath);
 
     expect(service.get(created.id)).toEqual(created);
 
-    repository.onModuleDestroy();
+    databaseProvider.onModuleDestroy();
     rmSync(temporaryDirectory, { recursive: true });
-    repository = new SqliteProjectRepository(':memory:');
+    openDatabase(':memory:');
   });
 });

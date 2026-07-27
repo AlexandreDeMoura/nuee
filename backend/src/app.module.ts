@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BubblesModule } from './bubbles/bubbles.module';
+import { DatabaseModule } from './database/database.module';
 import { ProjectsModule } from './projects/projects.module';
 
 @Module({
@@ -10,6 +11,7 @@ import { ProjectsModule } from './projects/projects.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    DatabaseModule,
     ProjectsModule,
     BubblesModule,
   ],

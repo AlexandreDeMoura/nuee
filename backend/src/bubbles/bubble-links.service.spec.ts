@@ -1,7 +1,9 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { DatabaseProvider } from '../database/database.provider';
 import { ProjectsService } from '../projects/projects.service';
 import { SqliteProjectRepository } from '../projects/sqlite-project.repository';
 import { BubbleLinksService } from './bubble-links.service';
@@ -11,25 +13,32 @@ import { SqliteBubbleRepository } from './sqlite-bubble.repository';
 describe('BubbleLinksService', () => {
   let temporaryDirectory: string;
   let databasePath: string;
+  let databaseProvider: DatabaseProvider;
   let projectRepository: SqliteProjectRepository;
   let bubbleRepository: SqliteBubbleRepository;
   let projects: ProjectsService;
   let bubbles: BubblesService;
   let links: BubbleLinksService;
 
-  beforeEach(() => {
-    temporaryDirectory = mkdtempSync(join(tmpdir(), 'nuee-bubble-links-'));
-    databasePath = join(temporaryDirectory, 'bubble-links.sqlite');
-    projectRepository = new SqliteProjectRepository(databasePath);
-    bubbleRepository = new SqliteBubbleRepository(databasePath);
+  function openRepositories(): void {
+    databaseProvider = new DatabaseProvider(
+      new ConfigService({ PROJECT_DATABASE_PATH: databasePath }),
+    );
+    projectRepository = new SqliteProjectRepository(databaseProvider);
+    bubbleRepository = new SqliteBubbleRepository(databaseProvider);
     projects = new ProjectsService(projectRepository);
     bubbles = new BubblesService(projects, bubbleRepository);
     links = new BubbleLinksService(projects, bubbles, bubbleRepository);
+  }
+
+  beforeEach(() => {
+    temporaryDirectory = mkdtempSync(join(tmpdir(), 'nuee-bubble-links-'));
+    databasePath = join(temporaryDirectory, 'bubble-links.sqlite');
+    openRepositories();
   });
 
   afterEach(() => {
-    bubbleRepository.onModuleDestroy();
-    projectRepository.onModuleDestroy();
+    databaseProvider.onModuleDestroy();
     rmSync(temporaryDirectory, { recursive: true, force: true });
   });
 
@@ -128,10 +137,8 @@ describe('BubbleLinksService', () => {
       bubble_b_id: second.id,
     });
 
-    bubbleRepository.onModuleDestroy();
-    bubbleRepository = new SqliteBubbleRepository(databasePath);
-    bubbles = new BubblesService(projects, bubbleRepository);
-    links = new BubbleLinksService(projects, bubbles, bubbleRepository);
+    databaseProvider.onModuleDestroy();
+    openRepositories();
 
     expect(links.list(project.id)).toEqual([created]);
 

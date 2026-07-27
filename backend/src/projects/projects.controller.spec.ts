@@ -1,19 +1,25 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { DatabaseProvider } from '../database/database.provider';
 import { SqliteProjectRepository } from './sqlite-project.repository';
 import { ProjectsController } from './projects.controller';
 import { ProjectsService } from './projects.service';
 
 describe('ProjectsController', () => {
   let controller: ProjectsController;
+  let databaseProvider: DatabaseProvider;
   let repository: SqliteProjectRepository;
 
   beforeEach(() => {
-    repository = new SqliteProjectRepository(':memory:');
+    databaseProvider = new DatabaseProvider(
+      new ConfigService({ PROJECT_DATABASE_PATH: ':memory:' }),
+    );
+    repository = new SqliteProjectRepository(databaseProvider);
     controller = new ProjectsController(new ProjectsService(repository));
   });
 
   afterEach(() => {
-    repository.onModuleDestroy();
+    databaseProvider.onModuleDestroy();
   });
 
   it('supports create, list, read, description-update, and viewport-update operations', () => {

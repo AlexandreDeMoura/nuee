@@ -1,7 +1,6 @@
-import { mkdirSync } from 'node:fs';
-import { dirname } from 'node:path';
-import { DatabaseSync } from 'node:sqlite';
-import { Injectable, OnModuleDestroy } from '@nestjs/common';
+import type { DatabaseSync } from 'node:sqlite';
+import { Injectable } from '@nestjs/common';
+import { DatabaseProvider } from '../database/database.provider';
 import type {
   Bubble,
   BubbleLink,
@@ -38,17 +37,12 @@ interface BubbleLinkRow {
 
 @Injectable()
 export class SqliteBubbleRepository
-  implements BubbleRepository, BubbleLinkRepository, OnModuleDestroy
+  implements BubbleRepository, BubbleLinkRepository
 {
   private readonly database: DatabaseSync;
 
-  constructor(databasePath: string) {
-    if (databasePath !== ':memory:') {
-      mkdirSync(dirname(databasePath), { recursive: true });
-    }
-
-    this.database = new DatabaseSync(databasePath);
-    this.database.exec('PRAGMA foreign_keys = ON;');
+  constructor(databaseProvider: DatabaseProvider) {
+    this.database = databaseProvider.connection;
     this.database.exec(CREATE_BUBBLES_MIGRATION);
     this.database.exec(CREATE_BUBBLE_LINKS_MIGRATION);
   }
@@ -293,10 +287,6 @@ export class SqliteBubbleRepository
       .run(projectId, bubbleAId, bubbleBId);
 
     return result.changes > 0;
-  }
-
-  onModuleDestroy(): void {
-    this.database.close();
   }
 
   private toBubble(row: BubbleRow): Bubble {
