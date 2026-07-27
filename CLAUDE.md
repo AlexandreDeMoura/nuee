@@ -124,12 +124,12 @@ broker only if that model cannot meet concrete requirements.
 - SQLite stays until measured load, horizontal writes, multi-region, or hosting constraints
   require a server database. Production puts the file on persistent local storage with backup
   and restore procedures; add only the deployment artifact the selected host requires.
-- Schema changes run once, in order, from one startup path, recorded in a `schema_migrations`
-  ledger (add the ledger before the next schema change). `CREATE TABLE IF NOT EXISTS` may
-  bootstrap an empty database but is not an upgrade path.
-- One application-scoped database provider shared by repositories; enable foreign keys on every
-  retained connection; use a bounded busy timeout; evaluate WAL against the actual storage
-  environment. Readiness stays lightweight (`SELECT 1`) and separate from liveness.
+- `DatabaseProvider` runs registered migrations once, in order, before repositories are
+  constructed. `schema_migrations` is authoritative, `PRAGMA user_version` mirrors it, and the
+  pending migration set is atomic; repositories do not execute schema DDL.
+- One application-scoped `DatabaseProvider` owns the shared `DatabaseSync`, enables foreign
+  keys, sets `busy_timeout` to 5000 ms, and closes the connection on shutdown. Evaluate WAL
+  against the actual storage environment; keep readiness lightweight (`SELECT 1`).
 - Request services stay stateless; durable state belongs in persistence. No cache without a
   measured problem — prefer query changes and targeted indexes first.
 - One typed, validated configuration path (port, frontend origin, database path, environment
