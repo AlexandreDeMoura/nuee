@@ -184,6 +184,9 @@ describe('project workspace analytics contract', () => {
 
     await screen.findByRole('button', { name: 'Start a discussion' });
     fireEvent.click(screen.getByRole('button', { name: 'Start a discussion' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Minimize discussion' }),
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Create a bubble' }));
     fireEvent.click(screen.getByRole('button', { name: 'Upload a document' }));
 

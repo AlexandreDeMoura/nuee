@@ -49,6 +49,11 @@ import {
   type BubbleUpdateRequest,
 } from '../bubbles/BubbleInspector';
 import {
+  DiscussionModal,
+  useDiscussionVisibility,
+  type DiscussionVisibilityController,
+} from '../discussions';
+import {
   ProjectDescriptionEditor,
   type ProjectDescriptionSaveStatus,
   type ProjectDescriptionUpdateRequest,
@@ -90,6 +95,12 @@ export interface WorkspacePanelSlots {
     | ((selection: WorkspaceInspectorSelection) => ReactNode);
 }
 
+export interface WorkspaceOverlaySlots {
+  discussion?:
+    | ReactNode
+    | ((controller: DiscussionVisibilityController) => ReactNode);
+}
+
 export interface ProjectWorkspaceProps {
   project: Project;
   requestBubbleCreate?: BubbleCreateRequest;
@@ -108,7 +119,9 @@ export interface ProjectWorkspaceProps {
   bubbleSaveDelayMs?: number;
   discussionCount?: number;
   panelSlots?: WorkspacePanelSlots;
+  overlaySlots?: WorkspaceOverlaySlots;
   emptyActionHandlers?: WorkspaceEmptyActionHandlers;
+  onDiscussionDraftSubmit?: (prompt: string) => void;
   inspectorSelection?: WorkspaceInspectorSelection | null;
   onInspectorSelectionInvalidated?: (
     selection: WorkspaceInspectorSelection,
@@ -554,7 +567,9 @@ export function ProjectWorkspace({
   bubbleSaveDelayMs,
   discussionCount = 0,
   panelSlots,
+  overlaySlots,
   emptyActionHandlers,
+  onDiscussionDraftSubmit,
   inspectorSelection = null,
   onInspectorSelectionInvalidated,
   primaryActions,
@@ -577,6 +592,7 @@ export function ProjectWorkspace({
   const [bubbleLinkLoadState, setBubbleLinkLoadState] =
     useState<BubbleLinkLoadState>({ status: 'loading', links: [] });
   const [bubbleLinkRequestKey, setBubbleLinkRequestKey] = useState(0);
+  const discussionVisibility = useDiscussionVisibility(currentProject.id);
   const panelButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const deletedBubbleIdsRef = useRef(deletedBubbleIds);
   const canvasInspectorSelection: WorkspaceInspectorSelection | null =
@@ -799,16 +815,29 @@ export function ProjectWorkspace({
     () => Object.values(updatedBubbles),
     [updatedBubbles],
   );
+  const discussionOverlay =
+    typeof overlaySlots?.discussion === 'function'
+      ? overlaySlots.discussion(discussionVisibility)
+      : overlaySlots?.discussion;
+  const isDiscussionVisible =
+    discussionVisibility.visibleDiscussion !== null;
 
   return (
     <CurrentProjectDescriptionContext.Provider value={currentDescription}>
       <main
-        className="flex h-screen min-h-[480px] min-w-80 flex-col overflow-hidden bg-[#eef1f5] text-[#1e2733] [font-family:'IBM_Plex_Sans',system-ui,sans-serif] [font-synthesis:none] [text-rendering:optimizeLegibility]"
+        className="relative flex h-screen min-h-[480px] min-w-80 flex-col overflow-hidden bg-[#eef1f5] text-[#1e2733] [font-family:'IBM_Plex_Sans',system-ui,sans-serif] [font-synthesis:none] [text-rendering:optimizeLegibility]"
         data-project-id={currentProject.id}
       >
         <ProjectBar project={currentProject} descriptionStatus={descriptionStatus} />
 
-        <div className="relative flex min-h-0 flex-1">
+        <div
+          className={`relative flex min-h-0 flex-1 transition-[filter,opacity] duration-150 motion-reduce:transition-none ${
+            isDiscussionVisible ? 'opacity-55 blur-[2px]' : ''
+          }`}
+          data-workspace-content
+          aria-hidden={isDiscussionVisible ? 'true' : undefined}
+          inert={isDiscussionVisible ? true : undefined}
+        >
           <CanvasSurface
             analyticsClient={analyticsClient}
             bubbleLinks={bubbleLinkLoadState.links}
@@ -819,6 +848,9 @@ export function ProjectWorkspace({
                 analyticsClient={analyticsClient}
                 emptyActionHandlers={{
                   ...emptyActionHandlers,
+                  'start-discussion':
+                    emptyActionHandlers?.['start-discussion'] ??
+                    discussionVisibility.openDraft,
                   'create-bubble':
                     emptyActionHandlers?.['create-bubble'] ?? onCreateBubble,
                 }}
@@ -924,6 +956,21 @@ export function ProjectWorkspace({
             />
           </aside>
         </div>
+
+        {discussionOverlay ??
+          (discussionVisibility.visibleDiscussion && (
+            <DiscussionModal
+              key={
+                discussionVisibility.visibleDiscussion.kind === 'draft'
+                  ? discussionVisibility.visibleDiscussion.key
+                  : discussionVisibility.visibleDiscussion.discussionId
+              }
+              onDraftPromptChange={discussionVisibility.updateDraftPrompt}
+              onDraftSubmit={onDiscussionDraftSubmit}
+              onMinimize={discussionVisibility.minimize}
+              visibleDiscussion={discussionVisibility.visibleDiscussion}
+            />
+          ))}
       </main>
     </CurrentProjectDescriptionContext.Provider>
   );

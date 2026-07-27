@@ -69,6 +69,69 @@ afterEach(() => {
 });
 
 describe('workspace integration contracts', () => {
+  it('lands on the canvas without reopening a discussion', async () => {
+    render(
+      <ProjectWorkspace
+        project={project}
+        requestBubbles={requestEmptyBubbles}
+      />,
+    );
+
+    await screen.findByRole('button', { name: 'Start a discussion' });
+
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(
+      document.querySelector('[data-workspace-content]')?.hasAttribute('inert'),
+    ).toBe(false);
+  });
+
+  it('opens and minimizes a write-first discussion above inert workspace content', async () => {
+    const onDraftSubmit = vi.fn();
+
+    render(
+      <ProjectWorkspace
+        project={project}
+        requestBubbles={requestEmptyBubbles}
+        onDiscussionDraftSubmit={onDraftSubmit}
+      />,
+    );
+
+    const startButton = await screen.findByRole('button', {
+      name: 'Start a discussion',
+    });
+    startButton.focus();
+    fireEvent.click(startButton);
+
+    expect(
+      screen.getByRole('dialog', { name: 'New discussion' }),
+    ).toBeTruthy();
+    expect(
+      document.querySelector('[data-workspace-content]')?.hasAttribute('inert'),
+    ).toBe(true);
+
+    const prompt = screen.getByRole('textbox', {
+      name: 'Discussion prompt',
+    });
+    fireEvent.change(prompt, {
+      target: { value: '  What blocks the launch?  ' },
+    });
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Continue discussion' }),
+    );
+
+    expect(onDraftSubmit).toHaveBeenCalledWith('What blocks the launch?');
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Minimize discussion' }),
+    );
+
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(
+      document.querySelector('[data-workspace-content]')?.hasAttribute('inert'),
+    ).toBe(false);
+    expect(document.activeElement).toBe(startButton);
+  });
+
   it('restores the viewport supplied by the loaded project', async () => {
     render(
       <ProjectWorkspace
