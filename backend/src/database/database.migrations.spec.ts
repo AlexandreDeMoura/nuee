@@ -27,9 +27,11 @@ describe('runDatabaseMigrations', () => {
         { version: 1, name: 'create-projects' },
         { version: 2, name: 'create-bubbles' },
         { version: 3, name: 'create-bubble-links' },
+        { version: 4, name: 'create-discussions' },
+        { version: 5, name: 'create-discussion-messages' },
       ]);
       expect(database.prepare('PRAGMA user_version;').get()).toEqual({
-        user_version: 3,
+        user_version: 5,
       });
     } finally {
       database.close();

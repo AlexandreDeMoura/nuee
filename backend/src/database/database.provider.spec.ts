@@ -3,6 +3,7 @@ import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { SqliteBubbleRepository } from '../bubbles/sqlite-bubble.repository';
+import { SqliteDiscussionRepository } from '../discussions/sqlite-discussion.repository';
 import { SqliteProjectRepository } from '../projects/sqlite-project.repository';
 import { DatabaseProvider } from './database.provider';
 
@@ -29,6 +30,7 @@ describe('DatabaseProvider', () => {
 
     new SqliteProjectRepository(databaseProvider);
     new SqliteBubbleRepository(databaseProvider);
+    new SqliteDiscussionRepository(databaseProvider);
 
     expect(existsSync(databasePath)).toBe(true);
     expect(
@@ -51,6 +53,8 @@ describe('DatabaseProvider', () => {
     ).toEqual([
       { name: 'bubble_links' },
       { name: 'bubbles' },
+      { name: 'discussion_messages' },
+      { name: 'discussions' },
       { name: 'projects' },
       { name: 'schema_migrations' },
     ]);
