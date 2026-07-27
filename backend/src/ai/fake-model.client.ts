@@ -6,9 +6,10 @@ import type {
   ModelGeneration,
   ModelMessage,
 } from './model-client';
+import { GENERATED_TITLE_MAX_LENGTH } from './model-client';
 
 export const FAKE_MODEL_ID = 'nuee-deterministic-fake';
-export const FAKE_TITLE_MAX_LENGTH = 60;
+export const FAKE_TITLE_MAX_LENGTH = GENERATED_TITLE_MAX_LENGTH;
 
 function normalizeWhitespace(value: string): string {
   return value.trim().replace(/\s+/g, ' ');

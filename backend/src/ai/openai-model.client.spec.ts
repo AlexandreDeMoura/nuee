@@ -98,6 +98,7 @@ describe('OpenAiModelClient', () => {
     }
 
     expect(request.instructions).toContain('single-line title');
+    expect(request.instructions).toContain('at most 60 characters');
     expect(request).toEqual({
       model: 'gpt-5.6-sol',
       instructions: request.instructions,

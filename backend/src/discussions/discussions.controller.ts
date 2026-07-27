@@ -60,6 +60,15 @@ export class DiscussionsController {
     return this.discussions.sendMessage(projectId, discussionId, input);
   }
 
+  @Post(':discussionId/title')
+  @HttpCode(HttpStatus.OK)
+  generateTitle(
+    @Param('projectId') projectId: string,
+    @Param('discussionId') discussionId: string,
+  ): Promise<DiscussionDetails> {
+    return this.discussions.generateTitle(projectId, discussionId);
+  }
+
   @Delete(':discussionId')
   @HttpCode(HttpStatus.NO_CONTENT)
   delete(

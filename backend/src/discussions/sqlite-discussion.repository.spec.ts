@@ -294,6 +294,41 @@ describe('SqliteDiscussionRepository', () => {
     });
   });
 
+  it('sets a generated title only while the discussion is untitled', () => {
+    const project = createProject('project-a');
+    const record = discussion(project.id, 'discussion-a');
+    repository.createWithFirstMessage(
+      record,
+      message(record.id, 'message-a', 'request-a'),
+    );
+
+    expect(
+      repository.updateTitle(
+        project.id,
+        record.id,
+        'First generated title',
+        '2026-07-27T10:05:00.000Z',
+      ),
+    ).toEqual({
+      ...record,
+      title: 'First generated title',
+      updated_at: '2026-07-27T10:05:00.000Z',
+    });
+    expect(
+      repository.updateTitle(
+        project.id,
+        record.id,
+        'Replacement title',
+        '2026-07-27T10:06:00.000Z',
+      ),
+    ).toBe(undefined);
+    expect(repository.findByProjectAndId(project.id, record.id)).toEqual({
+      ...record,
+      title: 'First generated title',
+      updated_at: '2026-07-27T10:05:00.000Z',
+    });
+  });
+
   it('soft deletes project-scoped discussions and makes messages inaccessible', () => {
     const firstProject = createProject('project-a');
     const secondProject = createProject('project-b');

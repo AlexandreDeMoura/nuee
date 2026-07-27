@@ -7,9 +7,9 @@ import type {
   ModelGeneration,
   ModelMessage,
 } from './model-client';
+import { GENERATED_TITLE_MAX_LENGTH } from './model-client';
 
-const TITLE_INSTRUCTIONS =
-  'Generate a concise, descriptive, single-line title for this discussion. Return only the title, without quotation marks or terminal punctuation.';
+const TITLE_INSTRUCTIONS = `Generate a concise, descriptive, single-line title of at most ${GENERATED_TITLE_MAX_LENGTH} characters for this discussion. Return only the title, without quotation marks or terminal punctuation.`;
 
 interface OpenAiInputMessage {
   role: 'developer' | 'user' | 'assistant';

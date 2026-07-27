@@ -112,7 +112,10 @@ export class SqliteDiscussionRepository
         `
           UPDATE discussions
           SET title = ?, updated_at = ?
-          WHERE project_id = ? AND id = ? AND deleted_at IS NULL
+          WHERE project_id = ?
+            AND id = ?
+            AND title IS NULL
+            AND deleted_at IS NULL
         `,
       )
       .run(title, updatedAt, projectId, discussionId);

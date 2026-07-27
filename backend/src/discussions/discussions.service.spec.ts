@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import type {
   GenerateAnswerInput,
+  GenerateTitleInput,
   ModelClient,
   ModelGeneration,
 } from '../ai/model-client';
@@ -18,14 +19,18 @@ import { SqliteDiscussionRepository } from './sqlite-discussion.repository';
 
 class ControllableModelClient implements ModelClient {
   readonly answerInputs: GenerateAnswerInput[] = [];
+  readonly titleInputs: GenerateTitleInput[] = [];
   answer = 'A focused answer.';
-  failure: Error | undefined;
+  title = 'Generated discussion title';
+  answerFailure: Error | undefined;
+  titleFailure: Error | undefined;
+  titleGeneration: Promise<ModelGeneration> | undefined;
 
   generateAnswer(input: GenerateAnswerInput): Promise<ModelGeneration> {
     this.answerInputs.push(input);
 
-    if (this.failure) {
-      return Promise.reject(this.failure);
+    if (this.answerFailure) {
+      return Promise.reject(this.answerFailure);
     }
 
     return Promise.resolve({
@@ -34,9 +39,19 @@ class ControllableModelClient implements ModelClient {
     });
   }
 
-  generateTitle(): Promise<ModelGeneration> {
+  generateTitle(input: GenerateTitleInput): Promise<ModelGeneration> {
+    this.titleInputs.push(input);
+
+    if (this.titleFailure) {
+      return Promise.reject(this.titleFailure);
+    }
+
+    if (this.titleGeneration) {
+      return this.titleGeneration;
+    }
+
     return Promise.resolve({
-      content: 'Unused title',
+      content: this.title,
       model: 'test-model',
     });
   }
@@ -260,10 +275,157 @@ describe('DiscussionsService', () => {
     });
   });
 
+  it('generates and persists a single-line title after the first completed exchange', async () => {
+    const project = createProject();
+    const created = await createDiscussion(project.id, 'First question');
+    modelClient.title = '  Launch\n sequencing   risks  ';
+    jest.setSystemTime(new Date('2026-07-27T10:05:00.000Z'));
+
+    const titled = await service.generateTitle(project.id, created.id);
+
+    expect(titled).toMatchObject({
+      id: created.id,
+      title: 'Launch sequencing risks',
+      updated_at: '2026-07-27T10:05:00.000Z',
+      last_activity_at: created.last_activity_at,
+    });
+    expect(modelClient.titleInputs).toEqual([
+      {
+        messages: [
+          { role: 'user', content: 'First question' },
+          { role: 'assistant', content: 'A focused answer.' },
+        ],
+      },
+    ]);
+    expect(service.list(project.id)).toEqual([
+      expect.objectContaining({
+        id: created.id,
+        title: 'Launch sequencing risks',
+        is_active: true,
+      }),
+    ]);
+  });
+
+  it('does not call the model again when a discussion is already titled', async () => {
+    const project = createProject();
+    const created = await createDiscussion(project.id);
+    const first = await service.generateTitle(project.id, created.id);
+    modelClient.title = 'A different title';
+
+    const replayed = await service.generateTitle(project.id, created.id);
+
+    expect(replayed).toEqual(first);
+    expect(modelClient.titleInputs).toHaveLength(1);
+  });
+
+  it('coalesces concurrent title requests into one model generation', async () => {
+    const project = createProject();
+    const created = await createDiscussion(project.id);
+    let resolveTitle!: (generation: ModelGeneration) => void;
+    modelClient.titleGeneration = new Promise((resolve) => {
+      resolveTitle = resolve;
+    });
+
+    const firstRequest = service.generateTitle(project.id, created.id);
+    const duplicateRequest = service.generateTitle(project.id, created.id);
+
+    expect(modelClient.titleInputs).toHaveLength(1);
+    resolveTitle({
+      content: 'Coalesced title',
+      model: 'test-model',
+    });
+
+    const [first, duplicate] = await Promise.all([
+      firstRequest,
+      duplicateRequest,
+    ]);
+    expect(duplicate).toEqual(first);
+    expect(first.title).toBe('Coalesced title');
+  });
+
+  it('leaves the placeholder title usable when generation fails and allows retry', async () => {
+    const project = createProject();
+    const created = await createDiscussion(project.id);
+    modelClient.titleFailure = new Error('provider unavailable');
+
+    await expect(
+      service.generateTitle(project.id, created.id),
+    ).rejects.toMatchObject({
+      constructor: ServiceUnavailableException,
+      response: {
+        code: 'AI_TITLE_GENERATION_FAILED',
+        message:
+          'The discussion title could not be generated. Retry title generation.',
+        discussion_id: created.id,
+      },
+    });
+    expect(service.get(project.id, created.id).title).toBe('New discussion');
+
+    modelClient.titleFailure = undefined;
+    await expect(
+      service.generateTitle(project.id, created.id),
+    ).resolves.toMatchObject({
+      title: 'Generated discussion title',
+    });
+    expect(modelClient.titleInputs).toHaveLength(2);
+  });
+
+  it('rejects title generation before an exchange is complete', async () => {
+    const project = createProject();
+    const timestamp = new Date().toISOString();
+    repository.createWithFirstMessage(
+      {
+        id: 'pending-discussion',
+        project_id: project.id,
+        title: null,
+        frozen_context: {},
+        created_at: timestamp,
+        updated_at: timestamp,
+        last_activity_at: timestamp,
+        deleted_at: null,
+      },
+      {
+        id: 'pending-message',
+        discussion_id: 'pending-discussion',
+        role: 'user',
+        content: 'Still waiting',
+        created_at: timestamp,
+        status: 'pending',
+        request_id: 'pending-request',
+      },
+    );
+
+    await expect(
+      service.generateTitle(project.id, 'pending-discussion'),
+    ).rejects.toMatchObject({
+      constructor: ConflictException,
+      response: {
+        code: 'DISCUSSION_TITLE_NOT_READY',
+        message:
+          'A title can be generated after the first response is completed.',
+      },
+    });
+    expect(modelClient.titleInputs).toHaveLength(0);
+  });
+
+  it.each(['', 'x'.repeat(61)])(
+    'rejects invalid generated titles without persisting them',
+    async (title) => {
+      const project = createProject();
+      const created = await createDiscussion(project.id);
+      modelClient.title = title;
+
+      await expect(
+        service.generateTitle(project.id, created.id),
+      ).rejects.toBeInstanceOf(ServiceUnavailableException);
+      expect(service.get(project.id, created.id).title).toBe('New discussion');
+    },
+  );
+
   it('preserves a failed user turn and retries it without duplicating messages', async () => {
     const project = createProject();
     const created = await createDiscussion(project.id, 'First question');
-    modelClient.failure = new Error('provider unavailable');
+    modelClient.answerFailure = new Error('provider unavailable');
 
     await expect(
       service.sendMessage(project.id, created.id, {
@@ -281,7 +443,7 @@ describe('DiscussionsService', () => {
       request_id: 'failed-request',
     });
 
-    modelClient.failure = undefined;
+    modelClient.answerFailure = undefined;
     const retried = await service.sendMessage(project.id, created.id, {
       content: 'Question that fails',
       idempotency_key: 'failed-request',
@@ -304,7 +466,7 @@ describe('DiscussionsService', () => {
 
   it('returns recovery identifiers when first-answer generation fails', async () => {
     const project = createProject();
-    modelClient.failure = new Error('provider unavailable');
+    modelClient.answerFailure = new Error('provider unavailable');
 
     try {
       await createDiscussion(project.id, 'Persist this question');
@@ -380,6 +542,9 @@ describe('DiscussionsService', () => {
         content: 'Cross-project message',
         idempotency_key: 'cross-project',
       }),
+    ).rejects.toBeInstanceOf(NotFoundException);
+    await expect(
+      service.generateTitle(other.id, discussion.id),
     ).rejects.toBeInstanceOf(NotFoundException);
   });
 });

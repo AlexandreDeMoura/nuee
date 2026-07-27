@@ -26,4 +26,5 @@ export interface ModelClient {
   generateTitle(input: GenerateTitleInput): Promise<ModelGeneration>;
 }
 
+export const GENERATED_TITLE_MAX_LENGTH = 60;
 export const MODEL_CLIENT = Symbol('MODEL_CLIENT');

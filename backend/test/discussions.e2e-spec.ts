@@ -104,6 +104,20 @@ describe('Discussion lifecycle journey (e2e)', () => {
       ],
     });
 
+    const titleResponse = await request(app!.getHttpServer())
+      .post(`/projects/${project.id}/discussions/${first.id}/title`)
+      .expect(200);
+    const titled = titleResponse.body as DiscussionDetails;
+    expect(titled).toMatchObject({
+      id: first.id,
+      title: 'What is the first risk?',
+    });
+
+    await request(app!.getHttpServer())
+      .post(`/projects/${project.id}/discussions/${first.id}/title`)
+      .expect(200)
+      .expect(titled);
+
     const messageResponse = await request(app!.getHttpServer())
       .post(`/projects/${project.id}/discussions/${first.id}/messages`)
       .send({
@@ -179,6 +193,7 @@ describe('Discussion lifecycle journey (e2e)', () => {
       .expect(200);
     expect(reloadedResponse.body).toMatchObject({
       id: first.id,
+      title: 'What is the first risk?',
       messages: messaged.messages,
     });
 

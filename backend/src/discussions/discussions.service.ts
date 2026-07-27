@@ -15,7 +15,7 @@ import type {
   DiscussionSummary,
   SendMessageInput,
 } from '@nuee/shared-types';
-import { MODEL_CLIENT } from '../ai/model-client';
+import { GENERATED_TITLE_MAX_LENGTH, MODEL_CLIENT } from '../ai/model-client';
 import type { ModelClient, ModelMessage } from '../ai/model-client';
 import { ProjectsService } from '../projects/projects.service';
 import {
@@ -39,6 +39,11 @@ type DiscussionField =
 
 @Injectable()
 export class DiscussionsService {
+  private readonly titleGenerations = new Map<
+    string,
+    Promise<DiscussionDetails>
+  >();
+
   constructor(
     private readonly projects: ProjectsService,
     @Inject(DISCUSSION_REPOSITORY)
@@ -273,6 +278,38 @@ export class DiscussionsService {
     return this.get(projectId, discussionId);
   }
 
+  async generateTitle(
+    projectId: string,
+    discussionId: string,
+  ): Promise<DiscussionDetails> {
+    const discussion = this.getPersisted(projectId, discussionId);
+
+    if (discussion.title !== null) {
+      return this.get(projectId, discussionId);
+    }
+
+    const messages = this.messages.findAllMessages(projectId, discussionId);
+    this.assertCompletedExchange(messages);
+
+    const generationKey = `${projectId}:${discussionId}`;
+    const activeGeneration = this.titleGenerations.get(generationKey);
+
+    if (activeGeneration) {
+      return activeGeneration;
+    }
+
+    const generation = this.generateAndPersistTitle(discussion, messages);
+    this.titleGenerations.set(generationKey, generation);
+
+    try {
+      return await generation;
+    } finally {
+      if (this.titleGenerations.get(generationKey) === generation) {
+        this.titleGenerations.delete(generationKey);
+      }
+    }
+  }
+
   delete(projectId: string, discussionId: string): void {
     const discussion = this.getPersisted(projectId, discussionId);
     const deletedAt = this.nextTimestamp(
@@ -282,6 +319,58 @@ export class DiscussionsService {
     if (!this.discussions.softDelete(projectId, discussionId, deletedAt)) {
       throw this.notFound(projectId, discussionId);
     }
+  }
+
+  private async generateAndPersistTitle(
+    discussion: PersistedDiscussion,
+    messages: readonly PersistedDiscussionMessage[],
+  ): Promise<DiscussionDetails> {
+    let title: string;
+
+    try {
+      const generation = await this.modelClient.generateTitle({
+        messages: this.toModelMessages(
+          messages.filter(({ status }) => status === 'completed'),
+        ),
+      });
+      title = this.generatedTitle(generation.content);
+    } catch {
+      throw new ServiceUnavailableException({
+        code: 'AI_TITLE_GENERATION_FAILED',
+        message:
+          'The discussion title could not be generated. Retry title generation.',
+        discussion_id: discussion.id,
+      });
+    }
+
+    const updatedAt = this.nextTimestamp(discussion.updated_at);
+    const titledDiscussion = this.discussions.updateTitle(
+      discussion.project_id,
+      discussion.id,
+      title,
+      updatedAt,
+    );
+
+    if (titledDiscussion) {
+      return this.toDetails(
+        titledDiscussion,
+        this.messages.findAllMessages(discussion.project_id, discussion.id),
+      );
+    }
+
+    const currentDiscussion = this.discussions.findByProjectAndId(
+      discussion.project_id,
+      discussion.id,
+    );
+
+    if (currentDiscussion && currentDiscussion.title !== null) {
+      return this.toDetails(
+        currentDiscussion,
+        this.messages.findAllMessages(discussion.project_id, discussion.id),
+      );
+    }
+
+    throw this.notFound(discussion.project_id, discussion.id);
   }
 
   private async generateAnswer(
@@ -574,6 +663,42 @@ export class DiscussionsService {
           : 'Retry the failed response before sending another message.',
       request_id: unanswered.request_id,
     });
+  }
+
+  private assertCompletedExchange(
+    messages: readonly PersistedDiscussionMessage[],
+  ): void {
+    const firstCompletedUserIndex = messages.findIndex(
+      ({ role, status }) => role === 'user' && status === 'completed',
+    );
+    const hasCompletedExchange =
+      firstCompletedUserIndex >= 0 &&
+      messages
+        .slice(firstCompletedUserIndex + 1)
+        .some(
+          ({ role, status }) => role === 'assistant' && status === 'completed',
+        );
+
+    if (hasCompletedExchange) {
+      return;
+    }
+
+    throw new ConflictException({
+      code: 'DISCUSSION_TITLE_NOT_READY',
+      message:
+        'A title can be generated after the first response is completed.',
+    });
+  }
+
+  private generatedTitle(value: unknown): string {
+    const title =
+      typeof value === 'string' ? value.trim().replace(/\s+/g, ' ') : '';
+
+    if (title.length === 0 || title.length > GENERATED_TITLE_MAX_LENGTH) {
+      throw new Error('The model returned an invalid discussion title.');
+    }
+
+    return title;
   }
 
   private latestTimestamp(...timestamps: string[]): string {
