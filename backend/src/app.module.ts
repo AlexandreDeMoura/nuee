@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { AiModule } from './ai/ai.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { BubblesModule } from './bubbles/bubbles.module';
@@ -11,6 +12,7 @@ import { ProjectsModule } from './projects/projects.module';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    AiModule,
     DatabaseModule,
     ProjectsModule,
     BubblesModule,
