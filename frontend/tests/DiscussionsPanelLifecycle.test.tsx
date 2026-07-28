@@ -13,6 +13,7 @@ import type {
   DiscussionSummary,
   Project,
 } from '../src/api';
+import type { AnalyticsClient } from '../src/analytics';
 import { ProjectWorkspace } from '../src/workspace/ProjectWorkspace';
 
 const project: Project = {
@@ -107,9 +108,11 @@ describe('discussions panel lifecycle', () => {
     const list = vi.fn(async () => [older, latest]);
     const recordOpen = vi.fn(async () => openedOlder);
     const get = vi.fn(async () => openedOlder);
+    const track = vi.fn<AnalyticsClient['track']>();
 
     render(
       <ProjectWorkspace
+        analyticsClient={{ track }}
         discussionLifecycleRequests={{ get }}
         discussionPanelRequests={{ list, recordOpen }}
         project={project}
@@ -135,7 +138,9 @@ describe('discussions panel lifecycle', () => {
       expect.stringContaining('Earlier launch risks'),
     ]);
     expect(within(rows[0]).getByText('ACTIVE')).toBeTruthy();
+    expect(rows[0].getAttribute('aria-current')).toBe('true');
     expect(within(rows[1]).queryByText('ACTIVE')).toBeNull();
+    expect(rows[1].getAttribute('aria-current')).toBeNull();
     expect(screen.getAllByText('ACTIVE')).toHaveLength(1);
     expect(list).toHaveBeenCalledWith(project.id, expect.any(AbortSignal));
     expect(recordOpen).not.toHaveBeenCalled();
@@ -172,6 +177,15 @@ describe('discussions panel lifecycle', () => {
     });
     expect(reorderedRows[0].textContent).toContain('Earlier launch risks');
     expect(within(reorderedRows[0]).getByText('ACTIVE')).toBeTruthy();
+    expect(track.mock.calls.map(([event]) => event)).toEqual([
+      'project_panel_viewed',
+      'discussion_opened',
+      'discussion_active_changed',
+      'discussion_minimized',
+    ]);
+    expect(JSON.stringify(track.mock.calls)).not.toContain(
+      'Earlier launch risks',
+    );
 
     fireEvent.click(reorderedRows[0]);
     await screen.findByRole('dialog', { name: 'Earlier launch risks' });

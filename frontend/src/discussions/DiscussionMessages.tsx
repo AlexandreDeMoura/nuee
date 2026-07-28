@@ -42,6 +42,7 @@ function ResponseStatus({
     return (
       <div
         className="ml-1 flex items-center gap-2 text-[11.5px] text-[#728096]"
+        aria-atomic="true"
         role="status"
       >
         <LoaderCircle
@@ -56,6 +57,7 @@ function ResponseStatus({
   return (
     <div
       className="rounded-xl border border-[#efd5d2] bg-[#fff8f7] px-3.5 py-3 text-[#8f3f3a]"
+      aria-atomic="true"
       role="alert"
     >
       <div className="flex items-start gap-2">
@@ -194,7 +196,13 @@ export function DiscussionMessages({
   }
 
   return (
-    <div className="flex flex-col gap-5" aria-label="Discussion messages">
+    <div
+      className="flex flex-col gap-5"
+      aria-label="Discussion messages"
+      aria-live="polite"
+      aria-relevant="additions text"
+      role="log"
+    >
       {messages.map((message) => {
         const persistedTurn = unansweredTurn(message);
         const turn =

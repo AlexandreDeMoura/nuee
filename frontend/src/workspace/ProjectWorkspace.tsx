@@ -619,6 +619,7 @@ export function ProjectWorkspace({
   const [bubbleLinkRequestKey, setBubbleLinkRequestKey] = useState(0);
   const discussionVisibility = useDiscussionVisibility(currentProject.id);
   const projectDiscussions = useProjectDiscussions({
+    analyticsClient,
     enabled:
       activePanel === 'discussions' && panelSlots?.discussions === undefined,
     projectId: currentProject.id,
@@ -863,6 +864,19 @@ export function ProjectWorkspace({
   const startDiscussion =
     emptyActionHandlers?.['start-discussion'] ??
     discussionVisibility.openDraft;
+  const minimizeDiscussion = useCallback(() => {
+    const visible = discussionVisibility.visibleDiscussion;
+
+    if (visible?.kind === 'persisted') {
+      trackAnalytics(analyticsClient, 'discussion_minimized', {
+        project_id: currentProject.id,
+        discussion_id: visible.discussionId,
+        occurred_at: new Date().toISOString(),
+      });
+    }
+
+    discussionVisibility.minimize();
+  }, [analyticsClient, currentProject.id, discussionVisibility]);
   const handleDiscussionOpen = useCallback(
     async (discussion: Parameters<typeof projectDiscussions.openDiscussion>[0]) => {
       const opened = await projectDiscussions.openDiscussion(discussion);
@@ -1100,11 +1114,12 @@ export function ProjectWorkspace({
                 }
                 onDraftPromptChange={discussionVisibility.updateDraftPrompt}
                 onDraftSubmit={onDiscussionDraftSubmit}
-                onMinimize={discussionVisibility.minimize}
+                onMinimize={minimizeDiscussion}
                 visibleDiscussion={discussionVisibility.visibleDiscussion}
               />
             ) : (
               <DiscussionExperience
+                analyticsClient={analyticsClient}
                 contextBadgeResolver={discussionContextBadgeResolver}
                 controller={discussionVisibility}
                 isObscured={discussionPendingDeletion !== null}
@@ -1112,6 +1127,7 @@ export function ProjectWorkspace({
                 onInspectContext={onInspectDiscussionContext}
                 onDiscussionChanged={projectDiscussions.updateDiscussion}
                 onDelete={openDiscussionDeleteConfirmation}
+                onMinimize={minimizeDiscussion}
                 projectDescription={currentProject.description}
                 projectId={currentProject.id}
                 requests={discussionLifecycleRequests}

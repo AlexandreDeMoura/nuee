@@ -18,8 +18,10 @@ import {
 } from './useDiscussionLifecycle';
 import type { DiscussionVisibilityController } from './useDiscussionVisibility';
 import type { DiscussionDeleteTarget } from './DiscussionDeleteDialog';
+import type { AnalyticsClient } from '../analytics';
 
 export interface DiscussionExperienceProps {
+  analyticsClient?: AnalyticsClient;
   contextBadgeResolver?: DiscussionContextBadgeResolver;
   controller: DiscussionVisibilityController;
   isObscured?: boolean;
@@ -27,12 +29,14 @@ export interface DiscussionExperienceProps {
   onInspectContext?: (inspection: DiscussionContextInspection) => void;
   onDiscussionChanged?: (discussion: DiscussionDetails) => void;
   onDelete?: (discussion: DiscussionDeleteTarget) => void;
+  onMinimize?: () => void;
   projectDescription: string;
   projectId: string;
   requests?: DiscussionLifecycleRequests;
 }
 
 export function DiscussionExperience({
+  analyticsClient,
   contextBadgeResolver,
   controller,
   isObscured,
@@ -40,6 +44,7 @@ export function DiscussionExperience({
   onInspectContext,
   onDiscussionChanged,
   onDelete,
+  onMinimize,
   projectDescription,
   projectId,
   requests,
@@ -58,6 +63,7 @@ export function DiscussionExperience({
   return (
     <DiscussionExperienceModal
       controller={controller}
+      analyticsClient={analyticsClient}
       contextBadgeResolver={contextBadgeResolver}
       isObscured={isObscured}
       onExtractKnowledge={onExtractKnowledge}
@@ -65,6 +71,7 @@ export function DiscussionExperience({
       key={identity}
       onDiscussionChanged={onDiscussionChanged}
       onDelete={onDelete}
+      onMinimize={onMinimize}
       projectDescription={projectDescription}
       projectId={projectId}
       requests={requests}
@@ -74,6 +81,7 @@ export function DiscussionExperience({
 }
 
 function DiscussionExperienceModal({
+  analyticsClient,
   contextBadgeResolver,
   controller,
   isObscured,
@@ -81,6 +89,7 @@ function DiscussionExperienceModal({
   onInspectContext,
   onDiscussionChanged,
   onDelete,
+  onMinimize,
   projectDescription,
   projectId,
   requests,
@@ -91,6 +100,7 @@ function DiscussionExperienceModal({
   >;
 }) {
   const lifecycle = useDiscussionLifecycle({
+    analyticsClient,
     onDiscussionCreated: controller.openDiscussion,
     onDiscussionChanged,
     onDraftPromptChange: controller.updateDraftPrompt,
@@ -178,7 +188,7 @@ function DiscussionExperienceModal({
           : undefined
       }
       onDraftPromptChange={controller.updateDraftPrompt}
-      onMinimize={controller.minimize}
+      onMinimize={onMinimize ?? controller.minimize}
       visibleDiscussion={presentedDiscussion}
     />
   );

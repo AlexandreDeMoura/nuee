@@ -167,6 +167,7 @@ export function DiscussionsPanel({
                 type="button"
                 aria-label={`Open discussion: ${discussion.title}`}
                 aria-busy={isOpening ? 'true' : undefined}
+                aria-current={discussion.is_active ? 'true' : undefined}
                 disabled={
                   openingDiscussionId !== null ||
                   deletingDiscussionId !== null

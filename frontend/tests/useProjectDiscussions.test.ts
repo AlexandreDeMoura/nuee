@@ -1,7 +1,11 @@
 import { act } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { renderHook, waitFor } from '@testing-library/react';
-import type { DiscussionListResponse } from '../src/api';
+import type {
+  DiscussionDetails,
+  DiscussionListResponse,
+} from '../src/api';
+import type { AnalyticsClient } from '../src/analytics';
 import { useProjectDiscussions } from '../src/discussions';
 
 function deferred<T>() {
@@ -202,5 +206,76 @@ describe('project discussions loader', () => {
 
     expect(result.current.discussions).toEqual([]);
     expect(deleteRequest).toHaveBeenCalledTimes(2);
+  });
+
+  it('records explicit open, deletion, and Active transitions with identifiers only', async () => {
+    const projectId = 'project-1';
+    const latest = listFor(projectId)[0];
+    const older = {
+      ...latest,
+      id: 'discussion-older',
+      title: 'Older private title',
+      updated_at: '2026-07-28T08:30:00.000Z',
+      last_activity_at: '2026-07-28T08:30:00.000Z',
+      is_active: false,
+    };
+    const opened: DiscussionDetails = {
+      ...older,
+      frozen_context: { secret: 'private context' },
+      updated_at: '2026-07-28T10:00:00.000Z',
+      last_activity_at: '2026-07-28T10:00:00.000Z',
+      messages: [],
+    };
+    const track = vi.fn<AnalyticsClient['track']>();
+    const analyticsClient: AnalyticsClient = { track };
+    const deleteRequest = vi.fn(async () => undefined);
+    const list = vi.fn(async () => [latest, older]);
+    const recordOpen = vi.fn(async () => opened);
+    const { result } = renderHook(() =>
+      useProjectDiscussions({
+        analyticsClient,
+        enabled: true,
+        projectId,
+        requests: {
+          delete: deleteRequest,
+          list,
+          recordOpen,
+        },
+      }),
+    );
+
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+
+    await act(async () => {
+      await result.current.openDiscussion({ id: older.id });
+    });
+    await act(async () => {
+      await result.current.deleteDiscussion({ id: older.id });
+    });
+
+    expect(track.mock.calls.map(([event]) => event)).toEqual([
+      'discussion_opened',
+      'discussion_active_changed',
+      'discussion_deleted',
+      'discussion_active_changed',
+    ]);
+    expect(track.mock.calls[1]?.[1]).toEqual({
+      project_id: projectId,
+      previous_discussion_id: latest.id,
+      discussion_id: older.id,
+      occurred_at: opened.last_activity_at,
+    });
+    expect(track.mock.calls[3]?.[1]).toEqual(
+      expect.objectContaining({
+        project_id: projectId,
+        previous_discussion_id: older.id,
+        discussion_id: latest.id,
+        occurred_at: expect.any(String),
+      }),
+    );
+
+    const serializedEvents = JSON.stringify(track.mock.calls);
+    expect(serializedEvents).not.toContain(older.title);
+    expect(serializedEvents).not.toContain('private context');
   });
 });

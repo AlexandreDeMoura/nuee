@@ -13,6 +13,7 @@ import {
   type DiscussionDetails,
   type SendMessageInput,
 } from '../src/api';
+import type { AnalyticsClient } from '../src/analytics';
 import {
   DiscussionExperience,
   useDiscussionVisibility,
@@ -78,12 +79,14 @@ function details(
 }
 
 function Harness({
+  analyticsClient,
   contextBadgeResolver,
   onDiscussionChanged,
   onExtractKnowledge,
   onInspectContext,
   requests,
 }: {
+  analyticsClient?: AnalyticsClient;
   contextBadgeResolver?: DiscussionContextBadgeResolver;
   onDiscussionChanged?: (discussion: DiscussionDetails) => void;
   onExtractKnowledge?: (source: DiscussionKnowledgeSource) => void;
@@ -122,6 +125,7 @@ function Harness({
         Open second
       </button>
       <DiscussionExperience
+        analyticsClient={analyticsClient}
         contextBadgeResolver={contextBadgeResolver}
         controller={controller}
         onDiscussionChanged={onDiscussionChanged}
@@ -145,9 +149,11 @@ describe('DiscussionExperience', () => {
     const generated = deferred<DiscussionDetails>();
     const generateTitle = vi.fn(() => generated.promise);
     const onDiscussionChanged = vi.fn();
+    const track = vi.fn<AnalyticsClient['track']>();
 
     render(
       <Harness
+        analyticsClient={{ track }}
         onDiscussionChanged={onDiscussionChanged}
         requests={{
           generateTitle,
@@ -190,6 +196,15 @@ describe('DiscussionExperience', () => {
     ).toBeUndefined();
     expect(onDiscussionChanged).toHaveBeenLastCalledWith(
       expect.objectContaining({ title: 'Launch licensing constraint' }),
+    );
+    expect(track).toHaveBeenCalledWith(
+      'discussion_title_generated',
+      expect.objectContaining({
+        project_id: projectId,
+        discussion_id: 'discussion-1',
+        occurred_at: expect.any(String),
+        latency_ms: expect.any(Number),
+      }),
     );
   });
 
@@ -560,6 +575,7 @@ describe('DiscussionExperience', () => {
   });
 
   it('recovers a persisted first prompt after creation reports AI failure', async () => {
+    const track = vi.fn<AnalyticsClient['track']>();
     const failed = details({
       messages: [
         {
@@ -583,7 +599,12 @@ describe('DiscussionExperience', () => {
     });
     const get = vi.fn(async () => failed);
 
-    render(<Harness requests={{ create, get }} />);
+    render(
+      <Harness
+        analyticsClient={{ track }}
+        requests={{ create, get }}
+      />,
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
     const prompt = screen.getByRole('textbox', {
       name: 'Discussion prompt',
@@ -602,5 +623,87 @@ describe('DiscussionExperience', () => {
       'discussion-1',
       expect.any(AbortSignal),
     );
+    expect(track.mock.calls.map(([event]) => event)).toEqual([
+      'discussion_created',
+      'discussion_first_prompt_submitted',
+      'discussion_response_failed',
+    ]);
+    expect(track).toHaveBeenLastCalledWith(
+      'discussion_response_failed',
+      expect.objectContaining({
+        project_id: projectId,
+        discussion_id: 'discussion-1',
+        request_id: 'request-recovery',
+        occurred_at: expect.any(String),
+        latency_ms: expect.any(Number),
+      }),
+    );
+  });
+
+  it('records accepted creation and model outcomes without discussion content', async () => {
+    const track = vi.fn<AnalyticsClient['track']>();
+    const analyticsClient: AnalyticsClient = { track };
+    const created = details();
+
+    render(
+      <Harness
+        analyticsClient={analyticsClient}
+        requests={{
+          create: async () => created,
+          get: async () => created,
+        }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    fireEvent.change(
+      screen.getByRole('textbox', { name: 'Discussion prompt' }),
+      {
+        target: { value: 'What blocks the launch?' },
+      },
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Continue discussion' }),
+    );
+
+    await screen.findByText('Licensing is the longest lead-time constraint.');
+    await waitFor(() => expect(track).toHaveBeenCalledTimes(3));
+    const transcript = screen.getByRole('log', {
+      name: 'Discussion messages',
+    });
+    expect(
+      within(transcript).getByRole('article', { name: 'Your message' }),
+    ).toBeTruthy();
+    expect(
+      within(transcript).getByRole('article', { name: 'AI response' }),
+    ).toBeTruthy();
+
+    expect(track.mock.calls.map(([event]) => event)).toEqual([
+      'discussion_created',
+      'discussion_first_prompt_submitted',
+      'discussion_response_completed',
+    ]);
+    expect(track).toHaveBeenCalledWith('discussion_created', {
+      project_id: projectId,
+      discussion_id: 'discussion-1',
+      occurred_at: created.created_at,
+    });
+    expect(track).toHaveBeenCalledWith(
+      'discussion_response_completed',
+      expect.objectContaining({
+        project_id: projectId,
+        discussion_id: 'discussion-1',
+        request_id: 'request-1',
+        occurred_at: '2026-07-28T08:00:00.001Z',
+        latency_ms: expect.any(Number),
+      }),
+    );
+
+    const serializedEvents = JSON.stringify(track.mock.calls);
+    expect(serializedEvents).not.toContain('What blocks the launch?');
+    expect(serializedEvents).not.toContain(
+      'Licensing is the longest lead-time constraint.',
+    );
+    expect(serializedEvents).not.toContain(projectDescription);
+    expect(serializedEvents).not.toContain(created.title);
   });
 });

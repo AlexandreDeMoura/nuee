@@ -221,7 +221,6 @@ export function DiscussionModal({
 
         <div
           className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[#fbfcfd] px-4 py-5 sm:px-6"
-          aria-live="polite"
         >
           {messagesSlot ?? (
             <div className="m-auto max-w-[380px] py-8 text-center">

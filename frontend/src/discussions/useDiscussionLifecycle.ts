@@ -14,6 +14,11 @@ import {
   sendDiscussionMessage,
   type DiscussionDetails,
 } from '../api';
+import {
+  analytics,
+  trackAnalytics,
+  type AnalyticsClient,
+} from '../analytics';
 import type { VisibleDiscussion } from './useDiscussionVisibility';
 import {
   assertDiscussionDetails,
@@ -58,6 +63,7 @@ export interface DiscussionLifecycle {
 }
 
 interface UseDiscussionLifecycleOptions {
+  analyticsClient?: AnalyticsClient;
   onDiscussionCreated: (discussion: {
     id: string;
     title: string;
@@ -103,6 +109,43 @@ function createRequestId(): string {
   return crypto.randomUUID();
 }
 
+function occurredAt(): string {
+  return new Date().toISOString();
+}
+
+function elapsedMilliseconds(startedAt: number): number {
+  return Math.max(0, Math.round(performance.now() - startedAt));
+}
+
+function firstUserMessage(discussion: DiscussionDetails) {
+  return discussion.messages.find((message) => message.role === 'user');
+}
+
+function completedResponseAt(
+  discussion: DiscussionDetails,
+  requestId: string,
+): string | null {
+  const userMessageIndex = discussion.messages.findIndex(
+    (message) =>
+      message.role === 'user' &&
+      message.request_id === requestId &&
+      message.status === 'completed',
+  );
+
+  if (userMessageIndex < 0) {
+    return null;
+  }
+
+  return (
+    discussion.messages
+      .slice(userMessageIndex + 1)
+      .find(
+        (message) =>
+          message.role === 'assistant' && message.status === 'completed',
+      )?.created_at ?? null
+  );
+}
+
 function hasCompletedExchange(discussion: DiscussionDetails): boolean {
   return (
     discussion.messages.some(
@@ -117,6 +160,7 @@ function hasCompletedExchange(discussion: DiscussionDetails): boolean {
 }
 
 export function useDiscussionLifecycle({
+  analyticsClient = analytics,
   onDiscussionCreated,
   onDiscussionChanged,
   onDraftPromptChange,
@@ -181,6 +225,7 @@ export function useDiscussionLifecycle({
       titleControllerRef.current?.abort();
       const controller = new AbortController();
       const discussionId = discussion.id;
+      const startedAt = performance.now();
       titleControllerRef.current = controller;
       titleAttemptRef.current = discussionId;
 
@@ -205,8 +250,27 @@ export function useDiscussionLifecycle({
 
           updateDetails(titled);
           onDiscussionChanged?.(titled);
+          trackAnalytics(analyticsClient, 'discussion_title_generated', {
+            project_id: projectId,
+            discussion_id: discussionId,
+            occurred_at: occurredAt(),
+            latency_ms: elapsedMilliseconds(startedAt),
+          });
         })
         .catch(() => {
+          if (!controller.signal.aborted) {
+            trackAnalytics(
+              analyticsClient,
+              'discussion_title_generation_failed',
+              {
+                project_id: projectId,
+                discussion_id: discussionId,
+                occurred_at: occurredAt(),
+                latency_ms: elapsedMilliseconds(startedAt),
+              },
+            );
+          }
+
           // Title generation is intentionally non-blocking. The deterministic
           // placeholder remains visible and a later load/message can retry.
         })
@@ -217,6 +281,7 @@ export function useDiscussionLifecycle({
         });
     },
     [
+      analyticsClient,
       generateTitleRequest,
       onDiscussionChanged,
       projectId,
@@ -332,6 +397,7 @@ export function useDiscussionLifecycle({
 
   const submitDraft = useCallback(
     async (content: string) => {
+      const startedAt = performance.now();
       const { controller, operation } = beginRequest();
       const optimisticTurn: PendingDiscussionTurn = {
         content,
@@ -357,6 +423,42 @@ export function useDiscussionLifecycle({
         }
 
         const next = assertDiscussionDetails(response, projectId);
+        const firstMessage = firstUserMessage(next);
+        trackAnalytics(analyticsClient, 'discussion_created', {
+          project_id: projectId,
+          discussion_id: next.id,
+          occurred_at: next.created_at,
+        });
+
+        if (firstMessage?.request_id) {
+          trackAnalytics(
+            analyticsClient,
+            'discussion_first_prompt_submitted',
+            {
+              project_id: projectId,
+              discussion_id: next.id,
+              request_id: firstMessage.request_id,
+              occurred_at: firstMessage.created_at,
+            },
+          );
+
+          const responseAt = completedResponseAt(next, firstMessage.request_id);
+
+          if (responseAt) {
+            trackAnalytics(
+              analyticsClient,
+              'discussion_response_completed',
+              {
+                project_id: projectId,
+                discussion_id: next.id,
+                request_id: firstMessage.request_id,
+                occurred_at: responseAt,
+                latency_ms: elapsedMilliseconds(startedAt),
+              },
+            );
+          }
+        }
+
         updateDetails(next);
         onDiscussionChanged?.(next);
         updatePendingTurn(null);
@@ -375,6 +477,33 @@ export function useDiscussionLifecycle({
         const recovery = recoveryIdentifiers(error);
 
         if (recovery) {
+          const failureOccurredAt = occurredAt();
+          trackAnalytics(analyticsClient, 'discussion_created', {
+            project_id: projectId,
+            discussion_id: recovery.discussionId,
+            occurred_at: failureOccurredAt,
+          });
+          trackAnalytics(
+            analyticsClient,
+            'discussion_first_prompt_submitted',
+            {
+              project_id: projectId,
+              discussion_id: recovery.discussionId,
+              request_id: recovery.requestId,
+              occurred_at: failureOccurredAt,
+            },
+          );
+          trackAnalytics(
+            analyticsClient,
+            'discussion_response_failed',
+            {
+              project_id: projectId,
+              discussion_id: recovery.discussionId,
+              request_id: recovery.requestId,
+              occurred_at: failureOccurredAt,
+              latency_ms: elapsedMilliseconds(startedAt),
+            },
+          );
           updatePendingTurn({
             content,
             discussionId: recovery.discussionId,
@@ -396,6 +525,7 @@ export function useDiscussionLifecycle({
       }
     },
     [
+      analyticsClient,
       beginRequest,
       createRequest,
       finishRequest,
@@ -422,6 +552,7 @@ export function useDiscussionLifecycle({
           ? retainedAttempt.requestId
           : createRequestId();
       retainedAttemptRef.current = { content, requestId };
+      const startedAt = performance.now();
       const { controller, operation } = beginRequest();
       updatePendingTurn({
         content,
@@ -452,6 +583,22 @@ export function useDiscussionLifecycle({
         onDiscussionChanged?.(next);
         updatePendingTurn(null);
         setComposerValue('');
+        const responseAt = completedResponseAt(next, requestId);
+
+        if (responseAt) {
+          trackAnalytics(
+            analyticsClient,
+            'discussion_response_completed',
+            {
+              project_id: projectId,
+              discussion_id: discussionId,
+              request_id: requestId,
+              occurred_at: responseAt,
+              latency_ms: elapsedMilliseconds(startedAt),
+            },
+          );
+        }
+
         generateTitleIfNeeded(next);
       } catch (error: unknown) {
         if (
@@ -476,6 +623,13 @@ export function useDiscussionLifecycle({
             status: 'failed',
           });
           setComposerValue('');
+          trackAnalytics(analyticsClient, 'discussion_response_failed', {
+            project_id: projectId,
+            discussion_id: discussionId,
+            request_id: requestId,
+            occurred_at: occurredAt(),
+            latency_ms: elapsedMilliseconds(startedAt),
+          });
           return;
         }
 
@@ -486,6 +640,7 @@ export function useDiscussionLifecycle({
       }
     },
     [
+      analyticsClient,
       beginRequest,
       finishRequest,
       generateTitleIfNeeded,
@@ -532,6 +687,7 @@ export function useDiscussionLifecycle({
       }
 
       const retry = async () => {
+        const startedAt = performance.now();
         const { controller, operation } = beginRequest();
         updatePendingTurn({ ...turn, status: 'pending' });
 
@@ -558,6 +714,22 @@ export function useDiscussionLifecycle({
           updateDetails(next);
           onDiscussionChanged?.(next);
           updatePendingTurn(null);
+          const responseAt = completedResponseAt(next, turn.requestId);
+
+          if (responseAt) {
+            trackAnalytics(
+              analyticsClient,
+              'discussion_response_completed',
+              {
+                project_id: projectId,
+                discussion_id: visibleDiscussion.discussionId,
+                request_id: turn.requestId,
+                occurred_at: responseAt,
+                latency_ms: elapsedMilliseconds(startedAt),
+              },
+            );
+          }
+
           generateTitleIfNeeded(next);
         } catch (error: unknown) {
           if (
@@ -570,12 +742,20 @@ export function useDiscussionLifecycle({
 
           finishRequest(operation);
           updatePendingTurn({ ...turn, status: 'failed' });
+          trackAnalytics(analyticsClient, 'discussion_response_failed', {
+            project_id: projectId,
+            discussion_id: visibleDiscussion.discussionId,
+            request_id: turn.requestId,
+            occurred_at: occurredAt(),
+            latency_ms: elapsedMilliseconds(startedAt),
+          });
         }
       };
 
       void retry();
     },
     [
+      analyticsClient,
       beginRequest,
       finishRequest,
       generateTitleIfNeeded,

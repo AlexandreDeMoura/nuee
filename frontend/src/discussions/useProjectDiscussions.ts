@@ -6,6 +6,11 @@ import {
   type DiscussionDetails,
   type DiscussionSummary,
 } from '../api';
+import {
+  analytics,
+  trackAnalytics,
+  type AnalyticsClient,
+} from '../analytics';
 import { assertDiscussionDetails } from './discussionModel';
 import {
   discussionSummaryFromDetails,
@@ -58,6 +63,7 @@ export interface ProjectDiscussions {
 }
 
 interface UseProjectDiscussionsOptions {
+  analyticsClient?: AnalyticsClient;
   enabled: boolean;
   projectId: string;
   requests?: ProjectDiscussionRequests;
@@ -74,6 +80,7 @@ function message(error: unknown, fallback: string): string {
 }
 
 export function useProjectDiscussions({
+  analyticsClient = analytics,
   enabled,
   projectId,
   requests,
@@ -104,6 +111,8 @@ export function useProjectDiscussions({
   const deleteOperationRef = useRef(0);
   const deleteControllerRef = useRef<AbortController | null>(null);
   const deletedDiscussionIdsRef = useRef<Map<string, Set<string>>>(new Map());
+  const discussionListsRef = useRef<Map<string, DiscussionSummary[]>>(new Map());
+  const activeDiscussionIdsRef = useRef<Map<string, string | null>>(new Map());
   const currentStore =
     store.projectId === projectId
       ? store
@@ -149,24 +158,28 @@ export function useProjectDiscussions({
             : loaded,
           projectId,
         );
-
-        setStore((current) => ({
-          discussions:
-            mutationRevision === mutationRevisionRef.current
-              ? availableLoaded
-              : mergeDiscussionLists(
-                  projectId,
-                  availableLoaded,
-                  current.projectId === projectId
-                    ? current.discussions.filter(
-                        (discussion) => !deletedIds?.has(discussion.id),
-                      )
-                    : [],
+        const discussions =
+          mutationRevision === mutationRevisionRef.current
+            ? availableLoaded
+            : mergeDiscussionLists(
+                projectId,
+                availableLoaded,
+                (discussionListsRef.current.get(projectId) ?? []).filter(
+                  (discussion) => !deletedIds?.has(discussion.id),
                 ),
+              );
+        discussionListsRef.current.set(projectId, discussions);
+        activeDiscussionIdsRef.current.set(
+          projectId,
+          discussions.find((discussion) => discussion.is_active)?.id ?? null,
+        );
+
+        setStore({
+          discussions,
           error: null,
           projectId,
           status: 'ready',
-        }));
+        });
       })
       .catch((error: unknown) => {
         if (
@@ -225,13 +238,23 @@ export function useProjectDiscussions({
 
       const summary = discussionSummaryFromDetails(discussion);
       mutationRevisionRef.current += 1;
+      const previousActiveDiscussionId =
+        activeDiscussionIdsRef.current.get(projectId) ?? null;
+      const discussions = mergeDiscussionLists(
+        projectId,
+        discussionListsRef.current.get(projectId) ?? [],
+        [summary],
+      );
+      discussionListsRef.current.set(projectId, discussions);
+      activeDiscussionIdsRef.current.set(
+        projectId,
+        discussions.find((candidate) => candidate.is_active)?.id ?? null,
+      );
+      const nextActiveDiscussionId =
+        activeDiscussionIdsRef.current.get(projectId) ?? null;
 
       setStore((current) => ({
-        discussions: mergeDiscussionLists(
-          projectId,
-          current.projectId === projectId ? current.discussions : [],
-          [summary],
-        ),
+        discussions,
         error: current.projectId === projectId ? current.error : null,
         projectId,
         status:
@@ -239,8 +262,17 @@ export function useProjectDiscussions({
             ? 'loading'
             : 'ready',
       }));
+
+      if (previousActiveDiscussionId !== nextActiveDiscussionId) {
+        trackAnalytics(analyticsClient, 'discussion_active_changed', {
+          project_id: projectId,
+          previous_discussion_id: previousActiveDiscussionId,
+          discussion_id: nextActiveDiscussionId,
+          occurred_at: discussion.last_activity_at,
+        });
+      }
     },
-    [projectId],
+    [analyticsClient, projectId],
   );
 
   const openDiscussion = useCallback(
@@ -275,8 +307,14 @@ export function useProjectDiscussions({
           projectId,
           discussion.id,
         );
+        trackAnalytics(analyticsClient, 'discussion_opened', {
+          project_id: projectId,
+          discussion_id: opened.id,
+          occurred_at: opened.last_activity_at,
+        });
         updateDiscussion(opened);
         setOpeningDiscussionId(null);
+
         return opened;
       } catch (error: unknown) {
         if (
@@ -294,7 +332,7 @@ export function useProjectDiscussions({
         return null;
       }
     },
-    [openRequest, projectId, updateDiscussion],
+    [analyticsClient, openRequest, projectId, updateDiscussion],
   );
 
   const clearDeleteError = useCallback(() => {
@@ -323,6 +361,8 @@ export function useProjectDiscussions({
         error: null,
         projectId,
       });
+      const previousActiveDiscussionId =
+        activeDiscussionIdsRef.current.get(projectId) ?? null;
 
       try {
         await deleteRequest(projectId, discussion.id, controller.signal);
@@ -340,19 +380,42 @@ export function useProjectDiscussions({
         deletedDiscussionIdsRef.current.set(projectId, deletedIds);
         mutationRevisionRef.current += 1;
 
-        setStore((current) => ({
-          discussions: normalizeDiscussionList(
-            current.projectId === projectId
-              ? current.discussions.filter(
-                  (candidate) => candidate.id !== discussion.id,
-                )
-              : [],
-            projectId,
+        const discussions = normalizeDiscussionList(
+          (discussionListsRef.current.get(projectId) ?? []).filter(
+            (candidate) => candidate.id !== discussion.id,
           ),
+          projectId,
+        );
+        const nextActiveDiscussionId =
+          discussions.find((candidate) => candidate.is_active)?.id ?? null;
+        discussionListsRef.current.set(projectId, discussions);
+        activeDiscussionIdsRef.current.set(
+          projectId,
+          nextActiveDiscussionId,
+        );
+
+        setStore((current) => ({
+          discussions,
           error: current.projectId === projectId ? current.error : null,
           projectId,
           status: 'ready',
         }));
+
+        const deletedAt = new Date().toISOString();
+        trackAnalytics(analyticsClient, 'discussion_deleted', {
+          project_id: projectId,
+          discussion_id: discussion.id,
+          occurred_at: deletedAt,
+        });
+
+        if (previousActiveDiscussionId === discussion.id) {
+          trackAnalytics(analyticsClient, 'discussion_active_changed', {
+            project_id: projectId,
+            previous_discussion_id: previousActiveDiscussionId,
+            discussion_id: nextActiveDiscussionId,
+            occurred_at: deletedAt,
+          });
+        }
 
         return true;
       } catch (error: unknown) {
@@ -391,7 +454,7 @@ export function useProjectDiscussions({
         }
       }
     },
-    [deleteRequest, projectId],
+    [analyticsClient, deleteRequest, projectId],
   );
 
   return useMemo(

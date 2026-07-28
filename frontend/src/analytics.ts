@@ -65,6 +65,64 @@ export interface AnalyticsEventProperties {
   canvas_viewport_restored: {
     project_id: string;
   };
+  discussion_created: {
+    project_id: string;
+    discussion_id: string;
+    occurred_at: string;
+  };
+  discussion_first_prompt_submitted: {
+    project_id: string;
+    discussion_id: string;
+    request_id: string;
+    occurred_at: string;
+  };
+  discussion_response_completed: {
+    project_id: string;
+    discussion_id: string;
+    request_id: string;
+    occurred_at: string;
+    latency_ms: number;
+  };
+  discussion_response_failed: {
+    project_id: string;
+    discussion_id: string;
+    request_id: string;
+    occurred_at: string;
+    latency_ms: number;
+  };
+  discussion_title_generated: {
+    project_id: string;
+    discussion_id: string;
+    occurred_at: string;
+    latency_ms: number;
+  };
+  discussion_title_generation_failed: {
+    project_id: string;
+    discussion_id: string;
+    occurred_at: string;
+    latency_ms: number;
+  };
+  discussion_opened: {
+    project_id: string;
+    discussion_id: string;
+    occurred_at: string;
+  };
+  discussion_minimized: {
+    project_id: string;
+    discussion_id: string;
+    occurred_at: string;
+  };
+  discussion_deleted: {
+    project_id: string;
+    discussion_id: string;
+    occurred_at: string;
+  };
+  discussion_active_changed: {
+    project_id: string;
+    previous_discussion_id: string | null;
+    discussion_id: string | null;
+    occurred_at: string;
+  };
 }
 
 export type AnalyticsEventName = keyof AnalyticsEventProperties;
