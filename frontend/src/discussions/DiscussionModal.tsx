@@ -5,7 +5,7 @@ import {
   type FormEvent,
   type ReactNode,
 } from 'react';
-import { ArrowUp, MessageSquare, Minus } from 'lucide-react';
+import { ArrowUp, MessageSquare, Minus, Trash2 } from 'lucide-react';
 import { isTemporaryDiscussionTitle } from './discussionModel';
 import type { VisibleDiscussion } from './useDiscussionVisibility';
 
@@ -25,7 +25,9 @@ export interface DiscussionModalProps {
   actionsSlot?: ReactNode;
   composerSlot?: ReactNode;
   contextSlot?: ReactNode;
+  isObscured?: boolean;
   messagesSlot?: ReactNode;
+  onDelete?: () => void;
   onDraftPromptChange: (prompt: string) => void;
   onDraftSubmit?: (prompt: string) => void;
   onMinimize: () => void;
@@ -36,7 +38,9 @@ export function DiscussionModal({
   actionsSlot,
   composerSlot,
   contextSlot,
+  isObscured = false,
   messagesSlot,
+  onDelete,
   onDraftPromptChange,
   onDraftSubmit,
   onMinimize,
@@ -142,6 +146,8 @@ export function DiscussionModal({
     <div
       className="absolute inset-0 z-40 flex items-center justify-center bg-[#1e2733]/45 p-3 backdrop-blur-[1.5px] sm:p-6"
       data-discussion-overlay
+      aria-hidden={isObscured ? 'true' : undefined}
+      inert={isObscured ? true : undefined}
       onMouseDown={(event) => event.stopPropagation()}
       onPointerDown={(event) => event.stopPropagation()}
     >
@@ -176,6 +182,21 @@ export function DiscussionModal({
             </div>
             <div className="ml-auto flex shrink-0 items-center gap-2">
               {actionsSlot}
+              {!isDraft && onDelete && (
+                <button
+                  className={`grid size-8 cursor-pointer place-items-center rounded-[9px] border border-[#ecd4d1] bg-white text-[#b4544e] hover:bg-[#fbf1f0] ${focusRing}`}
+                  type="button"
+                  aria-label="Delete discussion"
+                  title="Delete discussion"
+                  onClick={onDelete}
+                >
+                  <Trash2
+                    className="size-[15px]"
+                    strokeWidth={1.8}
+                    aria-hidden="true"
+                  />
+                </button>
+              )}
               <button
                 className={`grid size-8 cursor-pointer place-items-center rounded-[9px] border border-[#e1e6ec] bg-white text-[#6f7d8e] hover:border-[#c7d2df] hover:bg-[#f6f8fc] hover:text-[#40516a] ${focusRing}`}
                 type="button"

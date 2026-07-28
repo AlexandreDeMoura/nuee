@@ -99,4 +99,108 @@ describe('project discussions loader', () => {
     expect(result.current.discussions).toEqual([]);
     expect(list).toHaveBeenCalledTimes(2);
   });
+
+  it('removes a deleted record, recalculates Active, and ignores stale list copies', async () => {
+    const projectId = 'project-1';
+    const older = listFor(projectId)[0];
+    const latest = {
+      ...older,
+      id: 'discussion-latest',
+      title: 'Latest discussion',
+      updated_at: '2026-07-28T10:00:00.000Z',
+      last_activity_at: '2026-07-28T10:00:00.000Z',
+    };
+    const records = [older, latest];
+    const staleRefresh = deferred<DiscussionListResponse>();
+    const list = vi
+      .fn()
+      .mockResolvedValueOnce(records)
+      .mockImplementationOnce(() => staleRefresh.promise);
+    const deleteRequest = vi.fn(async () => undefined);
+    const { result } = renderHook(() =>
+      useProjectDiscussions({
+        enabled: true,
+        projectId,
+        requests: { delete: deleteRequest, list },
+      }),
+    );
+
+    await waitFor(() =>
+      expect(result.current.discussions.map(({ id }) => id)).toEqual([
+        latest.id,
+        older.id,
+      ]),
+    );
+
+    act(() => result.current.refresh());
+    await waitFor(() => expect(list).toHaveBeenCalledTimes(2));
+
+    let wasDeleted = false;
+    await act(async () => {
+      wasDeleted = await result.current.deleteDiscussion({
+        id: latest.id,
+      });
+    });
+
+    expect(wasDeleted).toBe(true);
+    expect(deleteRequest).toHaveBeenCalledWith(
+      projectId,
+      latest.id,
+      expect.any(AbortSignal),
+    );
+    expect(result.current.discussions).toEqual([
+      expect.objectContaining({
+        id: older.id,
+        is_active: true,
+      }),
+    ]);
+
+    await act(async () => staleRefresh.resolve(records));
+
+    expect(result.current.discussions.map(({ id }) => id)).toEqual([
+      older.id,
+    ]);
+  });
+
+  it('keeps a failed delete in the list and clears the error before retrying', async () => {
+    const projectId = 'project-1';
+    const deleteRequest = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Deletion unavailable.'))
+      .mockResolvedValueOnce(undefined);
+    const list = vi.fn(async () => listFor(projectId));
+    const { result } = renderHook(() =>
+      useProjectDiscussions({
+        enabled: true,
+        projectId,
+        requests: {
+          delete: deleteRequest,
+          list,
+        },
+      }),
+    );
+
+    await waitFor(() => expect(result.current.status).toBe('ready'));
+
+    await act(async () => {
+      await result.current.deleteDiscussion({
+        id: `discussion-${projectId}`,
+      });
+    });
+
+    expect(result.current.deleteError).toBe('Deletion unavailable.');
+    expect(result.current.discussions).toHaveLength(1);
+
+    act(() => result.current.clearDeleteError());
+    expect(result.current.deleteError).toBeNull();
+
+    await act(async () => {
+      await result.current.deleteDiscussion({
+        id: `discussion-${projectId}`,
+      });
+    });
+
+    expect(result.current.discussions).toEqual([]);
+    expect(deleteRequest).toHaveBeenCalledTimes(2);
+  });
 });

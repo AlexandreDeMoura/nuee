@@ -17,13 +17,16 @@ import {
   type DiscussionLifecycleRequests,
 } from './useDiscussionLifecycle';
 import type { DiscussionVisibilityController } from './useDiscussionVisibility';
+import type { DiscussionDeleteTarget } from './DiscussionDeleteDialog';
 
 export interface DiscussionExperienceProps {
   contextBadgeResolver?: DiscussionContextBadgeResolver;
   controller: DiscussionVisibilityController;
+  isObscured?: boolean;
   onExtractKnowledge?: (source: DiscussionKnowledgeSource) => void;
   onInspectContext?: (inspection: DiscussionContextInspection) => void;
   onDiscussionChanged?: (discussion: DiscussionDetails) => void;
+  onDelete?: (discussion: DiscussionDeleteTarget) => void;
   projectDescription: string;
   projectId: string;
   requests?: DiscussionLifecycleRequests;
@@ -32,9 +35,11 @@ export interface DiscussionExperienceProps {
 export function DiscussionExperience({
   contextBadgeResolver,
   controller,
+  isObscured,
   onExtractKnowledge,
   onInspectContext,
   onDiscussionChanged,
+  onDelete,
   projectDescription,
   projectId,
   requests,
@@ -54,10 +59,12 @@ export function DiscussionExperience({
     <DiscussionExperienceModal
       controller={controller}
       contextBadgeResolver={contextBadgeResolver}
+      isObscured={isObscured}
       onExtractKnowledge={onExtractKnowledge}
       onInspectContext={onInspectContext}
       key={identity}
       onDiscussionChanged={onDiscussionChanged}
+      onDelete={onDelete}
       projectDescription={projectDescription}
       projectId={projectId}
       requests={requests}
@@ -69,9 +76,11 @@ export function DiscussionExperience({
 function DiscussionExperienceModal({
   contextBadgeResolver,
   controller,
+  isObscured,
   onExtractKnowledge,
   onInspectContext,
   onDiscussionChanged,
+  onDelete,
   projectDescription,
   projectId,
   requests,
@@ -139,6 +148,7 @@ function DiscussionExperienceModal({
           value={lifecycle.composerValue}
         />
       }
+      isObscured={isObscured}
       contextSlot={
         discussionId && contextBadges.length > 0 ? (
           <DiscussionContextBadges
@@ -157,6 +167,15 @@ function DiscussionExperienceModal({
           onRetry={lifecycle.retryFailedTurn}
           pendingTurn={lifecycle.pendingTurn}
         />
+      }
+      onDelete={
+        visibleDiscussion.kind === 'persisted' && onDelete
+          ? () =>
+              onDelete({
+                id: visibleDiscussion.discussionId,
+                title,
+              })
+          : undefined
       }
       onDraftPromptChange={controller.updateDraftPrompt}
       onMinimize={controller.minimize}

@@ -8,6 +8,7 @@ import {
   within,
 } from '@testing-library/react';
 import type {
+  Bubble,
   DiscussionDetails,
   DiscussionSummary,
   Project,
@@ -125,7 +126,9 @@ describe('discussions panel lifecycle', () => {
     const discussionList = await screen.findByRole('list', {
       name: 'Project discussions',
     });
-    const rows = within(discussionList).getAllByRole('button');
+    const rows = within(discussionList).getAllByRole('button', {
+      name: /^Open discussion:/,
+    });
 
     expect(rows.map((row) => row.textContent)).toEqual([
       expect.stringContaining('Current launch plan'),
@@ -164,7 +167,9 @@ describe('discussions panel lifecycle', () => {
     const reorderedList = screen.getByRole('list', {
       name: 'Project discussions',
     });
-    const reorderedRows = within(reorderedList).getAllByRole('button');
+    const reorderedRows = within(reorderedList).getAllByRole('button', {
+      name: /^Open discussion:/,
+    });
     expect(reorderedRows[0].textContent).toContain('Earlier launch risks');
     expect(within(reorderedRows[0]).getByText('ACTIVE')).toBeTruthy();
 
@@ -262,5 +267,216 @@ describe('discussions panel lifecycle', () => {
     ).toBeTruthy();
     expect(screen.getAllByText('ACTIVE')).toHaveLength(1);
     await waitFor(() => expect(list).toHaveBeenCalledTimes(1));
+  });
+
+  it('confirms panel deletion, preserves extracted bubbles, and promotes the newest remaining discussion', async () => {
+    const older = summary(
+      'discussion-older',
+      'Earlier launch risks',
+      '2026-07-28T09:00:00.000Z',
+      false,
+    );
+    const latest = summary(
+      'discussion-latest',
+      'Current launch plan',
+      '2026-07-28T10:00:00.000Z',
+      true,
+    );
+    const extractedBubble: Bubble = {
+      id: 'bubble-from-latest',
+      project_id: project.id,
+      title: 'Preserved extracted bubble',
+      summary: null,
+      content: 'Knowledge remains after its source discussion is deleted.',
+      position_x: 120,
+      position_y: 80,
+      created_at: '2026-07-28T10:00:01.000Z',
+      updated_at: '2026-07-28T10:00:01.000Z',
+      source_kind: 'discussion',
+      source_discussion_id: latest.id,
+      source_message_ids: ['assistant-discussion-latest'],
+    };
+    const deleteRequest = vi.fn(async () => undefined);
+
+    render(
+      <ProjectWorkspace
+        discussionPanelRequests={{
+          delete: deleteRequest,
+          list: async () => [older, latest],
+        }}
+        project={project}
+        requestBubbles={async () => [extractedBubble]}
+        requestBubbleLinks={async () => []}
+      />,
+    );
+
+    expect(await screen.findByText('Preserved extracted bubble')).toBeTruthy();
+    fireEvent.click(screen.getByRole('tab', { name: 'Discussions' }));
+    await screen.findByRole('button', {
+      name: 'Open discussion: Current launch plan',
+    });
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Delete discussion: Current launch plan',
+      }),
+    );
+
+    const confirmation = screen.getByRole('alertdialog');
+    expect(confirmation.textContent).toContain(
+      'Delete “Current launch plan”?',
+    );
+    expect(confirmation.textContent).toContain(
+      'Bubbles already created from this discussion stay on the canvas',
+    );
+    expect(deleteRequest).not.toHaveBeenCalled();
+
+    fireEvent.click(
+      within(confirmation).getByRole('button', {
+        name: 'Delete discussion',
+      }),
+    );
+
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('button', {
+          name: 'Open discussion: Current launch plan',
+        }),
+      ).toBeNull(),
+    );
+    expect(deleteRequest).toHaveBeenCalledWith(
+      project.id,
+      latest.id,
+      expect.any(AbortSignal),
+    );
+    expect(
+      screen.getByRole('button', {
+        name: 'Open discussion: Earlier launch risks',
+      }),
+    ).toBeTruthy();
+    expect(screen.getAllByText('ACTIVE')).toHaveLength(1);
+    expect(screen.getByText('Preserved extracted bubble')).toBeTruthy();
+  });
+
+  it('deletes an open discussion only after confirmation and closes its modal', async () => {
+    const discussion = summary(
+      'discussion-open',
+      'Open launch question',
+      '2026-07-28T10:00:00.000Z',
+      true,
+    );
+    const opened = details(discussion);
+    const deleteRequest = vi.fn(async () => undefined);
+
+    render(
+      <ProjectWorkspace
+        discussionLifecycleRequests={{ get: async () => opened }}
+        discussionPanelRequests={{
+          delete: deleteRequest,
+          list: async () => [discussion],
+          recordOpen: async () => opened,
+        }}
+        project={project}
+        requestBubbles={async () => []}
+        requestBubbleLinks={async () => []}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Discussions' }));
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Open discussion: Open launch question',
+      }),
+    );
+    expect(
+      await screen.findByRole('dialog', { name: 'Open launch question' }),
+    ).toBeTruthy();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Delete discussion' }),
+    );
+    expect(screen.getByRole('alertdialog')).toBeTruthy();
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(
+      screen.getByRole('dialog', { name: 'Open launch question' }),
+    ).toBeTruthy();
+    expect(deleteRequest).not.toHaveBeenCalled();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Delete discussion' }),
+    );
+    fireEvent.click(
+      within(screen.getByRole('alertdialog')).getByRole('button', {
+        name: 'Delete discussion',
+      }),
+    );
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+    expect(screen.getByText('No discussions yet')).toBeTruthy();
+    expect(deleteRequest).toHaveBeenCalledWith(
+      project.id,
+      discussion.id,
+      expect.any(AbortSignal),
+    );
+  });
+
+  it('keeps a failed deletion confirmation visible and retryable', async () => {
+    const discussion = summary(
+      'discussion-retry',
+      'Retry deletion',
+      '2026-07-28T10:00:00.000Z',
+      true,
+    );
+    const deleteRequest = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('Unavailable'))
+      .mockResolvedValueOnce(undefined);
+
+    render(
+      <ProjectWorkspace
+        discussionPanelRequests={{
+          delete: deleteRequest,
+          list: async () => [discussion],
+        }}
+        project={project}
+        requestBubbles={async () => []}
+        requestBubbleLinks={async () => []}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Discussions' }));
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Delete discussion: Retry deletion',
+      }),
+    );
+    fireEvent.click(
+      within(screen.getByRole('alertdialog')).getByRole('button', {
+        name: 'Delete discussion',
+      }),
+    );
+
+    expect(
+      await screen.findByText(
+        'Couldn’t delete the discussion. Try again.',
+      ),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('button', {
+        name: 'Open discussion: Retry deletion',
+        hidden: true,
+      }),
+    ).toBeTruthy();
+
+    fireEvent.click(
+      within(screen.getByRole('alertdialog')).getByRole('button', {
+        name: 'Delete discussion',
+      }),
+    );
+
+    expect(await screen.findByText('No discussions yet')).toBeTruthy();
+    expect(deleteRequest).toHaveBeenCalledTimes(2);
   });
 });

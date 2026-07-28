@@ -49,6 +49,7 @@ import {
   type BubbleUpdateRequest,
 } from '../bubbles/BubbleInspector';
 import {
+  DiscussionDeleteDialog,
   DiscussionExperience,
   DiscussionModal,
   DiscussionsPanel,
@@ -57,6 +58,7 @@ import {
   type DiscussionLifecycleRequests,
   type DiscussionContextBadgeResolver,
   type DiscussionContextInspection,
+  type DiscussionDeleteTarget,
   type DiscussionKnowledgeSource,
   type ProjectDiscussionRequests,
   type DiscussionVisibilityController,
@@ -604,6 +606,13 @@ export function ProjectWorkspace({
     Record<string, Bubble>
   >({});
   const [deletedBubbleIds, setDeletedBubbleIds] = useState<string[]>([]);
+  const [discussionDeletionState, setDiscussionDeletionState] = useState<
+    (DiscussionDeleteTarget & { projectId: string }) | null
+  >(null);
+  const discussionPendingDeletion =
+    discussionDeletionState?.projectId === currentProject.id
+      ? discussionDeletionState
+      : null;
   const [availableBubbles, setAvailableBubbles] = useState<Bubble[]>([]);
   const [bubbleLinkLoadState, setBubbleLinkLoadState] =
     useState<BubbleLinkLoadState>({ status: 'loading', links: [] });
@@ -842,7 +851,15 @@ export function ProjectWorkspace({
       ? overlaySlots.discussion(discussionVisibility)
       : overlaySlots?.discussion;
   const isDiscussionVisible =
-    discussionVisibility.visibleDiscussion !== null;
+    discussionVisibility.visibleDiscussion !== null ||
+    discussionPendingDeletion !== null;
+  const visibleDiscussionDeleteTarget =
+    discussionVisibility.visibleDiscussion?.kind === 'persisted'
+      ? {
+          id: discussionVisibility.visibleDiscussion.discussionId,
+          title: discussionVisibility.visibleDiscussion.title,
+        }
+      : null;
   const startDiscussion =
     emptyActionHandlers?.['start-discussion'] ??
     discussionVisibility.openDraft;
@@ -859,6 +876,53 @@ export function ProjectWorkspace({
     },
     [discussionVisibility, projectDiscussions],
   );
+  const openDiscussionDeleteConfirmation = useCallback(
+    (discussion: DiscussionDeleteTarget) => {
+      projectDiscussions.clearDeleteError();
+      setDiscussionDeletionState({
+        ...discussion,
+        projectId: currentProject.id,
+      });
+    },
+    [currentProject.id, projectDiscussions],
+  );
+  const closeDiscussionDeleteConfirmation = useCallback(() => {
+    if (projectDiscussions.deletingDiscussionId !== null) {
+      return;
+    }
+
+    projectDiscussions.clearDeleteError();
+    setDiscussionDeletionState(null);
+  }, [projectDiscussions]);
+  const confirmDiscussionDelete = useCallback(async () => {
+    if (!discussionPendingDeletion) {
+      return;
+    }
+
+    const target = discussionPendingDeletion;
+    const wasDeleted = await projectDiscussions.deleteDiscussion(target);
+
+    if (!wasDeleted) {
+      return;
+    }
+
+    setDiscussionDeletionState((current) =>
+      current?.projectId === target.projectId && current.id === target.id
+        ? null
+        : current,
+    );
+
+    if (
+      discussionVisibility.visibleDiscussion?.kind === 'persisted' &&
+      discussionVisibility.visibleDiscussion.discussionId === target.id
+    ) {
+      discussionVisibility.minimize();
+    }
+  }, [
+    discussionPendingDeletion,
+    discussionVisibility,
+    projectDiscussions,
+  ]);
   const resolvedDiscussionCount =
     panelSlots?.discussions === undefined
       ? projectDiscussions.discussions.length
@@ -866,8 +930,10 @@ export function ProjectWorkspace({
   const discussionsContent =
     panelSlots?.discussions ?? (
       <DiscussionsPanel
+        deletingDiscussionId={projectDiscussions.deletingDiscussionId}
         discussions={projectDiscussions.discussions}
         error={projectDiscussions.error}
+        onDelete={openDiscussionDeleteConfirmation}
         onOpen={(discussion) => {
           void handleDiscussionOpen(discussion);
         }}
@@ -1018,10 +1084,19 @@ export function ProjectWorkspace({
           (discussionVisibility.visibleDiscussion &&
             (onDiscussionDraftSubmit ? (
               <DiscussionModal
+                isObscured={discussionPendingDeletion !== null}
                 key={
                   discussionVisibility.visibleDiscussion.kind === 'draft'
                     ? discussionVisibility.visibleDiscussion.key
                     : discussionVisibility.visibleDiscussion.discussionId
+                }
+                onDelete={
+                  visibleDiscussionDeleteTarget
+                    ? () =>
+                        openDiscussionDeleteConfirmation(
+                          visibleDiscussionDeleteTarget,
+                        )
+                    : undefined
                 }
                 onDraftPromptChange={discussionVisibility.updateDraftPrompt}
                 onDraftSubmit={onDiscussionDraftSubmit}
@@ -1032,14 +1107,34 @@ export function ProjectWorkspace({
               <DiscussionExperience
                 contextBadgeResolver={discussionContextBadgeResolver}
                 controller={discussionVisibility}
+                isObscured={discussionPendingDeletion !== null}
                 onExtractKnowledge={onExtractDiscussionKnowledge}
                 onInspectContext={onInspectDiscussionContext}
                 onDiscussionChanged={projectDiscussions.updateDiscussion}
+                onDelete={openDiscussionDeleteConfirmation}
                 projectDescription={currentProject.description}
                 projectId={currentProject.id}
                 requests={discussionLifecycleRequests}
               />
             )))}
+        {discussionPendingDeletion && (
+          <DiscussionDeleteDialog
+            error={
+              projectDiscussions.deleteError
+                ? 'Couldn’t delete the discussion. Try again.'
+                : null
+            }
+            isDeleting={
+              projectDiscussions.deletingDiscussionId ===
+              discussionPendingDeletion.id
+            }
+            onCancel={closeDiscussionDeleteConfirmation}
+            onConfirm={() => {
+              void confirmDiscussionDelete();
+            }}
+            target={discussionPendingDeletion}
+          />
+        )}
       </main>
     </CurrentProjectDescriptionContext.Provider>
   );

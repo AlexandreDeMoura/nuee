@@ -4,6 +4,7 @@ import {
   MessageSquare,
   Plus,
   RotateCcw,
+  Trash2,
 } from 'lucide-react';
 import type { DiscussionSummary } from '../api';
 import { formatUpdatedAt } from '../utils/date';
@@ -15,7 +16,9 @@ const focusRing =
 
 export interface DiscussionsPanelProps {
   discussions: DiscussionSummary[];
+  deletingDiscussionId: string | null;
   error: string | null;
+  onDelete: (discussion: DiscussionSummary) => void;
   onOpen: (discussion: DiscussionSummary) => void;
   onRetry: () => void;
   onStart: () => void;
@@ -94,7 +97,9 @@ function DiscussionListError({
 
 export function DiscussionsPanel({
   discussions,
+  deletingDiscussionId,
   error,
+  onDelete,
   onOpen,
   onRetry,
   onStart,
@@ -153,13 +158,19 @@ export function DiscussionsPanel({
           );
 
           return (
-            <li key={discussion.id}>
+            <li
+              className="group flex items-start rounded-[10px] hover:bg-[#f6f8fc]"
+              key={discussion.id}
+            >
               <button
-                className={`group flex w-full cursor-pointer items-start gap-3 rounded-[10px] px-3 py-3 text-left hover:bg-[#f6f8fc] disabled:cursor-wait ${focusRing}`}
+                className={`flex min-w-0 flex-1 cursor-pointer items-start gap-3 rounded-[10px] px-3 py-3 text-left disabled:cursor-wait ${focusRing}`}
                 type="button"
                 aria-label={`Open discussion: ${discussion.title}`}
                 aria-busy={isOpening ? 'true' : undefined}
-                disabled={openingDiscussionId !== null}
+                disabled={
+                  openingDiscussionId !== null ||
+                  deletingDiscussionId !== null
+                }
                 onClick={() => onOpen(discussion)}
               >
                 <span
@@ -215,6 +226,31 @@ export function DiscussionsPanel({
                     {formatUpdatedAt(discussion.last_activity_at)}
                   </time>
                 </span>
+              </button>
+              <button
+                className={`mt-2.5 mr-2 grid size-8 shrink-0 cursor-pointer place-items-center rounded-[8px] text-[#9aa6b4] hover:bg-[#fbf1f0] hover:text-[#b4544e] disabled:cursor-wait disabled:opacity-50 ${focusRing}`}
+                type="button"
+                aria-label={`Delete discussion: ${discussion.title}`}
+                disabled={
+                  openingDiscussionId !== null ||
+                  deletingDiscussionId !== null
+                }
+                title="Delete discussion"
+                onClick={() => onDelete(discussion)}
+              >
+                {deletingDiscussionId === discussion.id ? (
+                  <LoaderCircle
+                    className="size-[14px] animate-spin motion-reduce:animate-none"
+                    strokeWidth={1.8}
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <Trash2
+                    className="size-[14px]"
+                    strokeWidth={1.8}
+                    aria-hidden="true"
+                  />
+                )}
               </button>
             </li>
           );
