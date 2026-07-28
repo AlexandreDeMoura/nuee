@@ -1,6 +1,10 @@
 import { Module } from '@nestjs/common';
 import { ProjectsModule } from '../projects/projects.module';
-import { BUBBLE_LINK_REPOSITORY, BUBBLE_REPOSITORY } from './bubble.types';
+import {
+  BUBBLE_CONTEXT_SOURCE_READER,
+  BUBBLE_LINK_REPOSITORY,
+  BUBBLE_REPOSITORY,
+} from './bubble.types';
 import { BubblePlacementService } from './bubble-placement.service';
 import { BubbleLinksController } from './bubble-links.controller';
 import { BubbleLinksService } from './bubble-links.service';
@@ -23,8 +27,17 @@ import { SqliteBubbleRepository } from './sqlite-bubble.repository';
       provide: BUBBLE_LINK_REPOSITORY,
       useExisting: SqliteBubbleRepository,
     },
+    {
+      provide: BUBBLE_CONTEXT_SOURCE_READER,
+      useExisting: BubblesService,
+    },
     BubbleLinksService,
   ],
-  exports: [BubblesService, BubblePlacementService, BubbleLinksService],
+  exports: [
+    BubblesService,
+    BubblePlacementService,
+    BubbleLinksService,
+    BUBBLE_CONTEXT_SOURCE_READER,
+  ],
 })
 export class BubblesModule {}

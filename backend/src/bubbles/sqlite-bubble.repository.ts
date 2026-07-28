@@ -96,6 +96,14 @@ export class SqliteBubbleRepository
     return rows.map((row) => this.toBubble(row));
   }
 
+  findProjectIdById(id: string): string | undefined {
+    const row = this.database
+      .prepare('SELECT project_id FROM bubbles WHERE id = ?')
+      .get(id) as unknown as Pick<BubbleRow, 'project_id'> | undefined;
+
+    return row?.project_id;
+  }
+
   findByProjectAndId(projectId: string, id: string): Bubble | undefined {
     const row = this.database
       .prepare(

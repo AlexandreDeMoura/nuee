@@ -22,6 +22,7 @@ export type {
 export interface BubbleRepository {
   create(bubble: Bubble): Bubble;
   findAllByProjectId(projectId: string): Bubble[];
+  findProjectIdById(id: string): string | undefined;
   findByProjectAndId(projectId: string, id: string): Bubble | undefined;
   updateContent(
     projectId: string,
@@ -52,5 +53,30 @@ export interface BubbleLinkRepository {
   deleteLink(projectId: string, bubbleAId: string, bubbleBId: string): boolean;
 }
 
+export type BubbleContextSource = Pick<
+  Bubble,
+  'id' | 'project_id' | 'title' | 'content'
+>;
+
+export type BubbleContextSourceReadResult =
+  | {
+      status: 'available';
+      source: BubbleContextSource;
+    }
+  | {
+      status: 'unavailable';
+      reason: 'missing' | 'inaccessible' | 'cross_project';
+    };
+
+export interface BubbleContextSourceReader {
+  readContextSource(
+    projectId: string,
+    bubbleId: string,
+  ): BubbleContextSourceReadResult;
+}
+
 export const BUBBLE_REPOSITORY = Symbol('BUBBLE_REPOSITORY');
 export const BUBBLE_LINK_REPOSITORY = Symbol('BUBBLE_LINK_REPOSITORY');
+export const BUBBLE_CONTEXT_SOURCE_READER = Symbol(
+  'BUBBLE_CONTEXT_SOURCE_READER',
+);

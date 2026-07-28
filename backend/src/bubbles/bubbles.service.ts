@@ -10,6 +10,8 @@ import { BUBBLE_REPOSITORY } from './bubble.types';
 import type {
   BatchRepositionBubblesInput,
   Bubble,
+  BubbleContextSourceReadResult,
+  BubbleContextSourceReader,
   BubblePositionUpdate,
   BubbleRepository,
   CreateBubbleInput,
@@ -21,7 +23,7 @@ type BubbleTextField = 'title' | 'content';
 type BubblePositionField = 'position_x' | 'position_y';
 
 @Injectable()
-export class BubblesService {
+export class BubblesService implements BubbleContextSourceReader {
   constructor(
     private readonly projects: ProjectsService,
     @Inject(BUBBLE_REPOSITORY)
@@ -65,6 +67,37 @@ export class BubblesService {
     }
 
     return bubble;
+  }
+
+  readContextSource(
+    projectId: string,
+    bubbleId: string,
+  ): BubbleContextSourceReadResult {
+    const sourceProjectId = this.bubbles.findProjectIdById(bubbleId);
+
+    if (!sourceProjectId) {
+      return { status: 'unavailable', reason: 'missing' };
+    }
+
+    if (sourceProjectId !== projectId) {
+      return { status: 'unavailable', reason: 'cross_project' };
+    }
+
+    const bubble = this.bubbles.findByProjectAndId(projectId, bubbleId);
+
+    if (!bubble) {
+      return { status: 'unavailable', reason: 'missing' };
+    }
+
+    return {
+      status: 'available',
+      source: {
+        id: bubble.id,
+        project_id: bubble.project_id,
+        title: bubble.title,
+        content: bubble.content,
+      },
+    };
   }
 
   update(
