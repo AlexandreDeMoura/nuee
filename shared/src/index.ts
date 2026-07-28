@@ -100,16 +100,74 @@ export type DiscussionRole = 'user' | 'assistant';
 export type DiscussionMessageStatus = 'pending' | 'completed' | 'failed';
 
 /**
- * An immutable context package assembled by the Discussion Context feature.
- * Discussion consumers persist and forward it without interpreting its shape.
+ * The live source kind captured by an immutable discussion-context item.
  */
-export type FrozenContext = Record<string, unknown>;
+export type DiscussionContextSourceKind =
+  | 'project_description'
+  | 'bubble'
+  | 'document';
+
+interface FrozenContextItemBase {
+  id: string;
+  source_id: string;
+  source_title: string;
+  frozen_content: string;
+  created_at: string;
+  display_order: number;
+}
+
+export interface FrozenProjectDescriptionContextItem
+  extends FrozenContextItemBase {
+  source_kind: 'project_description';
+}
+
+export interface FrozenBubbleContextItem extends FrozenContextItemBase {
+  source_kind: 'bubble';
+}
+
+export interface FrozenDocumentContextItem extends FrozenContextItemBase {
+  source_kind: 'document';
+}
+
+export type FrozenContextItem =
+  | FrozenProjectDescriptionContextItem
+  | FrozenBubbleContextItem
+  | FrozenDocumentContextItem;
+
+/**
+ * A complete immutable context package assembled when a discussion starts.
+ * Item order is authoritative and remains stable for the discussion lifetime.
+ */
+export interface FrozenContextV1 {
+  version: 1;
+  items: FrozenContextItem[];
+}
+
+export type FrozenContext = FrozenContextV1;
+
+/**
+ * Historical discussions stored an opaque JSON object before context packages
+ * were versioned. Consumers may read this variant but must not reinterpret it
+ * as a versioned package.
+ */
+export type LegacyFrozenContext = Record<string, unknown>;
+
+export type DiscussionFrozenContext = FrozenContext | LegacyFrozenContext;
+
+/**
+ * Ordered live-source identifiers selected before discussion creation.
+ * Array order is preserved when the frozen context package is assembled.
+ */
+export interface DiscussionContextSelectionInput {
+  bubble_ids: string[];
+  document_ids: string[];
+}
 
 export interface Discussion {
   id: string;
   project_id: string;
   title: string;
-  frozen_context: FrozenContext;
+  frozen_context: DiscussionFrozenContext;
   created_at: string;
   updated_at: string;
   last_activity_at: string;
@@ -125,10 +183,11 @@ export interface DiscussionMessage {
   request_id: string | null;
 }
 
-export interface CreateDiscussionInput {
+export interface CreateDiscussionInput
+  extends DiscussionContextSelectionInput {
   project_id: string;
-  frozen_context: FrozenContext;
   first_prompt: string;
+  idempotency_key: string;
 }
 
 export interface SendMessageInput {

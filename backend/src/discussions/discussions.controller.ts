@@ -9,12 +9,18 @@ import {
   Post,
 } from '@nestjs/common';
 import type {
-  CreateDiscussionInput,
   DiscussionDetails,
   DiscussionListResponse,
+  LegacyFrozenContext,
   SendMessageInput,
 } from '@nuee/shared-types';
 import { DiscussionsService } from './discussions.service';
+
+interface LegacyCreateDiscussionInput {
+  project_id: string;
+  frozen_context: LegacyFrozenContext;
+  first_prompt: string;
+}
 
 @Controller('projects/:projectId/discussions')
 export class DiscussionsController {
@@ -23,7 +29,7 @@ export class DiscussionsController {
   @Post()
   create(
     @Param('projectId') projectId: string,
-    @Body() input: CreateDiscussionInput,
+    @Body() input: LegacyCreateDiscussionInput,
   ): Promise<DiscussionDetails> {
     return this.discussions.create(projectId, input);
   }

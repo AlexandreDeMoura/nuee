@@ -54,7 +54,7 @@ export function buildFocusedResponseInstructions(wordBudget: number): string {
 }
 
 function frozenContextMessage(
-  frozenContext: Record<string, unknown>,
+  frozenContext: GenerateAnswerInput['frozenContext'],
 ): OpenAiInputMessage {
   return {
     role: 'developer',

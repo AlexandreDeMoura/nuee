@@ -9,10 +9,11 @@ import {
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import type {
-  CreateDiscussionInput,
   DiscussionDetails,
+  DiscussionFrozenContext,
   DiscussionListResponse,
   DiscussionSummary,
+  LegacyFrozenContext,
   SendMessageInput,
 } from '@nuee/shared-types';
 import { GENERATED_TITLE_MAX_LENGTH, MODEL_CLIENT } from '../ai/model-client';
@@ -37,6 +38,12 @@ const MAX_MODEL_INPUT_BYTES = 250_000;
 type DiscussionField =
   'project_id' | 'first_prompt' | 'content' | 'idempotency_key';
 
+interface LegacyCreateDiscussionInput {
+  project_id: string;
+  frozen_context: LegacyFrozenContext;
+  first_prompt: string;
+}
+
 @Injectable()
 export class DiscussionsService {
   private readonly titleGenerations = new Map<
@@ -56,7 +63,7 @@ export class DiscussionsService {
 
   async create(
     projectId: string,
-    input: CreateDiscussionInput,
+    input: LegacyCreateDiscussionInput,
   ): Promise<DiscussionDetails> {
     this.projects.get(projectId);
 
@@ -595,7 +602,7 @@ export class DiscussionsService {
   }
 
   private guardModelInput(
-    frozenContext: Record<string, unknown>,
+    frozenContext: DiscussionFrozenContext,
     messages: readonly ModelMessage[],
   ): void {
     const serialized = JSON.stringify({

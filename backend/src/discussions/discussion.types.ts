@@ -1,8 +1,8 @@
 import type {
   Discussion,
+  DiscussionFrozenContext,
   DiscussionMessage,
   DiscussionMessageStatus,
-  FrozenContext,
 } from '@nuee/shared-types';
 
 export type {
@@ -10,7 +10,7 @@ export type {
   DiscussionMessage,
   DiscussionMessageStatus,
   DiscussionRole,
-  FrozenContext,
+  DiscussionFrozenContext,
 } from '@nuee/shared-types';
 
 export interface PersistedDiscussion extends Omit<
@@ -18,7 +18,7 @@ export interface PersistedDiscussion extends Omit<
   'title' | 'frozen_context'
 > {
   title: string | null;
-  frozen_context: FrozenContext;
+  frozen_context: DiscussionFrozenContext;
   deleted_at: string | null;
 }
 

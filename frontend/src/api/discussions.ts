@@ -2,12 +2,14 @@ import type {
   CreateDiscussionInput,
   Discussion,
   DiscussionDetails,
+  DiscussionFrozenContext,
   DiscussionListResponse,
   DiscussionMessage,
   DiscussionMessageStatus,
   DiscussionRole,
   DiscussionSummary,
   FrozenContext,
+  LegacyFrozenContext,
   SendMessageInput,
 } from '@nuee/shared-types';
 import { requestJson } from './client';
@@ -16,6 +18,7 @@ export type {
   CreateDiscussionInput,
   Discussion,
   DiscussionDetails,
+  DiscussionFrozenContext,
   DiscussionListResponse,
   DiscussionMessage,
   DiscussionMessageStatus,
@@ -26,6 +29,16 @@ export type {
 };
 
 export type DiscussionRequest = typeof requestJson;
+
+/**
+ * Transitional request accepted until the discussion-context creation flow is
+ * connected to the versioned shared contract.
+ */
+interface LegacyCreateDiscussionInput {
+  project_id: string;
+  frozen_context: LegacyFrozenContext;
+  first_prompt: string;
+}
 
 export function createDiscussionsApi(request: DiscussionRequest = requestJson) {
   function collectionPath(projectId: string): string {
@@ -38,7 +51,7 @@ export function createDiscussionsApi(request: DiscussionRequest = requestJson) {
 
   function createDiscussion(
     projectId: string,
-    input: CreateDiscussionInput,
+    input: CreateDiscussionInput | LegacyCreateDiscussionInput,
     signal?: AbortSignal,
   ): Promise<DiscussionDetails> {
     return request<DiscussionDetails>(collectionPath(projectId), {
