@@ -49,8 +49,10 @@ import {
   type BubbleUpdateRequest,
 } from '../bubbles/BubbleInspector';
 import {
+  DiscussionExperience,
   DiscussionModal,
   useDiscussionVisibility,
+  type DiscussionLifecycleRequests,
   type DiscussionVisibilityController,
 } from '../discussions';
 import {
@@ -121,6 +123,7 @@ export interface ProjectWorkspaceProps {
   panelSlots?: WorkspacePanelSlots;
   overlaySlots?: WorkspaceOverlaySlots;
   emptyActionHandlers?: WorkspaceEmptyActionHandlers;
+  discussionLifecycleRequests?: DiscussionLifecycleRequests;
   onDiscussionDraftSubmit?: (prompt: string) => void;
   inspectorSelection?: WorkspaceInspectorSelection | null;
   onInspectorSelectionInvalidated?: (
@@ -581,6 +584,7 @@ export function ProjectWorkspace({
   panelSlots,
   overlaySlots,
   emptyActionHandlers,
+  discussionLifecycleRequests,
   onDiscussionDraftSubmit,
   inspectorSelection = null,
   onInspectorSelectionInvalidated,
@@ -972,19 +976,27 @@ export function ProjectWorkspace({
         </div>
 
         {discussionOverlay ??
-          (discussionVisibility.visibleDiscussion && (
-            <DiscussionModal
-              key={
-                discussionVisibility.visibleDiscussion.kind === 'draft'
-                  ? discussionVisibility.visibleDiscussion.key
-                  : discussionVisibility.visibleDiscussion.discussionId
-              }
-              onDraftPromptChange={discussionVisibility.updateDraftPrompt}
-              onDraftSubmit={onDiscussionDraftSubmit}
-              onMinimize={discussionVisibility.minimize}
-              visibleDiscussion={discussionVisibility.visibleDiscussion}
-            />
-          ))}
+          (discussionVisibility.visibleDiscussion &&
+            (onDiscussionDraftSubmit ? (
+              <DiscussionModal
+                key={
+                  discussionVisibility.visibleDiscussion.kind === 'draft'
+                    ? discussionVisibility.visibleDiscussion.key
+                    : discussionVisibility.visibleDiscussion.discussionId
+                }
+                onDraftPromptChange={discussionVisibility.updateDraftPrompt}
+                onDraftSubmit={onDiscussionDraftSubmit}
+                onMinimize={discussionVisibility.minimize}
+                visibleDiscussion={discussionVisibility.visibleDiscussion}
+              />
+            ) : (
+              <DiscussionExperience
+                controller={discussionVisibility}
+                projectDescription={currentProject.description}
+                projectId={currentProject.id}
+                requests={discussionLifecycleRequests}
+              />
+            )))}
       </main>
     </CurrentProjectDescriptionContext.Provider>
   );

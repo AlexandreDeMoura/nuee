@@ -1,6 +1,7 @@
-interface ApiErrorBody {
+export interface ApiErrorBody {
   code?: string;
   message?: string;
+  [key: string]: unknown;
 }
 
 const API_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replace(
@@ -11,12 +12,14 @@ const API_URL = (import.meta.env.VITE_API_URL ?? 'http://localhost:3000').replac
 export class ApiError extends Error {
   readonly status: number;
   readonly code?: string;
+  readonly body: Readonly<ApiErrorBody>;
 
   constructor(status: number, body?: ApiErrorBody) {
     super(body?.message ?? `API request failed with status ${status}.`);
     this.name = 'ApiError';
     this.status = status;
     this.code = body?.code;
+    this.body = Object.freeze({ ...body });
   }
 }
 
