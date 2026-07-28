@@ -1,0 +1,41 @@
+import type { DiscussionDetails } from '../api';
+
+export type DiscussionContextKind =
+  | 'project_description'
+  | 'bubble'
+  | 'document';
+
+export interface DiscussionContextBadge {
+  id: string;
+  kind: DiscussionContextKind;
+  label: string;
+}
+
+export interface DiscussionContextInspection {
+  contextId: string;
+  discussionId: string;
+}
+
+export type DiscussionContextBadgeResolver = (
+  discussion: DiscussionDetails,
+) => readonly DiscussionContextBadge[];
+
+/**
+ * Temporary adapter for the no-additional-context flow. Discussion Context
+ * owns richer badge metadata and can replace this through the resolver seam.
+ */
+export const defaultDiscussionContextBadges: DiscussionContextBadgeResolver = (
+  discussion,
+) =>
+  Object.prototype.hasOwnProperty.call(
+    discussion.frozen_context,
+    'project_description',
+  )
+    ? [
+        {
+          id: 'project_description',
+          kind: 'project_description',
+          label: 'Project context',
+        },
+      ]
+    : [];

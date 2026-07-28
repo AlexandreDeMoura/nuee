@@ -8,6 +8,7 @@ import {
 import type { DiscussionSummary } from '../api';
 import { formatUpdatedAt } from '../utils/date';
 import type { ProjectDiscussions } from './useProjectDiscussions';
+import { isTemporaryDiscussionTitle } from './discussionModel';
 
 const focusRing =
   '[-webkit-tap-highlight-color:transparent] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/30';
@@ -147,6 +148,9 @@ export function DiscussionsPanel({
       >
         {discussions.map((discussion) => {
           const isOpening = openingDiscussionId === discussion.id;
+          const hasTemporaryTitle = isTemporaryDiscussionTitle(
+            discussion.title,
+          );
 
           return (
             <li key={discussion.id}>
@@ -181,7 +185,21 @@ export function DiscussionsPanel({
                 </span>
                 <span className="min-w-0 flex-1">
                   <span className="flex items-center gap-2">
-                    <span className="min-w-0 flex-1 truncate text-[12.5px] font-semibold text-[#344050]">
+                    <span
+                      className={`min-w-0 flex-1 truncate text-[12.5px] font-semibold ${
+                        hasTemporaryTitle
+                          ? 'italic text-[#8793a2]'
+                          : 'text-[#344050]'
+                      }`}
+                      data-temporary-title={
+                        hasTemporaryTitle ? 'true' : undefined
+                      }
+                      title={
+                        hasTemporaryTitle
+                          ? 'Temporary title — a concise title will be generated'
+                          : discussion.title
+                      }
+                    >
                       {discussion.title}
                     </span>
                     {discussion.is_active && (

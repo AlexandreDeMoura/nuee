@@ -3,6 +3,12 @@ import type {
   DiscussionMessage,
 } from '../api/discussions';
 
+export const TEMPORARY_DISCUSSION_TITLE = 'New discussion';
+
+export function isTemporaryDiscussionTitle(title: string): boolean {
+  return title === TEMPORARY_DISCUSSION_TITLE;
+}
+
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
 }

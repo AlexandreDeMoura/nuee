@@ -16,7 +16,10 @@ import {
 import {
   DiscussionExperience,
   useDiscussionVisibility,
+  type DiscussionContextBadgeResolver,
+  type DiscussionContextInspection,
   type DiscussionLifecycleRequests,
+  type DiscussionKnowledgeSource,
 } from '../src/discussions';
 
 const projectId = 'project-1';
@@ -32,6 +35,10 @@ function deferred<T>() {
 
   return { promise, reject, resolve };
 }
+
+const keepTemporaryTitle: NonNullable<
+  DiscussionLifecycleRequests['generateTitle']
+> = () => new Promise<DiscussionDetails>(() => undefined);
 
 function details(
   overrides: Partial<DiscussionDetails> = {},
@@ -71,8 +78,16 @@ function details(
 }
 
 function Harness({
+  contextBadgeResolver,
+  onDiscussionChanged,
+  onExtractKnowledge,
+  onInspectContext,
   requests,
 }: {
+  contextBadgeResolver?: DiscussionContextBadgeResolver;
+  onDiscussionChanged?: (discussion: DiscussionDetails) => void;
+  onExtractKnowledge?: (source: DiscussionKnowledgeSource) => void;
+  onInspectContext?: (inspection: DiscussionContextInspection) => void;
   requests?: DiscussionLifecycleRequests;
 }) {
   const controller = useDiscussionVisibility(projectId);
@@ -107,10 +122,14 @@ function Harness({
         Open second
       </button>
       <DiscussionExperience
+        contextBadgeResolver={contextBadgeResolver}
         controller={controller}
+        onDiscussionChanged={onDiscussionChanged}
+        onExtractKnowledge={onExtractKnowledge}
+        onInspectContext={onInspectContext}
         projectDescription={projectDescription}
         projectId={projectId}
-        requests={requests}
+        requests={{ generateTitle: keepTemporaryTitle, ...requests }}
       />
     </>
   );
@@ -122,6 +141,124 @@ afterEach(() => {
 });
 
 describe('DiscussionExperience', () => {
+  it('generates a placeholder title without blocking the discussion and publishes the update', async () => {
+    const generated = deferred<DiscussionDetails>();
+    const generateTitle = vi.fn(() => generated.promise);
+    const onDiscussionChanged = vi.fn();
+
+    render(
+      <Harness
+        onDiscussionChanged={onDiscussionChanged}
+        requests={{
+          generateTitle,
+          get: async () => details(),
+        }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Open first' }));
+
+    const temporaryTitle = await screen.findByText('New discussion', {
+      selector: 'h2',
+    });
+    expect(temporaryTitle.dataset.temporaryTitle).toBe('true');
+    expect(
+      screen.getByText('Licensing is the longest lead-time constraint.'),
+    ).toBeTruthy();
+    await waitFor(() => expect(generateTitle).toHaveBeenCalledTimes(1));
+    expect(generateTitle).toHaveBeenCalledWith(
+      projectId,
+      'discussion-1',
+      expect.any(AbortSignal),
+    );
+
+    await act(async () =>
+      generated.resolve(
+        details({
+          title: 'Launch licensing constraint',
+          updated_at: '2026-07-28T08:00:02.000Z',
+        }),
+      ),
+    );
+
+    expect(
+      await screen.findByRole('dialog', {
+        name: 'Launch licensing constraint',
+      }),
+    ).toBeTruthy();
+    expect(
+      screen.getByText('Launch licensing constraint').dataset.temporaryTitle,
+    ).toBeUndefined();
+    expect(onDiscussionChanged).toHaveBeenLastCalledWith(
+      expect.objectContaining({ title: 'Launch licensing constraint' }),
+    );
+  });
+
+  it('renders supplied frozen-context and extraction integration points with identifier-only callbacks', async () => {
+    const onExtractKnowledge = vi.fn();
+    const onInspectContext = vi.fn();
+    const contextBadgeResolver: DiscussionContextBadgeResolver = () => [
+      {
+        id: 'context-project',
+        kind: 'project_description',
+        label: 'Project context',
+      },
+      {
+        id: 'context-bubble-1',
+        kind: 'bubble',
+        label: 'Launch risks',
+      },
+    ];
+
+    render(
+      <Harness
+        contextBadgeResolver={contextBadgeResolver}
+        onExtractKnowledge={onExtractKnowledge}
+        onInspectContext={onInspectContext}
+        requests={{
+          get: async () =>
+            details({
+              title: 'Launch constraints',
+            }),
+        }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Open first' }));
+
+    expect(
+      await screen.findByLabelText('2 frozen context items'),
+    ).toBeTruthy();
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Inspect frozen context: Launch risks',
+      }),
+    );
+    expect(onInspectContext).toHaveBeenCalledWith({
+      contextId: 'context-bubble-1',
+      discussionId: 'discussion-1',
+    });
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Extract knowledge from discussion',
+      }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Extract knowledge from this response',
+      }),
+    );
+
+    expect(onExtractKnowledge.mock.calls).toEqual([
+      [{ discussionId: 'discussion-1' }],
+      [
+        {
+          discussionId: 'discussion-1',
+          messageId: 'message-assistant-1',
+        },
+      ],
+    ]);
+  });
+
   it('submits a normalized draft once, renders pending, then replaces it with chronological persisted messages', async () => {
     const creation = deferred<DiscussionDetails>();
     const created = details();

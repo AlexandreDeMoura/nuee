@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
+import { TEMPORARY_DISCUSSION_TITLE } from './discussionModel';
 
 export interface DraftDiscussionTarget {
   key: number;
@@ -56,7 +57,7 @@ export function useDiscussionVisibility(
         key: nextDraftKey.current,
         kind: 'draft',
         prompt: '',
-        title: 'New discussion',
+        title: TEMPORARY_DISCUSSION_TITLE,
       },
     });
   }, [projectId]);

@@ -207,13 +207,19 @@ describe('discussions panel lifecycle', () => {
       true,
     );
     const created = details(createdSummary);
+    const titled = {
+      ...created,
+      title: 'Launch blockers',
+      updated_at: '2026-07-28T12:00:00.001Z',
+    };
     const create = vi.fn(async () => created);
+    const generateTitle = vi.fn(async () => titled);
     const get = vi.fn(async () => created);
     const list = vi.fn(async () => [createdSummary]);
 
     render(
       <ProjectWorkspace
-        discussionLifecycleRequests={{ create, get }}
+        discussionLifecycleRequests={{ create, generateTitle, get }}
         discussionPanelRequests={{ list }}
         project={project}
         requestBubbles={async () => []}
@@ -236,6 +242,14 @@ describe('discussions panel lifecycle', () => {
     );
 
     expect(await screen.findByText('Answer for New discussion')).toBeTruthy();
+    expect(
+      await screen.findByRole('dialog', { name: 'Launch blockers' }),
+    ).toBeTruthy();
+    expect(generateTitle).toHaveBeenCalledWith(
+      project.id,
+      created.id,
+      expect.any(AbortSignal),
+    );
     fireEvent.click(
       screen.getByRole('button', { name: 'Minimize discussion' }),
     );
@@ -243,7 +257,7 @@ describe('discussions panel lifecycle', () => {
 
     expect(
       await screen.findByRole('button', {
-        name: 'Open discussion: New discussion',
+        name: 'Open discussion: Launch blockers',
       }),
     ).toBeTruthy();
     expect(screen.getAllByText('ACTIVE')).toHaveLength(1);

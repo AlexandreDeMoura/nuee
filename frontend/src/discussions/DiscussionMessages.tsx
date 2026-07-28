@@ -1,11 +1,17 @@
 import { AlertCircle, LoaderCircle, MessageSquare } from 'lucide-react';
 import type { DiscussionDetails, DiscussionMessage } from '../api';
+import {
+  DiscussionKnowledgeAction,
+  type DiscussionKnowledgeSource,
+} from './DiscussionKnowledgeAction';
+import { RichResponse } from './RichResponse';
 import type { PendingDiscussionTurn } from './useDiscussionLifecycle';
 
 interface DiscussionMessagesProps {
   details: DiscussionDetails | null;
   loadError: string | null;
   loadStatus: 'draft' | 'loading' | 'ready' | 'error';
+  onExtractKnowledge?: (source: DiscussionKnowledgeSource) => void;
   onRetry: (turn: PendingDiscussionTurn) => void;
   pendingTurn: PendingDiscussionTurn | null;
 }
@@ -79,8 +85,10 @@ function ResponseStatus({
 
 function Message({
   message,
+  onExtractKnowledge,
 }: {
   message: DiscussionMessage;
+  onExtractKnowledge?: (source: DiscussionKnowledgeSource) => void;
 }) {
   const isUser = message.role === 'user';
 
@@ -91,15 +99,25 @@ function Message({
       data-message-id={message.id}
       data-message-role={message.role}
     >
-      <p
-        className={
-          isUser
-            ? 'whitespace-pre-wrap rounded-2xl rounded-br-[6px] bg-[#3f63a8] px-4 py-3 text-[13px] leading-[1.55] text-white'
-            : 'whitespace-pre-wrap text-[13px] leading-[1.65] text-[#344050]'
-        }
-      >
-        {message.content}
-      </p>
+      {isUser ? (
+        <p className="whitespace-pre-wrap rounded-2xl rounded-br-[6px] bg-[#3f63a8] px-4 py-3 text-[13px] leading-[1.55] text-white">
+          {message.content}
+        </p>
+      ) : (
+        <>
+          <RichResponse content={message.content} />
+          <div className="mt-3 border-t border-[#e8ecf1] pt-2.5">
+            <DiscussionKnowledgeAction
+              onExtract={onExtractKnowledge}
+              source={{
+                discussionId: message.discussion_id,
+                messageId: message.id,
+              }}
+              variant="message"
+            />
+          </div>
+        </>
+      )}
     </article>
   );
 }
@@ -129,6 +147,7 @@ export function DiscussionMessages({
   details,
   loadError,
   loadStatus,
+  onExtractKnowledge,
   onRetry,
   pendingTurn,
 }: DiscussionMessagesProps) {
@@ -186,7 +205,10 @@ export function DiscussionMessages({
 
         return (
           <div className="contents" key={message.id}>
-            <Message message={message} />
+            <Message
+              message={message}
+              onExtractKnowledge={onExtractKnowledge}
+            />
             {turn && <ResponseStatus onRetry={onRetry} turn={turn} />}
           </div>
         );
@@ -203,6 +225,7 @@ export function DiscussionMessages({
               status: pendingTurn.status,
               request_id: pendingTurn.requestId,
             }}
+            onExtractKnowledge={onExtractKnowledge}
           />
           <ResponseStatus onRetry={onRetry} turn={pendingTurn} />
         </>

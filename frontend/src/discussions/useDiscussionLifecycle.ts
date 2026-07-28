@@ -8,6 +8,7 @@ import {
 import {
   ApiError,
   createDiscussion,
+  generateDiscussionTitle,
   getDiscussion,
   retryDiscussionMessage,
   sendDiscussionMessage,
@@ -17,14 +18,18 @@ import type { VisibleDiscussion } from './useDiscussionVisibility';
 import {
   assertDiscussionDetails,
   buildDefaultFrozenContext,
+  isTemporaryDiscussionTitle,
+  TEMPORARY_DISCUSSION_TITLE,
 } from './discussionModel';
 
 export type DiscussionCreateRequest = typeof createDiscussion;
 export type DiscussionGetRequest = typeof getDiscussion;
 export type DiscussionMessageRequest = typeof sendDiscussionMessage;
+export type DiscussionTitleRequest = typeof generateDiscussionTitle;
 
 export interface DiscussionLifecycleRequests {
   create?: DiscussionCreateRequest;
+  generateTitle?: DiscussionTitleRequest;
   get?: DiscussionGetRequest;
   retry?: DiscussionMessageRequest;
   send?: DiscussionMessageRequest;
@@ -98,6 +103,19 @@ function createRequestId(): string {
   return crypto.randomUUID();
 }
 
+function hasCompletedExchange(discussion: DiscussionDetails): boolean {
+  return (
+    discussion.messages.some(
+      (message) =>
+        message.role === 'user' && message.status === 'completed',
+    ) &&
+    discussion.messages.some(
+      (message) =>
+        message.role === 'assistant' && message.status === 'completed',
+    )
+  );
+}
+
 export function useDiscussionLifecycle({
   onDiscussionCreated,
   onDiscussionChanged,
@@ -108,6 +126,8 @@ export function useDiscussionLifecycle({
   visibleDiscussion,
 }: UseDiscussionLifecycleOptions): DiscussionLifecycle {
   const createRequest = requests?.create ?? createDiscussion;
+  const generateTitleRequest =
+    requests?.generateTitle ?? generateDiscussionTitle;
   const getRequest = requests?.get ?? getDiscussion;
   const retryRequest = requests?.retry ?? retryDiscussionMessage;
   const sendRequest = requests?.send ?? sendDiscussionMessage;
@@ -125,6 +145,8 @@ export function useDiscussionLifecycle({
   const submittingRef = useRef(false);
   const operationRef = useRef(0);
   const requestControllerRef = useRef<AbortController | null>(null);
+  const titleControllerRef = useRef<AbortController | null>(null);
+  const titleAttemptRef = useRef<string | null>(null);
   const retainedAttemptRef = useRef<{
     content: string;
     requestId: string;
@@ -144,6 +166,62 @@ export function useDiscussionLifecycle({
       setPendingTurn(next);
     },
     [],
+  );
+
+  const generateTitleIfNeeded = useCallback(
+    (discussion: DiscussionDetails) => {
+      if (
+        !isTemporaryDiscussionTitle(discussion.title) ||
+        !hasCompletedExchange(discussion) ||
+        titleAttemptRef.current === discussion.id
+      ) {
+        return;
+      }
+
+      titleControllerRef.current?.abort();
+      const controller = new AbortController();
+      const discussionId = discussion.id;
+      titleControllerRef.current = controller;
+      titleAttemptRef.current = discussionId;
+
+      generateTitleRequest(projectId, discussionId, controller.signal)
+        .then((response) => {
+          if (
+            controller.signal.aborted ||
+            titleAttemptRef.current !== discussionId
+          ) {
+            return;
+          }
+
+          const titled = assertDiscussionDetails(
+            response,
+            projectId,
+            discussionId,
+          );
+
+          if (detailsRef.current?.id !== discussionId) {
+            return;
+          }
+
+          updateDetails(titled);
+          onDiscussionChanged?.(titled);
+        })
+        .catch(() => {
+          // Title generation is intentionally non-blocking. The deterministic
+          // placeholder remains visible and a later load/message can retry.
+        })
+        .finally(() => {
+          if (titleAttemptRef.current === discussionId) {
+            titleAttemptRef.current = null;
+          }
+        });
+    },
+    [
+      generateTitleRequest,
+      onDiscussionChanged,
+      projectId,
+      updateDetails,
+    ],
   );
 
   useEffect(() => {
@@ -174,6 +252,7 @@ export function useDiscussionLifecycle({
         onDiscussionChanged?.(next);
         setLoadStatus('ready');
         setLoadError(null);
+        generateTitleIfNeeded(next);
       })
       .catch((error: unknown) => {
         if (
@@ -194,6 +273,7 @@ export function useDiscussionLifecycle({
     return () => controller.abort();
   }, [
     getRequest,
+    generateTitleIfNeeded,
     onDiscussionChanged,
     persistedDiscussionId,
     projectId,
@@ -204,6 +284,7 @@ export function useDiscussionLifecycle({
     () => () => {
       operationRef.current += 1;
       requestControllerRef.current?.abort();
+      titleControllerRef.current?.abort();
     },
     [],
   );
@@ -303,7 +384,7 @@ export function useDiscussionLifecycle({
           setComposerValue('');
           onDiscussionCreated({
             id: recovery.discussionId,
-            title: 'New discussion',
+            title: TEMPORARY_DISCUSSION_TITLE,
           });
           return;
         }
@@ -371,6 +452,7 @@ export function useDiscussionLifecycle({
         onDiscussionChanged?.(next);
         updatePendingTurn(null);
         setComposerValue('');
+        generateTitleIfNeeded(next);
       } catch (error: unknown) {
         if (
           controller.signal.aborted ||
@@ -406,6 +488,7 @@ export function useDiscussionLifecycle({
     [
       beginRequest,
       finishRequest,
+      generateTitleIfNeeded,
       onDiscussionChanged,
       projectId,
       sendRequest,
@@ -475,6 +558,7 @@ export function useDiscussionLifecycle({
           updateDetails(next);
           onDiscussionChanged?.(next);
           updatePendingTurn(null);
+          generateTitleIfNeeded(next);
         } catch (error: unknown) {
           if (
             controller.signal.aborted ||
@@ -494,6 +578,7 @@ export function useDiscussionLifecycle({
     [
       beginRequest,
       finishRequest,
+      generateTitleIfNeeded,
       onDiscussionChanged,
       projectId,
       retryRequest,

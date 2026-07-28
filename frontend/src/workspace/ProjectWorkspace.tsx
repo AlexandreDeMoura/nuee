@@ -55,6 +55,9 @@ import {
   useProjectDiscussions,
   useDiscussionVisibility,
   type DiscussionLifecycleRequests,
+  type DiscussionContextBadgeResolver,
+  type DiscussionContextInspection,
+  type DiscussionKnowledgeSource,
   type ProjectDiscussionRequests,
   type DiscussionVisibilityController,
 } from '../discussions';
@@ -128,6 +131,11 @@ export interface ProjectWorkspaceProps {
   emptyActionHandlers?: WorkspaceEmptyActionHandlers;
   discussionLifecycleRequests?: DiscussionLifecycleRequests;
   discussionPanelRequests?: ProjectDiscussionRequests;
+  discussionContextBadgeResolver?: DiscussionContextBadgeResolver;
+  onExtractDiscussionKnowledge?: (source: DiscussionKnowledgeSource) => void;
+  onInspectDiscussionContext?: (
+    inspection: DiscussionContextInspection,
+  ) => void;
   onDiscussionDraftSubmit?: (prompt: string) => void;
   inspectorSelection?: WorkspaceInspectorSelection | null;
   onInspectorSelectionInvalidated?: (
@@ -574,6 +582,9 @@ export function ProjectWorkspace({
   emptyActionHandlers,
   discussionLifecycleRequests,
   discussionPanelRequests,
+  discussionContextBadgeResolver,
+  onExtractDiscussionKnowledge,
+  onInspectDiscussionContext,
   onDiscussionDraftSubmit,
   inspectorSelection = null,
   onInspectorSelectionInvalidated,
@@ -1019,7 +1030,10 @@ export function ProjectWorkspace({
               />
             ) : (
               <DiscussionExperience
+                contextBadgeResolver={discussionContextBadgeResolver}
                 controller={discussionVisibility}
+                onExtractKnowledge={onExtractDiscussionKnowledge}
+                onInspectContext={onInspectDiscussionContext}
                 onDiscussionChanged={projectDiscussions.updateDiscussion}
                 projectDescription={currentProject.description}
                 projectId={currentProject.id}

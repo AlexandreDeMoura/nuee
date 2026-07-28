@@ -6,6 +6,7 @@ import {
   type ReactNode,
 } from 'react';
 import { ArrowUp, MessageSquare, Minus } from 'lucide-react';
+import { isTemporaryDiscussionTitle } from './discussionModel';
 import type { VisibleDiscussion } from './useDiscussionVisibility';
 
 const focusRing =
@@ -21,6 +22,7 @@ const focusableSelector = [
 ].join(', ');
 
 export interface DiscussionModalProps {
+  actionsSlot?: ReactNode;
   composerSlot?: ReactNode;
   contextSlot?: ReactNode;
   messagesSlot?: ReactNode;
@@ -31,6 +33,7 @@ export interface DiscussionModalProps {
 }
 
 export function DiscussionModal({
+  actionsSlot,
   composerSlot,
   contextSlot,
   messagesSlot,
@@ -46,6 +49,8 @@ export function DiscussionModal({
   const draftInputRef = useRef<HTMLTextAreaElement>(null);
   const onMinimizeRef = useRef(onMinimize);
   const isDraft = visibleDiscussion.kind === 'draft';
+  const hasTemporaryTitle =
+    isDraft || isTemporaryDiscussionTitle(visibleDiscussion.title);
   const visibilityIdentity = isDraft
     ? `draft:${visibleDiscussion.key}`
     : `persisted:${visibleDiscussion.discussionId}`;
@@ -150,38 +155,47 @@ export function DiscussionModal({
         data-discussion-kind={visibleDiscussion.kind}
         tabIndex={-1}
       >
-        <header className="flex min-h-13 shrink-0 items-center gap-3 border-b border-[#eef1f5] px-4 sm:px-5">
-          <div className="min-w-0">
-            <h2
-              className={`truncate text-[15px] font-semibold ${
-                isDraft
-                  ? 'italic text-[#8b97a6]'
-                  : 'tracking-[-0.15px] text-[#1e2733]'
-              }`}
-              id={titleId}
-            >
-              {visibleDiscussion.title}
-            </h2>
-            <p className="sr-only" id={descriptionId}>
-              Focus on one question. Keep what matters as knowledge later.
-            </p>
+        <header className="shrink-0 border-b border-[#eef1f5] px-4 sm:px-5">
+          <div className="flex min-h-13 items-center gap-3">
+            <div className="min-w-0">
+              <h2
+                className={`truncate text-[15px] font-semibold ${
+                  hasTemporaryTitle
+                    ? 'italic text-[#8b97a6]'
+                    : 'tracking-[-0.15px] text-[#1e2733]'
+                }`}
+                data-temporary-title={hasTemporaryTitle ? 'true' : undefined}
+                id={titleId}
+                title={visibleDiscussion.title}
+              >
+                {visibleDiscussion.title}
+              </h2>
+              <p className="sr-only" id={descriptionId}>
+                Focus on one question. Keep what matters as knowledge later.
+              </p>
+            </div>
+            <div className="ml-auto flex shrink-0 items-center gap-2">
+              {actionsSlot}
+              <button
+                className={`grid size-8 cursor-pointer place-items-center rounded-[9px] border border-[#e1e6ec] bg-white text-[#6f7d8e] hover:border-[#c7d2df] hover:bg-[#f6f8fc] hover:text-[#40516a] ${focusRing}`}
+                type="button"
+                aria-label="Minimize discussion"
+                title="Minimize discussion"
+                onClick={onMinimize}
+              >
+                <Minus
+                  className="size-[16px]"
+                  strokeWidth={1.8}
+                  aria-hidden="true"
+                />
+              </button>
+            </div>
           </div>
-          <div className="ml-auto flex shrink-0 items-center gap-2">
-            {contextSlot}
-            <button
-              className={`grid size-8 cursor-pointer place-items-center rounded-[9px] border border-[#e1e6ec] bg-white text-[#6f7d8e] hover:border-[#c7d2df] hover:bg-[#f6f8fc] hover:text-[#40516a] ${focusRing}`}
-              type="button"
-              aria-label="Minimize discussion"
-              title="Minimize discussion"
-              onClick={onMinimize}
-            >
-              <Minus
-                className="size-[16px]"
-                strokeWidth={1.8}
-                aria-hidden="true"
-              />
-            </button>
-          </div>
+          {contextSlot && (
+            <div className="min-w-0 border-t border-[#f1f3f6] py-2">
+              {contextSlot}
+            </div>
+          )}
         </header>
 
         <div
