@@ -4,6 +4,7 @@ import {
   CircleDot,
   CirclePlus,
   LayoutGrid,
+  MessageSquare,
   Minus,
   Plus,
   RotateCcw,
@@ -247,17 +248,30 @@ export function CanvasBubbleActions({
   isCompacting,
   onCompact,
   onCreate,
+  onStartDiscussion,
 }: {
   canCompact: boolean;
   isCompacting: boolean;
   onCompact: () => void;
   onCreate: () => void;
+  onStartDiscussion?: () => void;
 }) {
   return (
     <div
-      className="pointer-events-auto absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center rounded-[13px] border border-[#e1e6ec] bg-white p-1.5 shadow-[0_8px_24px_-8px_rgba(30,39,51,0.28)]"
+      className="pointer-events-auto absolute bottom-4 left-1/2 flex -translate-x-1/2 items-center gap-1.5 rounded-[13px] border border-[#e1e6ec] bg-white p-1.5 shadow-[0_8px_24px_-8px_rgba(30,39,51,0.28)]"
       data-canvas-overlay
     >
+      {onStartDiscussion && (
+        <button
+          className={`inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-[9px] bg-[#3f63a8] px-[15px] py-2 text-[12.5px] font-semibold text-white hover:bg-[#33538f] ${focusRing}`}
+          type="button"
+          aria-haspopup="dialog"
+          onClick={onStartDiscussion}
+        >
+          <MessageSquare className="size-[15px]" strokeWidth={1.8} aria-hidden="true" />
+          New discussion
+        </button>
+      )}
       <button
         className={`inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-[9px] px-[13px] py-2 text-[12.5px] font-medium text-[#5c6a7a] hover:bg-[#f4f6f9] hover:text-[#33538f] ${focusRing}`}
         type="button"
@@ -267,7 +281,7 @@ export function CanvasBubbleActions({
         <CirclePlus className="size-[15px]" strokeWidth={1.8} aria-hidden="true" />
         Bubble
       </button>
-      <span className="mx-1 h-5 w-px bg-[#e1e6ec]" aria-hidden="true" />
+      <span className="h-5 w-px bg-[#e1e6ec]" aria-hidden="true" />
       <button
         className={`inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-[9px] px-[13px] py-2 text-[12.5px] font-medium text-[#5c6a7a] hover:bg-[#f4f6f9] hover:text-[#33538f] disabled:cursor-default disabled:text-[#b6c0cc] disabled:hover:bg-transparent ${focusRing}`}
         type="button"

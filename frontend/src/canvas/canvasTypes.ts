@@ -81,6 +81,7 @@ export interface CanvasSurfaceProps {
   requestViewportUpdate?: ProjectViewportUpdateRequest;
   onBubbleSelectionChange?: (bubble: Bubble | null) => void;
   onBubblesChange?: (bubbles: Bubble[]) => void;
+  onStartDiscussion?: () => void;
   bubbleLinks?: BubbleLink[];
   multiSelection?: CanvasMultiSelection | null;
   deletedBubbleIds?: string[];

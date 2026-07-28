@@ -82,6 +82,7 @@ export function CanvasSurface({
   requestViewportUpdate = updateProjectViewport,
   onBubbleSelectionChange,
   onBubblesChange,
+  onStartDiscussion,
   bubbleLinks = [],
   multiSelection = null,
   deletedBubbleIds = EMPTY_DELETED_BUBBLE_IDS,
@@ -699,6 +700,7 @@ export function CanvasSurface({
           isCompacting={isCompactLayoutSaving}
           onCompact={compactLayout}
           onCreate={openCreateBubbleDialog}
+          onStartDiscussion={onStartDiscussion}
         />
       )}
 

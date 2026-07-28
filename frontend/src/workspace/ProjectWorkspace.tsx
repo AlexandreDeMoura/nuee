@@ -385,8 +385,10 @@ function EmptyCanvasContent({
 }
 
 function PanelEmptyState({
+  action,
   view,
 }: {
+  action?: { label: string; onLaunch: () => void };
   view: 'discussions' | 'documents' | 'inspector';
 }) {
   const states: Record<
@@ -394,7 +396,8 @@ function PanelEmptyState({
     { description: string; icon: LucideIcon; title: string }
   > = {
     discussions: {
-      description: 'Start a discussion from the canvas when you are ready to explore a question.',
+      description:
+        'Each discussion is a focused thread. Its full history is kept — even after you extract a bubble.',
       icon: MessageSquare,
       title: 'No discussions yet',
     },
@@ -424,6 +427,15 @@ function PanelEmptyState({
       <p className="mt-1.5 max-w-[230px] text-xs leading-[1.55] text-[#8b97a6]">
         {state.description}
       </p>
+      {action && (
+        <button
+          className={`mt-4 cursor-pointer rounded-lg border border-[#cdd8ea] bg-[#f6f8fc] px-3.5 py-2 text-xs font-semibold text-[#3f63a8] hover:border-[#aebed8] hover:bg-[#eef2fa] ${focusRing}`}
+          type="button"
+          onClick={action.onLaunch}
+        >
+          {action.label}
+        </button>
+      )}
     </div>
   );
 }
@@ -502,16 +514,6 @@ function WorkspacePanel({
             {discussionCount}
           </span>
         )}
-        {activeView === 'discussions' && (
-          <button
-            className={`ml-auto inline-flex min-h-7 cursor-pointer items-center gap-1.5 rounded-[8px] border border-[#cdd8ea] bg-[#f6f8fc] px-2.5 py-1 text-[11px] font-semibold text-[#33538f] hover:border-[#aebed8] hover:bg-[#eef2fa] ${focusRing}`}
-            type="button"
-            onClick={onStartDiscussion}
-          >
-            <CirclePlus className="size-[13px]" strokeWidth={1.8} aria-hidden="true" />
-            New discussion
-          </button>
-        )}
       </header>
       {hasDefaultProjectEditor && (
         <div
@@ -531,7 +533,15 @@ function WorkspacePanel({
       )}
       {activeView === 'project' && !hasDefaultProjectEditor && panelSlots?.project}
       {activeView === 'discussions' &&
-        (panelSlots?.discussions ?? <PanelEmptyState view="discussions" />)}
+        (panelSlots?.discussions ?? (
+          <PanelEmptyState
+            action={{
+              label: 'Start a discussion',
+              onLaunch: onStartDiscussion,
+            }}
+            view="discussions"
+          />
+        ))}
       {activeView === 'documents' &&
         (panelSlots?.documents ?? <PanelEmptyState view="documents" />)}
       {activeView === 'inspector' &&
@@ -890,6 +900,7 @@ export function ProjectWorkspace({
             requestViewportUpdate={requestViewportUpdate}
             onBubbleSelectionChange={handleBubbleSelectionChange}
             onBubblesChange={setAvailableBubbles}
+            onStartDiscussion={startDiscussion}
             updatedBubbles={currentUpdatedBubbles}
             viewportSaveDelayMs={viewportSaveDelayMs}
           />

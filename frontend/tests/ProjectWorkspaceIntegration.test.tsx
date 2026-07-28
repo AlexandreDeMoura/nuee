@@ -147,7 +147,7 @@ describe('workspace integration contracts', () => {
 
     fireEvent.click(screen.getByRole('tab', { name: 'Discussions' }));
     fireEvent.click(
-      screen.getByRole('button', { name: 'New discussion' }),
+      screen.getByRole('button', { name: 'Start a discussion' }),
     );
 
     expect(
@@ -156,6 +156,31 @@ describe('workspace integration contracts', () => {
     expect(
       screen.getByRole('textbox', { name: 'Discussion prompt' }),
     ).toBeTruthy();
+  });
+
+  it('starts a discussion from the populated canvas action bar', async () => {
+    render(
+      <ProjectWorkspace
+        project={project}
+        requestBubbles={async () => [bubble()]}
+      />,
+    );
+
+    const startButton = await screen.findByRole('button', {
+      name: 'New discussion',
+    });
+    startButton.focus();
+    fireEvent.click(startButton);
+
+    expect(
+      screen.getByRole('dialog', { name: 'New discussion' }),
+    ).toBeTruthy();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Minimize discussion' }),
+    );
+
+    expect(document.activeElement).toBe(startButton);
   });
 
   it('restores the viewport supplied by the loaded project', async () => {
