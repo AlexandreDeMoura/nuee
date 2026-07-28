@@ -135,6 +135,7 @@ describe('workspace integration contracts', () => {
   it('can start a discussion from the panel when the canvas is not empty', async () => {
     render(
       <ProjectWorkspace
+        discussionPanelRequests={{ list: async () => [] }}
         project={project}
         requestBubbles={async () => [bubble()]}
       />,
@@ -147,7 +148,7 @@ describe('workspace integration contracts', () => {
 
     fireEvent.click(screen.getByRole('tab', { name: 'Discussions' }));
     fireEvent.click(
-      screen.getByRole('button', { name: 'Start a discussion' }),
+      await screen.findByRole('button', { name: 'Start a discussion' }),
     );
 
     expect(
@@ -270,13 +271,17 @@ describe('workspace integration contracts', () => {
     expect(window.location.pathname).toBe(`/projects/${project.id}`);
   });
 
-  it('provides intentional empty states for unsupplied collection panels', () => {
+  it('provides intentional empty states for unsupplied collection panels', async () => {
     render(
-      <ProjectWorkspace project={project} requestBubbles={requestEmptyBubbles} />,
+      <ProjectWorkspace
+        discussionPanelRequests={{ list: async () => [] }}
+        project={project}
+        requestBubbles={requestEmptyBubbles}
+      />,
     );
 
     fireEvent.click(screen.getByRole('tab', { name: 'Discussions' }));
-    expect(screen.getByText('No discussions yet')).toBeTruthy();
+    expect(await screen.findByText('No discussions yet')).toBeTruthy();
 
     fireEvent.click(screen.getByRole('tab', { name: 'Documents' }));
     expect(screen.getByText('No documents yet')).toBeTruthy();

@@ -1,6 +1,7 @@
 import { DiscussionModal } from './DiscussionModal';
 import { DiscussionComposer } from './DiscussionComposer';
 import { DiscussionMessages } from './DiscussionMessages';
+import type { DiscussionDetails } from '../api';
 import {
   useDiscussionLifecycle,
   type DiscussionLifecycleRequests,
@@ -9,6 +10,7 @@ import type { DiscussionVisibilityController } from './useDiscussionVisibility';
 
 export interface DiscussionExperienceProps {
   controller: DiscussionVisibilityController;
+  onDiscussionChanged?: (discussion: DiscussionDetails) => void;
   projectDescription: string;
   projectId: string;
   requests?: DiscussionLifecycleRequests;
@@ -16,6 +18,7 @@ export interface DiscussionExperienceProps {
 
 export function DiscussionExperience({
   controller,
+  onDiscussionChanged,
   projectDescription,
   projectId,
   requests,
@@ -35,6 +38,7 @@ export function DiscussionExperience({
     <DiscussionExperienceModal
       controller={controller}
       key={identity}
+      onDiscussionChanged={onDiscussionChanged}
       projectDescription={projectDescription}
       projectId={projectId}
       requests={requests}
@@ -45,6 +49,7 @@ export function DiscussionExperience({
 
 function DiscussionExperienceModal({
   controller,
+  onDiscussionChanged,
   projectDescription,
   projectId,
   requests,
@@ -56,6 +61,7 @@ function DiscussionExperienceModal({
 }) {
   const lifecycle = useDiscussionLifecycle({
     onDiscussionCreated: controller.openDiscussion,
+    onDiscussionChanged,
     onDraftPromptChange: controller.updateDraftPrompt,
     projectDescription,
     projectId,

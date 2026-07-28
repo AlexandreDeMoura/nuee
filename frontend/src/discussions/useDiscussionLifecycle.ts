@@ -57,6 +57,7 @@ interface UseDiscussionLifecycleOptions {
     id: string;
     title: string;
   }) => void;
+  onDiscussionChanged?: (discussion: DiscussionDetails) => void;
   onDraftPromptChange: (prompt: string) => void;
   projectDescription: string;
   projectId: string;
@@ -99,6 +100,7 @@ function createRequestId(): string {
 
 export function useDiscussionLifecycle({
   onDiscussionCreated,
+  onDiscussionChanged,
   onDraftPromptChange,
   projectDescription,
   projectId,
@@ -169,6 +171,7 @@ export function useDiscussionLifecycle({
           persistedDiscussionId,
         );
         updateDetails(next);
+        onDiscussionChanged?.(next);
         setLoadStatus('ready');
         setLoadError(null);
       })
@@ -191,6 +194,7 @@ export function useDiscussionLifecycle({
     return () => controller.abort();
   }, [
     getRequest,
+    onDiscussionChanged,
     persistedDiscussionId,
     projectId,
     updateDetails,
@@ -273,6 +277,7 @@ export function useDiscussionLifecycle({
 
         const next = assertDiscussionDetails(response, projectId);
         updateDetails(next);
+        onDiscussionChanged?.(next);
         updatePendingTurn(null);
         setLoadStatus('ready');
         onDiscussionCreated({ id: next.id, title: next.title });
@@ -314,6 +319,7 @@ export function useDiscussionLifecycle({
       createRequest,
       finishRequest,
       onDiscussionCreated,
+      onDiscussionChanged,
       projectDescription,
       projectId,
       updateDetails,
@@ -362,6 +368,7 @@ export function useDiscussionLifecycle({
         );
         retainedAttemptRef.current = null;
         updateDetails(next);
+        onDiscussionChanged?.(next);
         updatePendingTurn(null);
         setComposerValue('');
       } catch (error: unknown) {
@@ -399,6 +406,7 @@ export function useDiscussionLifecycle({
     [
       beginRequest,
       finishRequest,
+      onDiscussionChanged,
       projectId,
       sendRequest,
       updateDetails,
@@ -465,6 +473,7 @@ export function useDiscussionLifecycle({
             visibleDiscussion.discussionId,
           );
           updateDetails(next);
+          onDiscussionChanged?.(next);
           updatePendingTurn(null);
         } catch (error: unknown) {
           if (
@@ -485,6 +494,7 @@ export function useDiscussionLifecycle({
     [
       beginRequest,
       finishRequest,
+      onDiscussionChanged,
       projectId,
       retryRequest,
       updateDetails,

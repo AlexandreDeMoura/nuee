@@ -69,6 +69,13 @@ describe('project creation journey', () => {
         }
 
         if (
+          method === 'GET' &&
+          url.pathname === '/projects/project-journey/discussions'
+        ) {
+          return jsonResponse([]);
+        }
+
+        if (
           method === 'PATCH' &&
           url.pathname === '/projects/project-journey/description' &&
           persistedProject
@@ -140,7 +147,7 @@ describe('project creation journey', () => {
     expect(projectTab.getAttribute('aria-selected')).toBe('true');
 
     fireEvent.click(screen.getByRole('tab', { name: 'Discussions' }));
-    expect(screen.getByText('No discussions yet')).toBeTruthy();
+    expect(await screen.findByText('No discussions yet')).toBeTruthy();
     fireEvent.click(screen.getByRole('tab', { name: 'Documents' }));
     expect(screen.getByText('No documents yet')).toBeTruthy();
     fireEvent.click(screen.getByRole('tab', { name: 'Inspector' }));

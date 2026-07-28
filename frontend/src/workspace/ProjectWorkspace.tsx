@@ -51,8 +51,11 @@ import {
 import {
   DiscussionExperience,
   DiscussionModal,
+  DiscussionsPanel,
+  useProjectDiscussions,
   useDiscussionVisibility,
   type DiscussionLifecycleRequests,
+  type ProjectDiscussionRequests,
   type DiscussionVisibilityController,
 } from '../discussions';
 import {
@@ -124,6 +127,7 @@ export interface ProjectWorkspaceProps {
   overlaySlots?: WorkspaceOverlaySlots;
   emptyActionHandlers?: WorkspaceEmptyActionHandlers;
   discussionLifecycleRequests?: DiscussionLifecycleRequests;
+  discussionPanelRequests?: ProjectDiscussionRequests;
   onDiscussionDraftSubmit?: (prompt: string) => void;
   inspectorSelection?: WorkspaceInspectorSelection | null;
   onInspectorSelectionInvalidated?: (
@@ -385,22 +389,14 @@ function EmptyCanvasContent({
 }
 
 function PanelEmptyState({
-  action,
   view,
 }: {
-  action?: { label: string; onLaunch: () => void };
-  view: 'discussions' | 'documents' | 'inspector';
+  view: 'documents' | 'inspector';
 }) {
   const states: Record<
     typeof view,
     { description: string; icon: LucideIcon; title: string }
   > = {
-    discussions: {
-      description:
-        'Each discussion is a focused thread. Its full history is kept — even after you extract a bubble.',
-      icon: MessageSquare,
-      title: 'No discussions yet',
-    },
     documents: {
       description: 'Uploaded project sources will appear here.',
       icon: FileText,
@@ -427,15 +423,6 @@ function PanelEmptyState({
       <p className="mt-1.5 max-w-[230px] text-xs leading-[1.55] text-[#8b97a6]">
         {state.description}
       </p>
-      {action && (
-        <button
-          className={`mt-4 cursor-pointer rounded-lg border border-[#cdd8ea] bg-[#f6f8fc] px-3.5 py-2 text-xs font-semibold text-[#3f63a8] hover:border-[#aebed8] hover:bg-[#eef2fa] ${focusRing}`}
-          type="button"
-          onClick={action.onLaunch}
-        >
-          {action.label}
-        </button>
-      )}
     </div>
   );
 }
@@ -443,6 +430,7 @@ function PanelEmptyState({
 function WorkspacePanel({
   activeView,
   discussionCount,
+  discussionsContent,
   inspectorSelection,
   selectedBubble,
   panelSlots,
@@ -463,11 +451,11 @@ function WorkspacePanel({
   onBubbleLinkRemoved,
   onRetryBubbleLinks,
   onBubbleDeleted,
-  onStartDiscussion,
   onBubbleUpdated,
 }: {
   activeView: WorkspacePanelView;
   discussionCount: number;
+  discussionsContent: ReactNode;
   inspectorSelection: WorkspaceInspectorSelection | null;
   selectedBubble: Bubble | null;
   panelSlots?: WorkspacePanelSlots;
@@ -488,7 +476,6 @@ function WorkspacePanel({
   onBubbleLinkRemoved: (link: BubbleLink) => void;
   onRetryBubbleLinks: () => void;
   onBubbleDeleted: (bubble: Bubble) => void;
-  onStartDiscussion: () => void;
   onBubbleUpdated: (bubble: Bubble) => void;
 }) {
   const activeDefinition = panelDefinitions.find(({ view }) => view === activeView)!;
@@ -532,16 +519,7 @@ function WorkspacePanel({
         </div>
       )}
       {activeView === 'project' && !hasDefaultProjectEditor && panelSlots?.project}
-      {activeView === 'discussions' &&
-        (panelSlots?.discussions ?? (
-          <PanelEmptyState
-            action={{
-              label: 'Start a discussion',
-              onLaunch: onStartDiscussion,
-            }}
-            view="discussions"
-          />
-        ))}
+      {activeView === 'discussions' && discussionsContent}
       {activeView === 'documents' &&
         (panelSlots?.documents ?? <PanelEmptyState view="documents" />)}
       {activeView === 'inspector' &&
@@ -595,6 +573,7 @@ export function ProjectWorkspace({
   overlaySlots,
   emptyActionHandlers,
   discussionLifecycleRequests,
+  discussionPanelRequests,
   onDiscussionDraftSubmit,
   inspectorSelection = null,
   onInspectorSelectionInvalidated,
@@ -619,6 +598,12 @@ export function ProjectWorkspace({
     useState<BubbleLinkLoadState>({ status: 'loading', links: [] });
   const [bubbleLinkRequestKey, setBubbleLinkRequestKey] = useState(0);
   const discussionVisibility = useDiscussionVisibility(currentProject.id);
+  const projectDiscussions = useProjectDiscussions({
+    enabled:
+      activePanel === 'discussions' && panelSlots?.discussions === undefined,
+    projectId: currentProject.id,
+    requests: discussionPanelRequests,
+  });
   const panelButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const deletedBubbleIdsRef = useRef(deletedBubbleIds);
   const canvasInspectorSelection: WorkspaceInspectorSelection | null =
@@ -850,6 +835,38 @@ export function ProjectWorkspace({
   const startDiscussion =
     emptyActionHandlers?.['start-discussion'] ??
     discussionVisibility.openDraft;
+  const handleDiscussionOpen = useCallback(
+    async (discussion: Parameters<typeof projectDiscussions.openDiscussion>[0]) => {
+      const opened = await projectDiscussions.openDiscussion(discussion);
+
+      if (opened) {
+        discussionVisibility.openDiscussion({
+          id: opened.id,
+          title: opened.title,
+        });
+      }
+    },
+    [discussionVisibility, projectDiscussions],
+  );
+  const resolvedDiscussionCount =
+    panelSlots?.discussions === undefined
+      ? projectDiscussions.discussions.length
+      : discussionCount;
+  const discussionsContent =
+    panelSlots?.discussions ?? (
+      <DiscussionsPanel
+        discussions={projectDiscussions.discussions}
+        error={projectDiscussions.error}
+        onOpen={(discussion) => {
+          void handleDiscussionOpen(discussion);
+        }}
+        onRetry={projectDiscussions.refresh}
+        onStart={startDiscussion}
+        openingDiscussionId={projectDiscussions.openingDiscussionId}
+        openError={projectDiscussions.openError}
+        status={projectDiscussions.status}
+      />
+    );
 
   return (
     <CurrentProjectDescriptionContext.Provider value={currentDescription}>
@@ -962,7 +979,8 @@ export function ProjectWorkspace({
               analyticsClient={analyticsClient}
               availableBubbles={availableBubbles}
               bubbleLinkLoadState={bubbleLinkLoadState}
-              discussionCount={discussionCount}
+              discussionCount={resolvedDiscussionCount}
+              discussionsContent={discussionsContent}
               inspectorSelection={validInspectorSelection}
               selectedBubble={selectedBubble}
               panelSlots={panelSlots}
@@ -980,7 +998,6 @@ export function ProjectWorkspace({
               onBubbleLinkRemoved={handleBubbleLinkRemoved}
               onBubbleDeleted={handleBubbleDeleted}
               onRetryBubbleLinks={handleRetryBubbleLinks}
-              onStartDiscussion={startDiscussion}
               onBubbleUpdated={handleBubbleUpdated}
             />
           </aside>
@@ -1003,6 +1020,7 @@ export function ProjectWorkspace({
             ) : (
               <DiscussionExperience
                 controller={discussionVisibility}
+                onDiscussionChanged={projectDiscussions.updateDiscussion}
                 projectDescription={currentProject.description}
                 projectId={currentProject.id}
                 requests={discussionLifecycleRequests}
