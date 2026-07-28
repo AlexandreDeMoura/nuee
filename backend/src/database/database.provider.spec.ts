@@ -50,6 +50,7 @@ describe('DatabaseProvider', () => {
     ).toEqual([
       { name: 'bubble_links' },
       { name: 'bubbles' },
+      { name: 'discussion_context_items' },
       { name: 'discussion_messages' },
       { name: 'discussions' },
       { name: 'projects' },

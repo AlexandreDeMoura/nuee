@@ -1,8 +1,9 @@
 import type {
   Discussion,
-  DiscussionFrozenContext,
   DiscussionMessage,
   DiscussionMessageStatus,
+  FrozenContextV1,
+  LegacyFrozenContext,
 } from '@nuee/shared-types';
 
 export type {
@@ -11,16 +12,47 @@ export type {
   DiscussionMessageStatus,
   DiscussionRole,
   DiscussionFrozenContext,
+  FrozenContextItem,
+  FrozenContextV1,
 } from '@nuee/shared-types';
 
-export interface PersistedDiscussion extends Omit<
+export interface LegacyDiscussionContextMetadata {
+  context_version: null;
+  expected_context_item_count: null;
+  creation_idempotency_key: null;
+  creation_request_fingerprint: null;
+}
+
+export interface VersionedDiscussionContextMetadata {
+  context_version: FrozenContextV1['version'];
+  expected_context_item_count: number;
+  creation_idempotency_key: string;
+  creation_request_fingerprint: string;
+}
+
+export type DiscussionContextMetadata =
+  LegacyDiscussionContextMetadata | VersionedDiscussionContextMetadata;
+
+interface PersistedDiscussionBase extends Omit<
   Discussion,
   'title' | 'frozen_context'
 > {
   title: string | null;
-  frozen_context: DiscussionFrozenContext;
   deleted_at: string | null;
 }
+
+export type LegacyPersistedDiscussion = PersistedDiscussionBase &
+  LegacyDiscussionContextMetadata & {
+    frozen_context: LegacyFrozenContext;
+  };
+
+export type VersionedPersistedDiscussion = PersistedDiscussionBase &
+  VersionedDiscussionContextMetadata & {
+    frozen_context: FrozenContextV1;
+  };
+
+export type PersistedDiscussion =
+  LegacyPersistedDiscussion | VersionedPersistedDiscussion;
 
 export type PersistedDiscussionMessage = DiscussionMessage;
 
@@ -33,6 +65,10 @@ export interface DiscussionRepository {
   findByProjectAndId(
     projectId: string,
     discussionId: string,
+  ): PersistedDiscussion | undefined;
+  findByProjectAndCreationIdempotencyKey(
+    projectId: string,
+    idempotencyKey: string,
   ): PersistedDiscussion | undefined;
   updateTitle(
     projectId: string,
@@ -87,3 +123,14 @@ export const DISCUSSION_REPOSITORY = Symbol('DISCUSSION_REPOSITORY');
 export const DISCUSSION_MESSAGE_REPOSITORY = Symbol(
   'DISCUSSION_MESSAGE_REPOSITORY',
 );
+
+export class DiscussionContextIntegrityError extends Error {
+  readonly code = 'DISCUSSION_CONTEXT_CORRUPT';
+
+  constructor(readonly discussionId: string) {
+    super(
+      `The persisted context for discussion "${discussionId}" is incomplete or corrupt.`,
+    );
+    this.name = 'DiscussionContextIntegrityError';
+  }
+}

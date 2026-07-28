@@ -383,6 +383,10 @@ describe('DiscussionsService', () => {
         updated_at: timestamp,
         last_activity_at: timestamp,
         deleted_at: null,
+        context_version: null,
+        expected_context_item_count: null,
+        creation_idempotency_key: null,
+        creation_request_fingerprint: null,
       },
       {
         id: 'pending-message',

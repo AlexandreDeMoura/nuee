@@ -1,12 +1,15 @@
 import type { DatabaseSync } from 'node:sqlite';
 import { Injectable } from '@nestjs/common';
+import type { FrozenContextItem } from '@nuee/shared-types';
 import { DatabaseProvider } from '../database/database.provider';
+import { DiscussionContextIntegrityError } from './discussion.types';
 import type {
   DiscussionMessageRepository,
   DiscussionMessageStatus,
   DiscussionRepository,
   PersistedDiscussion,
   PersistedDiscussionMessage,
+  VersionedPersistedDiscussion,
 } from './discussion.types';
 
 interface DiscussionRow {
@@ -18,6 +21,21 @@ interface DiscussionRow {
   updated_at: string;
   last_activity_at: string;
   deleted_at: string | null;
+  context_version: unknown;
+  expected_context_item_count: unknown;
+  creation_idempotency_key: unknown;
+  creation_request_fingerprint: unknown;
+}
+
+interface DiscussionContextItemRow {
+  id: unknown;
+  discussion_id: unknown;
+  source_kind: unknown;
+  source_id: unknown;
+  source_title: unknown;
+  frozen_content: unknown;
+  created_at: unknown;
+  display_order: unknown;
 }
 
 interface DiscussionMessageRow {
@@ -59,6 +77,27 @@ export class SqliteDiscussionRepository
 
     try {
       this.insertDiscussion(discussion);
+
+      if (discussion.context_version !== null) {
+        if (
+          discussion.frozen_context.version !== discussion.context_version ||
+          !this.isNonEmptyString(discussion.creation_idempotency_key) ||
+          discussion.creation_idempotency_key.length > 200 ||
+          !this.isRequestFingerprint(discussion.creation_request_fingerprint)
+        ) {
+          throw new DiscussionContextIntegrityError(discussion.id);
+        }
+
+        const contextItems = this.validateContextItems(
+          discussion.frozen_context.items,
+          discussion.id,
+          discussion.project_id,
+          discussion.expected_context_item_count,
+        );
+        this.insertContextItems(discussion.id, contextItems);
+        this.finalizeContextMetadata(discussion);
+      }
+
       this.insertMessage(message);
       this.database.exec('COMMIT;');
     } catch (error) {
@@ -97,6 +136,26 @@ export class SqliteDiscussionRepository
         `,
       )
       .get(projectId, discussionId) as unknown as DiscussionRow | undefined;
+
+    return row ? this.toDiscussion(row) : undefined;
+  }
+
+  findByProjectAndCreationIdempotencyKey(
+    projectId: string,
+    idempotencyKey: string,
+  ): PersistedDiscussion | undefined {
+    const row = this.database
+      .prepare(
+        `
+          SELECT *
+          FROM discussions
+          WHERE
+            project_id = ?
+            AND creation_idempotency_key = ?
+            AND deleted_at IS NULL
+        `,
+      )
+      .get(projectId, idempotencyKey) as unknown as DiscussionRow | undefined;
 
     return row ? this.toDiscussion(row) : undefined;
   }
@@ -383,8 +442,12 @@ export class SqliteDiscussionRepository
             created_at,
             updated_at,
             last_activity_at,
-            deleted_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            deleted_at,
+            context_version,
+            expected_context_item_count,
+            creation_idempotency_key,
+            creation_request_fingerprint
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `,
       )
       .run(
@@ -396,7 +459,72 @@ export class SqliteDiscussionRepository
         discussion.updated_at,
         discussion.last_activity_at,
         discussion.deleted_at,
+        null,
+        null,
+        null,
+        null,
       );
+  }
+
+  private insertContextItems(
+    discussionId: string,
+    items: readonly FrozenContextItem[],
+  ): void {
+    const insert = this.database.prepare(
+      `
+        INSERT INTO discussion_context_items (
+          id,
+          discussion_id,
+          source_kind,
+          source_id,
+          source_title,
+          frozen_content,
+          created_at,
+          display_order
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+    );
+
+    for (const item of items) {
+      insert.run(
+        item.id,
+        discussionId,
+        item.source_kind,
+        item.source_id,
+        item.source_title,
+        item.frozen_content,
+        item.created_at,
+        item.display_order,
+      );
+    }
+  }
+
+  private finalizeContextMetadata(
+    discussion: VersionedPersistedDiscussion,
+  ): void {
+    const result = this.database
+      .prepare(
+        `
+          UPDATE discussions
+          SET
+            context_version = ?,
+            expected_context_item_count = ?,
+            creation_idempotency_key = ?,
+            creation_request_fingerprint = ?
+          WHERE id = ? AND context_version IS NULL
+        `,
+      )
+      .run(
+        discussion.context_version,
+        discussion.expected_context_item_count,
+        discussion.creation_idempotency_key,
+        discussion.creation_request_fingerprint,
+        discussion.id,
+      );
+
+    if (result.changes !== 1) {
+      throw new DiscussionContextIntegrityError(discussion.id);
+    }
   }
 
   private insertMessage(message: PersistedDiscussionMessage): void {
@@ -451,16 +579,233 @@ export class SqliteDiscussionRepository
   }
 
   private toDiscussion(row: DiscussionRow): PersistedDiscussion {
+    if (row.context_version === null) {
+      if (
+        row.expected_context_item_count !== null ||
+        row.creation_idempotency_key !== null ||
+        row.creation_request_fingerprint !== null
+      ) {
+        throw new DiscussionContextIntegrityError(row.id);
+      }
+
+      return {
+        ...this.toDiscussionBase(row),
+        frozen_context: this.parseLegacyFrozenContext(
+          row.frozen_context,
+          row.id,
+        ),
+        context_version: null,
+        expected_context_item_count: null,
+        creation_idempotency_key: null,
+        creation_request_fingerprint: null,
+      };
+    }
+
+    if (
+      row.context_version !== 1 ||
+      !this.isPositiveInteger(row.expected_context_item_count) ||
+      !this.isNonEmptyString(row.creation_idempotency_key) ||
+      row.creation_idempotency_key.length > 200 ||
+      !this.isRequestFingerprint(row.creation_request_fingerprint)
+    ) {
+      throw new DiscussionContextIntegrityError(row.id);
+    }
+
+    const expectedItemCount = row.expected_context_item_count;
+    const items = this.loadContextItems(
+      row.id,
+      row.project_id,
+      expectedItemCount,
+    );
+
+    return {
+      ...this.toDiscussionBase(row),
+      frozen_context: {
+        version: 1,
+        items,
+      },
+      context_version: 1,
+      expected_context_item_count: expectedItemCount,
+      creation_idempotency_key: row.creation_idempotency_key,
+      creation_request_fingerprint: row.creation_request_fingerprint,
+    };
+  }
+
+  private toDiscussionBase(row: DiscussionRow) {
     return {
       id: row.id,
       project_id: row.project_id,
       title: row.title,
-      frozen_context: JSON.parse(row.frozen_context) as Record<string, unknown>,
       created_at: row.created_at,
       updated_at: row.updated_at,
       last_activity_at: row.last_activity_at,
       deleted_at: row.deleted_at,
     };
+  }
+
+  private parseLegacyFrozenContext(
+    serialized: string,
+    discussionId: string,
+  ): Record<string, unknown> {
+    try {
+      const value = JSON.parse(serialized) as unknown;
+
+      if (!this.isRecord(value)) {
+        throw new DiscussionContextIntegrityError(discussionId);
+      }
+
+      return value;
+    } catch (error) {
+      if (error instanceof DiscussionContextIntegrityError) {
+        throw error;
+      }
+
+      throw new DiscussionContextIntegrityError(discussionId);
+    }
+  }
+
+  private loadContextItems(
+    discussionId: string,
+    projectId: string,
+    expectedItemCount: number,
+  ): FrozenContextItem[] {
+    const rows = this.database
+      .prepare(
+        `
+          SELECT
+            id,
+            discussion_id,
+            source_kind,
+            source_id,
+            source_title,
+            frozen_content,
+            created_at,
+            display_order
+          FROM discussion_context_items
+          WHERE discussion_id = ?
+          ORDER BY display_order ASC
+        `,
+      )
+      .all(discussionId) as unknown as DiscussionContextItemRow[];
+
+    return this.validateContextItems(
+      rows,
+      discussionId,
+      projectId,
+      expectedItemCount,
+    );
+  }
+
+  private validateContextItems(
+    values: readonly unknown[],
+    discussionId: string,
+    projectId: string,
+    expectedItemCount: number,
+  ): FrozenContextItem[] {
+    if (values.length !== expectedItemCount || expectedItemCount <= 0) {
+      throw new DiscussionContextIntegrityError(discussionId);
+    }
+
+    const itemIds = new Set<string>();
+    const sources = new Set<string>();
+    const items: FrozenContextItem[] = [];
+    let projectDescriptionCount = 0;
+
+    values.forEach((value, index) => {
+      if (!this.isRecord(value)) {
+        throw new DiscussionContextIntegrityError(discussionId);
+      }
+
+      const {
+        id,
+        source_kind: sourceKind,
+        source_id: sourceId,
+        source_title: sourceTitle,
+        frozen_content: frozenContent,
+        created_at: createdAt,
+        display_order: displayOrder,
+      } = value;
+      const storedDiscussionId = value.discussion_id;
+      const isSupportedKind =
+        sourceKind === 'project_description' ||
+        sourceKind === 'bubble' ||
+        sourceKind === 'document';
+      const sourceKey = `${String(sourceKind)}:${String(sourceId)}`;
+
+      if (
+        !this.isNonEmptyString(id) ||
+        itemIds.has(id) ||
+        (storedDiscussionId !== undefined &&
+          storedDiscussionId !== discussionId) ||
+        !isSupportedKind ||
+        !this.isNonEmptyString(sourceId) ||
+        !this.isNonEmptyString(sourceTitle) ||
+        typeof frozenContent !== 'string' ||
+        (sourceKind !== 'project_description' &&
+          frozenContent.trim().length === 0) ||
+        !this.isIsoTimestamp(createdAt) ||
+        !Number.isInteger(displayOrder) ||
+        displayOrder !== index ||
+        sources.has(sourceKey)
+      ) {
+        throw new DiscussionContextIntegrityError(discussionId);
+      }
+
+      if (sourceKind === 'project_description') {
+        projectDescriptionCount += 1;
+
+        if (index !== 0 || sourceId !== projectId) {
+          throw new DiscussionContextIntegrityError(discussionId);
+        }
+      }
+
+      itemIds.add(id);
+      sources.add(sourceKey);
+      items.push({
+        id,
+        source_kind: sourceKind,
+        source_id: sourceId,
+        source_title: sourceTitle,
+        frozen_content: frozenContent,
+        created_at: createdAt,
+        display_order: displayOrder,
+      });
+    });
+
+    if (projectDescriptionCount !== 1) {
+      throw new DiscussionContextIntegrityError(discussionId);
+    }
+
+    return items;
+  }
+
+  private isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+  }
+
+  private isNonEmptyString(value: unknown): value is string {
+    return typeof value === 'string' && value.trim().length > 0;
+  }
+
+  private isPositiveInteger(value: unknown): value is number {
+    return typeof value === 'number' && Number.isInteger(value) && value > 0;
+  }
+
+  private isIsoTimestamp(value: unknown): value is string {
+    if (typeof value !== 'string') {
+      return false;
+    }
+
+    const milliseconds = Date.parse(value);
+
+    return (
+      Number.isFinite(milliseconds) &&
+      new Date(milliseconds).toISOString() === value
+    );
+  }
+
+  private isRequestFingerprint(value: unknown): value is string {
+    return this.isNonEmptyString(value) && value.length <= 200;
   }
 
   private toMessage(row: DiscussionMessageRow): PersistedDiscussionMessage {

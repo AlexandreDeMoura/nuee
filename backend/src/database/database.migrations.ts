@@ -3,6 +3,7 @@ import { CREATE_BUBBLES_MIGRATION } from '../bubbles/migrations/002-create-bubbl
 import { CREATE_BUBBLE_LINKS_MIGRATION } from '../bubbles/migrations/003-create-bubble-links';
 import { CREATE_DISCUSSIONS_MIGRATION } from '../discussions/migrations/004-create-discussions';
 import { CREATE_DISCUSSION_MESSAGES_MIGRATION } from '../discussions/migrations/005-create-discussion-messages';
+import { PERSIST_DISCUSSION_CONTEXT_ITEMS_MIGRATION } from '../discussions/migrations/006-persist-discussion-context-items';
 import { CREATE_PROJECTS_MIGRATION } from '../projects/migrations/001-create-projects';
 
 export interface DatabaseMigration {
@@ -41,6 +42,11 @@ export const DATABASE_MIGRATIONS: readonly DatabaseMigration[] = [
     version: 5,
     name: 'create-discussion-messages',
     sql: CREATE_DISCUSSION_MESSAGES_MIGRATION,
+  },
+  {
+    version: 6,
+    name: 'persist-discussion-context-items',
+    sql: PERSIST_DISCUSSION_CONTEXT_ITEMS_MIGRATION,
   },
 ];
 
