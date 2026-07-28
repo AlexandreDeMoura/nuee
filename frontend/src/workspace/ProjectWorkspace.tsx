@@ -448,6 +448,7 @@ function WorkspacePanel({
   onBubbleLinkRemoved,
   onRetryBubbleLinks,
   onBubbleDeleted,
+  onStartDiscussion,
   onBubbleUpdated,
 }: {
   activeView: WorkspacePanelView;
@@ -472,6 +473,7 @@ function WorkspacePanel({
   onBubbleLinkRemoved: (link: BubbleLink) => void;
   onRetryBubbleLinks: () => void;
   onBubbleDeleted: (bubble: Bubble) => void;
+  onStartDiscussion: () => void;
   onBubbleUpdated: (bubble: Bubble) => void;
 }) {
   const activeDefinition = panelDefinitions.find(({ view }) => view === activeView)!;
@@ -496,6 +498,16 @@ function WorkspacePanel({
           <span className="rounded-[5px] bg-[#f2f5f9] px-1.5 py-0.5 text-[10px] font-medium text-[#9aa6b4] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
             {discussionCount}
           </span>
+        )}
+        {activeView === 'discussions' && (
+          <button
+            className={`ml-auto inline-flex min-h-7 cursor-pointer items-center gap-1.5 rounded-[8px] border border-[#cdd8ea] bg-[#f6f8fc] px-2.5 py-1 text-[11px] font-semibold text-[#33538f] hover:border-[#aebed8] hover:bg-[#eef2fa] ${focusRing}`}
+            type="button"
+            onClick={onStartDiscussion}
+          >
+            <CirclePlus className="size-[13px]" strokeWidth={1.8} aria-hidden="true" />
+            New discussion
+          </button>
         )}
       </header>
       {hasDefaultProjectEditor && (
@@ -821,6 +833,9 @@ export function ProjectWorkspace({
       : overlaySlots?.discussion;
   const isDiscussionVisible =
     discussionVisibility.visibleDiscussion !== null;
+  const startDiscussion =
+    emptyActionHandlers?.['start-discussion'] ??
+    discussionVisibility.openDraft;
 
   return (
     <CurrentProjectDescriptionContext.Provider value={currentDescription}>
@@ -848,9 +863,7 @@ export function ProjectWorkspace({
                 analyticsClient={analyticsClient}
                 emptyActionHandlers={{
                   ...emptyActionHandlers,
-                  'start-discussion':
-                    emptyActionHandlers?.['start-discussion'] ??
-                    discussionVisibility.openDraft,
+                  'start-discussion': startDiscussion,
                   'create-bubble':
                     emptyActionHandlers?.['create-bubble'] ?? onCreateBubble,
                 }}
@@ -952,6 +965,7 @@ export function ProjectWorkspace({
               onBubbleLinkRemoved={handleBubbleLinkRemoved}
               onBubbleDeleted={handleBubbleDeleted}
               onRetryBubbleLinks={handleRetryBubbleLinks}
+              onStartDiscussion={startDiscussion}
               onBubbleUpdated={handleBubbleUpdated}
             />
           </aside>

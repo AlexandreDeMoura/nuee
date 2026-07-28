@@ -132,6 +132,32 @@ describe('workspace integration contracts', () => {
     expect(document.activeElement).toBe(startButton);
   });
 
+  it('can start a discussion from the panel when the canvas is not empty', async () => {
+    render(
+      <ProjectWorkspace
+        project={project}
+        requestBubbles={async () => [bubble()]}
+      />,
+    );
+
+    await screen.findByRole('region', { name: 'Project canvas' });
+    expect(
+      screen.queryByRole('button', { name: 'Start a discussion' }),
+    ).toBeNull();
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Discussions' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'New discussion' }),
+    );
+
+    expect(
+      screen.getByRole('dialog', { name: 'New discussion' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('textbox', { name: 'Discussion prompt' }),
+    ).toBeTruthy();
+  });
+
   it('restores the viewport supplied by the loaded project', async () => {
     render(
       <ProjectWorkspace

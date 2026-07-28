@@ -132,7 +132,7 @@ export function DiscussionModal({
 
   return (
     <div
-      className="absolute inset-0 z-40 flex items-center justify-center bg-[#d9dee6]/65 p-3 backdrop-blur-[2.5px] sm:p-6"
+      className="absolute inset-0 z-40 flex items-center justify-center bg-[#1e2733]/45 p-3 backdrop-blur-[1.5px] sm:p-6"
       data-discussion-overlay
       onMouseDown={(event) => event.stopPropagation()}
       onPointerDown={(event) => event.stopPropagation()}
@@ -147,25 +147,19 @@ export function DiscussionModal({
         data-discussion-kind={visibleDiscussion.kind}
         tabIndex={-1}
       >
-        <header className="flex min-h-[58px] shrink-0 items-center gap-3 border-b border-[#e7ebf0] px-4 sm:px-5">
-          <span className="grid size-8 shrink-0 place-items-center rounded-[9px] bg-[#eef2fa] text-[#3f63a8]">
-            <MessageSquare
-              className="size-[16px]"
-              strokeWidth={1.8}
-              aria-hidden="true"
-            />
-          </span>
+        <header className="flex min-h-13 shrink-0 items-center gap-3 border-b border-[#eef1f5] px-4 sm:px-5">
           <div className="min-w-0">
             <h2
-              className="truncate text-[14px] font-semibold text-[#1e2733]"
+              className={`truncate text-[15px] font-semibold ${
+                isDraft
+                  ? 'italic text-[#8b97a6]'
+                  : 'tracking-[-0.15px] text-[#1e2733]'
+              }`}
               id={titleId}
             >
               {visibleDiscussion.title}
             </h2>
-            <p
-              className="mt-0.5 truncate text-[10.5px] text-[#8b97a6]"
-              id={descriptionId}
-            >
+            <p className="sr-only" id={descriptionId}>
               Focus on one question. Keep what matters as knowledge later.
             </p>
           </div>
@@ -193,19 +187,20 @@ export function DiscussionModal({
         >
           {messagesSlot ?? (
             <div className="m-auto max-w-[380px] py-8 text-center">
-              <span className="mx-auto mb-3 grid size-10 place-items-center rounded-xl bg-[#eef2f7] text-[#647896]">
+              <span className="mx-auto mb-3.75 grid size-11.5 place-items-center rounded-[13px] bg-[#eef2fa] text-[#3f63a8]">
                 <MessageSquare
-                  className="size-[18px]"
-                  strokeWidth={1.7}
+                  className="size-5.25"
+                  strokeWidth={1.6}
                   aria-hidden="true"
                 />
               </span>
-              <p className="text-[13px] font-semibold text-[#344050]">
-                Start with a focused question
+              <p className="text-[16px] font-semibold text-[#1e2733]">
+                Ask one focused question
               </p>
-              <p className="mt-1.5 text-xs leading-[1.55] text-[#8b97a6]">
-                This draft is private to the modal until your first prompt is
-                accepted.
+              <p className="mt-1.5 text-[12.5px] leading-[1.55] text-[#8b97a6]">
+                Answers stay short by default. When something&apos;s worth
+                keeping, extract it as a bubble — the thread stays as reasoning
+                history.
               </p>
             </div>
           )}
@@ -214,13 +209,13 @@ export function DiscussionModal({
         {composerSlot ??
           (isDraft && (
             <form
-              className="shrink-0 border-t border-[#e7ebf0] bg-white p-3.5 sm:p-4"
+              className="shrink-0 border-t border-[#eef1f5] bg-white p-3.5 sm:p-4"
               onSubmit={submitDraft}
             >
               <label className="sr-only" htmlFor={composerId}>
                 Discussion prompt
               </label>
-              <div className="flex items-end gap-2 rounded-xl border border-[#d7dee7] bg-white p-2 shadow-[0_1px_2px_rgba(30,39,51,0.04)] focus-within:border-[#6f88ba] focus-within:ring-3 focus-within:ring-[#3f63a8]/10">
+              <div className="flex items-end gap-2 rounded-xl border border-[#d7dee7] bg-white p-2 shadow-[0_1px_2px_rgba(30,39,51,0.04)] focus-within:border-[#3f63a8] focus-within:ring-3 focus-within:ring-[#3f63a8]/10">
                 <textarea
                   className="max-h-40 min-h-[42px] flex-1 resize-none border-0 bg-transparent px-2 py-2 text-[13px] leading-[1.5] text-[#1e2733] outline-none placeholder:text-[#a7b1be]"
                   id={composerId}
@@ -247,9 +242,6 @@ export function DiscussionModal({
                   />
                 </button>
               </div>
-              <p className="mt-2 mb-0 text-center text-[10.5px] text-[#9aa6b4]">
-                Your prompt is submitted after discussion context is confirmed.
-              </p>
             </form>
           ))}
       </div>
