@@ -9,10 +9,16 @@ import type {
   DiscussionRole,
   DiscussionSummary,
   FrozenContext,
-  LegacyFrozenContext,
   SendMessageInput,
 } from '@nuee/shared-types';
 import { requestJson } from './client';
+import { assertDiscussionDetails } from './discussionResponse';
+
+export {
+  assertDiscussionDetails,
+  isDiscussionDetails,
+  isFrozenContextV1,
+} from './discussionResponse';
 
 export type {
   CreateDiscussionInput,
@@ -30,16 +36,6 @@ export type {
 
 export type DiscussionRequest = typeof requestJson;
 
-/**
- * Transitional request accepted until the discussion-context creation flow is
- * connected to the versioned shared contract.
- */
-interface LegacyCreateDiscussionInput {
-  project_id: string;
-  frozen_context: LegacyFrozenContext;
-  first_prompt: string;
-}
-
 export function createDiscussionsApi(request: DiscussionRequest = requestJson) {
   function collectionPath(projectId: string): string {
     return `/projects/${encodeURIComponent(projectId)}/discussions`;
@@ -51,15 +47,17 @@ export function createDiscussionsApi(request: DiscussionRequest = requestJson) {
 
   function createDiscussion(
     projectId: string,
-    input: CreateDiscussionInput | LegacyCreateDiscussionInput,
+    input: CreateDiscussionInput,
     signal?: AbortSignal,
   ): Promise<DiscussionDetails> {
-    return request<DiscussionDetails>(collectionPath(projectId), {
+    return request<unknown>(collectionPath(projectId), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(input),
       signal,
-    });
+    }).then((response) =>
+      assertDiscussionDetails(response, projectId, undefined, input),
+    );
   }
 
   function getProjectDiscussions(
@@ -76,9 +74,11 @@ export function createDiscussionsApi(request: DiscussionRequest = requestJson) {
     discussionId: string,
     signal?: AbortSignal,
   ): Promise<DiscussionDetails> {
-    return request<DiscussionDetails>(
+    return request<unknown>(
       resourcePath(projectId, discussionId),
       { signal },
+    ).then((response) =>
+      assertDiscussionDetails(response, projectId, discussionId),
     );
   }
 
@@ -88,7 +88,7 @@ export function createDiscussionsApi(request: DiscussionRequest = requestJson) {
     input: SendMessageInput,
     signal?: AbortSignal,
   ): Promise<DiscussionDetails> {
-    return request<DiscussionDetails>(
+    return request<unknown>(
       `${resourcePath(projectId, discussionId)}/messages`,
       {
         method: 'POST',
@@ -96,6 +96,8 @@ export function createDiscussionsApi(request: DiscussionRequest = requestJson) {
         body: JSON.stringify(input),
         signal,
       },
+    ).then((response) =>
+      assertDiscussionDetails(response, projectId, discussionId),
     );
   }
 
@@ -122,12 +124,14 @@ export function createDiscussionsApi(request: DiscussionRequest = requestJson) {
     discussionId: string,
     signal?: AbortSignal,
   ): Promise<DiscussionDetails> {
-    return request<DiscussionDetails>(
+    return request<unknown>(
       `${resourcePath(projectId, discussionId)}/title`,
       {
         method: 'POST',
         signal,
       },
+    ).then((response) =>
+      assertDiscussionDetails(response, projectId, discussionId),
     );
   }
 
@@ -136,12 +140,14 @@ export function createDiscussionsApi(request: DiscussionRequest = requestJson) {
     discussionId: string,
     signal?: AbortSignal,
   ): Promise<DiscussionDetails> {
-    return request<DiscussionDetails>(
+    return request<unknown>(
       `${resourcePath(projectId, discussionId)}/open`,
       {
         method: 'POST',
         signal,
       },
+    ).then((response) =>
+      assertDiscussionDetails(response, projectId, discussionId),
     );
   }
 

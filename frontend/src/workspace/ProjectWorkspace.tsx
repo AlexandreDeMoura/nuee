@@ -1128,7 +1128,6 @@ export function ProjectWorkspace({
                 onDiscussionChanged={projectDiscussions.updateDiscussion}
                 onDelete={openDiscussionDeleteConfirmation}
                 onMinimize={minimizeDiscussion}
-                projectDescription={currentProject.description}
                 projectId={currentProject.id}
                 requests={discussionLifecycleRequests}
               />

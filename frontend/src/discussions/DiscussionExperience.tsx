@@ -30,7 +30,11 @@ export interface DiscussionExperienceProps {
   onDiscussionChanged?: (discussion: DiscussionDetails) => void;
   onDelete?: (discussion: DiscussionDeleteTarget) => void;
   onMinimize?: () => void;
-  projectDescription: string;
+  /**
+   * @deprecated Discussion creation now snapshots the authoritative server
+   * project description.
+   */
+  projectDescription?: string;
   projectId: string;
   requests?: DiscussionLifecycleRequests;
 }
@@ -45,7 +49,6 @@ export function DiscussionExperience({
   onDiscussionChanged,
   onDelete,
   onMinimize,
-  projectDescription,
   projectId,
   requests,
 }: DiscussionExperienceProps) {
@@ -72,7 +75,6 @@ export function DiscussionExperience({
       onDiscussionChanged={onDiscussionChanged}
       onDelete={onDelete}
       onMinimize={onMinimize}
-      projectDescription={projectDescription}
       projectId={projectId}
       requests={requests}
       visibleDiscussion={visibleDiscussion}
@@ -90,7 +92,6 @@ function DiscussionExperienceModal({
   onDiscussionChanged,
   onDelete,
   onMinimize,
-  projectDescription,
   projectId,
   requests,
   visibleDiscussion,
@@ -104,7 +105,6 @@ function DiscussionExperienceModal({
     onDiscussionCreated: controller.openDiscussion,
     onDiscussionChanged,
     onDraftPromptChange: controller.updateDraftPrompt,
-    projectDescription,
     projectId,
     requests,
     visibleDiscussion,

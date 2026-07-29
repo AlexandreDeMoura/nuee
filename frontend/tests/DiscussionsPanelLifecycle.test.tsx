@@ -53,7 +53,18 @@ function details(
     project_id: discussion.project_id,
     title: discussion.title,
     frozen_context: {
-      project_description: { content: project.description },
+      version: 1,
+      items: [
+        {
+          id: `context-${discussion.id}-project`,
+          source_kind: 'project_description',
+          source_id: discussion.project_id,
+          source_title: 'Project description',
+          frozen_content: project.description,
+          created_at: discussion.created_at,
+          display_order: 0,
+        },
+      ],
     },
     created_at: discussion.created_at,
     updated_at: discussion.updated_at,

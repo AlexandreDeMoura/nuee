@@ -10,6 +10,7 @@ import {
 } from '@testing-library/react';
 import {
   ApiError,
+  type CreateDiscussionInput,
   type DiscussionDetails,
   type SendMessageInput,
 } from '../src/api';
@@ -49,7 +50,18 @@ function details(
     project_id: projectId,
     title: 'New discussion',
     frozen_context: {
-      project_description: { content: projectDescription },
+      version: 1,
+      items: [
+        {
+          id: 'context-project-1',
+          source_kind: 'project_description',
+          source_id: projectId,
+          source_title: 'Project description',
+          frozen_content: projectDescription,
+          created_at: '2026-07-28T08:00:00.000Z',
+          display_order: 0,
+        },
+      ],
     },
     created_at: '2026-07-28T08:00:00.000Z',
     updated_at: '2026-07-28T08:00:00.001Z',
@@ -131,7 +143,6 @@ function Harness({
         onDiscussionChanged={onDiscussionChanged}
         onExtractKnowledge={onExtractKnowledge}
         onInspectContext={onInspectContext}
-        projectDescription={projectDescription}
         projectId={projectId}
         requests={{ generateTitle: keepTemporaryTitle, ...requests }}
       />
@@ -305,10 +316,10 @@ describe('DiscussionExperience', () => {
       projectId,
       {
         project_id: projectId,
-        frozen_context: {
-          project_description: { content: projectDescription },
-        },
         first_prompt: 'What blocks the launch?',
+        idempotency_key: expect.any(String),
+        bubble_ids: [],
+        document_ids: [],
       },
       expect.any(AbortSignal),
     );
@@ -341,6 +352,93 @@ describe('DiscussionExperience', () => {
       created.id,
       expect.any(AbortSignal),
     );
+  });
+
+  it('reuses the creation idempotency key after a recoverable request failure', async () => {
+    const inputs: CreateDiscussionInput[] = [];
+    const create = vi.fn(
+      async (
+        _projectId: string,
+        input: CreateDiscussionInput,
+      ) => {
+        inputs.push(input);
+
+        if (inputs.length === 1) {
+          throw new Error('Creation connection failed.');
+        }
+
+        return details();
+      },
+    );
+
+    render(
+      <Harness
+        requests={{
+          create,
+          get: async () => details(),
+        }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    fireEvent.change(
+      screen.getByRole('textbox', { name: 'Discussion prompt' }),
+      {
+        target: { value: 'What blocks the launch?' },
+      },
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Continue discussion' }),
+    );
+
+    expect(await screen.findByText('Creation connection failed.')).toBeTruthy();
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Continue discussion' }),
+    );
+
+    expect(
+      await screen.findByText(
+        'Licensing is the longest lead-time constraint.',
+      ),
+    ).toBeTruthy();
+    expect(inputs).toHaveLength(2);
+    expect(inputs[1].idempotency_key).toBe(inputs[0].idempotency_key);
+    expect(inputs[0]).toEqual({
+      project_id: projectId,
+      first_prompt: 'What blocks the launch?',
+      idempotency_key: expect.any(String),
+      bubble_ids: [],
+      document_ids: [],
+    });
+  });
+
+  it('shows a data error instead of rendering an incomplete context package', async () => {
+    render(
+      <Harness
+        requests={{
+          get: async () => ({
+            ...details(),
+            frozen_context: {
+              version: 1,
+              items: [],
+            },
+          }),
+        }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Open first' }));
+
+    expect(await screen.findByText('Discussion unavailable')).toBeTruthy();
+    expect(
+      screen.getByText(
+        'The discussion response contained invalid data.',
+      ),
+    ).toBeTruthy();
+    expect(
+      screen.queryByText(
+        'Licensing is the longest lead-time constraint.',
+      ),
+    ).toBeNull();
+    expect(screen.queryByLabelText('1 frozen context item')).toBeNull();
   });
 
   it('marks an accepted generation failure separately and retries with the same request identity', async () => {

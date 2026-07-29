@@ -1,4 +1,4 @@
-import type { DiscussionDetails } from '../api';
+import { isFrozenContextV1, type DiscussionDetails } from '../api';
 
 export type DiscussionContextKind =
   | 'project_description'
@@ -26,8 +26,25 @@ export type DiscussionContextBadgeResolver = (
  */
 export const defaultDiscussionContextBadges: DiscussionContextBadgeResolver = (
   discussion,
-) =>
-  Object.prototype.hasOwnProperty.call(
+) => {
+  if (
+    isFrozenContextV1(
+      discussion.frozen_context,
+      discussion.project_id,
+    )
+  ) {
+    const projectContext = discussion.frozen_context.items[0];
+
+    return [
+      {
+        id: projectContext.id,
+        kind: 'project_description',
+        label: 'Project context',
+      },
+    ];
+  }
+
+  return Object.prototype.hasOwnProperty.call(
     discussion.frozen_context,
     'project_description',
   )
@@ -39,3 +56,4 @@ export const defaultDiscussionContextBadges: DiscussionContextBadgeResolver = (
         },
       ]
     : [];
+};

@@ -3,9 +3,9 @@ import { createContext, useContext } from 'react';
 /**
  * The last successfully persisted project description.
  *
- * Discussion creation can copy this value into its frozen context snapshot.
- * Consumers cannot update the live project through this contract, and existing
- * snapshots must never retain a reference to it.
+ * Discussion creation snapshots the authoritative server value rather than
+ * reading this client context. Consumers cannot update the live project
+ * through this contract.
  */
 export interface CurrentProjectDescription {
   readonly projectId: string;

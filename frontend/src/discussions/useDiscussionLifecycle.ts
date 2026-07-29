@@ -12,6 +12,7 @@ import {
   getDiscussion,
   retryDiscussionMessage,
   sendDiscussionMessage,
+  type CreateDiscussionInput,
   type DiscussionDetails,
 } from '../api';
 import {
@@ -22,7 +23,6 @@ import {
 import type { VisibleDiscussion } from './useDiscussionVisibility';
 import {
   assertDiscussionDetails,
-  buildDefaultFrozenContext,
   isTemporaryDiscussionTitle,
   TEMPORARY_DISCUSSION_TITLE,
 } from './discussionModel';
@@ -70,7 +70,6 @@ interface UseDiscussionLifecycleOptions {
   }) => void;
   onDiscussionChanged?: (discussion: DiscussionDetails) => void;
   onDraftPromptChange: (prompt: string) => void;
-  projectDescription: string;
   projectId: string;
   requests?: DiscussionLifecycleRequests;
   visibleDiscussion: VisibleDiscussion;
@@ -164,7 +163,6 @@ export function useDiscussionLifecycle({
   onDiscussionCreated,
   onDiscussionChanged,
   onDraftPromptChange,
-  projectDescription,
   projectId,
   requests,
   visibleDiscussion,
@@ -191,6 +189,10 @@ export function useDiscussionLifecycle({
   const requestControllerRef = useRef<AbortController | null>(null);
   const titleControllerRef = useRef<AbortController | null>(null);
   const titleAttemptRef = useRef<string | null>(null);
+  const creationAttemptRef = useRef<{
+    content: string;
+    requestId: string;
+  } | null>(null);
   const retainedAttemptRef = useRef<{
     content: string;
     requestId: string;
@@ -366,6 +368,13 @@ export function useDiscussionLifecycle({
       }
 
       if (visibleDiscussion.kind === 'draft') {
+        if (
+          creationAttemptRef.current &&
+          creationAttemptRef.current.content !== value.trim()
+        ) {
+          creationAttemptRef.current = null;
+        }
+
         onDraftPromptChange(value);
       } else {
         setComposerValue(value);
@@ -397,12 +406,25 @@ export function useDiscussionLifecycle({
 
   const submitDraft = useCallback(
     async (content: string) => {
+      const retainedAttempt = creationAttemptRef.current;
+      const requestId =
+        retainedAttempt?.content === content
+          ? retainedAttempt.requestId
+          : createRequestId();
+      const input: CreateDiscussionInput = {
+        project_id: projectId,
+        first_prompt: content,
+        idempotency_key: requestId,
+        bubble_ids: [],
+        document_ids: [],
+      };
+      creationAttemptRef.current = { content, requestId };
       const startedAt = performance.now();
       const { controller, operation } = beginRequest();
       const optimisticTurn: PendingDiscussionTurn = {
         content,
         discussionId: null,
-        requestId: `draft:${visibleDiscussion.kind === 'draft' ? visibleDiscussion.key : 'unknown'}`,
+        requestId,
         status: 'pending',
       };
       updatePendingTurn(optimisticTurn);
@@ -410,11 +432,7 @@ export function useDiscussionLifecycle({
       try {
         const response = await createRequest(
           projectId,
-          {
-            project_id: projectId,
-            frozen_context: buildDefaultFrozenContext(projectDescription),
-            first_prompt: content,
-          },
+          input,
           controller.signal,
         );
 
@@ -422,8 +440,14 @@ export function useDiscussionLifecycle({
           return;
         }
 
-        const next = assertDiscussionDetails(response, projectId);
+        const next = assertDiscussionDetails(
+          response,
+          projectId,
+          undefined,
+          input,
+        );
         const firstMessage = firstUserMessage(next);
+        creationAttemptRef.current = null;
         trackAnalytics(analyticsClient, 'discussion_created', {
           project_id: projectId,
           discussion_id: next.id,
@@ -477,6 +501,7 @@ export function useDiscussionLifecycle({
         const recovery = recoveryIdentifiers(error);
 
         if (recovery) {
+          creationAttemptRef.current = null;
           const failureOccurredAt = occurredAt();
           trackAnalytics(analyticsClient, 'discussion_created', {
             project_id: projectId,
@@ -531,11 +556,9 @@ export function useDiscussionLifecycle({
       finishRequest,
       onDiscussionCreated,
       onDiscussionChanged,
-      projectDescription,
       projectId,
       updateDetails,
       updatePendingTurn,
-      visibleDiscussion,
     ],
   );
 
