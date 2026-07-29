@@ -17,6 +17,7 @@ import type {
   UpdateBubbleInput,
 } from '../src/api';
 import type { AnalyticsClient } from '../src/analytics';
+import type { DocumentContextSource } from '../src/documents';
 import {
   ProjectWorkspace,
   type WorkspaceInspectorSelection,
@@ -60,6 +61,18 @@ function bubble(overrides: Partial<Bubble> = {}): Bubble {
     source_kind: 'manual',
     source_discussion_id: null,
     source_message_ids: [],
+    ...overrides,
+  };
+}
+
+function documentContextSource(
+  overrides: Partial<DocumentContextSource> = {},
+): DocumentContextSource {
+  return {
+    id: 'document-1',
+    project_id: project.id,
+    title: 'Launch brief',
+    processing_status: 'ready',
     ...overrides,
   };
 }
@@ -487,6 +500,183 @@ describe('workspace integration contracts', () => {
         .querySelector('[aria-label="Project canvas"]')
         ?.getAttribute('data-selection-mode'),
     ).toBe('single');
+  });
+
+  it('selects ready whole documents in the Documents panel and preserves mixed context choices', async () => {
+    const create = vi.fn(
+      () => new Promise<DiscussionDetails>(() => undefined),
+    );
+    const firstDocument = documentContextSource();
+    const secondDocument = documentContextSource({
+      id: 'document-2',
+      title: 'Customer interviews',
+    });
+    const pendingDocument = documentContextSource({
+      id: 'document-pending',
+      title: 'Market research',
+      processing_status: 'pending',
+    });
+    const failedDocument = documentContextSource({
+      id: 'document-failed',
+      title: 'Regulatory report',
+      processing_status: 'failed',
+    });
+    const foreignDocument = documentContextSource({
+      id: 'document-foreign',
+      project_id: 'project-other',
+      title: 'Another project',
+    });
+    const selectedBubble = bubble();
+
+    render(
+      <ProjectWorkspace
+        discussionLifecycleRequests={{ create }}
+        documentContextSources={[
+          firstDocument,
+          secondDocument,
+          pendingDocument,
+          failedDocument,
+          foreignDocument,
+        ]}
+        project={project}
+        requestBubbles={async () => [selectedBubble]}
+      />,
+    );
+
+    const bubbleCard = await screen.findByRole('article', {
+      name: selectedBubble.title,
+    });
+    fireEvent.keyDown(bubbleCard, { key: 'Enter' });
+    fireEvent.click(screen.getByRole('button', { name: 'New discussion' }));
+    fireEvent.change(
+      screen.getByRole('textbox', { name: 'Discussion prompt' }),
+      { target: { value: 'Which sources support the launch plan?' } },
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Continue discussion' }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Add documents' }));
+
+    const documentsTab = screen.getByRole('tab', { name: 'Documents' });
+    expect(documentsTab.getAttribute('aria-selected')).toBe('true');
+    expect(
+      screen.getByRole('heading', {
+        name: 'Choose documents for this discussion',
+      }),
+    ).toBeTruthy();
+    expect(screen.getByText('Market research')).toBeTruthy();
+    expect(
+      screen.getByText(
+        'Still processing. This document can be selected when it’s ready.',
+      ),
+    ).toBeTruthy();
+    expect(
+      (
+        screen.getByRole('checkbox', {
+          name: pendingDocument.title,
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+    expect(screen.getByText('Regulatory report')).toBeTruthy();
+    expect(
+      screen.getByText(
+        'Processing failed. This document can’t be used as discussion context.',
+      ),
+    ).toBeTruthy();
+    expect(
+      (
+        screen.getByRole('checkbox', {
+          name: failedDocument.title,
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+    expect(screen.queryByText(foreignDocument.title)).toBeNull();
+
+    fireEvent.click(
+      screen.getByRole('checkbox', { name: firstDocument.title }),
+    );
+    fireEvent.click(
+      screen.getByRole('checkbox', { name: secondDocument.title }),
+    );
+    expect(screen.getByText('2 SELECTED')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Project' }));
+    expect(
+      screen.queryByRole('heading', {
+        name: 'Choose documents for this discussion',
+      }),
+    ).toBeNull();
+    fireEvent.click(documentsTab);
+
+    expect(
+      screen
+        .getByRole('checkbox', { name: firstDocument.title })
+        .getAttribute('aria-checked'),
+    ).toBe('true');
+    expect(
+      screen
+        .getByRole('checkbox', { name: secondDocument.title })
+        .getAttribute('aria-checked'),
+    ).toBe('true');
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Use selected documents (2 selected)',
+      }),
+    );
+
+    const pendingList = screen.getByRole('list', {
+      name: 'Pending discussion context',
+    });
+    expect(within(pendingList).getByText(selectedBubble.title)).toBeTruthy();
+    expect(within(pendingList).getByText(firstDocument.title)).toBeTruthy();
+    expect(within(pendingList).getByText(secondDocument.title)).toBeTruthy();
+    expect(screen.getByText('1 bubble · 2 documents')).toBeTruthy();
+
+    fireEvent.click(
+      within(pendingList).getByRole('button', {
+        name: `Remove document: ${firstDocument.title}`,
+      }),
+    );
+    expect(within(pendingList).queryByText(firstDocument.title)).toBeNull();
+    expect(within(pendingList).getByText(secondDocument.title)).toBeTruthy();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Add or change context' }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Change documents' }));
+
+    expect(
+      screen
+        .getByRole('checkbox', { name: firstDocument.title })
+        .getAttribute('aria-checked'),
+    ).toBe('false');
+    expect(
+      screen
+        .getByRole('checkbox', { name: secondDocument.title })
+        .getAttribute('aria-checked'),
+    ).toBe('true');
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Use selected documents (1 selected)',
+      }),
+    );
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Start discussion' }),
+    );
+
+    expect(create).toHaveBeenCalledTimes(1);
+    expect(create).toHaveBeenCalledWith(
+      project.id,
+      expect.objectContaining({
+        bubble_ids: [selectedBubble.id],
+        document_ids: [secondDocument.id],
+        first_prompt: 'Which sources support the launch plan?',
+        project_id: project.id,
+      }),
+      expect.any(AbortSignal),
+    );
   });
 
   it('keeps a failed context submission recoverable with the same request identity', async () => {

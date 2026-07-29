@@ -67,6 +67,13 @@ import {
   type DiscussionVisibilityController,
 } from '../discussions';
 import {
+  DocumentContextSelectionPanel,
+  useDocumentMultiSelection,
+  type DocumentContextSource,
+  type DocumentMultiSelection,
+  type DocumentMultiSelectionController,
+} from '../documents';
+import {
   ProjectDescriptionEditor,
   type ProjectDescriptionSaveStatus,
   type ProjectDescriptionUpdateRequest,
@@ -130,6 +137,11 @@ export interface ProjectWorkspaceProps {
   canvasMultiSelection?: CanvasMultiSelection | null;
   viewportSaveDelayMs?: number;
   bubbleSaveDelayMs?: number;
+  /**
+   * Context-source metadata supplied by Document Library. Document content is
+   * resolved authoritatively by the server only when a discussion starts.
+   */
+  documentContextSources?: readonly DocumentContextSource[];
   discussionCount?: number;
   panelSlots?: WorkspacePanelSlots;
   overlaySlots?: WorkspaceOverlaySlots;
@@ -458,6 +470,7 @@ function WorkspacePanel({
   requestBubbleLinkCreate,
   requestBubbleLinkDelete,
   bubbleSaveDelayMs,
+  documentContextSelection,
   availableBubbles,
   bubbleLinkLoadState,
   onBubbleLinkCreated,
@@ -483,6 +496,7 @@ function WorkspacePanel({
   requestBubbleLinkCreate?: BubbleLinkCreateRequest;
   requestBubbleLinkDelete?: BubbleLinkDeleteRequest;
   bubbleSaveDelayMs?: number;
+  documentContextSelection: DocumentMultiSelectionController;
   availableBubbles: Bubble[];
   bubbleLinkLoadState: BubbleLinkLoadState;
   onBubbleLinkCreated: (link: BubbleLink) => void;
@@ -534,7 +548,13 @@ function WorkspacePanel({
       {activeView === 'project' && !hasDefaultProjectEditor && panelSlots?.project}
       {activeView === 'discussions' && discussionsContent}
       {activeView === 'documents' &&
-        (panelSlots?.documents ?? <PanelEmptyState view="documents" />)}
+        (documentContextSelection.isActive ? (
+          <DocumentContextSelectionPanel
+            controller={documentContextSelection}
+          />
+        ) : (
+          panelSlots?.documents ?? <PanelEmptyState view="documents" />
+        ))}
       {activeView === 'inspector' &&
         (inspectorSelection && inspectorContent != null ? (
           inspectorContent
@@ -581,6 +601,7 @@ export function ProjectWorkspace({
   canvasMultiSelection = null,
   viewportSaveDelayMs,
   bubbleSaveDelayMs,
+  documentContextSources,
   discussionCount = 0,
   panelSlots,
   overlaySlots,
@@ -623,6 +644,9 @@ export function ProjectWorkspace({
   const discussionVisibility = useDiscussionVisibility(currentProject.id);
   const discussionContextSelection = useDiscussionContextSelection(
     currentProject.id,
+  );
+  const previousContextSelectionPhaseRef = useRef(
+    discussionContextSelection.phase,
   );
   const projectDiscussions = useProjectDiscussions({
     analyticsClient,
@@ -929,6 +953,54 @@ export function ProjectWorkspace({
     }, [canvasMultiSelection, discussionContextSelection]);
   const resolvedCanvasMultiSelection =
     canvasMultiSelection ?? discussionContextMultiSelection;
+  const discussionContextDocumentSelection =
+    useMemo<DocumentMultiSelection | null>(() => {
+      if (
+        documentContextSources === undefined ||
+        discussionContextSelection.phase !== 'selecting_documents'
+      ) {
+        return null;
+      }
+
+      return {
+        allowEmptySelection: true,
+        confirmLabel: 'Use selected documents',
+        initialDocumentIds:
+          discussionContextSelection.selection.document_ids,
+        instruction: 'Choose documents for this discussion',
+        onCancel: discussionContextSelection.backFromSourceSelection,
+        onConfirm: (selection) => {
+          discussionContextSelection.confirmSourceSelection(
+            'document',
+            selection.documents.map((document) => ({
+              id: document.id,
+              kind: 'document',
+              projectId: document.project_id,
+              title: document.title,
+            })),
+          );
+        },
+      };
+    }, [discussionContextSelection, documentContextSources]);
+  const documentContextSelection = useDocumentMultiSelection({
+    documents: documentContextSources ?? [],
+    multiSelection: discussionContextDocumentSelection,
+    projectId: currentProject.id,
+  });
+
+  useEffect(() => {
+    const previousPhase = previousContextSelectionPhaseRef.current;
+    previousContextSelectionPhaseRef.current =
+      discussionContextSelection.phase;
+
+    if (
+      discussionContextSelection.phase === 'selecting_documents' &&
+      previousPhase !== 'selecting_documents'
+    ) {
+      setActivePanel('documents');
+    }
+  }, [discussionContextSelection.phase]);
+
   const isContextSourceSelection =
     discussionVisibility.visibleDiscussion?.kind === 'draft' &&
     (discussionContextSelection.phase === 'selecting_bubbles' ||
@@ -1163,6 +1235,7 @@ export function ProjectWorkspace({
               analyticsClient={analyticsClient}
               availableBubbles={availableBubbles}
               bubbleLinkLoadState={bubbleLinkLoadState}
+              documentContextSelection={documentContextSelection}
               discussionCount={resolvedDiscussionCount}
               discussionsContent={discussionsContent}
               inspectorSelection={validInspectorSelection}
@@ -1215,6 +1288,9 @@ export function ProjectWorkspace({
               <DiscussionExperience
                 analyticsClient={analyticsClient}
                 canSelectBubbleContext={canvasMultiSelection === null}
+                canSelectDocumentContext={
+                  documentContextSources !== undefined
+                }
                 contextSelection={discussionContextSelection}
                 contextBadgeResolver={discussionContextBadgeResolver}
                 controller={discussionVisibility}
