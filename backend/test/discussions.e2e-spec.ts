@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import type {
+  Bubble,
   DiscussionDetails,
   DiscussionListResponse,
   Project,
@@ -45,18 +46,22 @@ describe('Discussion lifecycle journey (e2e)', () => {
   async function createDiscussion(
     project: Project,
     prompt: string,
+    {
+      bubbleIds = [],
+      idempotencyKey = `create:${prompt}`,
+    }: {
+      bubbleIds?: string[];
+      idempotencyKey?: string;
+    } = {},
   ): Promise<DiscussionDetails> {
     const response = await request(app!.getHttpServer())
       .post(`/projects/${project.id}/discussions`)
       .send({
         project_id: project.id,
-        frozen_context: {
-          project_description: {
-            content: project.description,
-            captured_at: project.updated_at,
-          },
-        },
         first_prompt: prompt,
+        idempotency_key: idempotencyKey,
+        bubble_ids: bubbleIds,
+        document_ids: [],
       })
       .expect(201);
 
@@ -85,11 +90,40 @@ describe('Discussion lifecycle journey (e2e)', () => {
   it('creates, messages, replays, opens, reloads, scopes, and deletes discussions', async () => {
     const project = await createProject('Discussion owner');
     const otherProject = await createProject('Other project');
-    const first = await createDiscussion(project, 'What is the first risk?');
+    const bubbleResponse = await request(app!.getHttpServer())
+      .post(`/projects/${project.id}/bubbles`)
+      .send({
+        title: 'Launch constraint',
+        content: 'The launch must remain reversible.',
+      })
+      .expect(201);
+    const bubble = bubbleResponse.body as Bubble;
+    const first = await createDiscussion(project, 'What is the first risk?', {
+      bubbleIds: [bubble.id, bubble.id],
+      idempotencyKey: 'create-first-risk',
+    });
 
     expect(first).toMatchObject({
       project_id: project.id,
       title: 'New discussion',
+      frozen_context: {
+        version: 1,
+        items: [
+          {
+            source_kind: 'project_description',
+            source_id: project.id,
+            frozen_content: project.description,
+            display_order: 0,
+          },
+          {
+            source_kind: 'bubble',
+            source_id: bubble.id,
+            source_title: bubble.title,
+            frozen_content: bubble.content,
+            display_order: 1,
+          },
+        ],
+      },
       messages: [
         {
           role: 'user',
@@ -103,6 +137,27 @@ describe('Discussion lifecycle journey (e2e)', () => {
         },
       ],
     });
+
+    await createDiscussion(project, 'What is the first risk?', {
+      bubbleIds: [bubble.id],
+      idempotencyKey: 'create-first-risk',
+    }).then((replayed) => expect(replayed).toEqual(first));
+
+    await request(app!.getHttpServer())
+      .post(`/projects/${project.id}/discussions`)
+      .send({
+        project_id: project.id,
+        first_prompt: 'A conflicting prompt',
+        idempotency_key: 'create-first-risk',
+        bubble_ids: [bubble.id],
+        document_ids: [],
+      })
+      .expect(409)
+      .expect(({ body }) => {
+        expect(body).toMatchObject({
+          code: 'DISCUSSION_CREATION_IDEMPOTENCY_CONFLICT',
+        });
+      });
 
     const titleResponse = await request(app!.getHttpServer())
       .post(`/projects/${project.id}/discussions/${first.id}/title`)
@@ -218,8 +273,10 @@ describe('Discussion lifecycle journey (e2e)', () => {
       .post(`/projects/${project.id}/discussions`)
       .send({
         project_id: project.id,
-        frozen_context: {},
         first_prompt: '   ',
+        idempotency_key: 'create-invalid',
+        bubble_ids: [],
+        document_ids: [],
       })
       .expect(400)
       .expect({
@@ -234,8 +291,10 @@ describe('Discussion lifecycle journey (e2e)', () => {
       .post(`/projects/${project.id}/discussions`)
       .send({
         project_id: project.id,
-        frozen_context: {},
         first_prompt: 'Valid question',
+        idempotency_key: 'create-unknown-field',
+        bubble_ids: [],
+        document_ids: [],
         current_project_description: 'Must not replace frozen context.',
       })
       .expect(400)

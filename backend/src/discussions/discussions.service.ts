@@ -6,14 +6,15 @@ import {
   NotFoundException,
   PayloadTooLargeException,
   ServiceUnavailableException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 import type {
+  CreateDiscussionInput,
   DiscussionDetails,
   DiscussionFrozenContext,
   DiscussionListResponse,
   DiscussionSummary,
-  LegacyFrozenContext,
   SendMessageInput,
 } from '@nuee/shared-types';
 import {
@@ -30,6 +31,8 @@ import {
   MODEL_INPUT_BUDGET,
   type ModelInputBudget,
 } from '../ai/model-input-budget';
+import { DiscussionContextAssembler } from '../discussion-context/discussion-context.assembler';
+import { DiscussionContextSourceError } from '../discussion-context/discussion-context.types';
 import { ProjectsService } from '../projects/projects.service';
 import {
   DISCUSSION_MESSAGE_REPOSITORY,
@@ -40,20 +43,17 @@ import type {
   DiscussionRepository,
   PersistedDiscussion,
   PersistedDiscussionMessage,
+  VersionedPersistedDiscussion,
 } from './discussion.types';
 
 const TEMPORARY_TITLE = 'New discussion';
 const MAX_MESSAGE_LENGTH = 20_000;
 const MAX_IDEMPOTENCY_KEY_LENGTH = 200;
+const MAX_CONTEXT_SOURCE_ID_LENGTH = 200;
+const MAX_CONTEXT_SELECTION_COUNT = 100;
 
 type DiscussionField =
   'project_id' | 'first_prompt' | 'content' | 'idempotency_key';
-
-interface LegacyCreateDiscussionInput {
-  project_id: string;
-  frozen_context: LegacyFrozenContext;
-  first_prompt: string;
-}
 
 @Injectable()
 export class DiscussionsService {
@@ -74,18 +74,25 @@ export class DiscussionsService {
     private readonly contextFormatter: FrozenContextFormatter,
     @Inject(MODEL_INPUT_BUDGET)
     private readonly modelInputBudget: ModelInputBudget,
+    private readonly contextAssembler: DiscussionContextAssembler,
   ) {}
 
   async create(
     projectId: string,
-    input: LegacyCreateDiscussionInput,
+    input: CreateDiscussionInput,
   ): Promise<DiscussionDetails> {
     this.projects.get(projectId);
 
     const fieldErrors: Record<string, string> = {};
     this.rejectUnknownFields(
       input,
-      ['project_id', 'frozen_context', 'first_prompt'],
+      [
+        'project_id',
+        'first_prompt',
+        'idempotency_key',
+        'bubble_ids',
+        'document_ids',
+      ],
       fieldErrors,
     );
     const inputProjectId = this.requiredText(
@@ -98,8 +105,18 @@ export class DiscussionsService {
       'first_prompt',
       fieldErrors,
     );
-    const frozenContext = this.frozenContext(
-      input?.frozen_context,
+    const creationIdempotencyKey = this.idempotencyKey(
+      input?.idempotency_key,
+      fieldErrors,
+    );
+    const bubbleIds = this.contextSourceIds(
+      input?.bubble_ids,
+      'bubble_ids',
+      fieldErrors,
+    );
+    const documentIds = this.contextSourceIds(
+      input?.document_ids,
+      'document_ids',
       fieldErrors,
     );
 
@@ -110,8 +127,43 @@ export class DiscussionsService {
 
     this.throwIfInvalid(fieldErrors);
 
-    if (!firstPrompt || !frozenContext) {
+    if (!firstPrompt || !creationIdempotencyKey || !bubbleIds || !documentIds) {
       throw new Error('Validated discussion input is unexpectedly missing.');
+    }
+
+    const selection = {
+      bubble_ids: this.deduplicate(bubbleIds),
+      document_ids: this.deduplicate(documentIds),
+    };
+    const requestFingerprint = this.creationRequestFingerprint(
+      firstPrompt,
+      selection,
+    );
+    const replay = this.findCreationReplay(
+      projectId,
+      creationIdempotencyKey,
+      requestFingerprint,
+    );
+
+    if (replay) {
+      return replay;
+    }
+
+    let frozenContext: VersionedPersistedDiscussion['frozen_context'];
+
+    try {
+      frozenContext = this.contextAssembler.assemble(projectId, selection);
+    } catch (error) {
+      if (error instanceof DiscussionContextSourceError) {
+        throw new UnprocessableEntityException({
+          code: error.code,
+          message:
+            'One or more selected context sources are unavailable. Review or remove the affected selections.',
+          source_errors: error.issues,
+        });
+      }
+
+      throw error;
     }
 
     const modelInput = this.prepareModelInput(frozenContext, [
@@ -119,7 +171,7 @@ export class DiscussionsService {
     ]);
 
     const timestamp = new Date().toISOString();
-    const discussion: PersistedDiscussion = {
+    const discussion: VersionedPersistedDiscussion = {
       id: randomUUID(),
       project_id: projectId,
       title: null,
@@ -128,10 +180,10 @@ export class DiscussionsService {
       updated_at: timestamp,
       last_activity_at: timestamp,
       deleted_at: null,
-      context_version: null,
-      expected_context_item_count: null,
-      creation_idempotency_key: null,
-      creation_request_fingerprint: null,
+      context_version: frozenContext.version,
+      expected_context_item_count: frozenContext.items.length,
+      creation_idempotency_key: creationIdempotencyKey,
+      creation_request_fingerprint: requestFingerprint,
     };
     const firstMessage: PersistedDiscussionMessage = {
       id: randomUUID(),
@@ -143,7 +195,22 @@ export class DiscussionsService {
       request_id: randomUUID(),
     };
 
-    this.discussions.createWithFirstMessage(discussion, firstMessage);
+    try {
+      this.discussions.createWithFirstMessage(discussion, firstMessage);
+    } catch {
+      const concurrentReplay = this.findCreationReplay(
+        projectId,
+        creationIdempotencyKey,
+        requestFingerprint,
+      );
+
+      if (concurrentReplay) {
+        return concurrentReplay;
+      }
+
+      throw this.snapshotPersistenceFailed();
+    }
+
     await this.generateAnswer(discussion, firstMessage, modelInput);
 
     return this.get(projectId, discussion.id);
@@ -509,30 +576,6 @@ export class DiscussionsService {
     };
   }
 
-  private frozenContext(
-    value: unknown,
-    fieldErrors: Record<string, string>,
-  ): Record<string, unknown> | undefined {
-    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-      fieldErrors.frozen_context = 'Frozen context must be a JSON object.';
-      return undefined;
-    }
-
-    try {
-      const serialized = JSON.stringify(value);
-
-      if (!serialized) {
-        throw new Error('Frozen context is not serializable.');
-      }
-
-      return JSON.parse(serialized) as Record<string, unknown>;
-    } catch {
-      fieldErrors.frozen_context =
-        'Frozen context must be a serializable JSON object.';
-      return undefined;
-    }
-  }
-
   private messageText(
     value: unknown,
     field: 'first_prompt' | 'content',
@@ -563,6 +606,51 @@ export class DiscussionsService {
     return key;
   }
 
+  private contextSourceIds(
+    value: unknown,
+    field: 'bubble_ids' | 'document_ids',
+    fieldErrors: Record<string, string>,
+  ): string[] | undefined {
+    const sourceLabel = field === 'bubble_ids' ? 'Bubble' : 'Document';
+
+    if (!Array.isArray(value)) {
+      fieldErrors[field] = `${sourceLabel} ids must be an array.`;
+      return undefined;
+    }
+
+    if (value.length > MAX_CONTEXT_SELECTION_COUNT) {
+      fieldErrors[field] =
+        `Select no more than ${MAX_CONTEXT_SELECTION_COUNT} ${sourceLabel.toLowerCase()}s.`;
+      return undefined;
+    }
+
+    const sourceIds: string[] = [];
+    let isValid = true;
+
+    value.forEach((sourceId, index) => {
+      const fieldName = `${field}.${index}`;
+
+      if (typeof sourceId !== 'string' || sourceId.trim().length === 0) {
+        fieldErrors[fieldName] = `${sourceLabel} identifier is required.`;
+        isValid = false;
+        return;
+      }
+
+      const normalizedSourceId = sourceId.trim();
+
+      if (normalizedSourceId.length > MAX_CONTEXT_SOURCE_ID_LENGTH) {
+        fieldErrors[fieldName] =
+          `${sourceLabel} identifier must be ${MAX_CONTEXT_SOURCE_ID_LENGTH} characters or fewer.`;
+        isValid = false;
+        return;
+      }
+
+      sourceIds.push(normalizedSourceId);
+    });
+
+    return isValid ? sourceIds : undefined;
+  }
+
   private requiredText(
     value: unknown,
     field: DiscussionField,
@@ -579,6 +667,59 @@ export class DiscussionsService {
     }
 
     return value.trim();
+  }
+
+  private deduplicate(values: readonly string[]): string[] {
+    return [...new Set(values)];
+  }
+
+  private creationRequestFingerprint(
+    firstPrompt: string,
+    selection: Pick<CreateDiscussionInput, 'bubble_ids' | 'document_ids'>,
+  ): string {
+    return createHash('sha256')
+      .update(
+        JSON.stringify({
+          first_prompt: firstPrompt,
+          bubble_ids: selection.bubble_ids,
+          document_ids: selection.document_ids,
+        }),
+      )
+      .digest('hex');
+  }
+
+  private findCreationReplay(
+    projectId: string,
+    idempotencyKey: string,
+    requestFingerprint: string,
+  ): DiscussionDetails | undefined {
+    let existing: PersistedDiscussion | undefined;
+
+    try {
+      existing = this.discussions.findByProjectAndCreationIdempotencyKey(
+        projectId,
+        idempotencyKey,
+      );
+    } catch {
+      throw this.snapshotPersistenceFailed();
+    }
+
+    if (!existing) {
+      return undefined;
+    }
+
+    if (existing.creation_request_fingerprint !== requestFingerprint) {
+      throw new ConflictException({
+        code: 'DISCUSSION_CREATION_IDEMPOTENCY_CONFLICT',
+        message:
+          'The creation idempotency key has already been used with a different prompt or context selection.',
+      });
+    }
+
+    return this.toDetails(
+      existing,
+      this.messages.findAllMessages(projectId, existing.id),
+    );
   }
 
   private rejectUnknownFields(
@@ -634,6 +775,14 @@ export class DiscussionsService {
     }
 
     return input;
+  }
+
+  private snapshotPersistenceFailed(): ServiceUnavailableException {
+    return new ServiceUnavailableException({
+      code: 'DISCUSSION_SNAPSHOT_PERSISTENCE_FAILED',
+      message:
+        'The discussion and its frozen context could not be saved. Retry creation with the same idempotency key.',
+    });
   }
 
   private toModelMessages(

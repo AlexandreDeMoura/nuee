@@ -4,6 +4,7 @@ import {
   NotFoundException,
   PayloadTooLargeException,
   ServiceUnavailableException,
+  UnprocessableEntityException,
 } from '@nestjs/common';
 import { CanonicalFrozenContextFormatter } from '../ai/frozen-context.formatter';
 import { ConservativeInputTokenEstimator } from '../ai/input-token-estimator';
@@ -14,7 +15,10 @@ import type {
   ModelGeneration,
 } from '../ai/model-client';
 import { ConfiguredModelInputBudget } from '../ai/model-input-budget';
+import { BubblesService } from '../bubbles/bubbles.service';
+import { SqliteBubbleRepository } from '../bubbles/sqlite-bubble.repository';
 import { DatabaseProvider } from '../database/database.provider';
+import { DiscussionContextAssembler } from '../discussion-context/discussion-context.assembler';
 import { ProjectsService } from '../projects/projects.service';
 import { SqliteProjectRepository } from '../projects/sqlite-project.repository';
 import { DiscussionsService } from './discussions.service';
@@ -63,10 +67,12 @@ class ControllableModelClient implements ModelClient {
 describe('DiscussionsService', () => {
   let databaseProvider: DatabaseProvider;
   let projects: ProjectsService;
+  let bubbles: BubblesService;
   let repository: SqliteDiscussionRepository;
   let modelClient: ControllableModelClient;
   let contextFormatter: CanonicalFrozenContextFormatter;
   let modelInputBudget: ConfiguredModelInputBudget;
+  let contextAssembler: DiscussionContextAssembler;
   let service: DiscussionsService;
 
   beforeEach(() => {
@@ -75,6 +81,10 @@ describe('DiscussionsService', () => {
     databaseProvider = new DatabaseProvider({ databasePath: ':memory:' });
     projects = new ProjectsService(
       new SqliteProjectRepository(databaseProvider),
+    );
+    bubbles = new BubblesService(
+      projects,
+      new SqliteBubbleRepository(databaseProvider),
     );
     repository = new SqliteDiscussionRepository(databaseProvider);
     modelClient = new ControllableModelClient();
@@ -88,6 +98,7 @@ describe('DiscussionsService', () => {
       },
       new ConservativeInputTokenEstimator(),
     );
+    contextAssembler = new DiscussionContextAssembler(projects, bubbles);
     service = new DiscussionsService(
       projects,
       repository,
@@ -95,6 +106,7 @@ describe('DiscussionsService', () => {
       modelClient,
       contextFormatter,
       modelInputBudget,
+      contextAssembler,
     );
   });
 
@@ -110,32 +122,66 @@ describe('DiscussionsService', () => {
     });
   }
 
-  async function createDiscussion(projectId: string, prompt = 'First?') {
+  async function createDiscussion(
+    projectId: string,
+    prompt = 'First?',
+    {
+      bubbleIds = [],
+      documentIds = [],
+      idempotencyKey = `create:${prompt}`,
+    }: {
+      bubbleIds?: string[];
+      documentIds?: string[];
+      idempotencyKey?: string;
+    } = {},
+  ) {
     return service.create(projectId, {
       project_id: projectId,
-      frozen_context: {
-        project_description: {
-          content: 'A frozen project description.',
-        },
-      },
       first_prompt: prompt,
+      idempotency_key: idempotencyKey,
+      bubble_ids: bubbleIds,
+      document_ids: documentIds,
     });
   }
 
-  it('atomically creates the first turn and forwards frozen context to the model', async () => {
+  it('atomically creates selected context and the first turn before forwarding the frozen package', async () => {
     const project = createProject();
+    const bubble = bubbles.create(project.id, {
+      title: 'Decision constraints',
+      content: 'The launch must remain reversible.',
+    });
     const details = await createDiscussion(
       project.id,
       '  What should we decide first?  ',
+      {
+        bubbleIds: [bubble.id, bubble.id],
+        idempotencyKey: 'create-first-decision',
+      },
     );
 
     expect(details).toMatchObject({
       project_id: project.id,
       title: 'New discussion',
       frozen_context: {
-        project_description: {
-          content: 'A frozen project description.',
-        },
+        version: 1,
+        items: [
+          {
+            source_kind: 'project_description',
+            source_id: project.id,
+            source_title: 'Project description',
+            frozen_content: project.description,
+            created_at: '2026-07-27T10:00:00.000Z',
+            display_order: 0,
+          },
+          {
+            source_kind: 'bubble',
+            source_id: bubble.id,
+            source_title: bubble.title,
+            frozen_content: bubble.content,
+            created_at: '2026-07-27T10:00:00.000Z',
+            display_order: 1,
+          },
+        ],
       },
     });
     expect(details.messages[0].id).toEqual(expect.any(String));
@@ -172,14 +218,27 @@ describe('DiscussionsService', () => {
         ],
       },
     ]);
+    const stored = repository.findByProjectAndCreationIdempotencyKey(
+      project.id,
+      'create-first-decision',
+    );
+    expect(stored).toMatchObject({
+      id: details.id,
+      context_version: 1,
+      expected_context_item_count: 2,
+      creation_idempotency_key: 'create-first-decision',
+    });
+    expect(stored?.creation_request_fingerprint).toMatch(/^[a-f0-9]{64}$/);
   });
 
   it.each([
     [
       {
         project_id: 'wrong-project',
-        frozen_context: {},
         first_prompt: 'Valid prompt',
+        idempotency_key: 'create-validation',
+        bubble_ids: [],
+        document_ids: [],
       },
       {
         project_id: 'Project id must match the project in the request path.',
@@ -188,16 +247,20 @@ describe('DiscussionsService', () => {
     [
       {
         project_id: 'PROJECT_ID',
-        frozen_context: [],
         first_prompt: 'Valid prompt',
+        idempotency_key: 'create-validation',
+        bubble_ids: 'not-an-array',
+        document_ids: [],
       },
-      { frozen_context: 'Frozen context must be a JSON object.' },
+      { bubble_ids: 'Bubble ids must be an array.' },
     ],
     [
       {
         project_id: 'PROJECT_ID',
-        frozen_context: {},
         first_prompt: ' ',
+        idempotency_key: 'create-validation',
+        bubble_ids: [],
+        document_ids: [],
       },
       { first_prompt: 'Message is required.' },
     ],
@@ -227,6 +290,121 @@ describe('DiscussionsService', () => {
       expect(service.list(project.id)).toEqual([]);
     },
   );
+
+  it('returns structured source errors without persisting a partial discussion', async () => {
+    const project = createProject('Owner');
+    const otherProject = createProject('Other');
+    const otherBubble = bubbles.create(otherProject.id, {
+      title: 'Private bubble',
+      content: 'Content from another project.',
+    });
+
+    await expect(
+      createDiscussion(project.id, 'Use selected context', {
+        bubbleIds: ['missing-bubble', otherBubble.id],
+        idempotencyKey: 'create-invalid-sources',
+      }),
+    ).rejects.toMatchObject({
+      constructor: UnprocessableEntityException,
+      response: {
+        code: 'DISCUSSION_CONTEXT_SOURCE_INVALID',
+        message:
+          'One or more selected context sources are unavailable. Review or remove the affected selections.',
+        source_errors: [
+          {
+            source_kind: 'bubble',
+            source_id: 'missing-bubble',
+            reason: 'missing',
+          },
+          {
+            source_kind: 'bubble',
+            source_id: otherBubble.id,
+            reason: 'cross_project',
+          },
+        ],
+      },
+    });
+    expect(service.list(project.id)).toEqual([]);
+    expect(modelClient.answerInputs).toEqual([]);
+  });
+
+  it('replays matching creation requests and rejects conflicting idempotency reuse', async () => {
+    const project = createProject();
+    const bubble = bubbles.create(project.id, {
+      title: 'Selected bubble',
+      content: 'Frozen on the first request.',
+    });
+    const input = {
+      bubbleIds: [bubble.id, bubble.id],
+      idempotencyKey: 'create-replay',
+    };
+    const first = await createDiscussion(project.id, 'Original prompt', input);
+
+    bubbles.update(project.id, bubble.id, {
+      title: 'Changed after creation',
+      content: 'Changed after creation',
+    });
+
+    const replayed = await createDiscussion(
+      project.id,
+      '  Original prompt  ',
+      input,
+    );
+
+    expect(replayed).toEqual(first);
+    expect(service.list(project.id)).toHaveLength(1);
+    expect(modelClient.answerInputs).toHaveLength(1);
+    expect(
+      (
+        replayed.frozen_context as {
+          items: Array<{ source_title: string; frozen_content: string }>;
+        }
+      ).items[1],
+    ).toMatchObject({
+      source_title: 'Selected bubble',
+      frozen_content: 'Frozen on the first request.',
+    });
+
+    await expect(
+      createDiscussion(project.id, 'Different prompt', {
+        bubbleIds: [bubble.id],
+        idempotencyKey: 'create-replay',
+      }),
+    ).rejects.toMatchObject({
+      constructor: ConflictException,
+      response: {
+        code: 'DISCUSSION_CREATION_IDEMPOTENCY_CONFLICT',
+        message:
+          'The creation idempotency key has already been used with a different prompt or context selection.',
+      },
+    });
+    expect(service.list(project.id)).toHaveLength(1);
+    expect(modelClient.answerInputs).toHaveLength(1);
+  });
+
+  it('translates atomic snapshot persistence failures without exposing storage details', async () => {
+    const project = createProject();
+    jest
+      .spyOn(repository, 'createWithFirstMessage')
+      .mockImplementationOnce(() => {
+        throw new Error('SQLITE_CONSTRAINT: internal schema detail');
+      });
+
+    await expect(
+      createDiscussion(project.id, 'Persist atomically', {
+        idempotencyKey: 'create-persistence-failure',
+      }),
+    ).rejects.toMatchObject({
+      constructor: ServiceUnavailableException,
+      response: {
+        code: 'DISCUSSION_SNAPSHOT_PERSISTENCE_FAILED',
+        message:
+          'The discussion and its frozen context could not be saved. Retry creation with the same idempotency key.',
+      },
+    });
+    expect(service.list(project.id)).toEqual([]);
+    expect(modelClient.answerInputs).toEqual([]);
+  });
 
   it('lists latest activity as Active, records explicit open, and recalculates after deletion', async () => {
     const project = createProject();
@@ -536,14 +714,30 @@ describe('DiscussionsService', () => {
     });
   });
 
-  it('rejects oversized context without silently truncating it', async () => {
+  it('rejects an over-budget first turn before persistence', async () => {
     const project = createProject();
+    modelInputBudget = new ConfiguredModelInputBudget(
+      {
+        focusedResponseWordBudget: 200,
+        modelInputTokenLimit: 12_001,
+        reservedOutputTokens: 4_000,
+        inputSafetyMarginTokens: 8_000,
+      },
+      new ConservativeInputTokenEstimator(),
+    );
+    service = new DiscussionsService(
+      projects,
+      repository,
+      repository,
+      modelClient,
+      contextFormatter,
+      modelInputBudget,
+      contextAssembler,
+    );
 
     try {
-      await service.create(project.id, {
-        project_id: project.id,
-        frozen_context: { content: 'x'.repeat(400_000) },
-        first_prompt: 'Question',
+      await createDiscussion(project.id, 'Question', {
+        idempotencyKey: 'create-over-budget',
       });
     } catch (error) {
       expect(error).toBeInstanceOf(PayloadTooLargeException);
@@ -555,8 +749,8 @@ describe('DiscussionsService', () => {
         code: 'DISCUSSION_CONTEXT_TOO_LARGE',
         message:
           'The frozen context and complete message history exceed the supported model input budget. Remove selected context or start a new discussion.',
-        available_input_tokens: 116_000,
-        input_token_limit: 128_000,
+        available_input_tokens: 1,
+        input_token_limit: 12_001,
         reserved_output_tokens: 4_000,
         safety_margin_tokens: 8_000,
       });
@@ -595,6 +789,7 @@ describe('DiscussionsService', () => {
       modelClient,
       contextFormatter,
       tightBudget,
+      contextAssembler,
     );
 
     await expect(
