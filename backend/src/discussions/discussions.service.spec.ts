@@ -6,6 +6,7 @@ import {
   ServiceUnavailableException,
   UnprocessableEntityException,
 } from '@nestjs/common';
+import type { FrozenContextV1 } from '@nuee/shared-types';
 import { CanonicalFrozenContextFormatter } from '../ai/frozen-context.formatter';
 import { ConservativeInputTokenEstimator } from '../ai/input-token-estimator';
 import type {
@@ -19,10 +20,30 @@ import { BubblesService } from '../bubbles/bubbles.service';
 import { SqliteBubbleRepository } from '../bubbles/sqlite-bubble.repository';
 import { DatabaseProvider } from '../database/database.provider';
 import { DiscussionContextAssembler } from '../discussion-context/discussion-context.assembler';
+import type {
+  DocumentContextSourceReadResult,
+  DocumentContextSourceReader,
+} from '../discussion-context/discussion-context.types';
 import { ProjectsService } from '../projects/projects.service';
 import { SqliteProjectRepository } from '../projects/sqlite-project.repository';
 import { DiscussionsService } from './discussions.service';
 import { SqliteDiscussionRepository } from './sqlite-discussion.repository';
+
+class FakeDocumentContextSourceReader implements DocumentContextSourceReader {
+  readonly results = new Map<string, DocumentContextSourceReadResult>();
+
+  readContextSource(
+    _projectId: string,
+    documentId: string,
+  ): DocumentContextSourceReadResult {
+    return (
+      this.results.get(documentId) ?? {
+        status: 'unavailable',
+        reason: 'missing',
+      }
+    );
+  }
+}
 
 class ControllableModelClient implements ModelClient {
   readonly answerInputs: GenerateAnswerInput[] = [];
@@ -72,6 +93,7 @@ describe('DiscussionsService', () => {
   let modelClient: ControllableModelClient;
   let contextFormatter: CanonicalFrozenContextFormatter;
   let modelInputBudget: ConfiguredModelInputBudget;
+  let documents: FakeDocumentContextSourceReader;
   let contextAssembler: DiscussionContextAssembler;
   let service: DiscussionsService;
 
@@ -98,7 +120,12 @@ describe('DiscussionsService', () => {
       },
       new ConservativeInputTokenEstimator(),
     );
-    contextAssembler = new DiscussionContextAssembler(projects, bubbles);
+    documents = new FakeDocumentContextSourceReader();
+    contextAssembler = new DiscussionContextAssembler(
+      projects,
+      bubbles,
+      documents,
+    );
     service = new DiscussionsService(
       projects,
       repository,
@@ -229,6 +256,276 @@ describe('DiscussionsService', () => {
       creation_idempotency_key: 'create-first-decision',
     });
     expect(stored?.creation_request_fingerprint).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it('persists one and several documents with mixed selections in confirmed order', async () => {
+    const project = createProject();
+    const firstBubble = bubbles.create(project.id, {
+      title: 'First bubble',
+      content: 'Complete first bubble content.',
+    });
+    const secondBubble = bubbles.create(project.id, {
+      title: 'Second bubble',
+      content: 'Complete second bubble content.',
+    });
+    documents.results.set('document-a', {
+      status: 'available',
+      source: {
+        id: 'document-a',
+        project_id: project.id,
+        title: 'First document',
+        processing_status: 'ready',
+        processed_text: 'Complete first document text.',
+      },
+    });
+    documents.results.set('document-b', {
+      status: 'available',
+      source: {
+        id: 'document-b',
+        project_id: project.id,
+        title: 'Second document',
+        processing_status: 'ready',
+        processed_text: 'Complete second document text.',
+      },
+    });
+
+    const documentOnly = await createDiscussion(
+      project.id,
+      'Use one document',
+      {
+        documentIds: ['document-a'],
+        idempotencyKey: 'create-one-document',
+      },
+    );
+    const mixed = await createDiscussion(project.id, 'Use all sources', {
+      bubbleIds: [secondBubble.id, firstBubble.id, secondBubble.id],
+      documentIds: ['document-b', 'document-a', 'document-b'],
+      idempotencyKey: 'create-mixed-context',
+    });
+    const documentOnlyContext = documentOnly.frozen_context as FrozenContextV1;
+    const mixedContext = mixed.frozen_context as FrozenContextV1;
+
+    expect(
+      documentOnlyContext.items.map(
+        ({ source_kind, source_id, frozen_content, display_order }) => ({
+          source_kind,
+          source_id,
+          frozen_content,
+          display_order,
+        }),
+      ),
+    ).toEqual([
+      {
+        source_kind: 'project_description',
+        source_id: project.id,
+        frozen_content: project.description,
+        display_order: 0,
+      },
+      {
+        source_kind: 'document',
+        source_id: 'document-a',
+        frozen_content: 'Complete first document text.',
+        display_order: 1,
+      },
+    ]);
+    expect(
+      mixedContext.items.map(
+        ({ source_kind, source_id, source_title, display_order }) => ({
+          source_kind,
+          source_id,
+          source_title,
+          display_order,
+        }),
+      ),
+    ).toEqual([
+      {
+        source_kind: 'project_description',
+        source_id: project.id,
+        source_title: 'Project description',
+        display_order: 0,
+      },
+      {
+        source_kind: 'bubble',
+        source_id: secondBubble.id,
+        source_title: secondBubble.title,
+        display_order: 1,
+      },
+      {
+        source_kind: 'bubble',
+        source_id: firstBubble.id,
+        source_title: firstBubble.title,
+        display_order: 2,
+      },
+      {
+        source_kind: 'document',
+        source_id: 'document-b',
+        source_title: 'Second document',
+        display_order: 3,
+      },
+      {
+        source_kind: 'document',
+        source_id: 'document-a',
+        source_title: 'First document',
+        display_order: 4,
+      },
+    ]);
+    expect(modelClient.answerInputs).toEqual([
+      {
+        formattedContext: contextFormatter.format(documentOnlyContext),
+        messages: [{ role: 'user', content: 'Use one document' }],
+      },
+      {
+        formattedContext: contextFormatter.format(mixedContext),
+        messages: [{ role: 'user', content: 'Use all sources' }],
+      },
+    ]);
+  });
+
+  it('reuses persisted context after live sources are edited, renamed, or deleted', async () => {
+    const project = createProject();
+    const bubble = bubbles.create(project.id, {
+      title: 'Initial bubble title',
+      content: 'Initial bubble content.',
+      position_x: 75,
+      position_y: -25,
+    });
+    projects.updateDescription(project.id, {
+      description: 'Latest project description at confirmation.',
+    });
+    const latestBubble = bubbles.update(project.id, bubble.id, {
+      title: 'Latest bubble title at confirmation',
+      content: 'Latest bubble content at confirmation.',
+    });
+    documents.results.set('document-a', {
+      status: 'available',
+      source: {
+        id: 'document-a',
+        project_id: project.id,
+        title: 'Latest document title at confirmation',
+        processing_status: 'ready',
+        processed_text: 'Latest document text at confirmation.',
+      },
+    });
+
+    const created = await createDiscussion(
+      project.id,
+      'Freeze the latest values',
+      {
+        bubbleIds: [bubble.id],
+        documentIds: ['document-a'],
+        idempotencyKey: 'create-frozen-values',
+      },
+    );
+    const frozenContext = created.frozen_context as FrozenContextV1;
+
+    projects.updateDescription(project.id, {
+      description: 'Changed after discussion creation.',
+    });
+    bubbles.update(project.id, bubble.id, {
+      title: 'Renamed after discussion creation',
+      content: 'Changed after discussion creation.',
+    });
+    bubbles.delete(project.id, bubble.id);
+    documents.results.delete('document-a');
+
+    const continued = await service.sendMessage(project.id, created.id, {
+      content: 'Use the same frozen sources again',
+      idempotency_key: 'reuse-frozen-context',
+    });
+
+    expect(frozenContext.items).toEqual([
+      expect.objectContaining({
+        source_kind: 'project_description',
+        source_id: project.id,
+        frozen_content: 'Latest project description at confirmation.',
+      }),
+      expect.objectContaining({
+        source_kind: 'bubble',
+        source_id: bubble.id,
+        source_title: latestBubble.title,
+        frozen_content: latestBubble.content,
+      }),
+      expect.objectContaining({
+        source_kind: 'document',
+        source_id: 'document-a',
+        source_title: 'Latest document title at confirmation',
+        frozen_content: 'Latest document text at confirmation.',
+      }),
+    ]);
+    expect(continued.frozen_context).toEqual(frozenContext);
+    expect(
+      modelClient.answerInputs.map(({ formattedContext }) => formattedContext),
+    ).toEqual([
+      contextFormatter.format(frozenContext),
+      contextFormatter.format(frozenContext),
+    ]);
+  });
+
+  it('allows a failed document-readiness confirmation to retry coherently', async () => {
+    const project = createProject();
+    documents.results.set('document-a', {
+      status: 'available',
+      source: {
+        id: 'document-a',
+        project_id: project.id,
+        title: 'Processing document',
+        processing_status: 'pending',
+        processed_text: null,
+      },
+    });
+
+    await expect(
+      createDiscussion(project.id, 'Wait for the complete document', {
+        documentIds: ['document-a'],
+        idempotencyKey: 'create-after-document-ready',
+      }),
+    ).rejects.toMatchObject({
+      constructor: UnprocessableEntityException,
+      response: {
+        code: 'DISCUSSION_CONTEXT_SOURCE_INVALID',
+        source_errors: [
+          {
+            source_kind: 'document',
+            source_id: 'document-a',
+            reason: 'pending',
+          },
+        ],
+      },
+    });
+    expect(service.list(project.id)).toEqual([]);
+    expect(modelClient.answerInputs).toEqual([]);
+
+    documents.results.set('document-a', {
+      status: 'available',
+      source: {
+        id: 'document-a',
+        project_id: project.id,
+        title: 'Ready document',
+        processing_status: 'ready',
+        processed_text: 'The complete processed document.',
+      },
+    });
+
+    await expect(
+      createDiscussion(project.id, 'Wait for the complete document', {
+        documentIds: ['document-a'],
+        idempotencyKey: 'create-after-document-ready',
+      }),
+    ).resolves.toMatchObject({
+      frozen_context: {
+        items: [
+          expect.objectContaining({ source_kind: 'project_description' }),
+          expect.objectContaining({
+            source_kind: 'document',
+            source_id: 'document-a',
+            source_title: 'Ready document',
+            frozen_content: 'The complete processed document.',
+          }),
+        ],
+      },
+    });
+    expect(service.list(project.id)).toHaveLength(1);
+    expect(modelClient.answerInputs).toHaveLength(1);
   });
 
   it.each([
