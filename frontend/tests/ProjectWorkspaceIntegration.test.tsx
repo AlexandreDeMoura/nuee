@@ -78,6 +78,44 @@ function documentContextSource(
   };
 }
 
+function discussionDetails(
+  overrides: Partial<DiscussionDetails> = {},
+): DiscussionDetails {
+  return {
+    id: 'discussion-1',
+    project_id: project.id,
+    title: 'Frozen sources',
+    frozen_context: {
+      version: 1,
+      items: [
+        {
+          id: 'context-project',
+          source_kind: 'project_description',
+          source_id: project.id,
+          source_title: 'Project description',
+          frozen_content: 'The frozen project description.',
+          created_at: '2026-07-28T08:00:00.000Z',
+          display_order: 0,
+        },
+        {
+          id: 'context-bubble',
+          source_kind: 'bubble',
+          source_id: 'bubble-1',
+          source_title: 'Frozen market evidence',
+          frozen_content: 'The immutable market evidence.',
+          created_at: '2026-07-28T08:00:00.000Z',
+          display_order: 1,
+        },
+      ],
+    },
+    created_at: '2026-07-28T08:00:00.000Z',
+    updated_at: '2026-07-28T08:00:00.001Z',
+    last_activity_at: '2026-07-28T08:00:00.001Z',
+    messages: [],
+    ...overrides,
+  };
+}
+
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
@@ -146,6 +184,84 @@ describe('workspace integration contracts', () => {
       document.querySelector('[data-workspace-content]')?.hasAttribute('inert'),
     ).toBe(false);
     expect(document.activeElement).toBe(startButton);
+  });
+
+  it('keeps the canvas inert while the discussion and frozen Inspector share one modal focus region', async () => {
+    const persisted = discussionDetails();
+
+    render(
+      <ProjectWorkspace
+        discussionCount={1}
+        discussionLifecycleRequests={{
+          get: async () => persisted,
+        }}
+        discussionPanelRequests={{
+          list: async () => [
+            {
+              id: persisted.id,
+              project_id: persisted.project_id,
+              title: persisted.title,
+              created_at: persisted.created_at,
+              updated_at: persisted.updated_at,
+              last_activity_at: persisted.last_activity_at,
+              is_active: true,
+            },
+          ],
+          recordOpen: async () => persisted,
+        }}
+        project={project}
+        requestBubbles={requestEmptyBubbles}
+      />,
+    );
+
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Open discussion: Frozen sources',
+      }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Inspect frozen context: Frozen market evidence',
+      }),
+    );
+
+    const modal = screen.getByRole('dialog', { name: 'Frozen sources' });
+    const inspector = within(modal).getByRole('region', {
+      name: 'Frozen market evidence',
+    });
+    expect(inspector.textContent).toContain('The immutable market evidence.');
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
+    expect(
+      document.querySelector('[data-workspace-content]')?.hasAttribute('inert'),
+    ).toBe(true);
+    expect(
+      document
+        .querySelector('[data-workspace-content]')
+        ?.getAttribute('aria-hidden'),
+    ).toBe('true');
+
+    const closeInspector = within(modal).getByRole('button', {
+      name: 'Close frozen context Inspector',
+    });
+    expect(document.activeElement).toBe(closeInspector);
+    const firstModalAction = within(modal).getByRole('button', {
+      name: 'Extract knowledge from discussion',
+    });
+    firstModalAction.focus();
+    fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
+    expect(document.activeElement).toBe(closeInspector);
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('region', {
+      name: 'Frozen market evidence',
+    })).toBeNull();
+    expect(screen.getByRole('dialog', { name: 'Frozen sources' })).toBeTruthy();
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(
+      document.querySelector('[data-workspace-content]')?.hasAttribute('inert'),
+    ).toBe(false);
   });
 
   it('can start a discussion from the panel when the canvas is not empty', async () => {

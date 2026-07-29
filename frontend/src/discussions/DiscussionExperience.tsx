@@ -1,13 +1,14 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { DiscussionModal } from './DiscussionModal';
 import { DiscussionComposer } from './DiscussionComposer';
 import { DiscussionContextBadges } from './DiscussionContextBadges';
 import { DiscussionContextSelection } from './DiscussionContextSelection';
 import {
-  defaultDiscussionContextBadges,
-  type DiscussionContextBadgeResolver,
+  findFrozenContextItem,
+  getDiscussionContextBadges,
   type DiscussionContextInspection,
 } from './discussionContextModel';
+import { FrozenContextInspector } from './FrozenContextInspector';
 import {
   DiscussionKnowledgeAction,
   type DiscussionKnowledgeSource,
@@ -20,7 +21,11 @@ import {
 } from './useDiscussionLifecycle';
 import type { DiscussionVisibilityController } from './useDiscussionVisibility';
 import type { DiscussionDeleteTarget } from './DiscussionDeleteDialog';
-import type { AnalyticsClient } from '../analytics';
+import {
+  analytics,
+  trackAnalytics,
+  type AnalyticsClient,
+} from '../analytics';
 import type { DiscussionContextSelectionController } from './useDiscussionContextSelection';
 
 export interface DiscussionExperienceProps {
@@ -28,7 +33,6 @@ export interface DiscussionExperienceProps {
   canSelectBubbleContext?: boolean;
   canSelectDocumentContext?: boolean;
   contextSelection?: DiscussionContextSelectionController;
-  contextBadgeResolver?: DiscussionContextBadgeResolver;
   controller: DiscussionVisibilityController;
   isObscured?: boolean;
   onExtractKnowledge?: (source: DiscussionKnowledgeSource) => void;
@@ -45,7 +49,6 @@ export function DiscussionExperience({
   canSelectBubbleContext,
   canSelectDocumentContext,
   contextSelection,
-  contextBadgeResolver,
   controller,
   isObscured,
   onExtractKnowledge,
@@ -74,7 +77,6 @@ export function DiscussionExperience({
       canSelectBubbleContext={canSelectBubbleContext}
       canSelectDocumentContext={canSelectDocumentContext}
       contextSelection={contextSelection}
-      contextBadgeResolver={contextBadgeResolver}
       isObscured={isObscured}
       onExtractKnowledge={onExtractKnowledge}
       onInspectContext={onInspectContext}
@@ -94,7 +96,6 @@ function DiscussionExperienceModal({
   canSelectBubbleContext,
   canSelectDocumentContext,
   contextSelection,
-  contextBadgeResolver,
   controller,
   isObscured,
   onExtractKnowledge,
@@ -110,6 +111,11 @@ function DiscussionExperienceModal({
     DiscussionVisibilityController['visibleDiscussion']
   >;
 }) {
+  const [inspectedContextId, setInspectedContextId] = useState<string | null>(
+    null,
+  );
+  const inspectionTriggerRef = useRef<HTMLElement | null>(null);
+  const resolvedAnalyticsClient = analyticsClient ?? analytics;
   const handleDiscussionCreated = useCallback(
     (discussion: { id: string; title: string }) => {
       contextSelection?.complete();
@@ -151,6 +157,34 @@ function DiscussionExperienceModal({
     lifecycle.creationFailure,
     lifecycle.isSubmitting,
   ]);
+  const inspectContext = useCallback(
+    (
+      inspection: DiscussionContextInspection,
+      trigger: HTMLButtonElement,
+    ) => {
+      inspectionTriggerRef.current = trigger;
+      setInspectedContextId(inspection.item.id);
+      onInspectContext?.(inspection);
+
+      trackAnalytics(resolvedAnalyticsClient, 'discussion_context_inspected', {
+        project_id: projectId,
+        discussion_id: inspection.discussionId,
+        context_id: inspection.item.id,
+        source_kind: inspection.item.source_kind,
+        occurred_at: new Date().toISOString(),
+      });
+    },
+    [onInspectContext, projectId, resolvedAnalyticsClient],
+  );
+  const closeContextInspector = useCallback(() => {
+    setInspectedContextId(null);
+
+    queueMicrotask(() => {
+      if (inspectionTriggerRef.current?.isConnected) {
+        inspectionTriggerRef.current.focus();
+      }
+    });
+  }, []);
 
   if (isSelectingSources) {
     return null;
@@ -177,11 +211,13 @@ function DiscussionExperienceModal({
       ? { ...visibleDiscussion, title }
       : visibleDiscussion;
   const contextBadges = lifecycle.details
-    ? (contextBadgeResolver ?? defaultDiscussionContextBadges)(
-        lifecycle.details,
-      )
+    ? getDiscussionContextBadges(lifecycle.details)
     : [];
   const discussionId = lifecycle.details?.id;
+  const inspectedContextItem = findFrozenContextItem(
+    lifecycle.details,
+    inspectedContextId,
+  );
   const submit = () => {
     if (
       isDraft &&
@@ -225,13 +261,21 @@ function DiscussionExperienceModal({
           />
         )
       }
+      inspectorSlot={
+        inspectedContextItem ? (
+          <FrozenContextInspector
+            item={inspectedContextItem}
+            onClose={closeContextInspector}
+          />
+        ) : undefined
+      }
       isObscured={isObscured}
       contextSlot={
         discussionId && contextBadges.length > 0 ? (
           <DiscussionContextBadges
             badges={contextBadges}
             discussionId={discussionId}
-            onInspect={onInspectContext}
+            onInspect={inspectContext}
           />
         ) : undefined
       }
@@ -264,6 +308,9 @@ function DiscussionExperienceModal({
                 title,
               })
           : undefined
+      }
+      onCloseInspector={
+        inspectedContextItem ? closeContextInspector : undefined
       }
       onDraftPromptChange={controller.updateDraftPrompt}
       onMinimize={onMinimize ?? controller.minimize}

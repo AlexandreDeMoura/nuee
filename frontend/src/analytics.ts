@@ -112,6 +112,13 @@ export interface AnalyticsEventProperties {
     discussion_id: string;
     occurred_at: string;
   };
+  discussion_context_inspected: {
+    project_id: string;
+    discussion_id: string;
+    context_id: string;
+    source_kind: 'project_description' | 'bubble' | 'document';
+    occurred_at: string;
+  };
   discussion_deleted: {
     project_id: string;
     discussion_id: string;

@@ -10,6 +10,7 @@ import type {
   DiscussionRole,
   DiscussionSummary,
   FrozenContext,
+  FrozenContextItem,
   SendMessageInput,
 } from '@nuee/shared-types';
 import { requestJson } from './client';
@@ -33,6 +34,7 @@ export type {
   DiscussionRole,
   DiscussionSummary,
   FrozenContext,
+  FrozenContextItem,
   SendMessageInput,
 };
 

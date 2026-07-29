@@ -57,7 +57,6 @@ import {
   useProjectDiscussions,
   useDiscussionVisibility,
   type DiscussionLifecycleRequests,
-  type DiscussionContextBadgeResolver,
   type DiscussionContextInspection,
   type DiscussionContextEntryPoint,
   type DiscussionContextSourceCandidate,
@@ -148,7 +147,6 @@ export interface ProjectWorkspaceProps {
   emptyActionHandlers?: WorkspaceEmptyActionHandlers;
   discussionLifecycleRequests?: DiscussionLifecycleRequests;
   discussionPanelRequests?: ProjectDiscussionRequests;
-  discussionContextBadgeResolver?: DiscussionContextBadgeResolver;
   onExtractDiscussionKnowledge?: (source: DiscussionKnowledgeSource) => void;
   onInspectDiscussionContext?: (
     inspection: DiscussionContextInspection,
@@ -608,7 +606,6 @@ export function ProjectWorkspace({
   emptyActionHandlers,
   discussionLifecycleRequests,
   discussionPanelRequests,
-  discussionContextBadgeResolver,
   onExtractDiscussionKnowledge,
   onInspectDiscussionContext,
   onDiscussionDraftSubmit,
@@ -1292,7 +1289,6 @@ export function ProjectWorkspace({
                   documentContextSources !== undefined
                 }
                 contextSelection={discussionContextSelection}
-                contextBadgeResolver={discussionContextBadgeResolver}
                 controller={discussionVisibility}
                 isObscured={discussionPendingDeletion !== null}
                 onExtractKnowledge={onExtractDiscussionKnowledge}

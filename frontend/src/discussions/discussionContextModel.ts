@@ -1,4 +1,8 @@
-import { isFrozenContextV1, type DiscussionDetails } from '../api';
+import {
+  isFrozenContextV1,
+  type DiscussionDetails,
+  type FrozenContextItem,
+} from '../api';
 
 export type DiscussionContextKind =
   | 'project_description'
@@ -9,51 +13,65 @@ export interface DiscussionContextBadge {
   id: string;
   kind: DiscussionContextKind;
   label: string;
+  item: FrozenContextItem;
 }
 
 export interface DiscussionContextInspection {
-  contextId: string;
   discussionId: string;
+  item: FrozenContextItem;
 }
 
 export type DiscussionContextBadgeResolver = (
   discussion: DiscussionDetails,
 ) => readonly DiscussionContextBadge[];
 
-/**
- * Temporary adapter for the no-additional-context flow. Discussion Context
- * owns richer badge metadata and can replace this through the resolver seam.
- */
-export const defaultDiscussionContextBadges: DiscussionContextBadgeResolver = (
-  discussion,
-) => {
+export function getDiscussionContextBadges(
+  discussion: DiscussionDetails,
+): readonly DiscussionContextBadge[] {
   if (
-    isFrozenContextV1(
+    !isFrozenContextV1(
       discussion.frozen_context,
       discussion.project_id,
     )
   ) {
-    const projectContext = discussion.frozen_context.items[0];
-
-    return [
-      {
-        id: projectContext.id,
-        kind: 'project_description',
-        label: 'Project context',
-      },
-    ];
+    return [];
   }
 
-  return Object.prototype.hasOwnProperty.call(
-    discussion.frozen_context,
-    'project_description',
-  )
-    ? [
-        {
-          id: 'project_description',
-          kind: 'project_description',
-          label: 'Project context',
-        },
-      ]
-    : [];
-};
+  return discussion.frozen_context.items.map((item) => ({
+    id: item.id,
+    item,
+    kind: item.source_kind,
+    label:
+      item.source_kind === 'project_description'
+        ? 'Project context'
+        : item.source_title,
+  }));
+}
+
+/**
+ * Stable public name retained for callers of the former project-only adapter.
+ * It now projects every persisted versioned context item.
+ */
+export const defaultDiscussionContextBadges: DiscussionContextBadgeResolver =
+  getDiscussionContextBadges;
+
+export function findFrozenContextItem(
+  discussion: DiscussionDetails | null,
+  contextId: string | null,
+): FrozenContextItem | null {
+  if (
+    !discussion ||
+    !contextId ||
+    !isFrozenContextV1(
+      discussion.frozen_context,
+      discussion.project_id,
+    )
+  ) {
+    return null;
+  }
+
+  return (
+    discussion.frozen_context.items.find((item) => item.id === contextId) ??
+    null
+  );
+}

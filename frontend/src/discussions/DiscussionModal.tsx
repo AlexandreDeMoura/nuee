@@ -25,8 +25,10 @@ export interface DiscussionModalProps {
   actionsSlot?: ReactNode;
   composerSlot?: ReactNode;
   contextSlot?: ReactNode;
+  inspectorSlot?: ReactNode;
   isObscured?: boolean;
   messagesSlot?: ReactNode;
+  onCloseInspector?: () => void;
   onDelete?: () => void;
   onDraftPromptChange: (prompt: string) => void;
   onDraftSubmit?: (prompt: string) => void;
@@ -38,8 +40,10 @@ export function DiscussionModal({
   actionsSlot,
   composerSlot,
   contextSlot,
+  inspectorSlot,
   isObscured = false,
   messagesSlot,
+  onCloseInspector,
   onDelete,
   onDraftPromptChange,
   onDraftSubmit,
@@ -52,6 +56,7 @@ export function DiscussionModal({
   const dialogRef = useRef<HTMLDivElement>(null);
   const draftInputRef = useRef<HTMLTextAreaElement>(null);
   const onMinimizeRef = useRef(onMinimize);
+  const onCloseInspectorRef = useRef(onCloseInspector);
   const isDraft = visibleDiscussion.kind === 'draft';
   const hasTemporaryTitle =
     isDraft || isTemporaryDiscussionTitle(visibleDiscussion.title);
@@ -63,6 +68,10 @@ export function DiscussionModal({
   useEffect(() => {
     onMinimizeRef.current = onMinimize;
   }, [onMinimize]);
+
+  useEffect(() => {
+    onCloseInspectorRef.current = onCloseInspector;
+  }, [onCloseInspector]);
 
   useEffect(() => {
     const previouslyFocused =
@@ -90,7 +99,13 @@ export function DiscussionModal({
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault();
-        onMinimizeRef.current();
+
+        if (onCloseInspectorRef.current) {
+          onCloseInspectorRef.current();
+        } else {
+          onMinimizeRef.current();
+        }
+
         return;
       }
 
@@ -111,11 +126,15 @@ export function DiscussionModal({
 
       const first = focusableElements[0];
       const last = focusableElements[focusableElements.length - 1];
+      const focusedElement =
+        event.target instanceof HTMLElement
+          ? event.target
+          : document.activeElement;
 
-      if (event.shiftKey && document.activeElement === first) {
+      if (event.shiftKey && focusedElement === first) {
         event.preventDefault();
         last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
+      } else if (!event.shiftKey && focusedElement === last) {
         event.preventDefault();
         first.focus();
       }
@@ -157,7 +176,9 @@ export function DiscussionModal({
       onPointerDown={(event) => event.stopPropagation()}
     >
       <div
-        className="flex max-h-[min(760px,calc(100vh-90px))] min-h-[420px] w-full max-w-[760px] flex-col overflow-hidden rounded-2xl border border-[#d9e0e8] bg-white shadow-[0_28px_72px_-24px_rgba(20,28,40,0.58)]"
+        className={`flex max-h-[min(760px,calc(100vh-90px))] min-h-[420px] w-full flex-col overflow-hidden rounded-2xl border border-[#d9e0e8] bg-white shadow-[0_28px_72px_-24px_rgba(20,28,40,0.58)] md:flex-row ${
+          inspectorSlot ? 'max-w-[1080px]' : 'max-w-[760px]'
+        }`}
         ref={dialogRef}
         role="dialog"
         aria-modal="true"
@@ -166,7 +187,8 @@ export function DiscussionModal({
         data-discussion-kind={visibleDiscussion.kind}
         tabIndex={-1}
       >
-        <header className="shrink-0 border-b border-[#eef1f5] px-4 sm:px-5">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-white">
+          <header className="shrink-0 border-b border-[#eef1f5] px-4 sm:px-5">
           <div className="flex min-h-13 items-center gap-3">
             <div className="min-w-0">
               <h2
@@ -222,70 +244,75 @@ export function DiscussionModal({
               {contextSlot}
             </div>
           )}
-        </header>
+          </header>
 
-        <div
-          className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[#fbfcfd] px-4 py-5 sm:px-6"
-        >
-          {messagesSlot ?? (
-            <div className="m-auto max-w-[380px] py-8 text-center">
-              <span className="mx-auto mb-3.75 grid size-11.5 place-items-center rounded-[13px] bg-[#eef2fa] text-[#3f63a8]">
-                <MessageSquare
-                  className="size-5.25"
-                  strokeWidth={1.6}
-                  aria-hidden="true"
-                />
-              </span>
-              <p className="text-[16px] font-semibold text-[#1e2733]">
-                Ask one focused question
-              </p>
-              <p className="mt-1.5 text-[12.5px] leading-[1.55] text-[#8b97a6]">
-                Answers stay short by default. When something&apos;s worth
-                keeping, extract it as a bubble — the thread stays as reasoning
-                history.
-              </p>
-            </div>
-          )}
-        </div>
-
-        {composerSlot ??
-          (isDraft && (
-            <form
-              className="shrink-0 border-t border-[#eef1f5] bg-white p-3.5 sm:p-4"
-              onSubmit={submitDraft}
-            >
-              <label className="sr-only" htmlFor={composerId}>
-                Discussion prompt
-              </label>
-              <div className="flex items-end gap-2 rounded-xl border border-[#d7dee7] bg-white p-2 shadow-[0_1px_2px_rgba(30,39,51,0.04)] focus-within:border-[#3f63a8] focus-within:ring-3 focus-within:ring-[#3f63a8]/10">
-                <textarea
-                  className="max-h-40 min-h-[42px] flex-1 resize-none border-0 bg-transparent px-2 py-2 text-[13px] leading-[1.5] text-[#1e2733] outline-none placeholder:text-[#a7b1be]"
-                  id={composerId}
-                  name="prompt"
-                  placeholder="What do you want to understand?"
-                  ref={draftInputRef}
-                  rows={1}
-                  value={visibleDiscussion.prompt}
-                  onChange={(event) => onDraftPromptChange(event.target.value)}
-                />
-                <button
-                  className={`grid size-9 shrink-0 place-items-center rounded-[9px] bg-[#3f63a8] text-white shadow-[0_5px_12px_-7px_rgba(63,99,168,0.8)] hover:bg-[#33538f] disabled:cursor-not-allowed disabled:bg-[#c6cfda] disabled:shadow-none ${focusRing}`}
-                  type="submit"
-                  aria-label="Continue discussion"
-                  disabled={
-                    normalizedPrompt.length === 0 || onDraftSubmit === undefined
-                  }
-                  title="Continue"
-                >
-                  <ArrowUp
-                    className="size-[16px]"
-                    strokeWidth={2}
+          <div
+            className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[#fbfcfd] px-4 py-5 sm:px-6"
+          >
+            {messagesSlot ?? (
+              <div className="m-auto max-w-[380px] py-8 text-center">
+                <span className="mx-auto mb-3.75 grid size-11.5 place-items-center rounded-[13px] bg-[#eef2fa] text-[#3f63a8]">
+                  <MessageSquare
+                    className="size-5.25"
+                    strokeWidth={1.6}
                     aria-hidden="true"
                   />
-                </button>
+                </span>
+                <p className="text-[16px] font-semibold text-[#1e2733]">
+                  Ask one focused question
+                </p>
+                <p className="mt-1.5 text-[12.5px] leading-[1.55] text-[#8b97a6]">
+                  Answers stay short by default. When something&apos;s worth
+                  keeping, extract it as a bubble — the thread stays as
+                  reasoning history.
+                </p>
               </div>
-            </form>
-          ))}
+            )}
+          </div>
+
+          {composerSlot ??
+            (isDraft && (
+              <form
+                className="shrink-0 border-t border-[#eef1f5] bg-white p-3.5 sm:p-4"
+                onSubmit={submitDraft}
+              >
+                <label className="sr-only" htmlFor={composerId}>
+                  Discussion prompt
+                </label>
+                <div className="flex items-end gap-2 rounded-xl border border-[#d7dee7] bg-white p-2 shadow-[0_1px_2px_rgba(30,39,51,0.04)] focus-within:border-[#3f63a8] focus-within:ring-3 focus-within:ring-[#3f63a8]/10">
+                  <textarea
+                    className="max-h-40 min-h-[42px] flex-1 resize-none border-0 bg-transparent px-2 py-2 text-[13px] leading-[1.5] text-[#1e2733] outline-none placeholder:text-[#a7b1be]"
+                    id={composerId}
+                    name="prompt"
+                    placeholder="What do you want to understand?"
+                    ref={draftInputRef}
+                    rows={1}
+                    value={visibleDiscussion.prompt}
+                    onChange={(event) =>
+                      onDraftPromptChange(event.target.value)
+                    }
+                  />
+                  <button
+                    className={`grid size-9 shrink-0 place-items-center rounded-[9px] bg-[#3f63a8] text-white shadow-[0_5px_12px_-7px_rgba(63,99,168,0.8)] hover:bg-[#33538f] disabled:cursor-not-allowed disabled:bg-[#c6cfda] disabled:shadow-none ${focusRing}`}
+                    type="submit"
+                    aria-label="Continue discussion"
+                    disabled={
+                      normalizedPrompt.length === 0 ||
+                      onDraftSubmit === undefined
+                    }
+                    title="Continue"
+                  >
+                    <ArrowUp
+                      className="size-[16px]"
+                      strokeWidth={2}
+                      aria-hidden="true"
+                    />
+                  </button>
+                </div>
+              </form>
+            ))}
+        </div>
+        {inspectorSlot}
       </div>
     </div>
   );

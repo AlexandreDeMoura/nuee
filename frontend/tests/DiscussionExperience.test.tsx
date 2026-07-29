@@ -12,13 +12,13 @@ import {
   ApiError,
   type CreateDiscussionInput,
   type DiscussionDetails,
+  type FrozenContext,
   type SendMessageInput,
 } from '../src/api';
 import type { AnalyticsClient } from '../src/analytics';
 import {
   DiscussionExperience,
   useDiscussionVisibility,
-  type DiscussionContextBadgeResolver,
   type DiscussionContextInspection,
   type DiscussionLifecycleRequests,
   type DiscussionKnowledgeSource,
@@ -92,14 +92,12 @@ function details(
 
 function Harness({
   analyticsClient,
-  contextBadgeResolver,
   onDiscussionChanged,
   onExtractKnowledge,
   onInspectContext,
   requests,
 }: {
   analyticsClient?: AnalyticsClient;
-  contextBadgeResolver?: DiscussionContextBadgeResolver;
   onDiscussionChanged?: (discussion: DiscussionDetails) => void;
   onExtractKnowledge?: (source: DiscussionKnowledgeSource) => void;
   onInspectContext?: (inspection: DiscussionContextInspection) => void;
@@ -138,7 +136,6 @@ function Harness({
       </button>
       <DiscussionExperience
         analyticsClient={analyticsClient}
-        contextBadgeResolver={contextBadgeResolver}
         controller={controller}
         onDiscussionChanged={onDiscussionChanged}
         onExtractKnowledge={onExtractKnowledge}
@@ -219,30 +216,64 @@ describe('DiscussionExperience', () => {
     );
   });
 
-  it('renders supplied frozen-context and extraction integration points with identifier-only callbacks', async () => {
+  it('projects every persisted context item, expands overflow, and inspects the frozen body inside the modal', async () => {
     const onExtractKnowledge = vi.fn();
     const onInspectContext = vi.fn();
-    const contextBadgeResolver: DiscussionContextBadgeResolver = () => [
-      {
-        id: 'context-project',
-        kind: 'project_description',
-        label: 'Project context',
-      },
-      {
-        id: 'context-bubble-1',
-        kind: 'bubble',
-        label: 'Launch risks',
-      },
-    ];
+    const track = vi.fn<AnalyticsClient['track']>();
+    const contextItems: FrozenContext = {
+      version: 1,
+      items: [
+        {
+          id: 'context-project',
+          source_kind: 'project_description',
+          source_id: projectId,
+          source_title: 'Project description',
+          frozen_content: projectDescription,
+          created_at: '2026-07-28T08:00:00.000Z',
+          display_order: 0,
+        },
+        {
+          id: 'context-bubble-1',
+          source_kind: 'bubble',
+          source_id: 'bubble-1',
+          source_title: 'Launch risks',
+          frozen_content: 'The frozen licensing risk body.',
+          created_at: '2026-07-28T08:00:00.000Z',
+          display_order: 1,
+        },
+        {
+          id: 'context-document-1',
+          source_kind: 'document',
+          source_id: 'document-1',
+          source_title: 'Launch brief',
+          frozen_content: 'The complete frozen launch brief.',
+          created_at: '2026-07-28T08:00:00.000Z',
+          display_order: 2,
+        },
+        {
+          id: 'context-bubble-2',
+          source_kind: 'bubble',
+          source_id: 'bubble-2',
+          source_title: 'Go-to-market notes',
+          frozen_content: 'A second frozen bubble body.',
+          created_at: '2026-07-28T08:00:00.000Z',
+          display_order: 3,
+        },
+      ],
+    };
+    const launchRiskItem = contextItems.items[1];
+
+    expect(launchRiskItem).toBeTruthy();
 
     render(
       <Harness
-        contextBadgeResolver={contextBadgeResolver}
+        analyticsClient={{ track }}
         onExtractKnowledge={onExtractKnowledge}
         onInspectContext={onInspectContext}
         requests={{
           get: async () =>
             details({
+              frozen_context: contextItems,
               title: 'Launch constraints',
             }),
         }}
@@ -251,17 +282,60 @@ describe('DiscussionExperience', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Open first' }));
 
     expect(
-      await screen.findByLabelText('2 frozen context items'),
+      await screen.findByLabelText('4 frozen context items'),
     ).toBeTruthy();
+    expect(
+      screen.queryByRole('button', {
+        name: 'Inspect frozen context: Go-to-market notes',
+      }),
+    ).toBeNull();
+
     fireEvent.click(
       screen.getByRole('button', {
-        name: 'Inspect frozen context: Launch risks',
+        name: 'Show all 4 frozen context items',
       }),
     );
-    expect(onInspectContext).toHaveBeenCalledWith({
-      contextId: 'context-bubble-1',
-      discussionId: 'discussion-1',
+    expect(
+      screen.getByRole('button', {
+        name: 'Inspect frozen context: Go-to-market notes',
+      }),
+    ).toBeTruthy();
+
+    const launchRiskBadge = screen.getByRole('button', {
+      name: 'Inspect frozen context: Launch risks',
     });
+    fireEvent.click(launchRiskBadge);
+
+    const inspector = screen.getByRole('region', { name: 'Launch risks' });
+    expect(inspector.textContent).toContain('Frozen discussion context');
+    expect(inspector.textContent).toContain('Bubble');
+    expect(inspector.textContent).toContain(
+      'The frozen licensing risk body.',
+    );
+    expect(screen.getAllByRole('dialog')).toHaveLength(1);
+    expect(screen.getByRole('dialog').getAttribute('aria-modal')).toBe('true');
+    expect(onInspectContext).toHaveBeenCalledWith({
+      discussionId: 'discussion-1',
+      item: launchRiskItem,
+    });
+    expect(track).toHaveBeenCalledWith('discussion_context_inspected', {
+      project_id: projectId,
+      discussion_id: 'discussion-1',
+      context_id: 'context-bubble-1',
+      source_kind: 'bubble',
+      occurred_at: expect.any(String),
+    });
+
+    const closeInspector = screen.getByRole('button', {
+      name: 'Close frozen context Inspector',
+    });
+    expect(document.activeElement).toBe(closeInspector);
+    fireEvent.click(closeInspector);
+
+    await waitFor(() => expect(document.activeElement).toBe(launchRiskBadge));
+    expect(
+      screen.queryByRole('region', { name: 'Launch risks' }),
+    ).toBeNull();
 
     fireEvent.click(
       screen.getByRole('button', {
@@ -283,6 +357,55 @@ describe('DiscussionExperience', () => {
         },
       ],
     ]);
+  });
+
+  it('uses frozen source titles and bodies again after minimizing and reopening', async () => {
+    const frozenBubble = {
+      id: 'context-bubble-1',
+      source_kind: 'bubble' as const,
+      source_id: 'bubble-1',
+      source_title: 'Original frozen title',
+      frozen_content: 'Original frozen body.',
+      created_at: '2026-07-28T08:00:00.000Z',
+      display_order: 1,
+    };
+    const persisted = details({
+      frozen_context: {
+        version: 1,
+        items: [
+          {
+            id: 'context-project',
+            source_kind: 'project_description',
+            source_id: projectId,
+            source_title: 'Project description',
+            frozen_content: projectDescription,
+            created_at: '2026-07-28T08:00:00.000Z',
+            display_order: 0,
+          },
+          frozenBubble,
+        ],
+      },
+    });
+
+    render(<Harness requests={{ get: async () => persisted }} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Open first' }));
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Inspect frozen context: Original frozen title',
+      }),
+    );
+    expect(screen.getByText('Original frozen body.')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Minimize discussion' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open first' }));
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Inspect frozen context: Original frozen title',
+      }),
+    );
+    expect(screen.getByText('Original frozen body.')).toBeTruthy();
   });
 
   it('submits a normalized draft once, renders pending, then replaces it with chronological persisted messages', async () => {

@@ -7,6 +7,7 @@ export * from './DiscussionKnowledgeAction';
 export * from './DiscussionMessages';
 export * from './DiscussionModal';
 export * from './DiscussionsPanel';
+export * from './FrozenContextInspector';
 export * from './RichResponse';
 export * from './discussionContextModel';
 export * from './discussionCreationFailure';
