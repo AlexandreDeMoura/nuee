@@ -16,8 +16,20 @@ import type {
   LegacyFrozenContext,
   SendMessageInput,
 } from '@nuee/shared-types';
+import {
+  FROZEN_CONTEXT_FORMATTER,
+  type FrozenContextFormatter,
+} from '../ai/frozen-context.formatter';
 import { GENERATED_TITLE_MAX_LENGTH, MODEL_CLIENT } from '../ai/model-client';
-import type { ModelClient, ModelMessage } from '../ai/model-client';
+import type {
+  GenerateAnswerInput,
+  ModelClient,
+  ModelMessage,
+} from '../ai/model-client';
+import {
+  MODEL_INPUT_BUDGET,
+  type ModelInputBudget,
+} from '../ai/model-input-budget';
 import { ProjectsService } from '../projects/projects.service';
 import {
   DISCUSSION_MESSAGE_REPOSITORY,
@@ -33,7 +45,6 @@ import type {
 const TEMPORARY_TITLE = 'New discussion';
 const MAX_MESSAGE_LENGTH = 20_000;
 const MAX_IDEMPOTENCY_KEY_LENGTH = 200;
-const MAX_MODEL_INPUT_BYTES = 250_000;
 
 type DiscussionField =
   'project_id' | 'first_prompt' | 'content' | 'idempotency_key';
@@ -59,6 +70,10 @@ export class DiscussionsService {
     private readonly messages: DiscussionMessageRepository,
     @Inject(MODEL_CLIENT)
     private readonly modelClient: ModelClient,
+    @Inject(FROZEN_CONTEXT_FORMATTER)
+    private readonly contextFormatter: FrozenContextFormatter,
+    @Inject(MODEL_INPUT_BUDGET)
+    private readonly modelInputBudget: ModelInputBudget,
   ) {}
 
   async create(
@@ -99,7 +114,7 @@ export class DiscussionsService {
       throw new Error('Validated discussion input is unexpectedly missing.');
     }
 
-    this.guardModelInput(frozenContext, [
+    const modelInput = this.prepareModelInput(frozenContext, [
       { role: 'user', content: firstPrompt },
     ]);
 
@@ -129,7 +144,7 @@ export class DiscussionsService {
     };
 
     this.discussions.createWithFirstMessage(discussion, firstMessage);
-    await this.generateAnswer(discussion, firstMessage);
+    await this.generateAnswer(discussion, firstMessage, modelInput);
 
     return this.get(projectId, discussion.id);
   }
@@ -211,7 +226,7 @@ export class DiscussionsService {
         return this.get(projectId, discussionId);
       }
 
-      this.guardModelInput(
+      const modelInput = this.prepareModelInput(
         discussion.frozen_context,
         this.toModelMessages(existingMessages),
       );
@@ -229,12 +244,12 @@ export class DiscussionsService {
         throw this.notFound(projectId, discussionId);
       }
 
-      await this.generateAnswer(discussion, retriedMessage);
+      await this.generateAnswer(discussion, retriedMessage, modelInput);
       return this.get(projectId, discussionId);
     }
 
     this.assertNoUnansweredTurn(existingMessages);
-    this.guardModelInput(
+    const modelInput = this.prepareModelInput(
       discussion.frozen_context,
       this.toModelMessages(existingMessages, content),
     );
@@ -284,6 +299,7 @@ export class DiscussionsService {
         last_activity_at: createdAt,
       },
       userMessage,
+      modelInput,
     );
 
     return this.get(projectId, discussionId);
@@ -387,22 +403,10 @@ export class DiscussionsService {
   private async generateAnswer(
     discussion: PersistedDiscussion,
     userMessage: PersistedDiscussionMessage,
+    modelInput: GenerateAnswerInput,
   ): Promise<void> {
-    const history = this.messages.findAllMessages(
-      discussion.project_id,
-      discussion.id,
-    );
-    const modelMessages = history.map(({ role, content }) => ({
-      role,
-      content,
-    }));
-    this.guardModelInput(discussion.frozen_context, modelMessages);
-
     try {
-      const generation = await this.modelClient.generateAnswer({
-        frozenContext: discussion.frozen_context,
-        messages: modelMessages,
-      });
+      const generation = await this.modelClient.generateAnswer(modelInput);
       const content = generation.content?.trim();
 
       if (!content) {
@@ -605,23 +609,31 @@ export class DiscussionsService {
     });
   }
 
-  private guardModelInput(
+  private prepareModelInput(
     frozenContext: DiscussionFrozenContext,
     messages: readonly ModelMessage[],
-  ): void {
-    const serialized = JSON.stringify({
-      frozen_context: frozenContext,
+  ): GenerateAnswerInput {
+    const formattedContext = this.contextFormatter.format(frozenContext);
+    const input = {
+      formattedContext,
       messages,
-    });
+    };
+    const budget = this.modelInputBudget.evaluateAnswer(input);
 
-    if (Buffer.byteLength(serialized, 'utf8') > MAX_MODEL_INPUT_BYTES) {
+    if (!budget.fits) {
       throw new PayloadTooLargeException({
         code: 'DISCUSSION_CONTEXT_TOO_LARGE',
         message:
-          'The frozen context and message history are too large to send without truncation.',
-        limit_bytes: MAX_MODEL_INPUT_BYTES,
+          'The frozen context and complete message history exceed the supported model input budget. Remove selected context or start a new discussion.',
+        estimated_input_tokens: budget.estimatedInputTokens,
+        available_input_tokens: budget.availableInputTokens,
+        input_token_limit: budget.inputTokenLimit,
+        reserved_output_tokens: budget.reservedOutputTokens,
+        safety_margin_tokens: budget.safetyMarginTokens,
       });
     }
+
+    return input;
   }
 
   private toModelMessages(

@@ -1,7 +1,4 @@
-import type {
-  DiscussionFrozenContext,
-  DiscussionRole,
-} from '@nuee/shared-types';
+import type { DiscussionRole } from '@nuee/shared-types';
 
 export interface ModelMessage {
   role: DiscussionRole;
@@ -9,7 +6,7 @@ export interface ModelMessage {
 }
 
 export interface GenerateAnswerInput {
-  frozenContext: DiscussionFrozenContext;
+  formattedContext: string;
   messages: readonly ModelMessage[];
 }
 

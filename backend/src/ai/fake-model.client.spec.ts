@@ -22,9 +22,7 @@ describe('FakeModelClient', () => {
 
   it('generates the same answer from the latest user message', async () => {
     const input = {
-      frozenContext: {
-        project_description: 'An opaque snapshot.',
-      },
+      formattedContext: 'FROZEN_DISCUSSION_CONTEXT_LEGACY',
       messages: [
         { role: 'user' as const, content: 'An earlier question' },
         { role: 'assistant' as const, content: 'An earlier answer' },
@@ -63,7 +61,7 @@ describe('FakeModelClient', () => {
   it('returns stable fallbacks when no user message is present', async () => {
     await expect(
       client.generateAnswer({
-        frozenContext: {},
+        formattedContext: 'FROZEN_DISCUSSION_CONTEXT_LEGACY',
         messages: [],
       }),
     ).resolves.toEqual({

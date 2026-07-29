@@ -15,6 +15,9 @@ export interface AiConfig {
   model: string;
   apiKey: string;
   focusedResponseWordBudget: number;
+  modelInputTokenLimit: number;
+  reservedOutputTokens: number;
+  inputSafetyMarginTokens: number;
   requestTimeoutMs: number;
 }
 
@@ -22,6 +25,9 @@ const DEFAULT_PORT = 3000;
 const DEFAULT_FRONTEND_ORIGIN = 'http://localhost:5173';
 const DEFAULT_AI_MODEL = 'gpt-5.6-sol';
 const DEFAULT_FOCUSED_RESPONSE_WORD_BUDGET = 200;
+const DEFAULT_MODEL_INPUT_TOKEN_LIMIT = 128_000;
+const DEFAULT_RESERVED_OUTPUT_TOKENS = 4_000;
+const DEFAULT_INPUT_SAFETY_MARGIN_TOKENS = 8_000;
 const DEFAULT_AI_REQUEST_TIMEOUT_MS = 60_000;
 
 type EnvironmentSource = Record<string, unknown>;
@@ -139,7 +145,7 @@ export function createAiConfig(source: EnvironmentSource): AiConfig {
     throw new Error('OPENAI_API_KEY is required when NODE_ENV is not "test".');
   }
 
-  return {
+  const config: AiConfig = {
     provider,
     model: optionalString(source, 'AI_MODEL') ?? DEFAULT_AI_MODEL,
     apiKey: apiKey ?? '',
@@ -150,6 +156,27 @@ export function createAiConfig(source: EnvironmentSource): AiConfig {
       50,
       2_000,
     ),
+    modelInputTokenLimit: integerValue(
+      source,
+      'AI_MODEL_INPUT_TOKEN_LIMIT',
+      DEFAULT_MODEL_INPUT_TOKEN_LIMIT,
+      1_024,
+      2_000_000,
+    ),
+    reservedOutputTokens: integerValue(
+      source,
+      'AI_RESERVED_OUTPUT_TOKENS',
+      DEFAULT_RESERVED_OUTPUT_TOKENS,
+      1,
+      200_000,
+    ),
+    inputSafetyMarginTokens: integerValue(
+      source,
+      'AI_INPUT_SAFETY_MARGIN_TOKENS',
+      DEFAULT_INPUT_SAFETY_MARGIN_TOKENS,
+      0,
+      200_000,
+    ),
     requestTimeoutMs: integerValue(
       source,
       'AI_REQUEST_TIMEOUT_MS',
@@ -158,6 +185,17 @@ export function createAiConfig(source: EnvironmentSource): AiConfig {
       600_000,
     ),
   };
+
+  if (
+    config.reservedOutputTokens + config.inputSafetyMarginTokens >=
+    config.modelInputTokenLimit
+  ) {
+    throw new Error(
+      'AI_RESERVED_OUTPUT_TOKENS plus AI_INPUT_SAFETY_MARGIN_TOKENS must be less than AI_MODEL_INPUT_TOKEN_LIMIT.',
+    );
+  }
+
+  return config;
 }
 
 export function validateEnvironment(

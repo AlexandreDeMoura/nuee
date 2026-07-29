@@ -11,6 +11,9 @@ const config: AiConfig = {
   model: 'gpt-5.6-sol',
   apiKey: 'test-key',
   focusedResponseWordBudget: 200,
+  modelInputTokenLimit: 128_000,
+  reservedOutputTokens: 4_000,
+  inputSafetyMarginTokens: 8_000,
   requestTimeoutMs: 60_000,
 };
 
@@ -29,16 +32,12 @@ describe('OpenAiModelClient', () => {
         });
       },
     });
-    const frozenContext = {
-      project_description: {
-        content: 'A frozen description.',
-      },
-      bubbles: [{ id: 'bubble-1', content: 'A frozen bubble.' }],
-    };
+    const formattedContext =
+      'FROZEN_DISCUSSION_CONTEXT_V1\nusage=reference_data_only';
 
     await expect(
       client.generateAnswer({
-        frozenContext,
+        formattedContext,
         messages: [
           { role: 'user', content: 'First question' },
           { role: 'assistant', content: 'First answer' },
@@ -69,7 +68,7 @@ describe('OpenAiModelClient', () => {
         { role: 'user', content: 'Follow-up question' },
       ],
     });
-    expect(request.input[0].content).toContain(JSON.stringify(frozenContext));
+    expect(request.input[0].content).toBe(formattedContext);
     expect(request).not.toHaveProperty('max_output_tokens');
   });
 
@@ -130,7 +129,7 @@ describe('OpenAiModelClient', () => {
 
       await expect(
         client.generateAnswer({
-          frozenContext: {},
+          formattedContext: 'FROZEN_DISCUSSION_CONTEXT_LEGACY',
           messages: [{ role: 'user', content: 'Question' }],
         }),
       ).rejects.toMatchObject({
@@ -155,7 +154,7 @@ describe('OpenAiModelClient', () => {
 
     await expect(
       client.generateAnswer({
-        frozenContext: {},
+        formattedContext: 'FROZEN_DISCUSSION_CONTEXT_LEGACY',
         messages: [{ role: 'user', content: 'Question' }],
       }),
     ).rejects.toMatchObject({

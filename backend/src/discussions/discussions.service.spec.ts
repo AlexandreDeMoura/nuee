@@ -5,12 +5,15 @@ import {
   PayloadTooLargeException,
   ServiceUnavailableException,
 } from '@nestjs/common';
+import { CanonicalFrozenContextFormatter } from '../ai/frozen-context.formatter';
+import { ConservativeInputTokenEstimator } from '../ai/input-token-estimator';
 import type {
   GenerateAnswerInput,
   GenerateTitleInput,
   ModelClient,
   ModelGeneration,
 } from '../ai/model-client';
+import { ConfiguredModelInputBudget } from '../ai/model-input-budget';
 import { DatabaseProvider } from '../database/database.provider';
 import { ProjectsService } from '../projects/projects.service';
 import { SqliteProjectRepository } from '../projects/sqlite-project.repository';
@@ -62,6 +65,8 @@ describe('DiscussionsService', () => {
   let projects: ProjectsService;
   let repository: SqliteDiscussionRepository;
   let modelClient: ControllableModelClient;
+  let contextFormatter: CanonicalFrozenContextFormatter;
+  let modelInputBudget: ConfiguredModelInputBudget;
   let service: DiscussionsService;
 
   beforeEach(() => {
@@ -73,11 +78,23 @@ describe('DiscussionsService', () => {
     );
     repository = new SqliteDiscussionRepository(databaseProvider);
     modelClient = new ControllableModelClient();
+    contextFormatter = new CanonicalFrozenContextFormatter();
+    modelInputBudget = new ConfiguredModelInputBudget(
+      {
+        focusedResponseWordBudget: 200,
+        modelInputTokenLimit: 128_000,
+        reservedOutputTokens: 4_000,
+        inputSafetyMarginTokens: 8_000,
+      },
+      new ConservativeInputTokenEstimator(),
+    );
     service = new DiscussionsService(
       projects,
       repository,
       repository,
       modelClient,
+      contextFormatter,
+      modelInputBudget,
     );
   });
 
@@ -146,7 +163,7 @@ describe('DiscussionsService', () => {
     ]);
     expect(modelClient.answerInputs).toEqual([
       {
-        frozenContext: details.frozen_context,
+        formattedContext: contextFormatter.format(details.frozen_context),
         messages: [
           {
             role: 'user',
@@ -266,7 +283,7 @@ describe('DiscussionsService', () => {
     expect(replayed).toEqual(sent);
     expect(modelClient.answerInputs).toHaveLength(2);
     expect(modelClient.answerInputs[1]).toEqual({
-      frozenContext: created.frozen_context,
+      formattedContext: contextFormatter.format(created.frozen_context),
       messages: [
         { role: 'user', content: 'First question' },
         { role: 'assistant', content: 'A focused answer.' },
@@ -522,14 +539,75 @@ describe('DiscussionsService', () => {
   it('rejects oversized context without silently truncating it', async () => {
     const project = createProject();
 
-    await expect(
-      service.create(project.id, {
+    try {
+      await service.create(project.id, {
         project_id: project.id,
-        frozen_context: { content: 'x'.repeat(250_000) },
+        frozen_context: { content: 'x'.repeat(400_000) },
         first_prompt: 'Question',
+      });
+    } catch (error) {
+      expect(error).toBeInstanceOf(PayloadTooLargeException);
+      const response = (
+        error as PayloadTooLargeException
+      ).getResponse() as Record<string, unknown>;
+
+      expect(response).toMatchObject({
+        code: 'DISCUSSION_CONTEXT_TOO_LARGE',
+        message:
+          'The frozen context and complete message history exceed the supported model input budget. Remove selected context or start a new discussion.',
+        available_input_tokens: 116_000,
+        input_token_limit: 128_000,
+        reserved_output_tokens: 4_000,
+        safety_margin_tokens: 8_000,
+      });
+      expect(typeof response.estimated_input_tokens).toBe('number');
+    }
+
+    expect(service.list(project.id)).toEqual([]);
+  });
+
+  it('blocks a later message before persistence when complete history no longer fits', async () => {
+    const project = createProject();
+    const created = await createDiscussion(project.id, 'First question');
+    const nextContent = 'A follow-up that pushes the history over budget.';
+    const prospectiveMessages = [
+      ...created.messages.map(({ role, content }) => ({ role, content })),
+      { role: 'user' as const, content: nextContent },
+    ];
+    const measurement = modelInputBudget.evaluateAnswer({
+      formattedContext: contextFormatter.format(created.frozen_context),
+      messages: prospectiveMessages,
+    });
+    const tightBudget = new ConfiguredModelInputBudget(
+      {
+        focusedResponseWordBudget: 200,
+        modelInputTokenLimit:
+          measurement.estimatedInputTokens + 4_000 + 8_000 - 1,
+        reservedOutputTokens: 4_000,
+        inputSafetyMarginTokens: 8_000,
+      },
+      new ConservativeInputTokenEstimator(),
+    );
+    service = new DiscussionsService(
+      projects,
+      repository,
+      repository,
+      modelClient,
+      contextFormatter,
+      tightBudget,
+    );
+
+    await expect(
+      service.sendMessage(project.id, created.id, {
+        content: nextContent,
+        idempotency_key: 'over-budget-follow-up',
       }),
     ).rejects.toBeInstanceOf(PayloadTooLargeException);
-    expect(service.list(project.id)).toEqual([]);
+
+    expect(service.get(project.id, created.id).messages).toEqual(
+      created.messages,
+    );
+    expect(modelClient.answerInputs).toHaveLength(1);
   });
 
   it('does not expose discussions through another project route', async () => {

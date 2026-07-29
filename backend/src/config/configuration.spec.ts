@@ -17,6 +17,9 @@ describe('configuration', () => {
       model: 'gpt-5.6-sol',
       apiKey: '',
       focusedResponseWordBudget: 200,
+      modelInputTokenLimit: 128_000,
+      reservedOutputTokens: 4_000,
+      inputSafetyMarginTokens: 8_000,
       requestTimeoutMs: 60_000,
     });
   });
@@ -31,6 +34,9 @@ describe('configuration', () => {
       AI_MODEL: 'gpt-5.6-terra',
       OPENAI_API_KEY: 'test-secret',
       AI_FOCUSED_RESPONSE_WORD_BUDGET: '240',
+      AI_MODEL_INPUT_TOKEN_LIMIT: '200000',
+      AI_RESERVED_OUTPUT_TOKENS: '6000',
+      AI_INPUT_SAFETY_MARGIN_TOKENS: '10000',
       AI_REQUEST_TIMEOUT_MS: '90000',
     };
 
@@ -45,6 +51,9 @@ describe('configuration', () => {
       model: 'gpt-5.6-terra',
       apiKey: 'test-secret',
       focusedResponseWordBudget: 240,
+      modelInputTokenLimit: 200_000,
+      reservedOutputTokens: 6_000,
+      inputSafetyMarginTokens: 10_000,
       requestTimeoutMs: 90_000,
     });
   });
@@ -66,6 +75,19 @@ describe('configuration', () => {
     [
       { NODE_ENV: 'test', AI_FOCUSED_RESPONSE_WORD_BUDGET: '20' },
       'AI_FOCUSED_RESPONSE_WORD_BUDGET must be an integer',
+    ],
+    [
+      { NODE_ENV: 'test', AI_MODEL_INPUT_TOKEN_LIMIT: '1000' },
+      'AI_MODEL_INPUT_TOKEN_LIMIT must be an integer',
+    ],
+    [
+      {
+        NODE_ENV: 'test',
+        AI_MODEL_INPUT_TOKEN_LIMIT: '12000',
+        AI_RESERVED_OUTPUT_TOKENS: '4000',
+        AI_INPUT_SAFETY_MARGIN_TOKENS: '8000',
+      },
+      'AI_RESERVED_OUTPUT_TOKENS plus AI_INPUT_SAFETY_MARGIN_TOKENS must be less',
     ],
     [
       { NODE_ENV: 'test', AI_REQUEST_TIMEOUT_MS: '999' },
