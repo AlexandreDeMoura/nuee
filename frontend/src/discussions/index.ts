@@ -1,5 +1,6 @@
 export * from './DiscussionComposer';
 export * from './DiscussionContextBadges';
+export * from './DiscussionContextSelection';
 export * from './DiscussionDeleteDialog';
 export * from './DiscussionExperience';
 export * from './DiscussionKnowledgeAction';
@@ -11,5 +12,6 @@ export * from './discussionContextModel';
 export * from './discussionListModel';
 export * from './discussionModel';
 export * from './useDiscussionLifecycle';
+export * from './useDiscussionContextSelection';
 export * from './useProjectDiscussions';
 export * from './useDiscussionVisibility';

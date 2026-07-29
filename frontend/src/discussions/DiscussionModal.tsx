@@ -74,10 +74,15 @@ export function DiscussionModal({
     document.body.style.overflow = 'hidden';
 
     if (isDraft) {
-      (
+      const draftInput =
         draftInputRef.current ??
-        dialogRef.current?.querySelector<HTMLTextAreaElement>('textarea')
-      )?.focus();
+        dialogRef.current?.querySelector<HTMLTextAreaElement>('textarea');
+
+      if (draftInput) {
+        draftInput.focus();
+      } else {
+        dialogRef.current?.focus();
+      }
     } else {
       dialogRef.current?.focus();
     }

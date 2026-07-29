@@ -1,6 +1,8 @@
+import { useCallback, useEffect } from 'react';
 import { DiscussionModal } from './DiscussionModal';
 import { DiscussionComposer } from './DiscussionComposer';
 import { DiscussionContextBadges } from './DiscussionContextBadges';
+import { DiscussionContextSelection } from './DiscussionContextSelection';
 import {
   defaultDiscussionContextBadges,
   type DiscussionContextBadgeResolver,
@@ -19,9 +21,13 @@ import {
 import type { DiscussionVisibilityController } from './useDiscussionVisibility';
 import type { DiscussionDeleteTarget } from './DiscussionDeleteDialog';
 import type { AnalyticsClient } from '../analytics';
+import type { DiscussionContextSelectionController } from './useDiscussionContextSelection';
 
 export interface DiscussionExperienceProps {
   analyticsClient?: AnalyticsClient;
+  canSelectBubbleContext?: boolean;
+  canSelectDocumentContext?: boolean;
+  contextSelection?: DiscussionContextSelectionController;
   contextBadgeResolver?: DiscussionContextBadgeResolver;
   controller: DiscussionVisibilityController;
   isObscured?: boolean;
@@ -41,6 +47,9 @@ export interface DiscussionExperienceProps {
 
 export function DiscussionExperience({
   analyticsClient,
+  canSelectBubbleContext,
+  canSelectDocumentContext,
+  contextSelection,
   contextBadgeResolver,
   controller,
   isObscured,
@@ -67,6 +76,9 @@ export function DiscussionExperience({
     <DiscussionExperienceModal
       controller={controller}
       analyticsClient={analyticsClient}
+      canSelectBubbleContext={canSelectBubbleContext}
+      canSelectDocumentContext={canSelectDocumentContext}
+      contextSelection={contextSelection}
       contextBadgeResolver={contextBadgeResolver}
       isObscured={isObscured}
       onExtractKnowledge={onExtractKnowledge}
@@ -84,6 +96,9 @@ export function DiscussionExperience({
 
 function DiscussionExperienceModal({
   analyticsClient,
+  canSelectBubbleContext,
+  canSelectDocumentContext,
+  contextSelection,
   contextBadgeResolver,
   controller,
   isObscured,
@@ -100,15 +115,52 @@ function DiscussionExperienceModal({
     DiscussionVisibilityController['visibleDiscussion']
   >;
 }) {
+  const handleDiscussionCreated = useCallback(
+    (discussion: { id: string; title: string }) => {
+      contextSelection?.complete();
+      controller.openDiscussion(discussion);
+    },
+    [contextSelection, controller],
+  );
   const lifecycle = useDiscussionLifecycle({
     analyticsClient,
-    onDiscussionCreated: controller.openDiscussion,
+    onDiscussionCreated: handleDiscussionCreated,
     onDiscussionChanged,
     onDraftPromptChange: controller.updateDraftPrompt,
     projectId,
     requests,
     visibleDiscussion,
   });
+  const isDraft = visibleDiscussion.kind === 'draft';
+  const isSelectingSources =
+    isDraft &&
+    (contextSelection?.phase === 'selecting_bubbles' ||
+      contextSelection?.phase === 'selecting_documents');
+  const isChoosingContext =
+    isDraft &&
+    contextSelection !== undefined &&
+    (contextSelection.phase === 'invitation' ||
+      contextSelection.phase === 'review' ||
+      contextSelection.phase === 'error');
+
+  useEffect(() => {
+    if (
+      contextSelection?.phase === 'submitting' &&
+      !lifecycle.isSubmitting &&
+      lifecycle.composerError
+    ) {
+      contextSelection.submissionFailed(lifecycle.composerError);
+    }
+  }, [
+    contextSelection,
+    lifecycle.composerError,
+    lifecycle.isSubmitting,
+  ]);
+
+  if (isSelectingSources) {
+    return null;
+  }
+
   const unresolvedMessage = lifecycle.details?.messages.some(
     (message) =>
       message.role === 'user' &&
@@ -135,6 +187,22 @@ function DiscussionExperienceModal({
       )
     : [];
   const discussionId = lifecycle.details?.id;
+  const submit = () => {
+    if (
+      isDraft &&
+      contextSelection &&
+      contextSelection.phase === 'idle'
+    ) {
+      contextSelection.invite(lifecycle.composerValue.trim());
+      return;
+    }
+
+    lifecycle.submit(
+      isDraft && contextSelection
+        ? contextSelection.selection
+        : undefined,
+    );
+  };
 
   return (
     <DiscussionModal
@@ -148,15 +216,19 @@ function DiscussionExperienceModal({
         ) : undefined
       }
       composerSlot={
-        <DiscussionComposer
-          disabled={composerDisabled}
-          error={lifecycle.composerError}
-          isInitialPrompt={visibleDiscussion.kind === 'draft'}
-          isSubmitting={lifecycle.isSubmitting}
-          onChange={lifecycle.onComposerChange}
-          onSubmit={lifecycle.submit}
-          value={lifecycle.composerValue}
-        />
+        isChoosingContext ? (
+          <></>
+        ) : (
+          <DiscussionComposer
+            disabled={composerDisabled}
+            error={lifecycle.composerError}
+            isInitialPrompt={visibleDiscussion.kind === 'draft'}
+            isSubmitting={lifecycle.isSubmitting}
+            onChange={lifecycle.onComposerChange}
+            onSubmit={submit}
+            value={lifecycle.composerValue}
+          />
+        )
       }
       isObscured={isObscured}
       contextSlot={
@@ -169,14 +241,23 @@ function DiscussionExperienceModal({
         ) : undefined
       }
       messagesSlot={
-        <DiscussionMessages
-          details={lifecycle.details}
-          loadError={lifecycle.loadError}
-          loadStatus={lifecycle.loadStatus}
-          onExtractKnowledge={onExtractKnowledge}
-          onRetry={lifecycle.retryFailedTurn}
-          pendingTurn={lifecycle.pendingTurn}
-        />
+        isChoosingContext && contextSelection ? (
+          <DiscussionContextSelection
+            canSelectBubbles={canSelectBubbleContext}
+            canSelectDocuments={canSelectDocumentContext}
+            controller={contextSelection}
+            onSubmit={lifecycle.submit}
+          />
+        ) : (
+          <DiscussionMessages
+            details={lifecycle.details}
+            loadError={lifecycle.loadError}
+            loadStatus={lifecycle.loadStatus}
+            onExtractKnowledge={onExtractKnowledge}
+            onRetry={lifecycle.retryFailedTurn}
+            pendingTurn={lifecycle.pendingTurn}
+          />
+        )
       }
       onDelete={
         visibleDiscussion.kind === 'persisted' && onDelete

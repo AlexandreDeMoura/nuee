@@ -53,11 +53,14 @@ import {
   DiscussionExperience,
   DiscussionModal,
   DiscussionsPanel,
+  useDiscussionContextSelection,
   useProjectDiscussions,
   useDiscussionVisibility,
   type DiscussionLifecycleRequests,
   type DiscussionContextBadgeResolver,
   type DiscussionContextInspection,
+  type DiscussionContextEntryPoint,
+  type DiscussionContextSourceCandidate,
   type DiscussionDeleteTarget,
   type DiscussionKnowledgeSource,
   type ProjectDiscussionRequests,
@@ -618,6 +621,9 @@ export function ProjectWorkspace({
     useState<BubbleLinkLoadState>({ status: 'loading', links: [] });
   const [bubbleLinkRequestKey, setBubbleLinkRequestKey] = useState(0);
   const discussionVisibility = useDiscussionVisibility(currentProject.id);
+  const discussionContextSelection = useDiscussionContextSelection(
+    currentProject.id,
+  );
   const projectDiscussions = useProjectDiscussions({
     analyticsClient,
     enabled:
@@ -847,12 +853,92 @@ export function ProjectWorkspace({
     () => Object.values(updatedBubbles),
     [updatedBubbles],
   );
+  const openDraftWithContext = useCallback(
+    (
+      entryPoint: DiscussionContextEntryPoint,
+      includeSelectedBubble: boolean,
+    ) => {
+      const selectedSource: DiscussionContextSourceCandidate[] =
+        includeSelectedBubble &&
+        selectedBubble?.project_id === currentProject.id
+          ? [
+              {
+                id: selectedBubble.id,
+                kind: 'bubble',
+                projectId: currentProject.id,
+                title: selectedBubble.title,
+              },
+            ]
+          : [];
+
+      discussionContextSelection.prepare({
+        entryPoint:
+          selectedSource.length > 0 ? 'selected_bubble' : entryPoint,
+        initialSources: selectedSource,
+      });
+      discussionVisibility.openDraft();
+    },
+    [
+      currentProject.id,
+      discussionContextSelection,
+      discussionVisibility,
+      selectedBubble,
+    ],
+  );
+  const internalStartDiscussionFromCanvas = useCallback(
+    () => openDraftWithContext('canvas_action', true),
+    [openDraftWithContext],
+  );
+  const internalStartDiscussionFromPanel = useCallback(
+    () => openDraftWithContext('discussions_panel', false),
+    [openDraftWithContext],
+  );
+  const startDiscussionFromCanvas =
+    emptyActionHandlers?.['start-discussion'] ??
+    internalStartDiscussionFromCanvas;
+  const startDiscussionFromPanel =
+    emptyActionHandlers?.['start-discussion'] ??
+    internalStartDiscussionFromPanel;
+  const discussionContextMultiSelection =
+    useMemo<CanvasMultiSelection | null>(() => {
+      if (
+        canvasMultiSelection !== null ||
+        discussionContextSelection.phase !== 'selecting_bubbles'
+      ) {
+        return null;
+      }
+
+      return {
+        confirmLabel: 'Use selected bubbles',
+        initialBubbleIds: discussionContextSelection.selection.bubble_ids,
+        instruction: 'Choose bubbles for this discussion',
+        onCancel: discussionContextSelection.backFromSourceSelection,
+        onConfirm: (selection) => {
+          discussionContextSelection.confirmSourceSelection(
+            'bubble',
+            selection.bubbles.map((bubble) => ({
+              id: bubble.id,
+              kind: 'bubble',
+              projectId: bubble.project_id,
+              title: bubble.title,
+            })),
+          );
+        },
+      };
+    }, [canvasMultiSelection, discussionContextSelection]);
+  const resolvedCanvasMultiSelection =
+    canvasMultiSelection ?? discussionContextMultiSelection;
+  const isContextSourceSelection =
+    discussionVisibility.visibleDiscussion?.kind === 'draft' &&
+    (discussionContextSelection.phase === 'selecting_bubbles' ||
+      discussionContextSelection.phase === 'selecting_documents');
   const discussionOverlay =
     typeof overlaySlots?.discussion === 'function'
       ? overlaySlots.discussion(discussionVisibility)
       : overlaySlots?.discussion;
   const isDiscussionVisible =
-    discussionVisibility.visibleDiscussion !== null ||
+    (discussionVisibility.visibleDiscussion !== null &&
+      !isContextSourceSelection) ||
     discussionPendingDeletion !== null;
   const visibleDiscussionDeleteTarget =
     discussionVisibility.visibleDiscussion?.kind === 'persisted'
@@ -861,9 +947,6 @@ export function ProjectWorkspace({
           title: discussionVisibility.visibleDiscussion.title,
         }
       : null;
-  const startDiscussion =
-    emptyActionHandlers?.['start-discussion'] ??
-    discussionVisibility.openDraft;
   const minimizeDiscussion = useCallback(() => {
     const visible = discussionVisibility.visibleDiscussion;
 
@@ -873,10 +956,17 @@ export function ProjectWorkspace({
         discussion_id: visible.discussionId,
         occurred_at: new Date().toISOString(),
       });
+    } else if (visible?.kind === 'draft') {
+      discussionContextSelection.cancel();
     }
 
     discussionVisibility.minimize();
-  }, [analyticsClient, currentProject.id, discussionVisibility]);
+  }, [
+    analyticsClient,
+    currentProject.id,
+    discussionContextSelection,
+    discussionVisibility,
+  ]);
   const handleDiscussionOpen = useCallback(
     async (discussion: Parameters<typeof projectDiscussions.openDiscussion>[0]) => {
       const opened = await projectDiscussions.openDiscussion(discussion);
@@ -952,7 +1042,7 @@ export function ProjectWorkspace({
           void handleDiscussionOpen(discussion);
         }}
         onRetry={projectDiscussions.refresh}
-        onStart={startDiscussion}
+        onStart={startDiscussionFromPanel}
         openingDiscussionId={projectDiscussions.openingDiscussionId}
         openError={projectDiscussions.openError}
         status={projectDiscussions.status}
@@ -978,14 +1068,14 @@ export function ProjectWorkspace({
           <CanvasSurface
             analyticsClient={analyticsClient}
             bubbleLinks={bubbleLinkLoadState.links}
-            multiSelection={canvasMultiSelection}
+            multiSelection={resolvedCanvasMultiSelection}
             deletedBubbleIds={deletedBubbleIds}
             emptyState={({ onCreateBubble }) => (
               <EmptyCanvasContent
                 analyticsClient={analyticsClient}
                 emptyActionHandlers={{
                   ...emptyActionHandlers,
-                  'start-discussion': startDiscussion,
+                  'start-discussion': startDiscussionFromCanvas,
                   'create-bubble':
                     emptyActionHandlers?.['create-bubble'] ?? onCreateBubble,
                 }}
@@ -1008,18 +1098,20 @@ export function ProjectWorkspace({
             requestViewportUpdate={requestViewportUpdate}
             onBubbleSelectionChange={handleBubbleSelectionChange}
             onBubblesChange={setAvailableBubbles}
-            onStartDiscussion={startDiscussion}
+            onStartDiscussion={startDiscussionFromCanvas}
             updatedBubbles={currentUpdatedBubbles}
             viewportSaveDelayMs={viewportSaveDelayMs}
           />
 
           <aside
             className={`flex shrink-0 bg-white transition-opacity duration-150 motion-reduce:transition-none ${
-              canvasMultiSelection ? 'pointer-events-none opacity-40' : ''
+              resolvedCanvasMultiSelection
+                ? 'pointer-events-none opacity-40'
+                : ''
             }`}
             aria-label="Project tools"
-            aria-hidden={canvasMultiSelection ? 'true' : undefined}
-            inert={canvasMultiSelection ? true : undefined}
+            aria-hidden={resolvedCanvasMultiSelection ? 'true' : undefined}
+            inert={resolvedCanvasMultiSelection ? true : undefined}
           >
             <nav
               className="flex w-[52px] shrink-0 flex-col items-center gap-1 border-l border-[#e1e6ec] bg-white pt-3"
@@ -1096,6 +1188,7 @@ export function ProjectWorkspace({
 
         {discussionOverlay ??
           (discussionVisibility.visibleDiscussion &&
+            !isContextSourceSelection &&
             (onDiscussionDraftSubmit ? (
               <DiscussionModal
                 isObscured={discussionPendingDeletion !== null}
@@ -1120,6 +1213,8 @@ export function ProjectWorkspace({
             ) : (
               <DiscussionExperience
                 analyticsClient={analyticsClient}
+                canSelectBubbleContext={canvasMultiSelection === null}
+                contextSelection={discussionContextSelection}
                 contextBadgeResolver={discussionContextBadgeResolver}
                 controller={discussionVisibility}
                 isObscured={discussionPendingDeletion !== null}

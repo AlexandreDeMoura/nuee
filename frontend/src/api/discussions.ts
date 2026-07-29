@@ -1,6 +1,7 @@
 import type {
   CreateDiscussionInput,
   Discussion,
+  DiscussionContextSelectionInput,
   DiscussionDetails,
   DiscussionFrozenContext,
   DiscussionListResponse,
@@ -23,6 +24,7 @@ export {
 export type {
   CreateDiscussionInput,
   Discussion,
+  DiscussionContextSelectionInput,
   DiscussionDetails,
   DiscussionFrozenContext,
   DiscussionListResponse,

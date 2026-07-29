@@ -13,6 +13,7 @@ import {
   retryDiscussionMessage,
   sendDiscussionMessage,
   type CreateDiscussionInput,
+  type DiscussionContextSelectionInput,
   type DiscussionDetails,
 } from '../api';
 import {
@@ -59,7 +60,7 @@ export interface DiscussionLifecycle {
   onComposerChange: (value: string) => void;
   pendingTurn: PendingDiscussionTurn | null;
   retryFailedTurn: (turn: PendingDiscussionTurn) => void;
-  submit: () => void;
+  submit: (selection?: DiscussionContextSelectionInput) => void;
 }
 
 interface UseDiscussionLifecycleOptions {
@@ -106,6 +107,29 @@ function recoveryIdentifiers(error: unknown): {
 
 function createRequestId(): string {
   return crypto.randomUUID();
+}
+
+const EMPTY_CONTEXT_SELECTION: DiscussionContextSelectionInput = {
+  bubble_ids: [],
+  document_ids: [],
+};
+
+function normalizeSelection(
+  selection: DiscussionContextSelectionInput,
+): DiscussionContextSelectionInput {
+  return {
+    bubble_ids: [...new Set(selection.bubble_ids)],
+    document_ids: [...new Set(selection.document_ids)],
+  };
+}
+
+function selectionFingerprint(
+  selection: DiscussionContextSelectionInput,
+): string {
+  return JSON.stringify([
+    selection.bubble_ids,
+    selection.document_ids,
+  ]);
 }
 
 function occurredAt(): string {
@@ -192,6 +216,7 @@ export function useDiscussionLifecycle({
   const creationAttemptRef = useRef<{
     content: string;
     requestId: string;
+    selectionFingerprint: string;
   } | null>(null);
   const retainedAttemptRef = useRef<{
     content: string;
@@ -405,20 +430,29 @@ export function useDiscussionLifecycle({
   }, []);
 
   const submitDraft = useCallback(
-    async (content: string) => {
+    async (
+      content: string,
+      requestedSelection: DiscussionContextSelectionInput,
+    ) => {
+      const selection = normalizeSelection(requestedSelection);
+      const fingerprint = selectionFingerprint(selection);
       const retainedAttempt = creationAttemptRef.current;
       const requestId =
-        retainedAttempt?.content === content
+        retainedAttempt?.content === content &&
+        retainedAttempt.selectionFingerprint === fingerprint
           ? retainedAttempt.requestId
           : createRequestId();
       const input: CreateDiscussionInput = {
         project_id: projectId,
         first_prompt: content,
         idempotency_key: requestId,
-        bubble_ids: [],
-        document_ids: [],
+        ...selection,
       };
-      creationAttemptRef.current = { content, requestId };
+      creationAttemptRef.current = {
+        content,
+        requestId,
+        selectionFingerprint: fingerprint,
+      };
       const startedAt = performance.now();
       const { controller, operation } = beginRequest();
       const optimisticTurn: PendingDiscussionTurn = {
@@ -676,27 +710,30 @@ export function useDiscussionLifecycle({
     ],
   );
 
-  const submit = useCallback(() => {
-    if (submittingRef.current) {
-      return;
-    }
+  const submit = useCallback(
+    (selection: DiscussionContextSelectionInput = EMPTY_CONTEXT_SELECTION) => {
+      if (submittingRef.current) {
+        return;
+      }
 
-    const value =
-      visibleDiscussion.kind === 'draft'
-        ? visibleDiscussion.prompt
-        : composerValue;
-    const content = value.trim();
+      const value =
+        visibleDiscussion.kind === 'draft'
+          ? visibleDiscussion.prompt
+          : composerValue;
+      const content = value.trim();
 
-    if (content.length === 0) {
-      return;
-    }
+      if (content.length === 0) {
+        return;
+      }
 
-    if (visibleDiscussion.kind === 'draft') {
-      void submitDraft(content);
-    } else {
-      void submitMessage(content);
-    }
-  }, [composerValue, submitDraft, submitMessage, visibleDiscussion]);
+      if (visibleDiscussion.kind === 'draft') {
+        void submitDraft(content, selection);
+      } else {
+        void submitMessage(content);
+      }
+    },
+    [composerValue, submitDraft, submitMessage, visibleDiscussion],
+  );
 
   const retryFailedTurn = useCallback(
     (turn: PendingDiscussionTurn) => {

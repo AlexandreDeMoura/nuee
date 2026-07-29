@@ -11,6 +11,8 @@ import {
 import type {
   Bubble,
   BubbleLink,
+  CreateDiscussionInput,
+  DiscussionDetails,
   Project,
   UpdateBubbleInput,
 } from '../src/api';
@@ -182,6 +184,205 @@ describe('workspace integration contracts', () => {
     );
 
     expect(document.activeElement).toBe(startButton);
+  });
+
+  it('preserves a write-first prompt while inviting explicit project-only context', async () => {
+    const creation = deferred<DiscussionDetails>();
+    const create = vi.fn(() => creation.promise);
+
+    render(
+      <ProjectWorkspace
+        discussionLifecycleRequests={{ create }}
+        project={project}
+        requestBubbles={requestEmptyBubbles}
+      />,
+    );
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Start a discussion' }),
+    );
+    const prompt = screen.getByRole('textbox', {
+      name: 'Discussion prompt',
+    });
+    fireEvent.change(prompt, {
+      target: { value: 'What blocks the launch?' },
+    });
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Continue discussion' }),
+    );
+
+    expect(create).not.toHaveBeenCalled();
+    expect(
+      screen.getByRole('heading', { name: 'Choose what Nuée should use' }),
+    ).toBeTruthy();
+    expect(screen.getAllByText('Project description')).toHaveLength(2);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Back to prompt' }));
+    expect(
+      (
+        screen.getByRole('textbox', {
+          name: 'Discussion prompt',
+        }) as HTMLTextAreaElement
+      ).value,
+    ).toBe('What blocks the launch?');
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Continue discussion' }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Continue with project context only',
+      }),
+    );
+
+    expect(create).toHaveBeenCalledTimes(1);
+    expect(create).toHaveBeenCalledWith(
+      project.id,
+      {
+        project_id: project.id,
+        first_prompt: 'What blocks the launch?',
+        idempotency_key: expect.any(String),
+        bubble_ids: [],
+        document_ids: [],
+      },
+      expect.any(AbortSignal),
+    );
+  });
+
+  it('coordinates canvas bubble choices into an identifier-only context review', async () => {
+    const creation = deferred<DiscussionDetails>();
+    const create = vi.fn(() => creation.promise);
+
+    render(
+      <ProjectWorkspace
+        discussionLifecycleRequests={{ create }}
+        project={project}
+        requestBubbles={async () => [bubble()]}
+      />,
+    );
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'New discussion' }),
+    );
+    fireEvent.change(
+      screen.getByRole('textbox', { name: 'Discussion prompt' }),
+      { target: { value: 'Which evidence should guide the launch?' } },
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Continue discussion' }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Add bubbles' }));
+
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(
+      screen.getByRole('region', { name: 'Project canvas' }).getAttribute(
+        'data-selection-mode',
+      ),
+    ).toBe('multiple');
+    expect(
+      document.querySelector('[data-workspace-content]')?.hasAttribute('inert'),
+    ).toBe(false);
+
+    fireEvent.pointerDown(
+      screen.getByRole('checkbox', {
+        name: 'Market is real but fragmented',
+      }),
+      {
+        button: 0,
+        clientX: 100,
+        clientY: 80,
+        pointerId: 31,
+      },
+    );
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Use selected bubbles (1 selected)',
+      }),
+    );
+
+    expect(
+      screen.getByRole('heading', { name: 'Review discussion context' }),
+    ).toBeTruthy();
+    expect(
+      within(
+        screen.getByRole('list', {
+          name: 'Pending discussion context',
+        }),
+      ).getByText('Market is real but fragmented'),
+    ).toBeTruthy();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Start discussion' }),
+    );
+
+    expect(create).toHaveBeenCalledTimes(1);
+    expect(create).toHaveBeenCalledWith(
+      project.id,
+      expect.objectContaining({
+        project_id: project.id,
+        first_prompt: 'Which evidence should guide the launch?',
+        bubble_ids: ['bubble-1'],
+        document_ids: [],
+      }),
+      expect.any(AbortSignal),
+    );
+  });
+
+  it('keeps a failed context submission recoverable with the same request identity', async () => {
+    const retry = deferred<DiscussionDetails>();
+    const inputs: CreateDiscussionInput[] = [];
+    const create = vi.fn(
+      async (
+        requestedProjectId: string,
+        input: CreateDiscussionInput,
+      ) => {
+        expect(requestedProjectId).toBe(project.id);
+        inputs.push(input);
+
+        if (inputs.length === 1) {
+          throw new Error('The selected source changed.');
+        }
+
+        return retry.promise;
+      },
+    );
+
+    render(
+      <ProjectWorkspace
+        discussionLifecycleRequests={{ create }}
+        project={project}
+        requestBubbles={requestEmptyBubbles}
+      />,
+    );
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Start a discussion' }),
+    );
+    fireEvent.change(
+      screen.getByRole('textbox', { name: 'Discussion prompt' }),
+      { target: { value: 'What changed?' } },
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Continue discussion' }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Continue with project context only',
+      }),
+    );
+
+    expect(
+      await screen.findByRole('heading', {
+        name: "Discussion context wasn't created",
+      }),
+    ).toBeTruthy();
+    expect(screen.getByText('The selected source changed.')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
+
+    await waitFor(() => expect(inputs).toHaveLength(2));
+    expect(inputs[1].idempotency_key).toBe(inputs[0].idempotency_key);
+    expect(inputs[1]).toEqual(inputs[0]);
   });
 
   it('restores the viewport supplied by the loaded project', async () => {
