@@ -9,6 +9,7 @@ export * from './DiscussionModal';
 export * from './DiscussionsPanel';
 export * from './RichResponse';
 export * from './discussionContextModel';
+export * from './discussionCreationFailure';
 export * from './discussionListModel';
 export * from './discussionModel';
 export * from './useDiscussionLifecycle';

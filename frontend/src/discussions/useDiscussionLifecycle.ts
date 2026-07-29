@@ -27,6 +27,10 @@ import {
   isTemporaryDiscussionTitle,
   TEMPORARY_DISCUSSION_TITLE,
 } from './discussionModel';
+import {
+  normalizeDiscussionCreationFailure,
+  type DiscussionCreationFailure,
+} from './discussionCreationFailure';
 
 export type DiscussionCreateRequest = typeof createDiscussion;
 export type DiscussionGetRequest = typeof getDiscussion;
@@ -53,6 +57,7 @@ type DiscussionLoadStatus = 'draft' | 'loading' | 'ready' | 'error';
 export interface DiscussionLifecycle {
   composerError: string | null;
   composerValue: string;
+  creationFailure: DiscussionCreationFailure | null;
   details: DiscussionDetails | null;
   isSubmitting: boolean;
   loadError: string | null;
@@ -60,7 +65,10 @@ export interface DiscussionLifecycle {
   onComposerChange: (value: string) => void;
   pendingTurn: PendingDiscussionTurn | null;
   retryFailedTurn: (turn: PendingDiscussionTurn) => void;
-  submit: (selection?: DiscussionContextSelectionInput) => void;
+  submit: (
+    selection?: DiscussionContextSelectionInput,
+    selectionRevision?: number,
+  ) => void;
 }
 
 interface UseDiscussionLifecycleOptions {
@@ -204,6 +212,8 @@ export function useDiscussionLifecycle({
   const [loadError, setLoadError] = useState<string | null>(null);
   const [composerValue, setComposerValue] = useState('');
   const [composerError, setComposerError] = useState<string | null>(null);
+  const [creationFailure, setCreationFailure] =
+    useState<DiscussionCreationFailure | null>(null);
   const [pendingTurn, setPendingTurn] =
     useState<PendingDiscussionTurn | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -217,6 +227,7 @@ export function useDiscussionLifecycle({
     content: string;
     requestId: string;
     selectionFingerprint: string;
+    selectionRevision: number | null;
   } | null>(null);
   const retainedAttemptRef = useRef<{
     content: string;
@@ -384,6 +395,7 @@ export function useDiscussionLifecycle({
   const onComposerChange = useCallback(
     (value: string) => {
       setComposerError(null);
+      setCreationFailure(null);
 
       if (
         retainedAttemptRef.current &&
@@ -433,13 +445,16 @@ export function useDiscussionLifecycle({
     async (
       content: string,
       requestedSelection: DiscussionContextSelectionInput,
+      selectionRevision: number | undefined,
     ) => {
       const selection = normalizeSelection(requestedSelection);
       const fingerprint = selectionFingerprint(selection);
+      const normalizedSelectionRevision = selectionRevision ?? null;
       const retainedAttempt = creationAttemptRef.current;
       const requestId =
         retainedAttempt?.content === content &&
-        retainedAttempt.selectionFingerprint === fingerprint
+        retainedAttempt.selectionFingerprint === fingerprint &&
+        retainedAttempt.selectionRevision === normalizedSelectionRevision
           ? retainedAttempt.requestId
           : createRequestId();
       const input: CreateDiscussionInput = {
@@ -452,7 +467,9 @@ export function useDiscussionLifecycle({
         content,
         requestId,
         selectionFingerprint: fingerprint,
+        selectionRevision: normalizedSelectionRevision,
       };
+      setCreationFailure(null);
       const startedAt = performance.now();
       const { controller, operation } = beginRequest();
       const optimisticTurn: PendingDiscussionTurn = {
@@ -578,9 +595,9 @@ export function useDiscussionLifecycle({
         }
 
         updatePendingTurn(null);
-        setComposerError(
-          errorMessage(error, 'The discussion could not be started.'),
-        );
+        const failure = normalizeDiscussionCreationFailure(error);
+        setCreationFailure(failure);
+        setComposerError(failure.message);
       }
     },
     [
@@ -711,7 +728,10 @@ export function useDiscussionLifecycle({
   );
 
   const submit = useCallback(
-    (selection: DiscussionContextSelectionInput = EMPTY_CONTEXT_SELECTION) => {
+    (
+      selection: DiscussionContextSelectionInput = EMPTY_CONTEXT_SELECTION,
+      selectionRevision?: number,
+    ) => {
       if (submittingRef.current) {
         return;
       }
@@ -727,7 +747,7 @@ export function useDiscussionLifecycle({
       }
 
       if (visibleDiscussion.kind === 'draft') {
-        void submitDraft(content, selection);
+        void submitDraft(content, selection, selectionRevision);
       } else {
         void submitMessage(content);
       }
@@ -835,6 +855,7 @@ export function useDiscussionLifecycle({
         visibleDiscussion.kind === 'draft'
           ? visibleDiscussion.prompt
           : composerValue,
+      creationFailure,
       details,
       isSubmitting,
       loadError,
@@ -847,6 +868,7 @@ export function useDiscussionLifecycle({
     [
       composerError,
       composerValue,
+      creationFailure,
       details,
       isSubmitting,
       loadError,

@@ -4,6 +4,7 @@ import {
   useState,
 } from 'react';
 import type { DiscussionContextSelectionInput } from '../api';
+import type { DiscussionCreationFailure } from './discussionCreationFailure';
 
 export type DiscussionContextEntryPoint =
   | 'canvas_action'
@@ -38,10 +39,12 @@ interface DiscussionContextSelectionState {
   documentSources: PendingDiscussionContextSource[];
   entryPoint: DiscussionContextEntryPoint;
   error: string | null;
+  failure: DiscussionCreationFailure | null;
   phase: DiscussionContextSelectionPhase;
   projectId: string;
   prompt: string;
   returnPhase: 'invitation' | 'review';
+  selectionRevision: number;
 }
 
 export interface PrepareDiscussionContextOptions {
@@ -62,6 +65,7 @@ export interface DiscussionContextSelectionController {
   ) => void;
   entryPoint: DiscussionContextEntryPoint;
   error: string | null;
+  failure: DiscussionCreationFailure | null;
   invite: (prompt: string) => void;
   pendingSources: readonly PendingDiscussionContextSource[];
   phase: DiscussionContextSelectionPhase;
@@ -71,7 +75,8 @@ export interface DiscussionContextSelectionController {
   retrySubmission: () => void;
   review: () => void;
   selection: DiscussionContextSelectionInput;
-  submissionFailed: (message: string) => void;
+  selectionRevision: number;
+  submissionFailed: (failure: DiscussionCreationFailure | string) => void;
 }
 
 function emptyState(projectId: string): DiscussionContextSelectionState {
@@ -80,11 +85,60 @@ function emptyState(projectId: string): DiscussionContextSelectionState {
     documentSources: [],
     entryPoint: 'write_first',
     error: null,
+    failure: null,
     phase: 'idle',
     projectId,
     prompt: '',
     returnPhase: 'invitation',
+    selectionRevision: 0,
   };
+}
+
+function sourceIds(
+  sources: readonly PendingDiscussionContextSource[],
+): string[] {
+  return sources.map(({ id }) => id);
+}
+
+function haveSameSourceIds(
+  first: readonly PendingDiscussionContextSource[],
+  second: readonly PendingDiscussionContextSource[],
+): boolean {
+  const firstIds = sourceIds(first);
+  const secondIds = sourceIds(second);
+
+  return (
+    firstIds.length === secondIds.length &&
+    firstIds.every((sourceId, index) => sourceId === secondIds[index])
+  );
+}
+
+function asFailure(
+  failure: DiscussionCreationFailure | string,
+): DiscussionCreationFailure {
+  return typeof failure === 'string'
+    ? { code: null, message: failure, sourceIssues: [] }
+    : failure;
+}
+
+function failureAfterSourceRemoval(
+  failure: DiscussionCreationFailure | null,
+  kind: PendingDiscussionContextKind,
+  sourceId: string,
+): DiscussionCreationFailure | null {
+  if (!failure) {
+    return null;
+  }
+
+  if (failure.code !== 'DISCUSSION_CONTEXT_SOURCE_INVALID') {
+    return null;
+  }
+
+  const sourceIssues = failure.sourceIssues.filter(
+    (issue) => issue.sourceKind !== kind || issue.sourceId !== sourceId,
+  );
+
+  return sourceIssues.length > 0 ? { ...failure, sourceIssues } : null;
 }
 
 function normalizeCandidates(
@@ -173,6 +227,7 @@ export function useDiscussionContextSelection(
         return {
           ...scoped,
           error: null,
+          failure: null,
           phase: 'invitation',
           prompt,
         };
@@ -190,6 +245,7 @@ export function useDiscussionContextSelection(
         return {
           ...scoped,
           error: null,
+          failure: null,
           phase:
             kind === 'bubble'
               ? 'selecting_bubbles'
@@ -224,6 +280,14 @@ export function useDiscussionContextSelection(
         const scoped =
           current.projectId === projectId ? current : emptyState(projectId);
         const normalized = normalizeCandidates(projectId, kind, sources);
+        const currentSources =
+          kind === 'bubble'
+            ? scoped.bubbleSources
+            : scoped.documentSources;
+        const selectionChanged = !haveSameSourceIds(
+          currentSources,
+          normalized,
+        );
 
         return {
           ...scoped,
@@ -231,8 +295,11 @@ export function useDiscussionContextSelection(
             ? { bubbleSources: normalized }
             : { documentSources: normalized }),
           error: null,
+          failure: null,
           phase: 'review',
           returnPhase: 'review',
+          selectionRevision:
+            scoped.selectionRevision + (selectionChanged ? 1 : 0),
         };
       });
     },
@@ -242,7 +309,7 @@ export function useDiscussionContextSelection(
   const review = useCallback(() => {
     setStoredState((current) =>
       current.projectId === projectId
-        ? { ...current, error: null, phase: 'review' }
+        ? { ...current, phase: 'review' }
         : current,
     );
   }, [projectId]);
@@ -250,7 +317,7 @@ export function useDiscussionContextSelection(
   const backToInvitation = useCallback(() => {
     setStoredState((current) =>
       current.projectId === projectId
-        ? { ...current, error: null, phase: 'invitation' }
+        ? { ...current, error: null, failure: null, phase: 'invitation' }
         : current,
     );
   }, [projectId]);
@@ -262,18 +329,39 @@ export function useDiscussionContextSelection(
           return current;
         }
 
+        const currentSources =
+          kind === 'bubble'
+            ? current.bubbleSources
+            : current.documentSources;
+
+        if (!currentSources.some(({ id }) => id === sourceId)) {
+          return current;
+        }
+
+        const failure = failureAfterSourceRemoval(
+          current.failure,
+          kind,
+          sourceId,
+        );
+
         return kind === 'bubble'
           ? {
               ...current,
               bubbleSources: current.bubbleSources.filter(
                 ({ id }) => id !== sourceId,
               ),
+              error: failure?.message ?? null,
+              failure,
+              selectionRevision: current.selectionRevision + 1,
             }
           : {
               ...current,
               documentSources: current.documentSources.filter(
                 ({ id }) => id !== sourceId,
               ),
+              error: failure?.message ?? null,
+              failure,
+              selectionRevision: current.selectionRevision + 1,
             };
       });
     },
@@ -293,7 +381,15 @@ export function useDiscussionContextSelection(
             ? { bubbleSources: [], documentSources: [] }
             : {}),
           error: null,
+          failure: null,
           phase: 'submitting',
+          selectionRevision:
+            current.selectionRevision +
+            (projectContextOnly &&
+            (current.bubbleSources.length > 0 ||
+              current.documentSources.length > 0)
+              ? 1
+              : 0),
         };
       });
     },
@@ -301,12 +397,15 @@ export function useDiscussionContextSelection(
   );
 
   const submissionFailed = useCallback(
-    (message: string) => {
+    (failure: DiscussionCreationFailure | string) => {
+      const normalizedFailure = asFailure(failure);
+
       setStoredState((current) =>
         current.projectId === projectId && current.phase === 'submitting'
           ? {
               ...current,
-              error: message,
+              error: normalizedFailure.message,
+              failure: normalizedFailure,
               phase: 'error',
             }
           : current,
@@ -321,6 +420,7 @@ export function useDiscussionContextSelection(
         ? {
             ...current,
             error: null,
+            failure: null,
             phase: 'submitting',
           }
         : current,
@@ -355,6 +455,7 @@ export function useDiscussionContextSelection(
       confirmSourceSelection,
       entryPoint: state.entryPoint,
       error: state.error,
+      failure: state.failure,
       invite,
       pendingSources,
       phase: state.phase,
@@ -364,6 +465,7 @@ export function useDiscussionContextSelection(
       retrySubmission,
       review,
       selection,
+      selectionRevision: state.selectionRevision,
       submissionFailed,
     }),
     [
@@ -383,8 +485,10 @@ export function useDiscussionContextSelection(
       selection,
       state.entryPoint,
       state.error,
+      state.failure,
       state.phase,
       state.prompt,
+      state.selectionRevision,
       submissionFailed,
     ],
   );

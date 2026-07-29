@@ -16,6 +16,7 @@ import type {
   Project,
   UpdateBubbleInput,
 } from '../src/api';
+import { ApiError } from '../src/api';
 import type { AnalyticsClient } from '../src/analytics';
 import type { DocumentContextSource } from '../src/documents';
 import {
@@ -691,7 +692,10 @@ describe('workspace integration contracts', () => {
         inputs.push(input);
 
         if (inputs.length === 1) {
-          throw new Error('The selected source changed.');
+          throw new ApiError(503, {
+            code: 'DISCUSSION_SNAPSHOT_PERSISTENCE_FAILED',
+            message: 'The selected source changed.',
+          });
         }
 
         return retry.promise;
@@ -734,6 +738,114 @@ describe('workspace integration contracts', () => {
     await waitFor(() => expect(inputs).toHaveLength(2));
     expect(inputs[1].idempotency_key).toBe(inputs[0].idempotency_key);
     expect(inputs[1]).toEqual(inputs[0]);
+  });
+
+  it('marks invalid sources and rotates request identity after the selection changes', async () => {
+    const selectedBubble = bubble();
+    const inputs: CreateDiscussionInput[] = [];
+    const create = vi.fn(
+      async (
+        _requestedProjectId: string,
+        input: CreateDiscussionInput,
+      ) => {
+        inputs.push(input);
+
+        if (inputs.length === 1) {
+          throw new ApiError(422, {
+            code: 'DISCUSSION_CONTEXT_SOURCE_INVALID',
+            message:
+              'One or more selected context sources are unavailable. Review or remove the affected selections.',
+            source_errors: [
+              {
+                source_kind: 'bubble',
+                source_id: selectedBubble.id,
+                reason: 'missing',
+              },
+            ],
+          });
+        }
+
+        return new Promise<DiscussionDetails>(() => undefined);
+      },
+    );
+
+    render(
+      <ProjectWorkspace
+        discussionLifecycleRequests={{ create }}
+        project={project}
+        requestBubbles={async () => [selectedBubble]}
+      />,
+    );
+
+    const bubbleCard = await screen.findByRole('article', {
+      name: selectedBubble.title,
+    });
+    fireEvent.keyDown(bubbleCard, { key: 'Enter' });
+    fireEvent.click(screen.getByRole('button', { name: 'New discussion' }));
+    fireEvent.change(
+      screen.getByRole('textbox', { name: 'Discussion prompt' }),
+      { target: { value: 'What changed?' } },
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Continue discussion' }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Review selected context' }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Start discussion' }),
+    );
+
+    expect(
+      await screen.findByRole('heading', {
+        name: "Discussion context wasn't created",
+      }),
+    ).toBeTruthy();
+    const pendingList = screen.getByRole('list', {
+      name: 'Pending discussion context',
+    });
+    expect(
+      pendingList
+        .querySelector(`[data-context-source-issue="missing"]`)
+        ?.textContent,
+    ).toContain(selectedBubble.title);
+    expect(
+      within(pendingList).getByText(
+        'This source was deleted or is no longer available.',
+      ),
+    ).toBeTruthy();
+
+    fireEvent.click(
+      within(pendingList).getByRole('button', {
+        name: `Remove bubble: ${selectedBubble.title}`,
+      }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Review context' }),
+    );
+
+    expect(screen.getByText('0 bubbles · 0 documents')).toBeTruthy();
+    expect(
+      screen.getByLabelText('Project description, always included'),
+    ).toBeTruthy();
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Start discussion' }),
+    );
+
+    await waitFor(() => expect(inputs).toHaveLength(2));
+    expect(inputs[0]).toMatchObject({
+      bubble_ids: [selectedBubble.id],
+      document_ids: [],
+      first_prompt: 'What changed?',
+    });
+    expect(inputs[1]).toMatchObject({
+      bubble_ids: [],
+      document_ids: [],
+      first_prompt: 'What changed?',
+    });
+    expect(inputs[1].idempotency_key).not.toBe(
+      inputs[0].idempotency_key,
+    );
   });
 
   it('restores the viewport supplied by the loaded project', async () => {

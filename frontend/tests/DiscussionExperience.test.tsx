@@ -411,6 +411,51 @@ describe('DiscussionExperience', () => {
     });
   });
 
+  it('rotates the creation idempotency key after the prompt changes', async () => {
+    const inputs: CreateDiscussionInput[] = [];
+    const create = vi.fn(
+      async (
+        _projectId: string,
+        input: CreateDiscussionInput,
+      ) => {
+        inputs.push(input);
+
+        if (inputs.length === 1) {
+          throw new Error('Creation connection failed.');
+        }
+
+        return new Promise<DiscussionDetails>(() => undefined);
+      },
+    );
+
+    render(<Harness requests={{ create }} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+
+    const prompt = screen.getByRole('textbox', {
+      name: 'Discussion prompt',
+    });
+    fireEvent.change(prompt, {
+      target: { value: 'What blocks the launch?' },
+    });
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Continue discussion' }),
+    );
+
+    expect(await screen.findByText('Creation connection failed.')).toBeTruthy();
+    fireEvent.change(prompt, {
+      target: { value: 'What changed before launch?' },
+    });
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Continue discussion' }),
+    );
+
+    await waitFor(() => expect(inputs).toHaveLength(2));
+    expect(inputs[1].first_prompt).toBe('What changed before launch?');
+    expect(inputs[1].idempotency_key).not.toBe(
+      inputs[0].idempotency_key,
+    );
+  });
+
   it('shows a data error instead of rendering an incomplete context package', async () => {
     render(
       <Harness

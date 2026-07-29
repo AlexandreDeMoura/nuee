@@ -49,6 +49,7 @@ describe('discussion context selection coordinator', () => {
         title: 'Latest review title',
       },
     ]);
+    expect(result.current.selectionRevision).toBe(0);
 
     act(() => result.current.beginSourceSelection('document'));
     expect(result.current.phase).toBe('selecting_documents');
@@ -75,9 +76,11 @@ describe('discussion context selection coordinator', () => {
       bubble_ids: ['bubble-1'],
       document_ids: ['document-2', 'document-1'],
     });
+    expect(result.current.selectionRevision).toBe(1);
 
     act(() => result.current.removeSource('document', 'document-2'));
     expect(result.current.selection.document_ids).toEqual(['document-1']);
+    expect(result.current.selectionRevision).toBe(2);
   });
 
   it('preserves choices through recoverable errors and clears them on cancellation', () => {
@@ -100,20 +103,79 @@ describe('discussion context selection coordinator', () => {
       ]),
     );
     act(() => result.current.beginSubmitting());
-    act(() => result.current.submissionFailed('Source changed.'));
+    act(() =>
+      result.current.submissionFailed({
+        code: 'DISCUSSION_CONTEXT_SOURCE_INVALID',
+        message: 'Source changed.',
+        sourceIssues: [
+          {
+            reason: 'missing',
+            sourceId: 'bubble-1',
+            sourceKind: 'bubble',
+          },
+        ],
+      }),
+    );
 
     expect(result.current.phase).toBe('error');
     expect(result.current.error).toBe('Source changed.');
+    expect(result.current.failure?.sourceIssues).toEqual([
+      {
+        reason: 'missing',
+        sourceId: 'bubble-1',
+        sourceKind: 'bubble',
+      },
+    ]);
     expect(result.current.selection.bubble_ids).toEqual(['bubble-1']);
 
-    act(() => result.current.retrySubmission());
+    act(() => result.current.review());
+    expect(result.current.phase).toBe('review');
+    expect(result.current.failure?.code).toBe(
+      'DISCUSSION_CONTEXT_SOURCE_INVALID',
+    );
+
+    act(() => result.current.removeSource('bubble', 'bubble-1'));
+    expect(result.current.failure).toBeNull();
+    expect(result.current.selectionRevision).toBe(2);
+
+    act(() => result.current.beginSubmitting());
     expect(result.current.phase).toBe('submitting');
-    expect(result.current.selection.bubble_ids).toEqual(['bubble-1']);
+    expect(result.current.selection.bubble_ids).toEqual([]);
 
     act(() => result.current.cancel());
     expect(result.current.phase).toBe('idle');
     expect(result.current.prompt).toBe('');
     expect(result.current.pendingSources).toEqual([]);
+  });
+
+  it('advances request identity when a selection changes and is later restored', () => {
+    const { result } = renderHook(() =>
+      useDiscussionContextSelection('project-1'),
+    );
+    const source = {
+      id: 'bubble-1',
+      kind: 'bubble' as const,
+      projectId: 'project-1',
+      title: 'Launch risks',
+    };
+
+    act(() => {
+      result.current.prepare({
+        entryPoint: 'selected_bubble',
+        initialSources: [source],
+      });
+      result.current.invite('Where are the risks?');
+      result.current.review();
+    });
+
+    expect(result.current.selectionRevision).toBe(0);
+
+    act(() => result.current.removeSource('bubble', source.id));
+    expect(result.current.selectionRevision).toBe(1);
+
+    act(() => result.current.confirmSourceSelection('bubble', [source]));
+    expect(result.current.selection.bubble_ids).toEqual([source.id]);
+    expect(result.current.selectionRevision).toBe(2);
   });
 
   it('returns from source selection to the phase that launched it', () => {

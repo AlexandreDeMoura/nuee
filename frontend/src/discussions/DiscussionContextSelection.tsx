@@ -8,6 +8,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import type { DiscussionContextSelectionInput } from '../api';
+import { discussionCreationSourceIssueMessage } from './discussionCreationFailure';
 import type {
   DiscussionContextSelectionController,
   PendingDiscussionContextSource,
@@ -24,7 +25,10 @@ export interface DiscussionContextSelectionProps {
   canSelectBubbles?: boolean;
   canSelectDocuments?: boolean;
   controller: DiscussionContextSelectionController;
-  onSubmit: (selection: DiscussionContextSelectionInput) => void;
+  onSubmit: (
+    selection: DiscussionContextSelectionInput,
+    selectionRevision: number,
+  ) => void;
 }
 
 function sourceIcon(source: PendingDiscussionContextSource) {
@@ -47,18 +51,46 @@ function PendingSourceList({
     >
       {controller.pendingSources.map((source) => {
         const Icon = sourceIcon(source);
+        const issue = controller.failure?.sourceIssues.find(
+          (candidate) =>
+            candidate.sourceKind === source.kind &&
+            candidate.sourceId === source.id,
+        );
+        const issueId = issue
+          ? `discussion-context-source-issue-${source.kind}-${source.id}`
+          : undefined;
 
         return (
           <li
-            className="flex items-center gap-3 rounded-[10px] border border-[#e1e6ec] bg-white px-3 py-2.5"
+            className={`flex items-center gap-3 rounded-[10px] border bg-white px-3 py-2.5 ${
+              issue
+                ? 'border-[#d9aaa5] bg-[#fffafa]'
+                : 'border-[#e1e6ec]'
+            }`}
+            aria-describedby={issueId}
+            data-context-source-issue={issue?.reason}
             key={`${source.kind}:${source.id}`}
           >
-            <span className="grid size-8 shrink-0 place-items-center rounded-[8px] bg-[#eef2fa] text-[#3f63a8]">
-              <Icon
-                className="size-[15px]"
-                strokeWidth={1.7}
-                aria-hidden="true"
-              />
+            <span
+              className={`grid size-8 shrink-0 place-items-center rounded-[8px] ${
+                issue
+                  ? 'bg-[#f9eeee] text-[#a95f57]'
+                  : 'bg-[#eef2fa] text-[#3f63a8]'
+              }`}
+            >
+              {issue ? (
+                <CircleAlert
+                  className="size-[15px]"
+                  strokeWidth={1.8}
+                  aria-hidden="true"
+                />
+              ) : (
+                <Icon
+                  className="size-[15px]"
+                  strokeWidth={1.7}
+                  aria-hidden="true"
+                />
+              )}
             </span>
             <span className="min-w-0 flex-1">
               <span className="block truncate text-xs font-semibold text-[#344050]">
@@ -67,7 +99,20 @@ function PendingSourceList({
               <span className="mt-0.5 block text-[9.5px] font-medium tracking-[0.08em] text-[#8b97a6] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
                 {source.kind}
               </span>
+              {issue && (
+                <span
+                  className="mt-1 block text-[10.5px] leading-[1.4] text-[#a05b55]"
+                  id={issueId}
+                >
+                  {discussionCreationSourceIssueMessage(issue)}
+                </span>
+              )}
             </span>
+            {issue && (
+              <span className="shrink-0 rounded-[5px] bg-[#f9eeee] px-1.5 py-1 text-[8px] font-semibold tracking-[0.07em] text-[#a95f57] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
+                REVIEW
+              </span>
+            )}
             <button
               className={`grid size-8 shrink-0 cursor-pointer place-items-center rounded-[8px] text-[#9aa6b4] hover:bg-[#fbf1f0] hover:text-[#b4544e] ${focusRing}`}
               type="button"
@@ -90,7 +135,10 @@ function PendingSourceList({
 
 function ProjectContextIndicator() {
   return (
-    <div className="flex items-center gap-3 rounded-[11px] border border-[#cad7ec] bg-[#f4f7fc] px-3.5 py-3 text-left">
+    <div
+      className="flex items-center gap-3 rounded-[11px] border border-[#cad7ec] bg-[#f4f7fc] px-3.5 py-3 text-left"
+      aria-label="Project description, always included"
+    >
       <span className="grid size-8 shrink-0 place-items-center rounded-[8px] bg-[#e5ecf8] text-[#3f63a8]">
         <CircleDot
           className="size-[15px]"
@@ -120,12 +168,16 @@ export function DiscussionContextSelection({
   onSubmit,
 }: DiscussionContextSelectionProps) {
   const submit = (projectContextOnly: boolean) => {
+    const removesPendingSources =
+      projectContextOnly && controller.pendingSources.length > 0;
+    const selectionRevision =
+      controller.selectionRevision + (removesPendingSources ? 1 : 0);
+    const selection = projectContextOnly
+      ? { bubble_ids: [], document_ids: [] }
+      : controller.selection;
+
     controller.beginSubmitting(projectContextOnly);
-    onSubmit(
-      projectContextOnly
-        ? { bubble_ids: [], document_ids: [] }
-        : controller.selection,
-    );
+    onSubmit(selection, selectionRevision);
   };
 
   if (controller.phase === 'error') {
@@ -153,13 +205,21 @@ export function DiscussionContextSelection({
         >
           {controller.error ?? 'The discussion could not be started.'}
         </p>
+        {controller.pendingSources.length > 0 && (
+          <div className="mx-auto mt-4 max-w-[460px]">
+            <PendingSourceList controller={controller} />
+          </div>
+        )}
         <div className="mt-5 flex flex-wrap justify-center gap-2">
           <button
             className={primaryButton}
             type="button"
             onClick={() => {
               controller.retrySubmission();
-              onSubmit(controller.selection);
+              onSubmit(
+                controller.selection,
+                controller.selectionRevision,
+              );
             }}
           >
             <RotateCcw
@@ -214,6 +274,14 @@ export function DiscussionContextSelection({
         </div>
 
         <div className="mt-5">
+          {controller.failure && (
+            <p
+              className="mb-3 rounded-[9px] border border-[#e7c5c1] bg-[#fff9f8] px-3 py-2.5 text-left text-[11px] leading-[1.5] text-[#8b5d59]"
+              role="alert"
+            >
+              {controller.failure.message}
+            </p>
+          )}
           <ProjectContextIndicator />
           <PendingSourceList controller={controller} />
         </div>

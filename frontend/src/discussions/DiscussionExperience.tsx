@@ -36,11 +36,6 @@ export interface DiscussionExperienceProps {
   onDiscussionChanged?: (discussion: DiscussionDetails) => void;
   onDelete?: (discussion: DiscussionDeleteTarget) => void;
   onMinimize?: () => void;
-  /**
-   * @deprecated Discussion creation now snapshots the authoritative server
-   * project description.
-   */
-  projectDescription?: string;
   projectId: string;
   requests?: DiscussionLifecycleRequests;
 }
@@ -147,13 +142,13 @@ function DiscussionExperienceModal({
     if (
       contextSelection?.phase === 'submitting' &&
       !lifecycle.isSubmitting &&
-      lifecycle.composerError
+      lifecycle.creationFailure
     ) {
-      contextSelection.submissionFailed(lifecycle.composerError);
+      contextSelection.submissionFailed(lifecycle.creationFailure);
     }
   }, [
     contextSelection,
-    lifecycle.composerError,
+    lifecycle.creationFailure,
     lifecycle.isSubmitting,
   ]);
 
@@ -246,7 +241,9 @@ function DiscussionExperienceModal({
             canSelectBubbles={canSelectBubbleContext}
             canSelectDocuments={canSelectDocumentContext}
             controller={contextSelection}
-            onSubmit={lifecycle.submit}
+            onSubmit={(selection, selectionRevision) =>
+              lifecycle.submit(selection, selectionRevision)
+            }
           />
         ) : (
           <DiscussionMessages
