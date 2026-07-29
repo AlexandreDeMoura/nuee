@@ -116,6 +116,40 @@ describe('discussion context selection coordinator', () => {
     expect(result.current.pendingSources).toEqual([]);
   });
 
+  it('returns from source selection to the phase that launched it', () => {
+    const { result } = renderHook(() =>
+      useDiscussionContextSelection('project-1'),
+    );
+
+    act(() => {
+      result.current.prepare({
+        entryPoint: 'selected_bubble',
+        initialSources: [
+          {
+            id: 'bubble-1',
+            kind: 'bubble',
+            projectId: 'project-1',
+            title: 'Launch risks',
+          },
+        ],
+      });
+      result.current.invite('Where are the risks?');
+    });
+
+    act(() => result.current.beginSourceSelection('bubble'));
+    act(() => result.current.backFromSourceSelection());
+
+    expect(result.current.phase).toBe('invitation');
+    expect(result.current.selection.bubble_ids).toEqual(['bubble-1']);
+
+    act(() => result.current.review());
+    act(() => result.current.beginSourceSelection('bubble'));
+    act(() => result.current.backFromSourceSelection());
+
+    expect(result.current.phase).toBe('review');
+    expect(result.current.selection.bubble_ids).toEqual(['bubble-1']);
+  });
+
   it('does not restore pending state after the owning project changes', () => {
     const { rerender, result } = renderHook(
       ({ projectId }) => useDiscussionContextSelection(projectId),

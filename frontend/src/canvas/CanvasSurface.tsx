@@ -651,6 +651,7 @@ export function CanvasSurface({
 
       {multiSelection && (
         <CanvasMultiSelectionBar
+          allowEmptySelection={multiSelection.allowEmptySelection ?? false}
           confirmLabel={multiSelection.confirmLabel ?? 'Confirm selection'}
           instruction={multiSelection.instruction ?? 'Select bubbles'}
           selectedCount={activeMultiSelectedBubbleIds.length}

@@ -594,7 +594,11 @@ describe('CanvasSurface', () => {
         emptyState={emptyState}
         multiSelection={{
           confirmLabel: 'Add to discussion',
-          initialBubbleIds: ['bubble-2', 'other-project-bubble'],
+          initialBubbleIds: [
+            'bubble-2',
+            'bubble-2',
+            'other-project-bubble',
+          ],
           instruction: 'Select bubbles to add as context',
           onCancel: vi.fn(),
           onConfirm,
@@ -667,6 +671,94 @@ describe('CanvasSurface', () => {
         },
       ],
     ]);
+  });
+
+  it('allows an owning flow to confirm empty after local deletion and clears selection between flows', async () => {
+    const selectedBubble = bubble();
+    const requestBubbles = vi.fn().mockResolvedValue([selectedBubble]);
+    const onConfirm = vi.fn<(selection: CanvasMultiSelectionResult) => void>();
+    const selection = {
+      allowEmptySelection: true,
+      initialBubbleIds: [
+        selectedBubble.id,
+        selectedBubble.id,
+      ],
+      onCancel: vi.fn(),
+      onConfirm,
+    };
+    const rendered = render(
+      <CanvasSurface
+        emptyState={emptyState}
+        multiSelection={selection}
+        projectId={project.id}
+        requestBubbles={requestBubbles}
+      />,
+    );
+
+    const selectedOption = await screen.findByRole('checkbox', {
+      name: selectedBubble.title,
+    });
+
+    expect(selectedOption.getAttribute('aria-checked')).toBe('true');
+    expect(screen.getByText('1 SELECTED')).toBeTruthy();
+
+    rendered.rerender(
+      <CanvasSurface
+        deletedBubbleIds={[selectedBubble.id]}
+        emptyState={emptyState}
+        multiSelection={selection}
+        projectId={project.id}
+        requestBubbles={requestBubbles}
+      />,
+    );
+
+    expect(
+      screen.queryByRole('checkbox', { name: selectedBubble.title }),
+    ).toBeNull();
+    const confirmEmpty = screen.getByRole('button', {
+      name: 'Confirm selection (0 selected)',
+    });
+
+    expect((confirmEmpty as HTMLButtonElement).disabled).toBe(false);
+    fireEvent.click(confirmEmpty);
+    fireEvent.click(confirmEmpty);
+
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+    expect(onConfirm).toHaveBeenCalledWith({
+      projectId: project.id,
+      bubbleIds: [],
+      bubbles: [],
+    });
+
+    rendered.rerender(
+      <CanvasSurface
+        emptyState={emptyState}
+        projectId={project.id}
+        requestBubbles={requestBubbles}
+      />,
+    );
+    expect(
+      screen.getByRole('article', { name: selectedBubble.title }),
+    ).toBeTruthy();
+
+    rendered.rerender(
+      <CanvasSurface
+        emptyState={emptyState}
+        multiSelection={{
+          allowEmptySelection: true,
+          onCancel: vi.fn(),
+          onConfirm: vi.fn(),
+        }}
+        projectId={project.id}
+        requestBubbles={requestBubbles}
+      />,
+    );
+
+    expect(
+      screen
+        .getByRole('checkbox', { name: selectedBubble.title })
+        .getAttribute('aria-checked'),
+    ).toBe('false');
   });
 
   it('cancels multi-selection with Escape and restores the previous normal selection', async () => {

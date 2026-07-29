@@ -59,6 +59,8 @@ export interface CanvasMultiSelectionResult {
  * stop supplying the value after either callback completes.
  */
 export interface CanvasMultiSelection {
+  /** Allows confirmation with no bubbles, so an owner can clear prior choices. */
+  allowEmptySelection?: boolean;
   confirmLabel?: string;
   initialBubbleIds?: readonly string[];
   instruction?: string;

@@ -51,7 +51,7 @@ export function useMultiSelection({
       bubbleIds: string[],
     ) => {
       if (outcomeTrackedRef.current) {
-        return;
+        return false;
       }
 
       outcomeTrackedRef.current = true;
@@ -59,6 +59,7 @@ export function useMultiSelection({
         project_id: projectId,
         bubble_ids: bubbleIds,
       });
+      return true;
     },
     [analyticsClient, projectId],
   );
@@ -68,10 +69,15 @@ export function useMultiSelection({
       return;
     }
 
-    complete(
-      'bubble_multi_selection_cancelled',
-      activeSelectedBubbleIds,
-    );
+    if (
+      !complete(
+        'bubble_multi_selection_cancelled',
+        activeSelectedBubbleIds,
+      )
+    ) {
+      return;
+    }
+
     multiSelection.onCancel();
   }, [activeSelectedBubbleIds, complete, multiSelection]);
 
@@ -89,7 +95,10 @@ export function useMultiSelection({
     });
     const bubbleIds = selectedBubbles.map((bubble) => bubble.id);
 
-    complete('bubble_multi_selection_confirmed', bubbleIds);
+    if (!complete('bubble_multi_selection_confirmed', bubbleIds)) {
+      return;
+    }
+
     multiSelection.onConfirm({
       projectId,
       bubbleIds,

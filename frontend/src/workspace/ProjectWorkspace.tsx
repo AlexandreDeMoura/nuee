@@ -909,6 +909,7 @@ export function ProjectWorkspace({
       }
 
       return {
+        allowEmptySelection: true,
         confirmLabel: 'Use selected bubbles',
         initialBubbleIds: discussionContextSelection.selection.bubble_ids,
         instruction: 'Choose bubbles for this discussion',

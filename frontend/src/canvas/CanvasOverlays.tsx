@@ -296,12 +296,14 @@ export function CanvasBubbleActions({
 }
 
 export function CanvasMultiSelectionBar({
+  allowEmptySelection,
   confirmLabel,
   instruction,
   selectedCount,
   onCancel,
   onConfirm,
 }: {
+  allowEmptySelection: boolean;
   confirmLabel: string;
   instruction: string;
   selectedCount: number;
@@ -338,7 +340,7 @@ export function CanvasMultiSelectionBar({
             className={`inline-flex min-h-8 cursor-pointer items-center gap-2 rounded-[9px] bg-[#3f63a8] px-3.5 text-xs font-semibold text-white shadow-[0_6px_16px_-8px_rgba(63,99,168,0.7)] hover:bg-[#33538f] disabled:cursor-default disabled:bg-[#aebbd1] disabled:shadow-none ${focusRing}`}
             type="button"
             aria-label={`${confirmLabel} (${selectedCount} selected)`}
-            disabled={selectedCount === 0}
+            disabled={!allowEmptySelection && selectedCount === 0}
             onClick={onConfirm}
           >
             {confirmLabel}
@@ -357,4 +359,3 @@ export function CanvasMultiSelectionBar({
     </>
   );
 }
-

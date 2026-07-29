@@ -186,8 +186,6 @@ export function useDiscussionContextSelection(
       setStoredState((current) => {
         const scoped =
           current.projectId === projectId ? current : emptyState(projectId);
-        const hasPendingSources =
-          scoped.bubbleSources.length + scoped.documentSources.length > 0;
 
         return {
           ...scoped,
@@ -196,7 +194,8 @@ export function useDiscussionContextSelection(
             kind === 'bubble'
               ? 'selecting_bubbles'
               : 'selecting_documents',
-          returnPhase: hasPendingSources ? 'review' : 'invitation',
+          returnPhase:
+            scoped.phase === 'review' ? 'review' : 'invitation',
         };
       });
     },
