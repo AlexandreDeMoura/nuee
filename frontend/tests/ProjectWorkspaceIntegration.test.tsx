@@ -50,6 +50,17 @@ function deferred<T>() {
   return { promise, resolve, reject };
 }
 
+function activateButtonWithKeyboard(
+  button: HTMLElement,
+  key: 'Enter' | ' ' = 'Enter',
+) {
+  button.focus();
+  expect(document.activeElement).toBe(button);
+  fireEvent.keyDown(button, { key });
+  fireEvent.click(button, { detail: 0 });
+  fireEvent.keyUp(button, { key });
+}
+
 function bubble(overrides: Partial<Bubble> = {}): Bubble {
   return {
     id: 'bubble-1',
@@ -293,7 +304,7 @@ describe('workspace integration contracts', () => {
     ).toBe(false);
   });
 
-  it('adds one persisted extraction bubble at the server position only after approval succeeds', async () => {
+  it('adds one persisted extraction bubble by keyboard only after approval succeeds', async () => {
     const persisted = discussionDetails({
       title: 'Launch review',
       messages: [
@@ -361,20 +372,20 @@ describe('workspace integration contracts', () => {
       />,
     );
 
-    fireEvent.click(
+    activateButtonWithKeyboard(
       await screen.findByRole('button', {
         name: 'Open discussion: Launch review',
       }),
     );
-    fireEvent.click(
+    activateButtonWithKeyboard(
       await screen.findByRole('button', {
         name: 'Extract knowledge from this response',
       }),
     );
-    fireEvent.click(
+    activateButtonWithKeyboard(
       screen.getByRole('button', { name: 'Generate proposal' }),
     );
-    fireEvent.click(
+    activateButtonWithKeyboard(
       await screen.findByRole('button', {
         name: 'Approve as new bubble',
       }),
@@ -437,7 +448,7 @@ describe('workspace integration contracts', () => {
     expect(recordOpen).toHaveBeenCalledTimes(1);
   });
 
-  it('selects one extraction target, refreshes conflicts, and replaces the canonical bubble after reconfirmation', async () => {
+  it('selects one extraction target by keyboard, refreshes conflicts, and replaces the canonical bubble after reconfirmation', async () => {
     const persisted = discussionDetails({
       title: 'Launch review',
       messages: [
@@ -519,9 +530,11 @@ describe('workspace integration contracts', () => {
         }),
       )
       .mockResolvedValueOnce(updatedResponse);
+    const track = vi.fn<AnalyticsClient['track']>();
 
     render(
       <ProjectWorkspace
+        analyticsClient={{ track }}
         discussionCount={1}
         discussionLifecycleRequests={{ get: async () => persisted }}
         discussionPanelRequests={{
@@ -558,21 +571,23 @@ describe('workspace integration contracts', () => {
     const originalLeft = targetCard.style.left;
     const originalTop = targetCard.style.top;
     fireEvent.keyDown(targetCard, { key: 'Enter' });
-    fireEvent.click(screen.getByRole('tab', { name: 'Discussions' }));
-    fireEvent.click(
+    activateButtonWithKeyboard(
+      screen.getByRole('tab', { name: 'Discussions' }),
+    );
+    activateButtonWithKeyboard(
       await screen.findByRole('button', {
         name: 'Open discussion: Launch review',
       }),
     );
-    fireEvent.click(
+    activateButtonWithKeyboard(
       await screen.findByRole('button', {
         name: 'Extract knowledge from this response',
       }),
     );
-    fireEvent.click(
+    activateButtonWithKeyboard(
       screen.getByRole('button', { name: 'Generate proposal' }),
     );
-    fireEvent.click(
+    activateButtonWithKeyboard(
       await screen.findByRole('button', {
         name: 'Update an existing bubble',
       }),
@@ -592,7 +607,9 @@ describe('workspace integration contracts', () => {
       screen.queryByRole('checkbox', { name: foreignBubble.title }),
     ).toBeNull();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    activateButtonWithKeyboard(
+      screen.getByRole('button', { name: 'Cancel' }),
+    );
 
     expect(
       await screen.findByRole('heading', {
@@ -608,7 +625,7 @@ describe('workspace integration contracts', () => {
     ).toBe(extractionProposalResponse().proposal.title);
     expect(resolve).not.toHaveBeenCalled();
 
-    fireEvent.click(
+    activateButtonWithKeyboard(
       screen.getByRole('button', {
         name: 'Update an existing bubble',
       }),
@@ -627,7 +644,7 @@ describe('workspace integration contracts', () => {
     expect(screen.getByText('1 SELECTED')).toBeTruthy();
 
     fireEvent.keyDown(targetOption, { key: 'Enter' });
-    fireEvent.click(
+    activateButtonWithKeyboard(
       screen.getByRole('button', {
         name: 'Use this bubble (1 selected)',
       }),
@@ -643,7 +660,7 @@ describe('workspace integration contracts', () => {
         ?.textContent,
     ).toContain(target.title);
 
-    fireEvent.click(
+    activateButtonWithKeyboard(
       screen.getByRole('button', { name: 'Confirm bubble update' }),
     );
 
@@ -669,7 +686,7 @@ describe('workspace integration contracts', () => {
         ?.textContent,
     ).toContain(target.title);
 
-    fireEvent.click(
+    activateButtonWithKeyboard(
       screen.getByRole('button', { name: 'Confirm bubble update' }),
     );
 
@@ -715,6 +732,57 @@ describe('workspace integration contracts', () => {
     );
     expect(inspector?.textContent).toContain(updatedTarget.title);
     expect(inspector?.textContent).toContain(updatedTarget.content);
+
+    const extractionResolutionEvents = track.mock.calls.filter(
+      ([event]) =>
+        event === 'knowledge_extraction_resolution_finished',
+    );
+
+    expect(extractionResolutionEvents).toEqual([
+      [
+        'knowledge_extraction_resolution_finished',
+        expect.objectContaining({
+          project_id: project.id,
+          discussion_id: persisted.id,
+          resolution: 'update_bubble',
+          status: 'target_changed',
+          latency_ms: expect.any(Number),
+        }),
+      ],
+      [
+        'knowledge_extraction_resolution_finished',
+        expect.objectContaining({
+          project_id: project.id,
+          discussion_id: persisted.id,
+          resolution: 'update_bubble',
+          status: 'succeeded',
+          latency_ms: expect.any(Number),
+        }),
+      ],
+    ]);
+
+    const serializedEvents = JSON.stringify(
+      track.mock.calls.filter(([event]) =>
+        event.startsWith('knowledge_extraction_'),
+      ),
+    );
+
+    for (const forbiddenContent of [
+      persisted.messages[0].content,
+      persisted.messages[1].content,
+      persisted.title,
+      extractionProposalResponse().proposal.title,
+      extractionProposalResponse().proposal.summary,
+      extractionProposalResponse().proposal.content,
+      target.title,
+      target.content,
+      changedTarget.title,
+      changedTarget.content,
+      updatedTarget.title,
+      updatedTarget.content,
+    ]) {
+      expect(serializedEvents).not.toContain(forbiddenContent);
+    }
   });
 
   it('can start a discussion from the panel when the canvas is not empty', async () => {

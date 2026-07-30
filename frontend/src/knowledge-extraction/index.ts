@@ -2,6 +2,7 @@ export * from './KnowledgeExtractionDiscardDialog';
 export * from './KnowledgeExtractionProposalReview';
 export * from './KnowledgeExtractionSourceActions';
 export * from './KnowledgeExtractionSourceSelection';
+export * from './knowledgeExtractionAnalytics';
 export * from './knowledgeExtractionSources';
 export * from './knowledgeExtractionStateMachine';
 export * from './knowledgeExtractionTargetSelection';

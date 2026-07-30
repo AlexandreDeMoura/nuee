@@ -41,6 +41,17 @@ function deferred<T>() {
   return { promise, reject, resolve };
 }
 
+function activateButtonWithKeyboard(
+  button: HTMLElement,
+  key: 'Enter' | ' ' = 'Enter',
+) {
+  button.focus();
+  expect(document.activeElement).toBe(button);
+  fireEvent.keyDown(button, { key });
+  fireEvent.click(button, { detail: 0 });
+  fireEvent.keyUp(button, { key });
+}
+
 const keepTemporaryTitle: NonNullable<
   DiscussionLifecycleRequests['generateTitle']
 > = () => new Promise<DiscussionDetails>(() => undefined);
@@ -202,6 +213,7 @@ describe('DiscussionExperience', () => {
     >(
       () => new Promise<never>(() => undefined),
     );
+    const track = vi.fn<AnalyticsClient['track']>();
     const extendedDetails = details({
       messages: [
         ...details().messages,
@@ -228,6 +240,7 @@ describe('DiscussionExperience', () => {
 
     render(
       <Harness
+        analyticsClient={{ track }}
         createExtractionAttemptId={() => 'extraction-attempt-1'}
         extractionRequests={{ create }}
         requests={{ get: async () => extendedDetails }}
@@ -239,6 +252,16 @@ describe('DiscussionExperience', () => {
       name: 'Extract knowledge from discussion',
     });
     fireEvent.click(headerAction);
+
+    expect(track).toHaveBeenCalledWith(
+      'knowledge_extraction_started',
+      {
+        project_id: projectId,
+        discussion_id: 'discussion-1',
+        entry_point: 'discussion_header',
+        occurred_at: expect.any(String),
+      },
+    );
 
     expect(
       screen.getByRole('heading', { name: 'Choose source material' }),
@@ -310,7 +333,7 @@ describe('DiscussionExperience', () => {
     ).toBe(true);
   });
 
-  it('preselects only the assistant response entry point and allows deselection', async () => {
+  it('preselects only the assistant response entry point and allows keyboard deselection', async () => {
     render(
       <Harness
         requests={{ get: async () => details() }}
@@ -320,7 +343,7 @@ describe('DiscussionExperience', () => {
     const responseAction = await screen.findByRole('button', {
       name: 'Extract knowledge from this response',
     });
-    fireEvent.click(responseAction);
+    activateButtonWithKeyboard(responseAction);
 
     const userSource = document.querySelector<HTMLButtonElement>(
       '[data-extraction-source-id="message-user-1"]',
@@ -341,11 +364,13 @@ describe('DiscussionExperience', () => {
     expect(generate.disabled).toBe(false);
     expect(document.activeElement).toBe(assistantSource);
 
-    fireEvent.click(assistantSource!);
+    activateButtonWithKeyboard(assistantSource!, ' ');
     expect(assistantSource?.getAttribute('aria-pressed')).toBe('false');
     expect(generate.disabled).toBe(true);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    activateButtonWithKeyboard(
+      screen.getByRole('button', { name: 'Cancel' }),
+    );
     await waitFor(() => {
       const restoredAction = screen.getByRole('button', {
         name: 'Extract knowledge from this response',
@@ -756,11 +781,13 @@ describe('DiscussionExperience', () => {
     );
   });
 
-  it('rejects a proposal without creating a bubble and restores focus to its entry point', async () => {
+  it('rejects a proposal by keyboard without creating a bubble and restores focus to its entry point', async () => {
     const resolve = vi.fn(async () => rejectedResponse());
+    const track = vi.fn<AnalyticsClient['track']>();
 
     render(
       <Harness
+        analyticsClient={{ track }}
         extractionRequests={{
           create: async () => proposalResponse(),
           resolve,
@@ -769,15 +796,15 @@ describe('DiscussionExperience', () => {
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: 'Open first' }));
-    fireEvent.click(
+    activateButtonWithKeyboard(
       await screen.findByRole('button', {
         name: 'Extract knowledge from this response',
       }),
     );
-    fireEvent.click(
+    activateButtonWithKeyboard(
       screen.getByRole('button', { name: 'Generate proposal' }),
     );
-    fireEvent.click(
+    activateButtonWithKeyboard(
       await screen.findByRole('button', { name: 'Reject' }),
     );
 
@@ -805,6 +832,63 @@ describe('DiscussionExperience', () => {
         }),
       ),
     );
+
+    const extractionEvents = track.mock.calls.filter(([event]) =>
+      event.startsWith('knowledge_extraction_'),
+    );
+
+    expect(extractionEvents).toEqual([
+      [
+        'knowledge_extraction_started',
+        {
+          project_id: projectId,
+          discussion_id: 'discussion-1',
+          entry_point: 'assistant_response',
+          occurred_at: expect.any(String),
+        },
+      ],
+      [
+        'knowledge_extraction_generation_finished',
+        {
+          project_id: projectId,
+          discussion_id: 'discussion-1',
+          message_selection_mode: 'selected',
+          selected_message_count: 1,
+          frozen_project_description_count: 0,
+          frozen_bubble_count: 0,
+          frozen_document_count: 0,
+          payload_size_band: 'under_4_kib',
+          status: 'succeeded',
+          latency_ms: expect.any(Number),
+          retry_count: 0,
+          occurred_at: expect.any(String),
+        },
+      ],
+      [
+        'knowledge_extraction_resolution_finished',
+        {
+          project_id: projectId,
+          discussion_id: 'discussion-1',
+          resolution: 'reject',
+          status: 'succeeded',
+          latency_ms: expect.any(Number),
+          occurred_at: expect.any(String),
+        },
+      ],
+    ]);
+
+    const serializedEvents = JSON.stringify(extractionEvents);
+
+    for (const forbiddenContent of [
+      'What blocks the launch?',
+      'Licensing is the longest lead-time constraint.',
+      projectDescription,
+      generatedProposal.title,
+      generatedProposal.summary,
+      generatedProposal.content,
+    ]) {
+      expect(serializedEvents).not.toContain(forbiddenContent);
+    }
   });
 
   it('confirms Escape close, traps confirmation focus, and does not restore a discarded proposal', async () => {

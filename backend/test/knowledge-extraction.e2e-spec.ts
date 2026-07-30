@@ -13,6 +13,11 @@ import type {
   KnowledgeExtractionResolutionResponse,
   Project,
 } from '@nuee/shared-types';
+import {
+  FAKE_STRUCTURED_PROPOSAL,
+  FakeModelClient,
+} from './../src/ai/fake-model.client';
+import { MODEL_CLIENT, type ModelClient } from './../src/ai/model-client';
 import { AppModule } from './../src/app.module';
 
 describe('Knowledge extraction generation journey (e2e)', () => {
@@ -23,11 +28,19 @@ describe('Knowledge extraction generation journey (e2e)', () => {
   const previousDatabasePath = process.env.PROJECT_DATABASE_PATH;
   let app: INestApplication<App> | undefined;
 
-  async function startApplication(): Promise<INestApplication<App>> {
+  async function startApplication(
+    modelClient?: ModelClient,
+  ): Promise<INestApplication<App>> {
     process.env.PROJECT_DATABASE_PATH = databasePath;
-    const moduleFixture: TestingModule = await Test.createTestingModule({
+    const moduleBuilder = Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    });
+
+    if (modelClient) {
+      moduleBuilder.overrideProvider(MODEL_CLIENT).useValue(modelClient);
+    }
+
+    const moduleFixture: TestingModule = await moduleBuilder.compile();
     const application = moduleFixture.createNestApplication();
     await application.init();
     return application;
@@ -159,6 +172,217 @@ describe('Knowledge extraction generation journey (e2e)', () => {
       .send(input)
       .expect(201)
       .expect(generated);
+    await request(app.getHttpServer())
+      .get(`/projects/${project.id}/discussions/${discussion.id}`)
+      .expect(200)
+      .expect(discussion);
+  });
+
+  it('freezes whole-discussion sources before later messages and resolves only the captured provenance', async () => {
+    const projectResponse = await request(app!.getHttpServer())
+      .post('/projects')
+      .send({
+        title: 'Whole discussion owner',
+        description: 'Later turns must not rewrite an extraction snapshot.',
+      })
+      .expect(201);
+    const project = projectResponse.body as Project;
+    const discussionResponse = await request(app!.getHttpServer())
+      .post(`/projects/${project.id}/discussions`)
+      .send({
+        project_id: project.id,
+        first_prompt: 'What knowledge is stable now?',
+        idempotency_key: 'create-whole-discussion-source',
+        bubble_ids: [],
+        document_ids: [],
+      })
+      .expect(201);
+    const discussion = discussionResponse.body as DiscussionDetails;
+    const initialMessageIds = discussion.messages.map(({ id }) => id);
+    const route = `/projects/${project.id}/discussions/${discussion.id}/knowledge-extractions`;
+    const input = {
+      idempotency_key: 'whole-discussion-snapshot',
+      message_selection: { kind: 'whole_discussion' },
+      frozen_context_item_ids: [],
+    };
+    const generatedResponse = await request(app!.getHttpServer())
+      .post(route)
+      .send(input)
+      .expect(201);
+    const generated =
+      generatedResponse.body as KnowledgeExtractionProposalResponse;
+
+    expect(generated.source).toEqual({
+      message_selection_kind: 'whole_discussion',
+      message_ids: initialMessageIds,
+      frozen_context_item_ids: [],
+    });
+    await request(app!.getHttpServer())
+      .get(`/projects/${project.id}/discussions/${discussion.id}`)
+      .expect(200)
+      .expect(discussion);
+
+    const laterDiscussionResponse = await request(app!.getHttpServer())
+      .post(`/projects/${project.id}/discussions/${discussion.id}/messages`)
+      .send({
+        content: 'What changed after the snapshot?',
+        idempotency_key: 'later-whole-discussion-turn',
+      })
+      .expect(200);
+    const laterDiscussion = laterDiscussionResponse.body as DiscussionDetails;
+
+    expect(laterDiscussion.messages).toHaveLength(4);
+    expect(laterDiscussion.messages.map(({ id }) => id)).toEqual([
+      ...initialMessageIds,
+      expect.any(String),
+      expect.any(String),
+    ]);
+    await request(app!.getHttpServer())
+      .post(route)
+      .send(input)
+      .expect(201)
+      .expect(generated);
+
+    const resolutionInput = {
+      kind: 'new_bubble',
+      proposal: generated.proposal,
+    };
+    const resolutionRoute = `${route}/${generated.id}/resolution`;
+    const resolvedResponse = await request(app!.getHttpServer())
+      .post(resolutionRoute)
+      .send(resolutionInput)
+      .expect(200);
+    const resolved =
+      resolvedResponse.body as KnowledgeExtractionResolutionResponse;
+
+    expect(resolved).toMatchObject({
+      status: 'resolved',
+      resolution: {
+        kind: 'new_bubble',
+        bubble: {
+          project_id: project.id,
+          source_discussion_id: discussion.id,
+          source_message_ids: initialMessageIds,
+        },
+      },
+    });
+    await request(app!.getHttpServer())
+      .post(resolutionRoute)
+      .send(resolutionInput)
+      .expect(200)
+      .expect(resolved);
+    await request(app!.getHttpServer())
+      .get(`/projects/${project.id}/discussions/${discussion.id}`)
+      .expect(200)
+      .expect(laterDiscussion);
+  });
+
+  it('retries one failed model call with the same attempt and replays one persisted resolution', async () => {
+    await app!.close();
+    const deterministicModel = new FakeModelClient();
+    const generateStructuredOutput = jest
+      .fn<ModelClient['generateStructuredOutput']>()
+      .mockRejectedValueOnce(new Error('Temporary model failure.'))
+      .mockImplementation((input) =>
+        deterministicModel.generateStructuredOutput(input),
+      );
+    const flakyModel: ModelClient = {
+      generateAnswer: (input) => deterministicModel.generateAnswer(input),
+      generateStructuredOutput,
+      generateTitle: (input) => deterministicModel.generateTitle(input),
+    };
+    app = await startApplication(flakyModel);
+
+    const projectResponse = await request(app.getHttpServer())
+      .post('/projects')
+      .send({
+        title: 'Retry owner',
+        description: 'Failures must leave the discussion unchanged.',
+      })
+      .expect(201);
+    const project = projectResponse.body as Project;
+    const discussionResponse = await request(app.getHttpServer())
+      .post(`/projects/${project.id}/discussions`)
+      .send({
+        project_id: project.id,
+        first_prompt: 'What survives a model retry?',
+        idempotency_key: 'create-retry-source',
+        bubble_ids: [],
+        document_ids: [],
+      })
+      .expect(201);
+    const discussion = discussionResponse.body as DiscussionDetails;
+    const route = `/projects/${project.id}/discussions/${discussion.id}/knowledge-extractions`;
+    const input = {
+      idempotency_key: 'retry-generation-attempt',
+      message_selection: {
+        kind: 'selected',
+        message_ids: [discussion.messages[1].id],
+      },
+      frozen_context_item_ids: [],
+    };
+
+    await request(app.getHttpServer())
+      .post(route)
+      .send(input)
+      .expect(503)
+      .expect({
+        code: 'KNOWLEDGE_EXTRACTION_GENERATION_FAILED',
+        message:
+          'The knowledge proposal could not be generated. Retry with the same idempotency key.',
+      });
+    await request(app.getHttpServer())
+      .get(`/projects/${project.id}/discussions/${discussion.id}`)
+      .expect(200)
+      .expect(discussion);
+    await request(app.getHttpServer())
+      .get(`/projects/${project.id}/bubbles`)
+      .expect(200)
+      .expect([]);
+
+    const retryResponse = await request(app.getHttpServer())
+      .post(route)
+      .send(input)
+      .expect(201);
+    const generated = retryResponse.body as KnowledgeExtractionProposalResponse;
+
+    expect(generated.proposal).toEqual(FAKE_STRUCTURED_PROPOSAL);
+    await request(app.getHttpServer())
+      .post(route)
+      .send(input)
+      .expect(201)
+      .expect(generated);
+    expect(generateStructuredOutput).toHaveBeenCalledTimes(2);
+
+    const resolutionInput = {
+      kind: 'new_bubble',
+      proposal: generated.proposal,
+    };
+    const resolutionRoute = `${route}/${generated.id}/resolution`;
+    const resolutionResponse = await request(app.getHttpServer())
+      .post(resolutionRoute)
+      .send(resolutionInput)
+      .expect(200);
+    const resolved =
+      resolutionResponse.body as KnowledgeExtractionResolutionResponse;
+
+    await request(app.getHttpServer())
+      .post(resolutionRoute)
+      .send(resolutionInput)
+      .expect(200)
+      .expect(resolved);
+    await request(app.getHttpServer())
+      .get(`/projects/${project.id}/bubbles`)
+      .expect(200)
+      .expect(({ body }) => {
+        const bubbles = body as Bubble[];
+
+        expect(bubbles).toHaveLength(1);
+        expect(bubbles[0]).toMatchObject({
+          source_discussion_id: discussion.id,
+          source_message_ids: [discussion.messages[1].id],
+        });
+      });
     await request(app.getHttpServer())
       .get(`/projects/${project.id}/discussions/${discussion.id}`)
       .expect(200)

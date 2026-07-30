@@ -181,6 +181,8 @@ function DiscussionExperienceModal({
       ? visibleDiscussion.discussionId
       : (lifecycle.details?.id ?? '');
   const extraction = useKnowledgeExtraction({
+    analyticsClient: resolvedAnalyticsClient,
+    analyticsDiscussion: lifecycle.details,
     createAttemptId: createExtractionAttemptId,
     discussionId: extractionDiscussionId,
     onResolved: onKnowledgeExtractionResolved,
@@ -314,12 +316,33 @@ function DiscussionExperienceModal({
         return;
       }
 
+      if (!extraction.start(source.messageId)) {
+        return;
+      }
+
       extractionTriggerRef.current = { element: trigger, source };
       setInspectedContextId(null);
-      extraction.start(source.messageId);
       onExtractKnowledge?.(source);
+      trackAnalytics(
+        resolvedAnalyticsClient,
+        'knowledge_extraction_started',
+        {
+          project_id: projectId,
+          discussion_id: source.discussionId,
+          entry_point: source.messageId
+            ? 'assistant_response'
+            : 'discussion_header',
+          occurred_at: new Date().toISOString(),
+        },
+      );
     },
-    [extraction, lifecycle.details, onExtractKnowledge],
+    [
+      extraction,
+      lifecycle.details,
+      onExtractKnowledge,
+      projectId,
+      resolvedAnalyticsClient,
+    ],
   );
   const restoreExtractionTriggerFocus = useCallback(() => {
     window.setTimeout(() => {

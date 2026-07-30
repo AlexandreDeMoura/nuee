@@ -7,6 +7,7 @@ import {
 import type {
   Bubble,
   CreateKnowledgeExtractionInput,
+  DiscussionDetails,
   KnowledgeExtractionProposalResponse,
   KnowledgeExtractionResolutionResponse,
 } from '@nuee/shared-types';
@@ -18,6 +19,7 @@ import {
   vi,
 } from 'vitest';
 import { ApiError } from '../src/api';
+import type { AnalyticsClient } from '../src/analytics';
 import { useKnowledgeExtraction } from '../src/knowledge-extraction';
 
 function deferred<T>() {
@@ -99,12 +101,185 @@ function newBubbleResolution(): KnowledgeExtractionResolutionResponse {
   };
 }
 
+function analyticsDiscussion(): DiscussionDetails {
+  return {
+    created_at: '2026-07-30T07:00:00.000Z',
+    frozen_context: {
+      version: 1,
+      items: [
+        {
+          created_at: '2026-07-30T07:00:00.000Z',
+          display_order: 0,
+          frozen_content: 'Private frozen project description.',
+          id: 'context-project',
+          source_id: 'project-1',
+          source_kind: 'project_description',
+          source_title: 'Project description',
+        },
+        {
+          created_at: '2026-07-30T07:00:00.000Z',
+          display_order: 1,
+          frozen_content: 'Private frozen strategy body.',
+          id: 'context-1',
+          source_id: 'document-1',
+          source_kind: 'document',
+          source_title: 'Private strategy document',
+        },
+      ],
+    },
+    id: 'discussion-1',
+    last_activity_at: '2026-07-30T07:00:00.001Z',
+    messages: [
+      {
+        content: 'Private selected discussion message.',
+        created_at: '2026-07-30T07:00:00.000Z',
+        discussion_id: 'discussion-1',
+        id: 'message-1',
+        request_id: 'request-1',
+        role: 'user',
+        status: 'completed',
+      },
+      {
+        content: 'Private unselected assistant response.',
+        created_at: '2026-07-30T07:00:00.001Z',
+        discussion_id: 'discussion-1',
+        id: 'message-2',
+        request_id: null,
+        role: 'assistant',
+        status: 'completed',
+      },
+    ],
+    project_id: 'project-1',
+    title: 'Private discussion title',
+    updated_at: '2026-07-30T07:00:00.001Z',
+  };
+}
+
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
 });
 
 describe('useKnowledgeExtraction', () => {
+  it('records aggregate-only generation and resolution analytics across retries', async () => {
+    const create = vi
+      .fn()
+      .mockRejectedValueOnce(
+        new ApiError(503, {
+          code: 'KNOWLEDGE_EXTRACTION_GENERATION_FAILED',
+          message: 'Generation failed.',
+        }),
+      )
+      .mockResolvedValueOnce(proposalResponse());
+    const resolve = vi
+      .fn()
+      .mockRejectedValueOnce(
+        new ApiError(503, {
+          code: 'KNOWLEDGE_EXTRACTION_RESOLUTION_PERSISTENCE_FAILED',
+          message: 'Save failed.',
+        }),
+      )
+      .mockResolvedValueOnce(newBubbleResolution());
+    const track = vi.fn<AnalyticsClient['track']>();
+    const { result } = renderHook(() =>
+      useKnowledgeExtraction({
+        analyticsClient: { track },
+        analyticsDiscussion: analyticsDiscussion(),
+        createAttemptId: () => 'stable-analytics-attempt',
+        discussionId: 'discussion-1',
+        projectId: 'project-1',
+        requests: { create, resolve },
+      }),
+    );
+
+    act(() => {
+      result.current.start('message-1');
+      result.current.toggleFrozenContextItem('context-1');
+    });
+    await act(async () => {
+      await result.current.generateProposal();
+    });
+    await act(async () => {
+      await result.current.generateProposal();
+    });
+    await act(async () => {
+      await result.current.approveAsNewBubble();
+    });
+    await act(async () => {
+      await result.current.approveAsNewBubble();
+    });
+
+    expect(track.mock.calls.map(([event]) => event)).toEqual([
+      'knowledge_extraction_generation_finished',
+      'knowledge_extraction_generation_finished',
+      'knowledge_extraction_resolution_finished',
+      'knowledge_extraction_resolution_finished',
+    ]);
+    expect(track).toHaveBeenNthCalledWith(
+      1,
+      'knowledge_extraction_generation_finished',
+      {
+        project_id: 'project-1',
+        discussion_id: 'discussion-1',
+        message_selection_mode: 'selected',
+        selected_message_count: 1,
+        frozen_project_description_count: 0,
+        frozen_bubble_count: 0,
+        frozen_document_count: 1,
+        payload_size_band: 'under_4_kib',
+        status: 'failed',
+        latency_ms: expect.any(Number),
+        retry_count: 0,
+        occurred_at: expect.any(String),
+      },
+    );
+    expect(track).toHaveBeenNthCalledWith(
+      2,
+      'knowledge_extraction_generation_finished',
+      expect.objectContaining({
+        status: 'succeeded',
+        retry_count: 1,
+      }),
+    );
+    expect(track).toHaveBeenNthCalledWith(
+      3,
+      'knowledge_extraction_resolution_finished',
+      expect.objectContaining({
+        resolution: 'new_bubble',
+        status: 'failed',
+        latency_ms: expect.any(Number),
+      }),
+    );
+    expect(track).toHaveBeenNthCalledWith(
+      4,
+      'knowledge_extraction_resolution_finished',
+      expect.objectContaining({
+        resolution: 'new_bubble',
+        status: 'succeeded',
+        latency_ms: expect.any(Number),
+      }),
+    );
+
+    const serializedEvents = JSON.stringify(track.mock.calls);
+
+    for (const forbiddenContent of [
+      'Private frozen strategy body.',
+      'Private frozen project description.',
+      'Private strategy document',
+      'Private selected discussion message.',
+      'Private unselected assistant response.',
+      'Private discussion title',
+      proposalResponse().proposal.title,
+      proposalResponse().proposal.summary,
+      proposalResponse().proposal.content,
+      newBubbleResolution().resolution.kind === 'new_bubble'
+        ? newBubbleResolution().resolution.bubble.title
+        : '',
+    ]) {
+      expect(serializedEvents).not.toContain(forbiddenContent);
+    }
+  });
+
   it('reuses the attempt key for retry, preserves selection, and resets terminal state', async () => {
     const create = vi
       .fn()

@@ -130,6 +130,38 @@ export interface AnalyticsEventProperties {
     discussion_id: string | null;
     occurred_at: string;
   };
+  knowledge_extraction_started: {
+    project_id: string;
+    discussion_id: string;
+    entry_point: 'discussion_header' | 'assistant_response';
+    occurred_at: string;
+  };
+  knowledge_extraction_generation_finished: {
+    project_id: string;
+    discussion_id: string;
+    message_selection_mode: 'selected' | 'whole_discussion';
+    selected_message_count: number;
+    frozen_project_description_count: number;
+    frozen_bubble_count: number;
+    frozen_document_count: number;
+    payload_size_band:
+      | 'under_4_kib'
+      | '4_to_16_kib'
+      | '16_to_64_kib'
+      | 'over_64_kib';
+    status: 'succeeded' | 'failed' | 'source_invalid';
+    latency_ms: number;
+    retry_count: number;
+    occurred_at: string;
+  };
+  knowledge_extraction_resolution_finished: {
+    project_id: string;
+    discussion_id: string;
+    resolution: 'new_bubble' | 'update_bubble' | 'reject';
+    status: 'succeeded' | 'failed' | 'target_changed';
+    latency_ms: number;
+    occurred_at: string;
+  };
 }
 
 export type AnalyticsEventName = keyof AnalyticsEventProperties;

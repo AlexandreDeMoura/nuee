@@ -7,11 +7,21 @@ import {
 import type {
   Bubble,
   CreateKnowledgeExtractionInput,
+  DiscussionDetails,
   KnowledgeExtractionProposal,
   KnowledgeExtractionProposalResponse,
   KnowledgeExtractionResolutionResponse,
   ResolveKnowledgeExtractionInput,
 } from '../api';
+import {
+  analytics,
+  trackAnalytics,
+  type AnalyticsClient,
+} from '../analytics';
+import {
+  knowledgeExtractionGenerationMetrics,
+  type KnowledgeExtractionGenerationMetrics,
+} from './knowledgeExtractionAnalytics';
 import {
   ApiError,
   createKnowledgeExtraction,
@@ -48,6 +58,8 @@ export interface KnowledgeExtractionRequests {
 
 export interface UseKnowledgeExtractionOptions
   extends KnowledgeExtractionBinding {
+  analyticsClient?: AnalyticsClient;
+  analyticsDiscussion?: DiscussionDetails | null;
   createAttemptId?: () => string;
   onResolved?: (
     response: KnowledgeExtractionResolutionResponse,
@@ -70,7 +82,7 @@ export interface KnowledgeExtractionController {
   reset: () => void;
   selectUpdateTarget: (bubble: Bubble) => void;
   setWholeDiscussion: (selected: boolean) => void;
-  start: (initialMessageId?: string) => void;
+  start: (initialMessageId?: string) => boolean;
   state: KnowledgeExtractionState;
   toggleFrozenContextItem: (contextItemId: string) => void;
   toggleMessage: (messageId: string) => void;
@@ -269,6 +281,8 @@ function isUnresolvedServerAttempt(
 }
 
 export function useKnowledgeExtraction({
+  analyticsClient = analytics,
+  analyticsDiscussion,
   createAttemptId = createDefaultAttemptId,
   discussionId,
   onResolved,
@@ -289,6 +303,12 @@ export function useKnowledgeExtraction({
   });
   const createAttemptIdRef = useRef(createAttemptId);
   const onResolvedRef = useRef(onResolved);
+  const analyticsClientRef = useRef(analyticsClient);
+  const analyticsDiscussionRef = useRef(analyticsDiscussion);
+  const generationMetricsRef = useRef<{
+    key: string;
+    metrics: KnowledgeExtractionGenerationMetrics;
+  } | null>(null);
 
   useEffect(() => {
     requestsRef.current = {
@@ -298,7 +318,11 @@ export function useKnowledgeExtraction({
     };
     createAttemptIdRef.current = createAttemptId;
     onResolvedRef.current = onResolved;
+    analyticsClientRef.current = analyticsClient;
+    analyticsDiscussionRef.current = analyticsDiscussion;
   }, [
+    analyticsClient,
+    analyticsDiscussion,
     createAttemptId,
     onResolved,
     requests?.create,
@@ -388,13 +412,15 @@ export function useKnowledgeExtraction({
       const current = stateRef.current;
 
       if (!currentBindingMatches(current)) {
-        return;
+        return false;
       }
 
-      transition({
+      const next = transition({
         initialMessageId,
         type: 'start',
       });
+
+      return next !== current && next.status === 'selecting';
     },
     [currentBindingMatches, transition],
   );
@@ -524,6 +550,43 @@ export function useKnowledgeExtraction({
       idempotency_key: attemptId,
       ...selectionInput(generating),
     };
+    const startedAt = Date.now();
+    const generationMetricsKey = `${attemptId}:${generating.selectionFingerprint}`;
+    const generationMetrics =
+      generationMetricsRef.current?.key === generationMetricsKey
+        ? generationMetricsRef.current.metrics
+        : knowledgeExtractionGenerationMetrics(
+            analyticsDiscussionRef.current?.id === discussionId &&
+              analyticsDiscussionRef.current.project_id === projectId
+              ? analyticsDiscussionRef.current
+              : null,
+            generating.selection,
+          );
+
+    generationMetricsRef.current = {
+      key: generationMetricsKey,
+      metrics: generationMetrics,
+    };
+    const trackGeneration = (
+      status:
+        | 'succeeded'
+        | 'failed'
+        | 'source_invalid',
+    ) => {
+      trackAnalytics(
+        analyticsClientRef.current,
+        'knowledge_extraction_generation_finished',
+        {
+          project_id: projectId,
+          discussion_id: discussionId,
+          ...generationMetrics,
+          status,
+          latency_ms: Math.max(0, Date.now() - startedAt),
+          retry_count: generating.retryCount,
+          occurred_at: new Date().toISOString(),
+        },
+      );
+    };
 
     try {
       const response = await requestsRef.current.create(
@@ -548,6 +611,7 @@ export function useKnowledgeExtraction({
         proposal: response.proposal,
         type: 'generation_succeeded',
       });
+      trackGeneration('succeeded');
       return response;
     } catch (error: unknown) {
       if (
@@ -568,11 +632,13 @@ export function useKnowledgeExtraction({
           failure: sourceValidationFailure(error),
           type: 'source_invalid',
         });
+        trackGeneration('source_invalid');
       } else {
         transition({
           failure: generationFailure(error),
           type: 'generation_failed',
         });
+        trackGeneration('failed');
       }
 
       return null;
@@ -675,6 +741,23 @@ export function useKnowledgeExtraction({
       const controller = new AbortController();
       controllerRef.current = controller;
       const extractionId = beforeSaving.extractionId;
+      const startedAt = Date.now();
+      const trackResolution = (
+        status: 'succeeded' | 'failed' | 'target_changed',
+      ) => {
+        trackAnalytics(
+          analyticsClientRef.current,
+          'knowledge_extraction_resolution_finished',
+          {
+            project_id: projectId,
+            discussion_id: discussionId,
+            resolution: input.kind,
+            status,
+            latency_ms: Math.max(0, Date.now() - startedAt),
+            occurred_at: new Date().toISOString(),
+          },
+        );
+      };
 
       try {
         const response = await requestsRef.current.resolve(
@@ -704,6 +787,7 @@ export function useKnowledgeExtraction({
           return null;
         }
 
+        trackResolution('succeeded');
         onResolvedRef.current?.(response);
         return response;
       } catch (error: unknown) {
@@ -731,6 +815,7 @@ export function useKnowledgeExtraction({
               },
               type: 'update_target_changed',
             });
+            trackResolution('target_changed');
             return null;
           }
         }
@@ -739,6 +824,7 @@ export function useKnowledgeExtraction({
           failure: resolutionFailure(error),
           type: 'resolution_failed',
         });
+        trackResolution('failed');
         return null;
       } finally {
         if (controllerRef.current === controller) {
