@@ -7,6 +7,7 @@ import { BubblesModule } from './bubbles/bubbles.module';
 import {
   aiConfig,
   appConfig,
+  documentsConfig,
   validateEnvironment,
 } from './config/configuration';
 import { DatabaseModule } from './database/database.module';
@@ -19,7 +20,7 @@ import { ProjectsModule } from './projects/projects.module';
     ConfigModule.forRoot({
       isGlobal: true,
       cache: true,
-      load: [appConfig, aiConfig],
+      load: [appConfig, aiConfig, documentsConfig],
       validate: validateEnvironment,
     }),
     AiModule,

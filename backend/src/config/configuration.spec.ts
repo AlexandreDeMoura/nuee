@@ -1,6 +1,7 @@
 import {
   createAiConfig,
   createAppConfig,
+  createDocumentsConfig,
   validateEnvironment,
 } from './configuration';
 
@@ -22,6 +23,31 @@ describe('configuration', () => {
       inputSafetyMarginTokens: 8_000,
       requestTimeoutMs: 60_000,
     });
+    expect(createDocumentsConfig({ NODE_ENV: 'test' })).toEqual({
+      privateStoragePath: undefined,
+      supported_formats: [
+        {
+          category: 'plain_text',
+          extensions: ['.txt'],
+          mime_types: ['text/plain'],
+        },
+        {
+          category: 'markdown',
+          extensions: ['.md'],
+          mime_types: ['text/markdown', 'text/x-markdown', 'text/plain'],
+        },
+        {
+          category: 'pdf',
+          extensions: ['.pdf'],
+          mime_types: ['application/pdf'],
+        },
+      ],
+      max_file_size_bytes: 10 * 1024 * 1024,
+      max_files_per_request: 1,
+      max_documents_per_project: 25,
+      max_project_storage_bytes: 100 * 1024 * 1024,
+      maxPdfPages: 200,
+    });
   });
 
   it('normalizes explicitly configured values', () => {
@@ -38,6 +64,11 @@ describe('configuration', () => {
       AI_RESERVED_OUTPUT_TOKENS: '6000',
       AI_INPUT_SAFETY_MARGIN_TOKENS: '10000',
       AI_REQUEST_TIMEOUT_MS: '90000',
+      DOCUMENT_PRIVATE_STORAGE_PATH: '/data/documents',
+      DOCUMENT_MAX_FILE_SIZE_BYTES: '20971520',
+      DOCUMENT_MAX_DOCUMENTS_PER_PROJECT: '40',
+      DOCUMENT_MAX_PROJECT_STORAGE_BYTES: '209715200',
+      DOCUMENT_MAX_PDF_PAGES: '300',
     };
 
     expect(createAppConfig(source)).toEqual({
@@ -55,6 +86,14 @@ describe('configuration', () => {
       reservedOutputTokens: 6_000,
       inputSafetyMarginTokens: 10_000,
       requestTimeoutMs: 90_000,
+    });
+    expect(createDocumentsConfig(source)).toMatchObject({
+      privateStoragePath: '/data/documents',
+      max_file_size_bytes: 20 * 1024 * 1024,
+      max_files_per_request: 1,
+      max_documents_per_project: 40,
+      max_project_storage_bytes: 200 * 1024 * 1024,
+      maxPdfPages: 300,
     });
   });
 
@@ -92,6 +131,22 @@ describe('configuration', () => {
     [
       { NODE_ENV: 'test', AI_REQUEST_TIMEOUT_MS: '999' },
       'AI_REQUEST_TIMEOUT_MS must be an integer',
+    ],
+    [
+      { NODE_ENV: 'test', DOCUMENT_MAX_FILE_SIZE_BYTES: '0' },
+      'DOCUMENT_MAX_FILE_SIZE_BYTES must be an integer',
+    ],
+    [
+      {
+        NODE_ENV: 'test',
+        DOCUMENT_MAX_FILE_SIZE_BYTES: '2048',
+        DOCUMENT_MAX_PROJECT_STORAGE_BYTES: '1024',
+      },
+      'DOCUMENT_MAX_PROJECT_STORAGE_BYTES must be greater',
+    ],
+    [
+      { NODE_ENV: 'test', DOCUMENT_MAX_PDF_PAGES: '0' },
+      'DOCUMENT_MAX_PDF_PAGES must be an integer',
     ],
   ])('rejects invalid environment values', (source, message) => {
     expect(() => validateEnvironment(source)).toThrow(message);

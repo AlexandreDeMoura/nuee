@@ -1,4 +1,8 @@
 import { registerAs } from '@nestjs/config';
+import type {
+  DocumentUploadFormatPolicy,
+  DocumentUploadPolicy,
+} from '@nuee/shared-types';
 
 export type AppEnvironment = 'development' | 'test' | 'production';
 export type AiProvider = 'openai';
@@ -21,6 +25,11 @@ export interface AiConfig {
   requestTimeoutMs: number;
 }
 
+export interface DocumentsConfig extends DocumentUploadPolicy {
+  privateStoragePath?: string;
+  maxPdfPages: number;
+}
+
 const DEFAULT_PORT = 3000;
 const DEFAULT_FRONTEND_ORIGIN = 'http://localhost:5173';
 const DEFAULT_AI_MODEL = 'gpt-5.6-sol';
@@ -29,6 +38,28 @@ const DEFAULT_MODEL_INPUT_TOKEN_LIMIT = 128_000;
 const DEFAULT_RESERVED_OUTPUT_TOKENS = 4_000;
 const DEFAULT_INPUT_SAFETY_MARGIN_TOKENS = 8_000;
 const DEFAULT_AI_REQUEST_TIMEOUT_MS = 60_000;
+const DEFAULT_MAX_DOCUMENT_FILE_SIZE_BYTES = 10 * 1024 * 1024;
+const DEFAULT_MAX_DOCUMENTS_PER_PROJECT = 25;
+const DEFAULT_MAX_DOCUMENT_PROJECT_STORAGE_BYTES = 100 * 1024 * 1024;
+const DEFAULT_MAX_PDF_PAGES = 200;
+
+const SUPPORTED_DOCUMENT_FORMATS: readonly DocumentUploadFormatPolicy[] = [
+  {
+    category: 'plain_text',
+    extensions: ['.txt'],
+    mime_types: ['text/plain'],
+  },
+  {
+    category: 'markdown',
+    extensions: ['.md'],
+    mime_types: ['text/markdown', 'text/x-markdown', 'text/plain'],
+  },
+  {
+    category: 'pdf',
+    extensions: ['.pdf'],
+    mime_types: ['application/pdf'],
+  },
+];
 
 type EnvironmentSource = Record<string, unknown>;
 
@@ -198,14 +229,71 @@ export function createAiConfig(source: EnvironmentSource): AiConfig {
   return config;
 }
 
+export function createDocumentsConfig(
+  source: EnvironmentSource,
+): DocumentsConfig {
+  const maxFileSizeBytes = integerValue(
+    source,
+    'DOCUMENT_MAX_FILE_SIZE_BYTES',
+    DEFAULT_MAX_DOCUMENT_FILE_SIZE_BYTES,
+    1,
+    100 * 1024 * 1024,
+  );
+  const maxDocumentsPerProject = integerValue(
+    source,
+    'DOCUMENT_MAX_DOCUMENTS_PER_PROJECT',
+    DEFAULT_MAX_DOCUMENTS_PER_PROJECT,
+    1,
+    1_000,
+  );
+  const maxProjectStorageBytes = integerValue(
+    source,
+    'DOCUMENT_MAX_PROJECT_STORAGE_BYTES',
+    DEFAULT_MAX_DOCUMENT_PROJECT_STORAGE_BYTES,
+    1,
+    10 * 1024 * 1024 * 1024,
+  );
+
+  if (maxProjectStorageBytes < maxFileSizeBytes) {
+    throw new Error(
+      'DOCUMENT_MAX_PROJECT_STORAGE_BYTES must be greater than or equal to DOCUMENT_MAX_FILE_SIZE_BYTES.',
+    );
+  }
+
+  return {
+    privateStoragePath: optionalString(source, 'DOCUMENT_PRIVATE_STORAGE_PATH'),
+    supported_formats: SUPPORTED_DOCUMENT_FORMATS.map((format) => ({
+      category: format.category,
+      extensions: [...format.extensions],
+      mime_types: [...format.mime_types],
+    })),
+    max_file_size_bytes: maxFileSizeBytes,
+    max_files_per_request: 1,
+    max_documents_per_project: maxDocumentsPerProject,
+    max_project_storage_bytes: maxProjectStorageBytes,
+    maxPdfPages: integerValue(
+      source,
+      'DOCUMENT_MAX_PDF_PAGES',
+      DEFAULT_MAX_PDF_PAGES,
+      1,
+      10_000,
+    ),
+  };
+}
+
 export function validateEnvironment(
   source: EnvironmentSource,
 ): EnvironmentSource {
   createAppConfig(source);
   createAiConfig(source);
+  createDocumentsConfig(source);
   return source;
 }
 
 export const appConfig = registerAs('app', () => createAppConfig(process.env));
 
 export const aiConfig = registerAs('ai', () => createAiConfig(process.env));
+
+export const documentsConfig = registerAs('documents', () =>
+  createDocumentsConfig(process.env),
+);
