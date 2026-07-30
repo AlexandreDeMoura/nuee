@@ -442,7 +442,6 @@ export function knowledgeExtractionReducer(
             ...state,
             failure: null,
             status: 'selecting_update_target',
-            target: null,
           }
         : state;
 
@@ -463,7 +462,6 @@ export function knowledgeExtractionReducer(
             ...state,
             failure: null,
             status: 'reviewing',
-            target: null,
           }
         : state;
 

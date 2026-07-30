@@ -776,6 +776,59 @@ describe('CanvasSurface', () => {
     ).toBe('false');
   });
 
+  it('constrains a controlled selection flow to exactly one bubble', async () => {
+    const firstBubble = bubble();
+    const secondBubble = bubble({
+      id: 'bubble-2',
+      title: 'Regulatory lead time',
+      position_x: 420,
+    });
+    const onConfirm = vi.fn<(selection: CanvasMultiSelectionResult) => void>();
+
+    render(
+      <CanvasSurface
+        bubbleCollection={bubbleCollection([firstBubble, secondBubble])}
+        emptyState={emptyState}
+        multiSelection={{
+          confirmLabel: 'Use this bubble',
+          initialBubbleIds: [firstBubble.id],
+          maximumSelectionCount: 1,
+          onCancel: vi.fn(),
+          onConfirm,
+        }}
+        projectId={project.id}
+      />,
+    );
+
+    const firstOption = await screen.findByRole('checkbox', {
+      name: firstBubble.title,
+    });
+    const secondOption = screen.getByRole('checkbox', {
+      name: secondBubble.title,
+    });
+
+    expect(firstOption.getAttribute('aria-checked')).toBe('true');
+    expect(secondOption.getAttribute('aria-checked')).toBe('false');
+
+    fireEvent.keyDown(secondOption, { key: 'Enter' });
+
+    expect(firstOption.getAttribute('aria-checked')).toBe('false');
+    expect(secondOption.getAttribute('aria-checked')).toBe('true');
+    expect(screen.getByText('1 SELECTED')).toBeTruthy();
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Use this bubble (1 selected)',
+      }),
+    );
+
+    expect(onConfirm).toHaveBeenCalledWith({
+      bubbleIds: [secondBubble.id],
+      bubbles: [secondBubble],
+      projectId: project.id,
+    });
+  });
+
   it('cancels multi-selection with Escape and restores the previous normal selection', async () => {
     const track = vi.fn<AnalyticsClient['track']>();
     const firstBubble = bubble();

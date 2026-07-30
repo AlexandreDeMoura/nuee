@@ -64,6 +64,8 @@ export interface CanvasMultiSelection {
   confirmLabel?: string;
   initialBubbleIds?: readonly string[];
   instruction?: string;
+  /** Constrains controlled selection without changing normal canvas selection. */
+  maximumSelectionCount?: number;
   onCancel: () => void;
   onConfirm: (selection: CanvasMultiSelectionResult) => void;
 }

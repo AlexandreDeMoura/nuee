@@ -437,6 +437,286 @@ describe('workspace integration contracts', () => {
     expect(recordOpen).toHaveBeenCalledTimes(1);
   });
 
+  it('selects one extraction target, refreshes conflicts, and replaces the canonical bubble after reconfirmation', async () => {
+    const persisted = discussionDetails({
+      title: 'Launch review',
+      messages: [
+        {
+          content: 'What blocks the launch?',
+          created_at: '2026-07-28T08:00:00.000Z',
+          discussion_id: 'discussion-1',
+          id: 'message-user-1',
+          request_id: 'request-1',
+          role: 'user',
+          status: 'completed',
+        },
+        {
+          content: 'Licensing is the longest lead-time constraint.',
+          created_at: '2026-07-28T08:00:00.001Z',
+          discussion_id: 'discussion-1',
+          id: 'message-assistant-1',
+          request_id: null,
+          role: 'assistant',
+          status: 'completed',
+        },
+      ],
+    });
+    const target = bubble();
+    const linkedBubble = bubble({
+      id: 'bubble-2',
+      position_x: 420,
+      title: 'Regulatory lead time',
+    });
+    const foreignBubble = bubble({
+      id: 'foreign-bubble',
+      project_id: 'another-project',
+      title: 'Another project target',
+    });
+    const link: BubbleLink = {
+      bubble_a_id: target.id,
+      bubble_b_id: linkedBubble.id,
+      created_at: '2026-07-20T11:00:00.000Z',
+      id: 'link-1',
+      project_id: project.id,
+    };
+    const changedTarget = {
+      content: 'The current target changed in another tab.',
+      id: target.id,
+      summary: 'A newer target summary.',
+      title: 'Market thesis changed elsewhere',
+      updated_at: '2026-07-30T09:00:00.000Z',
+    };
+    const updatedTarget = bubble({
+      content: extractionProposalResponse().proposal.content,
+      position_x: 999,
+      position_y: 999,
+      source_discussion_id: persisted.id,
+      source_discussion_title: persisted.title,
+      source_kind: 'discussion',
+      source_message_ids: ['message-assistant-1'],
+      summary: extractionProposalResponse().proposal.summary,
+      title: extractionProposalResponse().proposal.title,
+      updated_at: '2026-07-30T09:01:00.000Z',
+    });
+    const updatedResponse: KnowledgeExtractionResolutionResponse = {
+      discussion_id: persisted.id,
+      id: 'extraction-1',
+      project_id: project.id,
+      resolution: {
+        bubble: updatedTarget,
+        kind: 'update_bubble',
+      },
+      status: 'resolved',
+    };
+    const resolve = vi
+      .fn()
+      .mockRejectedValueOnce(
+        new ApiError(409, {
+          code: 'KNOWLEDGE_EXTRACTION_TARGET_CHANGED',
+          current_target: changedTarget,
+          message:
+            'The target bubble changed after it was selected. Review the current target before confirming again.',
+        }),
+      )
+      .mockResolvedValueOnce(updatedResponse);
+
+    render(
+      <ProjectWorkspace
+        discussionCount={1}
+        discussionLifecycleRequests={{ get: async () => persisted }}
+        discussionPanelRequests={{
+          list: async () => [
+            {
+              created_at: persisted.created_at,
+              id: persisted.id,
+              is_active: true,
+              last_activity_at: persisted.last_activity_at,
+              project_id: persisted.project_id,
+              title: persisted.title,
+              updated_at: persisted.updated_at,
+            },
+          ],
+          recordOpen: async () => persisted,
+        }}
+        extractionRequests={{
+          create: async () => extractionProposalResponse(),
+          resolve,
+        }}
+        project={project}
+        requestBubbleLinks={async () => [link]}
+        requestBubbles={async () => [
+          target,
+          linkedBubble,
+          foreignBubble,
+        ]}
+      />,
+    );
+
+    const targetCard = await screen.findByRole('article', {
+      name: target.title,
+    });
+    const originalLeft = targetCard.style.left;
+    const originalTop = targetCard.style.top;
+    fireEvent.keyDown(targetCard, { key: 'Enter' });
+    fireEvent.click(screen.getByRole('tab', { name: 'Discussions' }));
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Open discussion: Launch review',
+      }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Extract knowledge from this response',
+      }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Generate proposal' }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Update an existing bubble',
+      }),
+    );
+
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(
+      document.querySelector('[data-workspace-content]')?.hasAttribute('inert'),
+    ).toBe(false);
+    expect(
+      screen.getByRole('toolbar', { name: 'Bubble selection' }).textContent,
+    ).toContain('Choose one bubble to update');
+    expect(document.activeElement).toBe(
+      screen.getByRole('button', { name: 'Cancel' }),
+    );
+    expect(
+      screen.queryByRole('checkbox', { name: foreignBubble.title }),
+    ).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+
+    expect(
+      await screen.findByRole('heading', {
+        name: 'Review knowledge proposal',
+      }),
+    ).toBeTruthy();
+    expect(
+      (
+        screen.getByRole('textbox', {
+          name: 'Title',
+        }) as HTMLInputElement
+      ).value,
+    ).toBe(extractionProposalResponse().proposal.title);
+    expect(resolve).not.toHaveBeenCalled();
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Update an existing bubble',
+      }),
+    );
+    const targetOption = await screen.findByRole('checkbox', {
+      name: target.title,
+    });
+    const linkedOption = screen.getByRole('checkbox', {
+      name: linkedBubble.title,
+    });
+    fireEvent.keyDown(targetOption, { key: 'Enter' });
+    fireEvent.keyDown(linkedOption, { key: 'Enter' });
+
+    expect(targetOption.getAttribute('aria-checked')).toBe('false');
+    expect(linkedOption.getAttribute('aria-checked')).toBe('true');
+    expect(screen.getByText('1 SELECTED')).toBeTruthy();
+
+    fireEvent.keyDown(targetOption, { key: 'Enter' });
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Use this bubble (1 selected)',
+      }),
+    );
+
+    expect(
+      await screen.findByText('Selected update target'),
+    ).toBeTruthy();
+    expect(screen.getAllByText(target.title).length).toBeGreaterThan(1);
+    expect(resolve).not.toHaveBeenCalled();
+    expect(
+      document.querySelector(`[data-bubble-id="${target.id}"]`)
+        ?.textContent,
+    ).toContain(target.title);
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Confirm bubble update' }),
+    );
+
+    expect(resolve).toHaveBeenNthCalledWith(
+      1,
+      project.id,
+      persisted.id,
+      'extraction-1',
+      {
+        expected_updated_at: target.updated_at,
+        kind: 'update_bubble',
+        proposal: extractionProposalResponse().proposal,
+        target_bubble_id: target.id,
+      },
+      expect.any(AbortSignal),
+    );
+    expect(
+      await screen.findByText('The target bubble changed'),
+    ).toBeTruthy();
+    expect(screen.getByText(changedTarget.title)).toBeTruthy();
+    expect(
+      document.querySelector(`[data-bubble-id="${target.id}"]`)
+        ?.textContent,
+    ).toContain(target.title);
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Confirm bubble update' }),
+    );
+
+    expect(resolve).toHaveBeenNthCalledWith(
+      2,
+      project.id,
+      persisted.id,
+      'extraction-1',
+      {
+        expected_updated_at: changedTarget.updated_at,
+        kind: 'update_bubble',
+        proposal: extractionProposalResponse().proposal,
+        target_bubble_id: target.id,
+      },
+      expect.any(AbortSignal),
+    );
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('heading', {
+          name: 'Review knowledge proposal',
+        }),
+      ).toBeNull(),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Minimize discussion' }),
+    );
+
+    const updatedCard = await screen.findByRole('article', {
+      name: updatedTarget.title,
+    });
+    expect(updatedCard.style.left).toBe(originalLeft);
+    expect(updatedCard.style.top).toBe(originalTop);
+    expect(updatedCard.getAttribute('data-bubble-selected')).toBe('true');
+    expect(
+      screen
+        .getByRole('article', { name: linkedBubble.title })
+        .getAttribute('data-bubble-linked'),
+    ).toBe('true');
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Inspector' }));
+    const inspector = document.querySelector(
+      `[data-inspector-bubble-id="${target.id}"]`,
+    );
+    expect(inspector?.textContent).toContain(updatedTarget.title);
+    expect(inspector?.textContent).toContain(updatedTarget.content);
+  });
+
   it('can start a discussion from the panel when the canvas is not empty', async () => {
     render(
       <ProjectWorkspace

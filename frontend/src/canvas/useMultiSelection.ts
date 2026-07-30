@@ -19,6 +19,27 @@ interface UseMultiSelectionOptions {
   projectId: string;
 }
 
+function selectionLimit(
+  multiSelection: CanvasMultiSelection | null,
+): number | null {
+  const candidate = multiSelection?.maximumSelectionCount;
+
+  return typeof candidate === 'number' &&
+    Number.isFinite(candidate) &&
+    candidate >= 1
+    ? Math.floor(candidate)
+    : null;
+}
+
+function initialSelection(
+  multiSelection: CanvasMultiSelection | null,
+): string[] {
+  const identifiers = [...new Set(multiSelection?.initialBubbleIds ?? [])];
+  const limit = selectionLimit(multiSelection);
+
+  return limit === null ? identifiers : identifiers.slice(0, limit);
+}
+
 export function useMultiSelection({
   analyticsClient,
   displayedBubbles,
@@ -26,7 +47,7 @@ export function useMultiSelection({
   projectId,
 }: UseMultiSelectionOptions) {
   const [selectedBubbleIds, setSelectedBubbleIds] = useState<string[]>(
-    () => [...new Set(multiSelection?.initialBubbleIds ?? [])],
+    () => initialSelection(multiSelection),
   );
   const wasActiveRef = useRef(false);
   const outcomeTrackedRef = useRef(false);
@@ -112,21 +133,32 @@ export function useMultiSelection({
     projectId,
   ]);
 
-  const toggle = useCallback((bubbleId: string) => {
-    setSelectedBubbleIds((current) =>
-      current.includes(bubbleId)
-        ? current.filter((id) => id !== bubbleId)
-        : [...current, bubbleId],
-    );
-  }, []);
+  const toggle = useCallback(
+    (bubbleId: string) => {
+      setSelectedBubbleIds((current) => {
+        if (current.includes(bubbleId)) {
+          return current.filter((id) => id !== bubbleId);
+        }
+
+        const limit = selectionLimit(multiSelection);
+
+        if (limit === 1) {
+          return [bubbleId];
+        }
+
+        return limit === null
+          ? [...current, bubbleId]
+          : [...current, bubbleId].slice(-limit);
+      });
+    },
+    [multiSelection],
+  );
 
   useEffect(() => {
     const wasActive = wasActiveRef.current;
 
     if (multiSelection && !wasActive) {
-      setSelectedBubbleIds([
-        ...new Set(multiSelection.initialBubbleIds ?? []),
-      ]);
+      setSelectedBubbleIds(initialSelection(multiSelection));
       outcomeTrackedRef.current = false;
       trackAnalytics(analyticsClient, 'bubble_multi_selection_started', {
         project_id: projectId,

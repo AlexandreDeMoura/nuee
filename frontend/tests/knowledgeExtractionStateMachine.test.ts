@@ -173,6 +173,15 @@ describe('knowledge extraction state machine', () => {
 
     state = dispatch(
       state,
+      { type: 'update_target_selection_started' },
+      { type: 'update_target_selection_cancelled' },
+    );
+    expect(state.status).toBe('reviewing');
+    expect(state.target?.id).toBe('bubble-1');
+    expect(state.proposal).toEqual(proposal);
+
+    state = dispatch(
+      state,
       { type: 'bubble_update_save_started' },
       {
         resolution: resolution('update_bubble'),

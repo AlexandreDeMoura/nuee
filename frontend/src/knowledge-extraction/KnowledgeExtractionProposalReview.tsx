@@ -5,6 +5,7 @@ import {
   LoaderCircle,
   Plus,
   RefreshCw,
+  Target,
   X,
 } from 'lucide-react';
 import type { KnowledgeExtractionProposal } from '../api';
@@ -21,6 +22,7 @@ export interface KnowledgeExtractionProposalReviewProps {
   controller: KnowledgeExtractionController;
   isRejecting?: boolean;
   onApproveAsNewBubble?: () => void | Promise<void>;
+  onApproveBubbleUpdate?: () => void | Promise<void>;
   onReject: () => void | Promise<void>;
   onUpdateExistingBubble?: () => void | Promise<void>;
 }
@@ -39,6 +41,7 @@ export function KnowledgeExtractionProposalReview({
   controller,
   isRejecting = false,
   onApproveAsNewBubble,
+  onApproveBubbleUpdate,
   onReject,
   onUpdateExistingBubble,
 }: KnowledgeExtractionProposalReviewProps) {
@@ -68,6 +71,13 @@ export function KnowledgeExtractionProposalReview({
     controller.state.failure?.kind === 'target_changed'
       ? controller.state.failure
       : null;
+  const target = controller.state.target;
+  const targetPreview = target
+    ? target.summary?.trim() || target.content.trim()
+    : '';
+  const updateAction = target
+    ? onApproveBubbleUpdate
+    : onUpdateExistingBubble;
 
   useEffect(() => {
     titleInputRef.current?.focus();
@@ -153,7 +163,9 @@ export function KnowledgeExtractionProposalReview({
             />
             <span>
               <span className="block text-[12px] font-semibold">
-                Couldn&apos;t resolve this proposal
+                {resolutionFailure.kind === 'target_changed'
+                  ? 'The target bubble changed'
+                  : 'Couldn’t resolve this proposal'}
               </span>
               <span className="mt-0.5 block text-[11px] leading-[1.5] text-[#a25a55]">
                 {resolutionFailure.message}
@@ -252,6 +264,50 @@ export function KnowledgeExtractionProposalReview({
         </div>
       </div>
 
+      {target && (
+        <section
+          className="rounded-xl border border-[#cfd9e7] bg-[#f6f8fc] p-3.5"
+          aria-labelledby="knowledge-extraction-update-target-title"
+        >
+          <div className="flex items-start gap-3">
+            <span
+              className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-[9px] bg-[#e7edf7] text-[#48669a]"
+              aria-hidden="true"
+            >
+              <Target className="size-4" strokeWidth={1.8} />
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block text-[9.5px] font-semibold tracking-[0.08em] text-[#7588a5] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
+                Selected update target
+              </span>
+              <span
+                className="mt-1 block truncate text-[13px] font-semibold text-[#2d3b4e]"
+                id="knowledge-extraction-update-target-title"
+              >
+                {target.title}
+              </span>
+              {targetPreview.length > 0 && (
+                <span className="mt-1 block line-clamp-2 text-[11px] leading-[1.5] text-[#718096]">
+                  {targetPreview}
+                </span>
+              )}
+            </span>
+            <button
+              className={`shrink-0 cursor-pointer rounded-[8px] border border-[#cfd9e7] bg-white px-2.5 py-1.5 text-[10.5px] font-semibold text-[#526b96] hover:bg-[#eef3fa] disabled:cursor-not-allowed disabled:text-[#aab4c1] ${focusRing}`}
+              type="button"
+              disabled={isBusy || onUpdateExistingBubble === undefined}
+              onClick={() => tryResolution(onUpdateExistingBubble)}
+            >
+              Choose another
+            </button>
+          </div>
+          <p className="mt-3 border-t border-[#dde4ed] pt-2.5 text-[10.5px] leading-[1.5] text-[#77869a]">
+            Confirming replaces this bubble&apos;s title, summary, and content.
+            Its canvas position and manual links stay unchanged.
+          </p>
+        </section>
+      )}
+
       <div
         className="rounded-xl border border-[#dde4ed] bg-white p-3.5"
         aria-label="Proposal resolution"
@@ -290,8 +346,8 @@ export function KnowledgeExtractionProposalReview({
             className={`inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-[9px] border border-[#ccd7e6] bg-white px-3.5 text-[11.5px] font-semibold text-[#47628f] hover:bg-[#f4f7fc] disabled:cursor-not-allowed disabled:border-[#e0e5eb] disabled:text-[#aab4c1] ${focusRing}`}
             data-knowledge-extraction-resolution-action="update_bubble"
             type="button"
-            disabled={isBusy || onUpdateExistingBubble === undefined}
-            onClick={() => tryResolution(onUpdateExistingBubble)}
+            disabled={isBusy || updateAction === undefined}
+            onClick={() => tryResolution(updateAction)}
           >
             {controller.state.status === 'saving_update' ? (
               <LoaderCircle
@@ -308,7 +364,9 @@ export function KnowledgeExtractionProposalReview({
             )}
             {controller.state.status === 'saving_update'
               ? 'Updating…'
-              : 'Update an existing bubble'}
+              : target
+                ? 'Confirm bubble update'
+                : 'Update an existing bubble'}
           </button>
           <button
             className={`inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-[9px] border border-[#e5cbc8] bg-[#fffafa] px-3.5 text-[11.5px] font-semibold text-[#a44a44] hover:bg-[#fbf1f0] disabled:cursor-not-allowed disabled:text-[#ca8d88] sm:col-span-2 ${focusRing}`}

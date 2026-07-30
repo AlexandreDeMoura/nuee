@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react';
 import {
   Check,
   CircleAlert,
@@ -310,6 +311,12 @@ export function CanvasMultiSelectionBar({
   onCancel: () => void;
   onConfirm: () => void;
 }) {
+  const cancelButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    cancelButtonRef.current?.focus();
+  }, []);
+
   return (
     <>
       <div
@@ -331,6 +338,7 @@ export function CanvasMultiSelectionBar({
         <span className="ml-auto flex shrink-0 items-center gap-2">
           <button
             className={`min-h-8 cursor-pointer rounded-[9px] border border-[#d3dae2] bg-white px-3.5 text-xs font-semibold text-[#5c6a7a] hover:bg-[#f6f8fc] hover:text-[#344050] ${focusRing}`}
+            ref={cancelButtonRef}
             type="button"
             onClick={onCancel}
           >

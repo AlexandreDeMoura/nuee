@@ -666,7 +666,12 @@ export function CanvasSurface({
       data-canvas-x={viewport.x}
       data-canvas-y={viewport.y}
       data-canvas-zoom={viewport.zoom}
-      data-selection-mode={isMultiSelectionActive ? 'multiple' : 'single'}
+      data-selection-mode={
+        isMultiSelectionActive &&
+        multiSelection?.maximumSelectionCount !== 1
+          ? 'multiple'
+          : 'single'
+      }
       onLostPointerCapture={() => {
         cancelActiveBubbleDrag();
         activePanRef.current = null;

@@ -75,7 +75,10 @@ import {
   type DocumentMultiSelection,
   type DocumentMultiSelectionController,
 } from '../documents';
-import type { KnowledgeExtractionRequests } from '../knowledge-extraction';
+import type {
+  KnowledgeExtractionRequests,
+  KnowledgeExtractionTargetSelectionRequest,
+} from '../knowledge-extraction';
 import {
   ProjectDescriptionEditor,
   type ProjectDescriptionSaveStatus,
@@ -629,6 +632,10 @@ export function ProjectWorkspace({
     getDefaultPanelView(discussionCount),
   );
   const [selectedBubbleId, setSelectedBubbleId] = useState<string | null>(null);
+  const [
+    knowledgeExtractionTargetSelection,
+    setKnowledgeExtractionTargetSelection,
+  ] = useState<KnowledgeExtractionTargetSelectionRequest | null>(null);
   const [discussionDeletionState, setDiscussionDeletionState] = useState<
     (DiscussionDeleteTarget & { projectId: string }) | null
   >(null);
@@ -815,16 +822,27 @@ export function ProjectWorkspace({
   );
   const handleKnowledgeExtractionResolved = useCallback(
     (response: KnowledgeExtractionResolutionResponse) => {
-      if (
-        response.project_id !== currentProject.id ||
-        response.resolution.kind !== 'new_bubble'
-      ) {
+      if (response.project_id !== currentProject.id) {
         return;
       }
 
-      addBubble(response.resolution.bubble);
+      if (response.resolution.kind === 'new_bubble') {
+        addBubble(response.resolution.bubble);
+      } else if (response.resolution.kind === 'update_bubble') {
+        replaceBubble(response.resolution.bubble);
+      }
     },
-    [addBubble, currentProject.id],
+    [addBubble, currentProject.id, replaceBubble],
+  );
+  const handleKnowledgeExtractionTargetSelectionChange = useCallback(
+    (selection: KnowledgeExtractionTargetSelectionRequest | null) => {
+      if (selection && selection.projectId !== currentProject.id) {
+        return;
+      }
+
+      setKnowledgeExtractionTargetSelection(selection);
+    },
+    [currentProject.id],
   );
 
   const handleBubbleLinkCreated = useCallback((link: BubbleLink) => {
@@ -947,8 +965,48 @@ export function ProjectWorkspace({
         },
       };
     }, [canvasMultiSelection, discussionContextSelection]);
+  const knowledgeExtractionCanvasSelection =
+    useMemo<CanvasMultiSelection | null>(() => {
+      if (
+        canvasMultiSelection !== null ||
+        !knowledgeExtractionTargetSelection ||
+        knowledgeExtractionTargetSelection.projectId !== currentProject.id
+      ) {
+        return null;
+      }
+
+      return {
+        confirmLabel: 'Use this bubble',
+        initialBubbleIds:
+          knowledgeExtractionTargetSelection.initialBubbleId === null
+            ? []
+            : [knowledgeExtractionTargetSelection.initialBubbleId],
+        instruction: 'Choose one bubble to update',
+        maximumSelectionCount: 1,
+        onCancel: knowledgeExtractionTargetSelection.onCancel,
+        onConfirm: (selection) => {
+          const [target] = selection.bubbles;
+
+          if (
+            selection.bubbles.length !== 1 ||
+            !target ||
+            target.project_id !== currentProject.id
+          ) {
+            return;
+          }
+
+          knowledgeExtractionTargetSelection.onConfirm(target);
+        },
+      };
+    }, [
+      canvasMultiSelection,
+      currentProject.id,
+      knowledgeExtractionTargetSelection,
+    ]);
   const resolvedCanvasMultiSelection =
-    canvasMultiSelection ?? discussionContextMultiSelection;
+    canvasMultiSelection ??
+    knowledgeExtractionCanvasSelection ??
+    discussionContextMultiSelection;
   const discussionContextDocumentSelection =
     useMemo<DocumentMultiSelection | null>(() => {
       if (
@@ -1001,13 +1059,16 @@ export function ProjectWorkspace({
     discussionVisibility.visibleDiscussion?.kind === 'draft' &&
     (discussionContextSelection.phase === 'selecting_bubbles' ||
       discussionContextSelection.phase === 'selecting_documents');
+  const isKnowledgeExtractionTargetSelection =
+    knowledgeExtractionCanvasSelection !== null;
   const discussionOverlay =
     typeof overlaySlots?.discussion === 'function'
       ? overlaySlots.discussion(discussionVisibility)
       : overlaySlots?.discussion;
   const isDiscussionVisible =
     (discussionVisibility.visibleDiscussion !== null &&
-      !isContextSourceSelection) ||
+      !isContextSourceSelection &&
+      !isKnowledgeExtractionTargetSelection) ||
     discussionPendingDeletion !== null;
   const visibleDiscussionDeleteTarget =
     discussionVisibility.visibleDiscussion?.kind === 'persisted'
@@ -1291,6 +1352,11 @@ export function ProjectWorkspace({
                 onExtractKnowledge={onExtractDiscussionKnowledge}
                 onKnowledgeExtractionResolved={
                   handleKnowledgeExtractionResolved
+                }
+                onKnowledgeExtractionTargetSelectionChange={
+                  canvasMultiSelection === null
+                    ? handleKnowledgeExtractionTargetSelectionChange
+                    : undefined
                 }
                 onInspectContext={onInspectDiscussionContext}
                 onDiscussionChanged={projectDiscussions.updateDiscussion}

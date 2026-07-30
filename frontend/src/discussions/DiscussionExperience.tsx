@@ -26,6 +26,7 @@ import {
   KnowledgeExtractionSourceSelection,
   useKnowledgeExtraction,
   type KnowledgeExtractionRequests,
+  type KnowledgeExtractionTargetSelectionRequest,
 } from '../knowledge-extraction';
 import {
   useDiscussionLifecycle,
@@ -53,6 +54,9 @@ export interface DiscussionExperienceProps {
   onKnowledgeExtractionResolved?: (
     response: KnowledgeExtractionResolutionResponse,
   ) => void;
+  onKnowledgeExtractionTargetSelectionChange?: (
+    selection: KnowledgeExtractionTargetSelectionRequest | null,
+  ) => void;
   onInspectContext?: (inspection: DiscussionContextInspection) => void;
   onDiscussionChanged?: (discussion: DiscussionDetails) => void;
   onDelete?: (discussion: DiscussionDeleteTarget) => void;
@@ -72,6 +76,7 @@ export function DiscussionExperience({
   isObscured,
   onExtractKnowledge,
   onKnowledgeExtractionResolved,
+  onKnowledgeExtractionTargetSelectionChange,
   onInspectContext,
   onDiscussionChanged,
   onDelete,
@@ -102,6 +107,9 @@ export function DiscussionExperience({
       isObscured={isObscured}
       onExtractKnowledge={onExtractKnowledge}
       onKnowledgeExtractionResolved={onKnowledgeExtractionResolved}
+      onKnowledgeExtractionTargetSelectionChange={
+        onKnowledgeExtractionTargetSelectionChange
+      }
       onInspectContext={onInspectContext}
       key={identity}
       onDiscussionChanged={onDiscussionChanged}
@@ -125,6 +133,7 @@ function DiscussionExperienceModal({
   isObscured,
   onExtractKnowledge,
   onKnowledgeExtractionResolved,
+  onKnowledgeExtractionTargetSelectionChange,
   onInspectContext,
   onDiscussionChanged,
   onDelete,
@@ -178,6 +187,12 @@ function DiscussionExperienceModal({
     projectId,
     requests: extractionRequests,
   });
+  useEffect(
+    () => () => {
+      onKnowledgeExtractionTargetSelectionChange?.(null);
+    },
+    [onKnowledgeExtractionTargetSelectionChange],
+  );
   const isDraft = visibleDiscussion.kind === 'draft';
   const isSelectingSources =
     isDraft &&
@@ -371,6 +386,43 @@ function DiscussionExperienceModal({
     extraction.reset();
     restoreExtractionTriggerFocus();
   }, [extraction, restoreExtractionTriggerFocus]);
+  const beginExtractionUpdateTargetSelection = useCallback(() => {
+    if (!onKnowledgeExtractionTargetSelectionChange) {
+      return;
+    }
+
+    extraction.beginUpdateTargetSelection();
+    onKnowledgeExtractionTargetSelectionChange({
+      initialBubbleId: extraction.state.target?.id ?? null,
+      onCancel: () => {
+        extraction.cancelUpdateTargetSelection();
+        onKnowledgeExtractionTargetSelectionChange(null);
+      },
+      onConfirm: (bubble) => {
+        if (bubble.project_id !== projectId) {
+          return;
+        }
+
+        extraction.selectUpdateTarget(bubble);
+        onKnowledgeExtractionTargetSelectionChange(null);
+      },
+      projectId,
+    });
+  }, [
+    extraction,
+    onKnowledgeExtractionTargetSelectionChange,
+    projectId,
+  ]);
+  const approveExtractionBubbleUpdate = useCallback(async () => {
+    const response = await extraction.approveBubbleUpdate();
+
+    if (response?.resolution.kind !== 'update_bubble') {
+      return;
+    }
+
+    extraction.reset();
+    restoreExtractionTriggerFocus();
+  }, [extraction, restoreExtractionTriggerFocus]);
   const closeDiscussion = onMinimize ?? controller.minimize;
   const minimize = useCallback(() => {
     if (extraction.state.proposal) {
@@ -410,7 +462,10 @@ function DiscussionExperienceModal({
     );
   };
 
-  if (isSelectingSources) {
+  if (
+    isSelectingSources ||
+    extraction.state.status === 'selecting_update_target'
+  ) {
     return null;
   }
 
@@ -483,7 +538,13 @@ function DiscussionExperienceModal({
             controller={extraction}
             isRejecting={isRejectingExtraction}
             onApproveAsNewBubble={approveExtractionAsNewBubble}
+            onApproveBubbleUpdate={approveExtractionBubbleUpdate}
             onReject={rejectExtraction}
+            onUpdateExistingBubble={
+              onKnowledgeExtractionTargetSelectionChange
+                ? beginExtractionUpdateTargetSelection
+                : undefined
+            }
           />
         ) : isExtractionFlowActive && lifecycle.details ? (
           <KnowledgeExtractionSourceSelection
