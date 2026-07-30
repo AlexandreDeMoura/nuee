@@ -17,6 +17,8 @@ import { DiscussionMessages } from './DiscussionMessages';
 import type { DiscussionDetails } from '../api';
 import {
   hasEligibleKnowledgeExtractionSource,
+  KnowledgeExtractionDiscardDialog,
+  KnowledgeExtractionProposalReview,
   KnowledgeExtractionSourceActions,
   KnowledgeExtractionSourceSelection,
   useKnowledgeExtraction,
@@ -129,11 +131,16 @@ function DiscussionExperienceModal({
   const [inspectedContextId, setInspectedContextId] = useState<string | null>(
     null,
   );
+  const [isDiscardConfirmationOpen, setIsDiscardConfirmationOpen] =
+    useState(false);
+  const [isRejectingExtraction, setIsRejectingExtraction] =
+    useState(false);
   const inspectionTriggerRef = useRef<HTMLElement | null>(null);
   const extractionTriggerRef = useRef<{
     element: HTMLButtonElement;
     source: DiscussionKnowledgeSource;
   } | null>(null);
+  const rejectInFlightRef = useRef(false);
   const resolvedAnalyticsClient = analyticsClient ?? analytics;
   const handleDiscussionCreated = useCallback(
     (discussion: { id: string; title: string }) => {
@@ -247,6 +254,11 @@ function DiscussionExperienceModal({
     extraction.state.status !== 'idle' &&
     extraction.state.status !== 'resolved' &&
     extraction.state.status !== 'discarded';
+  const isReviewingExtraction =
+    extraction.state.proposal !== null &&
+    (extraction.state.status === 'reviewing' ||
+      extraction.state.status === 'saving_new' ||
+      extraction.state.status === 'saving_update');
   const canStartExtraction =
     !isExtractionFlowActive &&
     hasEligibleKnowledgeExtractionSource(lifecycle.details);
@@ -284,11 +296,8 @@ function DiscussionExperienceModal({
     },
     [extraction, lifecycle.details, onExtractKnowledge],
   );
-  const cancelExtraction = useCallback(async () => {
-    await extraction.discard();
-    extraction.reset();
-
-    queueMicrotask(() => {
+  const restoreExtractionTriggerFocus = useCallback(() => {
+    window.setTimeout(() => {
       const launch = extractionTriggerRef.current;
 
       if (!launch) {
@@ -313,20 +322,57 @@ function DiscussionExperienceModal({
         : null;
 
       restoredMessageTrigger?.focus();
-    });
-  }, [extraction]);
+    }, 0);
+  }, []);
+  const cancelExtraction = useCallback(async () => {
+    await extraction.discard();
+    extraction.reset();
+    restoreExtractionTriggerFocus();
+  }, [extraction, restoreExtractionTriggerFocus]);
+  const rejectExtraction = useCallback(async () => {
+    if (rejectInFlightRef.current) {
+      return;
+    }
+
+    rejectInFlightRef.current = true;
+    setIsRejectingExtraction(true);
+
+    try {
+      const response = await extraction.reject();
+
+      if (response?.resolution.kind !== 'reject') {
+        return;
+      }
+
+      extraction.reset();
+      restoreExtractionTriggerFocus();
+    } finally {
+      rejectInFlightRef.current = false;
+      setIsRejectingExtraction(false);
+    }
+  }, [extraction, restoreExtractionTriggerFocus]);
+  const closeDiscussion = onMinimize ?? controller.minimize;
   const minimize = useCallback(() => {
+    if (extraction.state.proposal) {
+      setIsDiscardConfirmationOpen(true);
+      return;
+    }
+
     if (isExtractionFlowActive) {
       void extraction.discard();
     }
 
-    (onMinimize ?? controller.minimize)();
+    closeDiscussion();
   }, [
-    controller.minimize,
+    closeDiscussion,
     extraction,
     isExtractionFlowActive,
-    onMinimize,
   ]);
+  const confirmDiscardAndMinimize = useCallback(() => {
+    setIsDiscardConfirmationOpen(false);
+    void extraction.discard();
+    closeDiscussion();
+  }, [closeDiscussion, extraction]);
   const submit = () => {
     if (
       isDraft &&
@@ -349,7 +395,8 @@ function DiscussionExperienceModal({
   }
 
   return (
-    <DiscussionModal
+    <>
+      <DiscussionModal
       actionsSlot={
         discussionId ? (
           <DiscussionKnowledgeAction
@@ -366,7 +413,9 @@ function DiscussionExperienceModal({
         ) : undefined
       }
       composerSlot={
-        isExtractionFlowActive && lifecycle.details ? (
+        isReviewingExtraction ? (
+          <></>
+        ) : isExtractionFlowActive && lifecycle.details ? (
           <KnowledgeExtractionSourceActions
             controller={extraction}
             discussion={lifecycle.details}
@@ -396,7 +445,7 @@ function DiscussionExperienceModal({
           />
         ) : undefined
       }
-      isObscured={isObscured}
+      isObscured={isObscured || isDiscardConfirmationOpen}
       contextSlot={
         !isExtractionFlowActive &&
         discussionId &&
@@ -409,7 +458,13 @@ function DiscussionExperienceModal({
         ) : undefined
       }
       messagesSlot={
-        isExtractionFlowActive && lifecycle.details ? (
+        isReviewingExtraction ? (
+          <KnowledgeExtractionProposalReview
+            controller={extraction}
+            isRejecting={isRejectingExtraction}
+            onReject={rejectExtraction}
+          />
+        ) : isExtractionFlowActive && lifecycle.details ? (
           <KnowledgeExtractionSourceSelection
             controller={extraction}
             discussion={lifecycle.details}
@@ -451,6 +506,13 @@ function DiscussionExperienceModal({
       onDraftPromptChange={controller.updateDraftPrompt}
       onMinimize={minimize}
       visibleDiscussion={presentedDiscussion}
-    />
+      />
+      {isDiscardConfirmationOpen && (
+        <KnowledgeExtractionDiscardDialog
+          onCancel={() => setIsDiscardConfirmationOpen(false)}
+          onConfirm={confirmDiscardAndMinimize}
+        />
+      )}
+    </>
   );
 }

@@ -13,6 +13,8 @@ import {
   type CreateDiscussionInput,
   type DiscussionDetails,
   type FrozenContext,
+  type KnowledgeExtractionProposalResponse,
+  type KnowledgeExtractionResolutionResponse,
   type SendMessageInput,
 } from '../src/api';
 import type { AnalyticsClient } from '../src/analytics';
@@ -88,6 +90,40 @@ function details(
       },
     ],
     ...overrides,
+  };
+}
+
+const generatedProposal = {
+  title: 'Launch licensing constraint',
+  summary: 'Licensing is the longest lead-time constraint.',
+  content:
+    'Licensing must be resolved before the launch date can be committed.',
+};
+
+function proposalResponse(): KnowledgeExtractionProposalResponse {
+  return {
+    id: 'extraction-1',
+    project_id: projectId,
+    discussion_id: 'discussion-1',
+    status: 'ready',
+    proposal: { ...generatedProposal },
+    source: {
+      message_selection_kind: 'selected',
+      message_ids: ['message-assistant-1'],
+      frozen_context_item_ids: [],
+    },
+    created_at: '2026-07-30T08:00:00.000Z',
+    expires_at: '2026-07-31T08:00:00.000Z',
+  };
+}
+
+function rejectedResponse(): KnowledgeExtractionResolutionResponse {
+  return {
+    id: 'extraction-1',
+    project_id: projectId,
+    discussion_id: 'discussion-1',
+    status: 'resolved',
+    resolution: { kind: 'reject' },
   };
 }
 
@@ -622,6 +658,242 @@ describe('DiscussionExperience', () => {
     expect((headerAction as HTMLButtonElement).disabled).toBe(false);
     expect(
       screen.queryByRole('heading', { name: 'Choose source material' }),
+    ).toBeNull();
+  });
+
+  it('reviews and edits plain-text proposal fields without changing discussion sources', async () => {
+    const persistedDetails = details();
+    const create = vi.fn(async () => proposalResponse());
+
+    render(
+      <Harness
+        extractionRequests={{ create }}
+        requests={{ get: async () => persistedDetails }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Open first' }));
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Extract knowledge from this response',
+      }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Generate proposal' }),
+    );
+
+    expect(
+      await screen.findByRole('heading', {
+        name: 'Review knowledge proposal',
+      }),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        'Proposal generated. Edit the plain text below before choosing what happens next. Nothing has been added to the canvas.',
+      ).getAttribute('role'),
+    ).toBe('status');
+
+    const title = screen.getByRole('textbox', {
+      name: 'Title',
+    }) as HTMLInputElement;
+    const summary = screen.getByRole('textbox', {
+      name: 'One-sentence summary',
+    }) as HTMLInputElement;
+    const content = screen.getByRole('textbox', {
+      name: 'Content',
+    }) as HTMLTextAreaElement;
+
+    expect(title.value).toBe(generatedProposal.title);
+    expect(summary.value).toBe(generatedProposal.summary);
+    expect(content.value).toBe(generatedProposal.content);
+    expect(document.activeElement).toBe(title);
+    expect(
+      document.querySelectorAll(
+        '[data-knowledge-extraction-resolution-action]',
+      ),
+    ).toHaveLength(3);
+    expect(
+      screen.getByRole('button', { name: 'Approve as new bubble' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('button', {
+        name: 'Update an existing bubble',
+      }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'Reject' }),
+    ).toBeTruthy();
+
+    fireEvent.change(title, { target: { value: 'Edited title' } });
+    fireEvent.change(summary, { target: { value: '' } });
+    fireEvent.change(content, {
+      target: { value: 'Edited self-contained content.' },
+    });
+    expect(title.value).toBe('Edited title');
+    expect(summary.value).toBe('');
+    expect(content.value).toBe('Edited self-contained content.');
+    expect(summary.getAttribute('aria-invalid')).toBeNull();
+    expect(persistedDetails.messages[1].content).toBe(
+      'Licensing is the longest lead-time constraint.',
+    );
+    expect(
+      persistedDetails.frozen_context.items[0].frozen_content,
+    ).toBe(projectDescription);
+
+    fireEvent.change(title, { target: { value: '   ' } });
+    fireEvent.blur(title);
+    fireEvent.change(content, { target: { value: '\n  ' } });
+    fireEvent.blur(content);
+
+    expect(screen.getByText('Title is required.')).toBeTruthy();
+    expect(screen.getByText('Content is required.')).toBeTruthy();
+    expect(title.getAttribute('aria-invalid')).toBe('true');
+    expect(content.getAttribute('aria-invalid')).toBe('true');
+    expect(title.getAttribute('aria-describedby')).toBe(
+      screen.getByText('Title is required.').id,
+    );
+    expect(content.getAttribute('aria-describedby')).toBe(
+      screen.getByText('Content is required.').id,
+    );
+  });
+
+  it('rejects a proposal without creating a bubble and restores focus to its entry point', async () => {
+    const resolve = vi.fn(async () => rejectedResponse());
+
+    render(
+      <Harness
+        extractionRequests={{
+          create: async () => proposalResponse(),
+          resolve,
+        }}
+        requests={{ get: async () => details() }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Open first' }));
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Extract knowledge from this response',
+      }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Generate proposal' }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Reject' }),
+    );
+
+    expect(resolve).toHaveBeenCalledWith(
+      projectId,
+      'discussion-1',
+      'extraction-1',
+      { kind: 'reject' },
+      expect.any(AbortSignal),
+    );
+    await waitFor(() => {
+      expect(
+        screen.queryByRole('heading', {
+          name: 'Review knowledge proposal',
+        }),
+      ).toBeNull();
+    });
+    expect(
+      screen.getByText('Licensing is the longest lead-time constraint.'),
+    ).toBeTruthy();
+    await waitFor(() =>
+      expect(document.activeElement).toBe(
+        screen.getByRole('button', {
+          name: 'Extract knowledge from this response',
+        }),
+      ),
+    );
+  });
+
+  it('confirms Escape close, traps confirmation focus, and does not restore a discarded proposal', async () => {
+    const discard = vi.fn(async () => undefined);
+    const resolve = vi.fn<
+      NonNullable<KnowledgeExtractionRequests['resolve']>
+    >();
+
+    render(
+      <Harness
+        extractionRequests={{
+          create: async () => proposalResponse(),
+          discard,
+          resolve,
+        }}
+        requests={{ get: async () => details() }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Open first' }));
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Extract knowledge from this response',
+      }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Generate proposal' }),
+    );
+
+    const title = await screen.findByRole('textbox', {
+      name: 'Title',
+    });
+    fireEvent.change(title, { target: { value: 'Unsaved review edit' } });
+    fireEvent.keyDown(document, { key: 'Escape' });
+
+    expect(
+      screen.getByRole('alertdialog', {
+        name: 'Discard this knowledge proposal?',
+      }),
+    ).toBeTruthy();
+    expect(
+      document
+        .querySelector('[data-discussion-overlay]')
+        ?.hasAttribute('inert'),
+    ).toBe(true);
+    const keepReviewing = screen.getByRole('button', {
+      name: 'Keep reviewing',
+    });
+    const discardProposal = screen.getByRole('button', {
+      name: 'Discard proposal',
+    });
+    expect(document.activeElement).toBe(keepReviewing);
+
+    fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
+    expect(document.activeElement).toBe(discardProposal);
+    fireEvent.keyDown(document, { key: 'Escape' });
+
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(document.activeElement).toBe(title);
+    expect((title as HTMLInputElement).value).toBe('Unsaved review edit');
+    expect(discard).not.toHaveBeenCalled();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Minimize discussion' }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Discard proposal' }),
+    );
+
+    expect(discard).toHaveBeenCalledWith(
+      projectId,
+      'discussion-1',
+      'extraction-1',
+    );
+    expect(resolve).not.toHaveBeenCalled();
+    expect(screen.queryByRole('dialog')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open first' }));
+    expect(
+      await screen.findByRole('button', {
+        name: 'Extract knowledge from discussion',
+      }),
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole('heading', {
+        name: 'Review knowledge proposal',
+      }),
+    ).toBeNull();
+    expect(
+      screen.queryByDisplayValue('Unsaved review edit'),
     ).toBeNull();
   });
 

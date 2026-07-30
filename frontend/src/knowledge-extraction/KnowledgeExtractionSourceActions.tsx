@@ -49,8 +49,13 @@ export function KnowledgeExtractionSourceActions({
         <p
           className="min-w-0 flex-1 text-[10.5px] leading-[1.45] text-[#77869a]"
           aria-live="polite"
+          role="status"
         >
-          {selectedCount === 0
+          {isGenerating
+            ? `Generating knowledge proposal from ${selectedCount} selected ${
+                selectedCount === 1 ? 'source' : 'sources'
+              }.`
+            : selectedCount === 0
             ? 'Select at least one eligible source.'
             : `${
                 controller.state.selection.messageSelection.kind ===
