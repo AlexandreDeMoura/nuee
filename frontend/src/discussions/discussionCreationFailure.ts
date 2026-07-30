@@ -6,7 +6,7 @@ export type DiscussionCreationSourceIssueReason =
   | 'missing'
   | 'inaccessible'
   | 'cross_project'
-  | 'pending'
+  | 'processing'
   | 'failed';
 
 export interface DiscussionCreationSourceIssue {
@@ -25,7 +25,7 @@ const sourceIssueReasons = new Set<DiscussionCreationSourceIssueReason>([
   'missing',
   'inaccessible',
   'cross_project',
-  'pending',
+  'processing',
   'failed',
 ]);
 
@@ -107,7 +107,7 @@ export function discussionCreationSourceIssueMessage(
       return 'This source is no longer accessible.';
     case 'cross_project':
       return 'This source does not belong to this project.';
-    case 'pending':
+    case 'processing':
       return 'This document is still processing.';
     case 'failed':
       return 'This document could not be processed.';

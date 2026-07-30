@@ -18,7 +18,7 @@ const processingPresentation = {
       'Processing failed. This document can’t be used as discussion context.',
     label: 'FAILED',
   },
-  pending: {
+  processing: {
     description:
       'Still processing. This document can be selected when it’s ready.',
     label: 'PROCESSING',
@@ -84,7 +84,7 @@ function DocumentSelectionRow({
               strokeWidth={2}
               aria-hidden="true"
             />
-          ) : document.processing_status === 'pending' ? (
+          ) : document.processing_status === 'processing' ? (
             <Clock3
               className="size-[15px]"
               strokeWidth={1.7}
@@ -116,7 +116,7 @@ function DocumentSelectionRow({
             className={`mt-0.5 block text-[9px] font-semibold tracking-[0.08em] [font-family:'IBM_Plex_Mono',ui-monospace,monospace] ${
               document.processing_status === 'failed'
                 ? 'text-[#a95f57]'
-                : document.processing_status === 'pending'
+                : document.processing_status === 'processing'
                   ? 'text-[#9a7a4d]'
                   : 'text-[#63806c]'
             }`}

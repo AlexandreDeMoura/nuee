@@ -1,12 +1,14 @@
-import type { DiscussionContextSourceKind } from '@nuee/shared-types';
+import type {
+  DiscussionContextSourceKind,
+  DocumentSummary,
+} from '@nuee/shared-types';
 
-export type DocumentProcessingStatus = 'pending' | 'ready' | 'failed';
+export type { DocumentProcessingStatus } from '@nuee/shared-types';
 
-export interface DocumentContextSource {
-  id: string;
-  project_id: string;
-  title: string;
-  processing_status: DocumentProcessingStatus;
+export interface DocumentContextSource extends Pick<
+  DocumentSummary,
+  'id' | 'project_id' | 'title' | 'processing_status'
+> {
   processed_text: string | null;
 }
 
@@ -33,7 +35,7 @@ export interface DocumentContextSourceReader {
 }
 
 export type DiscussionContextSourceIssueReason =
-  'missing' | 'inaccessible' | 'cross_project' | 'pending' | 'failed';
+  'missing' | 'inaccessible' | 'cross_project' | 'processing' | 'failed';
 
 export interface DiscussionContextSourceIssue {
   source_kind: Exclude<DiscussionContextSourceKind, 'project_description'>;

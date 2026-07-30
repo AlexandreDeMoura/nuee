@@ -99,6 +99,107 @@ export interface CreateBubbleLinkInput {
   bubble_b_id: string;
 }
 
+/**
+ * The durable server-side lifecycle for an accepted document.
+ * Upload transfer progress is client-local and is intentionally not persisted.
+ */
+export type DocumentProcessingStatus = 'processing' | 'ready' | 'failed';
+
+export type DocumentFormatCategory = 'plain_text' | 'markdown' | 'pdf';
+
+/**
+ * Safe, stable failure categories exposed to clients. Internal parser,
+ * scanner, storage, and provider details must not cross the API boundary.
+ */
+export type DocumentProcessingErrorCode =
+  | 'unsafe'
+  | 'encrypted'
+  | 'corrupted'
+  | 'no_text'
+  | 'too_complex'
+  | 'storage_unavailable'
+  | 'scanner_unavailable'
+  | 'processing_unavailable'
+  | 'unknown';
+
+interface DocumentSummaryBase {
+  id: string;
+  project_id: string;
+  title: string;
+  original_filename: string;
+  format: DocumentFormatCategory;
+  mime_type: string;
+  size_bytes: number;
+  created_at: string;
+  updated_at: string;
+}
+
+interface ProcessingDocumentSummary extends DocumentSummaryBase {
+  processing_status: 'processing';
+  processing_error_code: null;
+  can_retry: false;
+}
+
+interface ReadyDocumentSummary extends DocumentSummaryBase {
+  processing_status: 'ready';
+  processing_error_code: null;
+  can_retry: false;
+}
+
+interface FailedDocumentSummary extends DocumentSummaryBase {
+  processing_status: 'failed';
+  processing_error_code: DocumentProcessingErrorCode;
+  can_retry: boolean;
+}
+
+/**
+ * Metadata returned by project-scoped document lists. Extracted text is
+ * deliberately absent so listing a project does not expose document bodies.
+ */
+export type DocumentSummary =
+  | ProcessingDocumentSummary
+  | ReadyDocumentSummary
+  | FailedDocumentSummary;
+
+/**
+ * Project-scoped inspection result. Only a ready document may expose the
+ * complete processed representation used for discussion context.
+ */
+export type DocumentDetail =
+  | (ProcessingDocumentSummary & {
+      extracted_text: null;
+    })
+  | (ReadyDocumentSummary & {
+      extracted_text: string;
+    })
+  | (FailedDocumentSummary & {
+      extracted_text: null;
+    });
+
+export type DocumentListResponse = DocumentSummary[];
+
+export interface DocumentUploadFormatPolicy {
+  category: DocumentFormatCategory;
+  extensions: string[];
+  mime_types: string[];
+}
+
+/**
+ * Backend-authoritative limits and formats used for client upload preflight.
+ * The server must enforce the same policy independently.
+ */
+export interface DocumentUploadPolicy {
+  supported_formats: DocumentUploadFormatPolicy[];
+  max_file_size_bytes: number;
+  max_files_per_request: number;
+  max_documents_per_project: number;
+  max_project_storage_bytes: number;
+}
+
+export type DocumentUploadPolicyResponse = DocumentUploadPolicy;
+export type UploadDocumentResponse = DocumentSummary;
+export type RetryDocumentProcessingResponse = DocumentSummary;
+
 export type DiscussionRole = 'user' | 'assistant';
 export type DiscussionMessageStatus = 'pending' | 'completed' | 'failed';
 

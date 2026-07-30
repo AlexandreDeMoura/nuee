@@ -46,7 +46,7 @@ describe('document context selection adapter', () => {
     });
     const pendingDocument = documentSource({
       id: 'document-pending',
-      processing_status: 'pending',
+      processing_status: 'processing',
       title: 'Market research',
     });
     const foreignDocument = documentSource({

@@ -473,7 +473,7 @@ describe('DiscussionsService', () => {
         id: 'document-a',
         project_id: project.id,
         title: 'Processing document',
-        processing_status: 'pending',
+        processing_status: 'processing',
         processed_text: null,
       },
     });
@@ -491,7 +491,7 @@ describe('DiscussionsService', () => {
           {
             source_kind: 'document',
             source_id: 'document-a',
-            reason: 'pending',
+            reason: 'processing',
           },
         ],
       },

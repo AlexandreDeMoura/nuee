@@ -1152,7 +1152,7 @@ describe('workspace integration contracts', () => {
     const pendingDocument = documentContextSource({
       id: 'document-pending',
       title: 'Market research',
-      processing_status: 'pending',
+      processing_status: 'processing',
     });
     const failedDocument = documentContextSource({
       id: 'document-failed',

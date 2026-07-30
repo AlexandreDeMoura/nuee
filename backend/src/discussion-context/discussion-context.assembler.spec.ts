@@ -279,7 +279,7 @@ describe('DiscussionContextAssembler', () => {
         id: 'document-pending',
         project_id: project.id,
         title: 'Pending document',
-        processing_status: 'pending',
+        processing_status: 'processing',
         processed_text: null,
       },
     });
@@ -353,7 +353,7 @@ describe('DiscussionContextAssembler', () => {
         {
           source_kind: 'document',
           source_id: 'document-pending',
-          reason: 'pending',
+          reason: 'processing',
         },
         {
           source_kind: 'document',

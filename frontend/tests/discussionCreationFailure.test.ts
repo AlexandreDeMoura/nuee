@@ -25,7 +25,7 @@ describe('discussion creation failures', () => {
           {
             source_kind: 'document',
             source_id: 'document-1',
-            reason: 'pending',
+            reason: 'processing',
           },
           {
             source_kind: 'project_description',
@@ -51,7 +51,7 @@ describe('discussion creation failures', () => {
           sourceKind: 'bubble',
         },
         {
-          reason: 'pending',
+          reason: 'processing',
           sourceId: 'document-1',
           sourceKind: 'document',
         },

@@ -1,15 +1,15 @@
-export type DocumentProcessingStatus = 'pending' | 'ready' | 'failed';
+import type { DocumentSummary } from '@nuee/shared-types';
+
+export type { DocumentProcessingStatus } from '@nuee/shared-types';
 
 /**
  * Metadata exposed by Document Library for discussion-context selection.
  * Processed document bodies stay behind the server-side context-source reader.
  */
-export interface DocumentContextSource {
-  id: string;
-  project_id: string;
-  title: string;
-  processing_status: DocumentProcessingStatus;
-}
+export type DocumentContextSource = Pick<
+  DocumentSummary,
+  'id' | 'project_id' | 'title' | 'processing_status'
+>;
 
 export interface DocumentMultiSelectionResult {
   projectId: string;

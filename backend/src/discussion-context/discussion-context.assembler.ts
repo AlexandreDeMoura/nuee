@@ -186,7 +186,7 @@ export class DiscussionContextAssembler {
 
       const processingStatus: unknown = result.source.processing_status;
 
-      if (processingStatus === 'pending' || processingStatus === 'failed') {
+      if (processingStatus === 'processing' || processingStatus === 'failed') {
         issues.push({
           source_kind: 'document',
           source_id: sourceId,

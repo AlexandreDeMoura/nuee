@@ -21,7 +21,9 @@ interface UseDocumentMultiSelectionOptions {
 function isProcessingStatus(
   value: unknown,
 ): value is DocumentProcessingStatus {
-  return value === 'pending' || value === 'ready' || value === 'failed';
+  return (
+    value === 'processing' || value === 'ready' || value === 'failed'
+  );
 }
 
 function normalizeDocuments(
