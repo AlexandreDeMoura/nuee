@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
@@ -51,8 +52,8 @@ import type {
 } from './canvasTypes';
 import { getCompactBubblePositions } from './compactLayout';
 import { useBubbleDrag } from './useBubbleDrag';
-import { useBubbleLoad } from './useBubbleLoad';
 import { useMultiSelection } from './useMultiSelection';
+import { useProjectBubbles } from './useProjectBubbles';
 import { useViewportPersistence } from './useViewportPersistence';
 
 export type {
@@ -64,12 +65,12 @@ export type {
   CanvasMultiSelectionResult,
   CanvasSurfaceProps,
   CanvasViewport,
+  ProjectBubbleCollection,
   ProjectViewportUpdateRequest,
 } from './canvasTypes';
 
-const EMPTY_DELETED_BUBBLE_IDS: string[] = [];
-
 export function CanvasSurface({
+  bubbleCollection,
   emptyState,
   initialViewport = DEFAULT_VIEWPORT,
   projectId,
@@ -81,12 +82,9 @@ export function CanvasSurface({
   requestBubblePositionsUpdate = updateBubblePositions,
   requestViewportUpdate = updateProjectViewport,
   onBubbleSelectionChange,
-  onBubblesChange,
   onStartDiscussion,
   bubbleLinks = [],
   multiSelection = null,
-  deletedBubbleIds = EMPTY_DELETED_BUBBLE_IDS,
-  updatedBubbles = [],
   viewportSaveDelayMs = DEFAULT_VIEWPORT_SAVE_DELAY_MS,
 }: CanvasSurfaceProps) {
   const [selectedBubbleId, setSelectedBubbleId] = useState<string | null>(null);
@@ -105,6 +103,9 @@ export function CanvasSurface({
   const selectedBubbleIdRef = useRef<string | null>(null);
   const onBubbleSelectionChangeRef = useRef(onBubbleSelectionChange);
   const mountedRef = useRef(true);
+  const [localBubblePositions, setLocalBubblePositions] = useState<
+    Record<string, { x: number; y: number }>
+  >({});
 
   useEffect(() => {
     onBubbleSelectionChangeRef.current = onBubbleSelectionChange;
@@ -136,24 +137,100 @@ export function CanvasSurface({
     saveDelayMs: viewportSaveDelayMs,
   });
 
-  const {
-    addBubble,
-    displayedBubbles,
-    loadState,
-    retry: retryBubbleLoad,
-    setLocalBubblePosition,
-    setLocalBubblePositions,
-  } = useBubbleLoad({
-    activeBubbleDragRef,
-    deletedBubbleIds,
-    onBubblesChange,
-    positionSavesRef,
+  const internalBubbleCollection = useProjectBubbles({
+    enabled: bubbleCollection === undefined,
     projectId,
     requestBubbles,
-    selectBubble,
-    selectedBubbleIdRef,
-    updatedBubbles,
   });
+  const activeBubbleCollection =
+    bubbleCollection ?? internalBubbleCollection;
+  const { loadState } = activeBubbleCollection;
+  const displayedBubbles = useMemo(
+    () =>
+      loadState.bubbles.map((bubble) => {
+        const position =
+          localBubblePositions[`${projectId}\0${bubble.id}`];
+
+        return position
+          ? {
+              ...bubble,
+              position_x: position.x,
+              position_y: position.y,
+            }
+          : bubble;
+      }),
+    [loadState.bubbles, localBubblePositions, projectId],
+  );
+  const setLocalBubblePosition = useCallback(
+    (bubbleId: string, position: { x: number; y: number }) => {
+      setLocalBubblePositions((current) => ({
+        ...current,
+        [`${projectId}\0${bubbleId}`]: position,
+      }));
+    },
+    [projectId],
+  );
+  const setLocalBubblePositionBatch = useCallback(
+    (positions: readonly BubblePositionUpdate[]) => {
+      setLocalBubblePositions((current) => {
+        const next = { ...current };
+
+        for (const position of positions) {
+          next[`${projectId}\0${position.bubble_id}`] = {
+            x: position.position_x,
+            y: position.position_y,
+          };
+        }
+
+        return next;
+      });
+    },
+    [projectId],
+  );
+  const clearLocalBubblePositions = useCallback(
+    (bubbleIds: readonly string[]) => {
+      setLocalBubblePositions((current) => {
+        const next = { ...current };
+        let changed = false;
+
+        for (const bubbleId of bubbleIds) {
+          const key = `${projectId}\0${bubbleId}`;
+
+          if (key in next) {
+            delete next[key];
+            changed = true;
+          }
+        }
+
+        return changed ? next : current;
+      });
+    },
+    [projectId],
+  );
+  const commitBubblePosition = useCallback(
+    (bubble: Bubble) => {
+      activeBubbleCollection.updateBubblePositions([
+        {
+          bubble_id: bubble.id,
+          position_x: bubble.position_x,
+          position_y: bubble.position_y,
+        },
+      ]);
+      clearLocalBubblePositions([bubble.id]);
+    },
+    [activeBubbleCollection, clearLocalBubblePositions],
+  );
+
+  useEffect(() => {
+    if (
+      selectedBubbleIdRef.current &&
+      !displayedBubbles.some(
+        (bubble) => bubble.id === selectedBubbleIdRef.current,
+      )
+    ) {
+      selectBubble(null);
+    }
+  }, [displayedBubbles, selectBubble]);
 
   const {
     activeSelectedBubbleIds: activeMultiSelectedBubbleIds,
@@ -187,6 +264,7 @@ export function CanvasSurface({
     positionSavesRef,
     projectId,
     requestBubblePositionUpdate,
+    commitBubblePosition,
     selectBubble,
     setLocalBubblePosition,
     surfaceRef,
@@ -215,7 +293,7 @@ export function CanvasSurface({
         status: 'saving',
       };
 
-      setLocalBubblePositions(requestedPositions);
+      setLocalBubblePositionBatch(requestedPositions);
       replaceCompactLayoutSave(saving);
 
       try {
@@ -256,12 +334,14 @@ export function CanvasSurface({
           return;
         }
 
-        setLocalBubblePositions(
-          savedBubbles.map((bubble) => ({
-            bubble_id: bubble.id,
-            position_x: bubble.position_x,
-            position_y: bubble.position_y,
-          })),
+        const savedPositions = savedBubbles.map((bubble) => ({
+          bubble_id: bubble.id,
+          position_x: bubble.position_x,
+          position_y: bubble.position_y,
+        }));
+        activeBubbleCollection.updateBubblePositions(savedPositions);
+        clearLocalBubblePositions(
+          savedPositions.map((position) => position.bubble_id),
         );
         replaceCompactLayoutSave(null);
         trackAnalytics(analyticsClient, 'bubble_compact_layout_applied', {
@@ -273,7 +353,7 @@ export function CanvasSurface({
           mountedRef.current &&
           compactLayoutSaveRef.current?.attempt === attempt
         ) {
-          setLocalBubblePositions(persistedPositions);
+          setLocalBubblePositionBatch(persistedPositions);
           replaceCompactLayoutSave({
             ...saving,
             status: 'error',
@@ -283,10 +363,12 @@ export function CanvasSurface({
     },
     [
       analyticsClient,
+      activeBubbleCollection,
+      clearLocalBubblePositions,
       projectId,
       replaceCompactLayoutSave,
       requestBubblePositionsUpdate,
-      setLocalBubblePositions,
+      setLocalBubblePositionBatch,
     ],
   );
 
@@ -481,7 +563,7 @@ export function CanvasSurface({
   }
 
   function handleBubbleCreated(bubble: Bubble) {
-    addBubble(bubble);
+    activeBubbleCollection.addBubble(bubble);
     trackAnalytics(analyticsClient, 'bubble_created', {
       project_id: projectId,
       bubble_id: bubble.id,
@@ -665,13 +747,13 @@ export function CanvasSurface({
           <CanvasLoadingState />
         )}
         {loadState.status === 'failed' && displayedBubbles.length === 0 && (
-          <CanvasErrorState onRetry={retryBubbleLoad} />
+          <CanvasErrorState onRetry={activeBubbleCollection.retry} />
         )}
         {loadState.status === 'partial' && displayedBubbles.length === 0 && (
           <CanvasBubbleLoadNotice
             hasBubbles={false}
             isPartial
-            onRetry={retryBubbleLoad}
+            onRetry={activeBubbleCollection.retry}
           />
         )}
         {loadState.status === 'ready' &&
@@ -684,7 +766,7 @@ export function CanvasSurface({
           <CanvasBubbleLoadNotice
             hasBubbles
             isPartial={loadState.status === 'partial'}
-            onRetry={retryBubbleLoad}
+            onRetry={activeBubbleCollection.retry}
           />
         )}
 

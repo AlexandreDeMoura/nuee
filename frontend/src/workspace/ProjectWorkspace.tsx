@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import {
   getBubbleLinks,
+  getProjectBubbles,
   type Bubble,
   type BubbleLink,
   type Project,
@@ -37,6 +38,7 @@ import {
   type CanvasMultiSelection,
   type ProjectViewportUpdateRequest,
 } from '../canvas/CanvasSurface';
+import { useProjectBubbles } from '../canvas/useProjectBubbles';
 import type {
   BubbleCreateRequest,
   BubblePlacementRequest,
@@ -586,7 +588,7 @@ function WorkspacePanel({
 export function ProjectWorkspace({
   project,
   requestBubbleCreate,
-  requestBubbles,
+  requestBubbles = getProjectBubbles,
   requestBubblePlacement,
   requestBubblePositionUpdate,
   requestBubblePositionsUpdate,
@@ -622,11 +624,7 @@ export function ProjectWorkspace({
   const [activePanel, setActivePanel] = useState<WorkspacePanelView>(() =>
     getDefaultPanelView(discussionCount),
   );
-  const [selectedBubble, setSelectedBubble] = useState<Bubble | null>(null);
-  const [updatedBubbles, setUpdatedBubbles] = useState<
-    Record<string, Bubble>
-  >({});
-  const [deletedBubbleIds, setDeletedBubbleIds] = useState<string[]>([]);
+  const [selectedBubbleId, setSelectedBubbleId] = useState<string | null>(null);
   const [discussionDeletionState, setDiscussionDeletionState] = useState<
     (DiscussionDeleteTarget & { projectId: string }) | null
   >(null);
@@ -634,7 +632,6 @@ export function ProjectWorkspace({
     discussionDeletionState?.projectId === currentProject.id
       ? discussionDeletionState
       : null;
-  const [availableBubbles, setAvailableBubbles] = useState<Bubble[]>([]);
   const [bubbleLinkLoadState, setBubbleLinkLoadState] =
     useState<BubbleLinkLoadState>({ status: 'loading', links: [] });
   const [bubbleLinkRequestKey, setBubbleLinkRequestKey] = useState(0);
@@ -653,7 +650,18 @@ export function ProjectWorkspace({
     requests: discussionPanelRequests,
   });
   const panelButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
-  const deletedBubbleIdsRef = useRef(deletedBubbleIds);
+  const bubbleCollection = useProjectBubbles({
+    projectId: currentProject.id,
+    requestBubbles,
+  });
+  const {
+    isBubbleRemoved,
+    removeBubble,
+    replaceBubble,
+  } = bubbleCollection;
+  const availableBubbles = bubbleCollection.loadState.bubbles;
+  const selectedBubble =
+    availableBubbles.find((bubble) => bubble.id === selectedBubbleId) ?? null;
   const canvasInspectorSelection: WorkspaceInspectorSelection | null =
     selectedBubble
       ? { id: selectedBubble.id, kind: 'bubble' }
@@ -678,11 +686,10 @@ export function ProjectWorkspace({
           return;
         }
 
-        const deletedIds = new Set(deletedBubbleIdsRef.current);
         const currentLinks = links.filter(
           (link) =>
-            !deletedIds.has(link.bubble_a_id) &&
-            !deletedIds.has(link.bubble_b_id),
+            !isBubbleRemoved(link.bubble_a_id) &&
+            !isBubbleRemoved(link.bubble_b_id),
         );
         const seenPairs = new Set<string>();
         const validLinks = currentLinks.filter((link) => {
@@ -725,7 +732,12 @@ export function ProjectWorkspace({
       });
 
     return () => controller.abort();
-  }, [bubbleLinkRequestKey, currentProject.id, requestBubbleLinks]);
+  }, [
+    isBubbleRemoved,
+    bubbleLinkRequestKey,
+    currentProject.id,
+    requestBubbleLinks,
+  ]);
 
   function handlePanelKeyDown(event: KeyboardEvent<HTMLButtonElement>, index: number) {
     let nextIndex: number | undefined;
@@ -764,7 +776,7 @@ export function ProjectWorkspace({
 
   const handleBubbleSelectionChange = useCallback(
     (bubble: Bubble | null) => {
-      setSelectedBubble(bubble);
+      setSelectedBubbleId(bubble?.id ?? null);
 
       if (!bubble) {
         return;
@@ -792,20 +804,9 @@ export function ProjectWorkspace({
         return;
       }
 
-      setSelectedBubble((current) =>
-        current?.id === bubble.id ? bubble : current,
-      );
-      setUpdatedBubbles((current) => ({
-        ...current,
-        [bubble.id]: bubble,
-      }));
-      setAvailableBubbles((current) =>
-        current.map((candidate) =>
-          candidate.id === bubble.id ? bubble : candidate,
-        ),
-      );
+      replaceBubble(bubble);
     },
-    [currentProject.id],
+    [currentProject.id, replaceBubble],
   );
 
   const handleBubbleLinkCreated = useCallback((link: BubbleLink) => {
@@ -825,26 +826,10 @@ export function ProjectWorkspace({
   }, []);
 
   const handleBubbleDeleted = useCallback((bubble: Bubble) => {
-    setSelectedBubble((current) =>
-      current?.id === bubble.id ? null : current,
+    setSelectedBubbleId((current) =>
+      current === bubble.id ? null : current,
     );
-    setUpdatedBubbles((current) => {
-      if (!(bubble.id in current)) {
-        return current;
-      }
-
-      const next = { ...current };
-      delete next[bubble.id];
-      return next;
-    });
-    const nextDeletedBubbleIds = deletedBubbleIdsRef.current.includes(bubble.id)
-      ? deletedBubbleIdsRef.current
-      : [...deletedBubbleIdsRef.current, bubble.id];
-    deletedBubbleIdsRef.current = nextDeletedBubbleIds;
-    setDeletedBubbleIds(nextDeletedBubbleIds);
-    setAvailableBubbles((current) =>
-      current.filter((candidate) => candidate.id !== bubble.id),
-    );
+    removeBubble(bubble.id);
     setBubbleLinkLoadState((current) => ({
       status: current.status,
       links: current.links.filter(
@@ -852,7 +837,7 @@ export function ProjectWorkspace({
           link.bubble_a_id !== bubble.id && link.bubble_b_id !== bubble.id,
       ),
     }));
-  }, []);
+  }, [removeBubble]);
 
   const handleRetryBubbleLinks = useCallback(() => {
     setBubbleLinkLoadState((current) => ({
@@ -869,10 +854,6 @@ export function ProjectWorkspace({
         currentDescription: currentProject.description,
       }),
     [currentProject.description, currentProject.id],
-  );
-  const currentUpdatedBubbles = useMemo(
-    () => Object.values(updatedBubbles),
-    [updatedBubbles],
   );
   const openDraftWithContext = useCallback(
     (
@@ -1137,9 +1118,9 @@ export function ProjectWorkspace({
         >
           <CanvasSurface
             analyticsClient={analyticsClient}
+            bubbleCollection={bubbleCollection}
             bubbleLinks={bubbleLinkLoadState.links}
             multiSelection={resolvedCanvasMultiSelection}
-            deletedBubbleIds={deletedBubbleIds}
             emptyState={({ onCreateBubble }) => (
               <EmptyCanvasContent
                 analyticsClient={analyticsClient}
@@ -1161,15 +1142,12 @@ export function ProjectWorkspace({
             }}
             projectId={currentProject.id}
             requestBubbleCreate={requestBubbleCreate}
-            requestBubbles={requestBubbles}
             requestBubblePlacement={requestBubblePlacement}
             requestBubblePositionUpdate={requestBubblePositionUpdate}
             requestBubblePositionsUpdate={requestBubblePositionsUpdate}
             requestViewportUpdate={requestViewportUpdate}
             onBubbleSelectionChange={handleBubbleSelectionChange}
-            onBubblesChange={setAvailableBubbles}
             onStartDiscussion={startDiscussionFromCanvas}
-            updatedBubbles={currentUpdatedBubbles}
             viewportSaveDelayMs={viewportSaveDelayMs}
           />
 

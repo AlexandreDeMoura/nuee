@@ -69,6 +69,7 @@ export interface CanvasMultiSelection {
 }
 
 export interface CanvasSurfaceProps {
+  bubbleCollection?: ProjectBubbleCollection;
   emptyState:
     | ReactNode
     | ((actions: CanvasEmptyStateActions) => ReactNode);
@@ -82,12 +83,9 @@ export interface CanvasSurfaceProps {
   requestBubblePositionsUpdate?: BubblePositionsUpdateRequest;
   requestViewportUpdate?: ProjectViewportUpdateRequest;
   onBubbleSelectionChange?: (bubble: Bubble | null) => void;
-  onBubblesChange?: (bubbles: Bubble[]) => void;
   onStartDiscussion?: () => void;
   bubbleLinks?: BubbleLink[];
   multiSelection?: CanvasMultiSelection | null;
-  deletedBubbleIds?: string[];
-  updatedBubbles?: Bubble[];
   viewportSaveDelayMs?: number;
 }
 
@@ -96,6 +94,23 @@ export type CanvasLoadState =
   | { status: 'ready'; bubbles: Bubble[] }
   | { status: 'partial'; bubbles: Bubble[] }
   | { status: 'failed'; bubbles: Bubble[] };
+
+export interface ProjectBubbleCollection {
+  projectId: string;
+  loadState: CanvasLoadState;
+  addBubble: (bubble: Bubble) => void;
+  isBubbleRemoved: (bubbleId: string) => boolean;
+  /**
+   * Replaces persisted bubble data while retaining the collection's current
+   * canvas position. Content saves must not overwrite a newer spatial save.
+   */
+  replaceBubble: (bubble: Bubble) => void;
+  removeBubble: (bubbleId: string) => void;
+  retry: () => void;
+  updateBubblePositions: (
+    positions: readonly BubblePositionUpdate[],
+  ) => void;
+}
 
 export interface ActivePan {
   pointerId: number;

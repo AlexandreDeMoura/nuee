@@ -30,6 +30,7 @@ interface UseBubbleDragOptions {
   positionSavesRef: SharedRef<Record<string, BubblePositionSave>>;
   projectId: string;
   requestBubblePositionUpdate: BubblePositionUpdateRequest;
+  commitBubblePosition: (bubble: Bubble) => void;
   selectBubble: (bubble: Bubble | null) => void;
   setLocalBubblePosition: (
     bubbleId: string,
@@ -48,6 +49,7 @@ export function useBubbleDrag({
   positionSavesRef,
   projectId,
   requestBubblePositionUpdate,
+  commitBubblePosition,
   selectBubble,
   setLocalBubblePosition,
   surfaceRef,
@@ -124,10 +126,7 @@ export function useBubbleDrag({
           return;
         }
 
-        setLocalBubblePosition(bubbleId, {
-          x: updatedBubble.position_x,
-          y: updatedBubble.position_y,
-        });
+        commitBubblePosition(updatedBubble);
         replacePositionSave(bubbleId, null);
         trackAnalytics(analyticsClient, 'bubble_moved', {
           project_id: projectId,
@@ -149,11 +148,11 @@ export function useBubbleDrag({
     },
     [
       analyticsClient,
+      commitBubblePosition,
       positionSavesRef,
       projectId,
       replacePositionSave,
       requestBubblePositionUpdate,
-      setLocalBubblePosition,
     ],
   );
 

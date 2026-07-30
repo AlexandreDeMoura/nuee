@@ -11,6 +11,7 @@ import type { AnalyticsClient } from '../src/analytics';
 import {
   CanvasSurface,
   type CanvasMultiSelectionResult,
+  type ProjectBubbleCollection,
 } from '../src/canvas/CanvasSurface';
 
 function deferred<T>() {
@@ -56,6 +57,19 @@ function bubble(overrides: Partial<Bubble> = {}): Bubble {
 
 function projectWithViewport(input: UpdateProjectViewportInput): Project {
   return { ...project, ...input };
+}
+
+function bubbleCollection(bubbles: Bubble[]): ProjectBubbleCollection {
+  return {
+    addBubble: vi.fn(),
+    isBubbleRemoved: vi.fn(() => false),
+    loadState: { status: 'ready', bubbles },
+    projectId: project.id,
+    removeBubble: vi.fn(),
+    replaceBubble: vi.fn(),
+    retry: vi.fn(),
+    updateBubblePositions: vi.fn(),
+  };
 }
 
 const requestViewportUpdate = async (
@@ -675,7 +689,6 @@ describe('CanvasSurface', () => {
 
   it('allows an owning flow to confirm empty after local deletion and clears selection between flows', async () => {
     const selectedBubble = bubble();
-    const requestBubbles = vi.fn().mockResolvedValue([selectedBubble]);
     const onConfirm = vi.fn<(selection: CanvasMultiSelectionResult) => void>();
     const selection = {
       allowEmptySelection: true,
@@ -688,10 +701,10 @@ describe('CanvasSurface', () => {
     };
     const rendered = render(
       <CanvasSurface
+        bubbleCollection={bubbleCollection([selectedBubble])}
         emptyState={emptyState}
         multiSelection={selection}
         projectId={project.id}
-        requestBubbles={requestBubbles}
       />,
     );
 
@@ -704,11 +717,10 @@ describe('CanvasSurface', () => {
 
     rendered.rerender(
       <CanvasSurface
-        deletedBubbleIds={[selectedBubble.id]}
+        bubbleCollection={bubbleCollection([])}
         emptyState={emptyState}
         multiSelection={selection}
         projectId={project.id}
-        requestBubbles={requestBubbles}
       />,
     );
 
@@ -732,9 +744,9 @@ describe('CanvasSurface', () => {
 
     rendered.rerender(
       <CanvasSurface
+        bubbleCollection={bubbleCollection([selectedBubble])}
         emptyState={emptyState}
         projectId={project.id}
-        requestBubbles={requestBubbles}
       />,
     );
     expect(
@@ -743,6 +755,7 @@ describe('CanvasSurface', () => {
 
     rendered.rerender(
       <CanvasSurface
+        bubbleCollection={bubbleCollection([selectedBubble])}
         emptyState={emptyState}
         multiSelection={{
           allowEmptySelection: true,
@@ -750,7 +763,6 @@ describe('CanvasSurface', () => {
           onConfirm: vi.fn(),
         }}
         projectId={project.id}
-        requestBubbles={requestBubbles}
       />,
     );
 
