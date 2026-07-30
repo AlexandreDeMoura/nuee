@@ -53,6 +53,7 @@ describe('DatabaseProvider', () => {
       { name: 'discussion_context_items' },
       { name: 'discussion_messages' },
       { name: 'discussions' },
+      { name: 'knowledge_extraction_attempts' },
       { name: 'projects' },
       { name: 'schema_migrations' },
     ]);

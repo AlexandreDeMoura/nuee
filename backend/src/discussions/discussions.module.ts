@@ -3,6 +3,7 @@ import { AiModule } from '../ai/ai.module';
 import { DiscussionContextModule } from '../discussion-context/discussion-context.module';
 import { ProjectsModule } from '../projects/projects.module';
 import {
+  DISCUSSION_EXTRACTION_SOURCE_READER,
   DISCUSSION_MESSAGE_REPOSITORY,
   DISCUSSION_REPOSITORY,
 } from './discussion.types';
@@ -24,7 +25,11 @@ import { SqliteDiscussionRepository } from './sqlite-discussion.repository';
       provide: DISCUSSION_MESSAGE_REPOSITORY,
       useExisting: SqliteDiscussionRepository,
     },
+    {
+      provide: DISCUSSION_EXTRACTION_SOURCE_READER,
+      useExisting: SqliteDiscussionRepository,
+    },
   ],
-  exports: [DiscussionsService],
+  exports: [DiscussionsService, DISCUSSION_EXTRACTION_SOURCE_READER],
 })
 export class DiscussionsModule {}

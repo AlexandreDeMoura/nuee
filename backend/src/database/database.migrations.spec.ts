@@ -34,9 +34,13 @@ describe('runDatabaseMigrations', () => {
           version: 7,
           name: 'complete-discussion-extraction-provenance',
         },
+        {
+          version: 8,
+          name: 'create-knowledge-extraction-attempts',
+        },
       ]);
       expect(database.prepare('PRAGMA user_version;').get()).toEqual({
-        user_version: 7,
+        user_version: 8,
       });
     } finally {
       database.close();

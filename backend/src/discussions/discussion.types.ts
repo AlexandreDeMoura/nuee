@@ -1,7 +1,9 @@
 import type {
   Discussion,
+  DiscussionContextSourceKind,
   DiscussionMessage,
   DiscussionMessageStatus,
+  DiscussionRole,
   FrozenContextV1,
   LegacyFrozenContext,
 } from '@nuee/shared-types';
@@ -119,9 +121,74 @@ export interface DiscussionMessageRepository {
   ): PersistedDiscussionMessage | undefined;
 }
 
+export type DiscussionExtractionMessageSelection =
+  | {
+      kind: 'selected';
+      message_ids: string[];
+    }
+  | {
+      kind: 'whole_discussion';
+    };
+
+export interface DiscussionExtractionSourceSelection {
+  message_selection: DiscussionExtractionMessageSelection;
+  frozen_context_item_ids: string[];
+}
+
+export interface DiscussionExtractionMessageSource {
+  id: string;
+  role: DiscussionRole;
+  content: string;
+  created_at: string;
+}
+
+export interface DiscussionExtractionFrozenContextSource {
+  id: string;
+  source_kind: DiscussionContextSourceKind;
+  source_title: string;
+  frozen_content: string;
+  created_at: string;
+  display_order: number;
+}
+
+export type DiscussionExtractionSourceIssueReason =
+  'missing' | 'cross_project' | 'cross_discussion' | 'inaccessible';
+
+export interface DiscussionExtractionSourceIssue {
+  source_kind: 'message' | 'frozen_context';
+  source_id: string;
+  reason: DiscussionExtractionSourceIssueReason;
+}
+
+export type DiscussionExtractionSourceReadResult =
+  | {
+      status: 'discussion_not_found';
+    }
+  | {
+      status: 'invalid_sources';
+      issues: DiscussionExtractionSourceIssue[];
+    }
+  | {
+      status: 'available';
+      discussion_title: string;
+      messages: DiscussionExtractionMessageSource[];
+      frozen_context_items: DiscussionExtractionFrozenContextSource[];
+    };
+
+export interface DiscussionExtractionSourceReader {
+  readExtractionSources(
+    projectId: string,
+    discussionId: string,
+    selection: DiscussionExtractionSourceSelection,
+  ): DiscussionExtractionSourceReadResult;
+}
+
 export const DISCUSSION_REPOSITORY = Symbol('DISCUSSION_REPOSITORY');
 export const DISCUSSION_MESSAGE_REPOSITORY = Symbol(
   'DISCUSSION_MESSAGE_REPOSITORY',
+);
+export const DISCUSSION_EXTRACTION_SOURCE_READER = Symbol(
+  'DISCUSSION_EXTRACTION_SOURCE_READER',
 );
 
 export class DiscussionContextIntegrityError extends Error {

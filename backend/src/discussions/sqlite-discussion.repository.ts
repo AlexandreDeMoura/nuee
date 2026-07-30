@@ -4,6 +4,11 @@ import type { FrozenContextItem } from '@nuee/shared-types';
 import { DatabaseProvider } from '../database/database.provider';
 import { DiscussionContextIntegrityError } from './discussion.types';
 import type {
+  DiscussionExtractionFrozenContextSource,
+  DiscussionExtractionMessageSource,
+  DiscussionExtractionSourceReader,
+  DiscussionExtractionSourceReadResult,
+  DiscussionExtractionSourceSelection,
   DiscussionMessageRepository,
   DiscussionMessageStatus,
   DiscussionRepository,
@@ -48,9 +53,28 @@ interface DiscussionMessageRow {
   request_id: string | null;
 }
 
+interface ExtractionDiscussionRow {
+  id: unknown;
+  project_id: unknown;
+  title: unknown;
+}
+
+interface ExtractionMessageRow extends DiscussionMessageRow {
+  project_id: unknown;
+  discussion_deleted_at: unknown;
+}
+
+interface ExtractionContextItemRow extends DiscussionContextItemRow {
+  project_id: unknown;
+  discussion_deleted_at: unknown;
+}
+
 @Injectable()
 export class SqliteDiscussionRepository
-  implements DiscussionRepository, DiscussionMessageRepository
+  implements
+    DiscussionRepository,
+    DiscussionMessageRepository,
+    DiscussionExtractionSourceReader
 {
   private readonly database: DatabaseSync;
 
@@ -284,6 +308,65 @@ export class SqliteDiscussionRepository
       .all(projectId, discussionId) as unknown as DiscussionMessageRow[];
 
     return rows.map((row) => this.toMessage(row));
+  }
+
+  readExtractionSources(
+    projectId: string,
+    discussionId: string,
+    selection: DiscussionExtractionSourceSelection,
+  ): DiscussionExtractionSourceReadResult {
+    const discussion = this.database
+      .prepare(
+        `
+          SELECT id, project_id, title
+          FROM discussions
+          WHERE
+            id = ?
+            AND project_id = ?
+            AND deleted_at IS NULL
+        `,
+      )
+      .get(discussionId, projectId) as unknown as
+      ExtractionDiscussionRow | undefined;
+
+    if (!discussion) {
+      return { status: 'discussion_not_found' };
+    }
+
+    const issues: Extract<
+      DiscussionExtractionSourceReadResult,
+      { status: 'invalid_sources' }
+    >['issues'] = [];
+    const messages =
+      selection.message_selection.kind === 'whole_discussion'
+        ? this.readWholeDiscussionExtractionMessages(projectId, discussionId)
+        : this.readSelectedExtractionMessages(
+            projectId,
+            discussionId,
+            selection.message_selection.message_ids,
+            issues,
+          );
+    const frozenContextItems = this.readSelectedExtractionContextItems(
+      projectId,
+      discussionId,
+      selection.frozen_context_item_ids,
+      issues,
+    );
+
+    if (issues.length > 0) {
+      return { status: 'invalid_sources', issues };
+    }
+
+    return {
+      status: 'available',
+      discussion_title:
+        typeof discussion.title === 'string' &&
+        discussion.title.trim().length > 0
+          ? discussion.title
+          : 'New discussion',
+      messages,
+      frozen_context_items: frozenContextItems,
+    };
   }
 
   findMessageByRequestId(
@@ -576,6 +659,206 @@ export class SqliteDiscussionRepository
       DiscussionMessageRow | undefined;
 
     return row ? this.toMessage(row) : undefined;
+  }
+
+  private readWholeDiscussionExtractionMessages(
+    projectId: string,
+    discussionId: string,
+  ): DiscussionExtractionMessageSource[] {
+    const rows = this.database
+      .prepare(
+        `
+          SELECT message.*
+          FROM discussion_messages AS message
+          INNER JOIN discussions AS discussion
+            ON discussion.id = message.discussion_id
+          WHERE
+            discussion.project_id = ?
+            AND discussion.id = ?
+            AND discussion.deleted_at IS NULL
+            AND message.status = 'completed'
+            AND message.role IN ('user', 'assistant')
+          ORDER BY message.created_at ASC, message.id ASC
+        `,
+      )
+      .all(projectId, discussionId) as unknown as DiscussionMessageRow[];
+
+    return rows.map(({ id, role, content, created_at }) => ({
+      id,
+      role,
+      content,
+      created_at,
+    }));
+  }
+
+  private readSelectedExtractionMessages(
+    projectId: string,
+    discussionId: string,
+    messageIds: readonly string[],
+    issues: Extract<
+      DiscussionExtractionSourceReadResult,
+      { status: 'invalid_sources' }
+    >['issues'],
+  ): DiscussionExtractionMessageSource[] {
+    const findMessage = this.database.prepare(
+      `
+        SELECT
+          message.*,
+          discussion.project_id,
+          discussion.deleted_at AS discussion_deleted_at
+        FROM discussion_messages AS message
+        INNER JOIN discussions AS discussion
+          ON discussion.id = message.discussion_id
+        WHERE message.id = ?
+      `,
+    );
+    const messages: DiscussionExtractionMessageSource[] = [];
+
+    for (const messageId of messageIds) {
+      const row = findMessage.get(messageId) as unknown as
+        ExtractionMessageRow | undefined;
+
+      if (!row) {
+        issues.push({
+          source_kind: 'message',
+          source_id: messageId,
+          reason: 'missing',
+        });
+        continue;
+      }
+
+      const reason =
+        row.project_id !== projectId
+          ? 'cross_project'
+          : row.discussion_id !== discussionId
+            ? 'cross_discussion'
+            : row.discussion_deleted_at !== null || row.status !== 'completed'
+              ? 'inaccessible'
+              : undefined;
+
+      if (reason) {
+        issues.push({
+          source_kind: 'message',
+          source_id: messageId,
+          reason,
+        });
+        continue;
+      }
+
+      messages.push({
+        id: row.id,
+        role: row.role,
+        content: row.content,
+        created_at: row.created_at,
+      });
+    }
+
+    return messages.sort(
+      (first, second) =>
+        first.created_at.localeCompare(second.created_at) ||
+        first.id.localeCompare(second.id),
+    );
+  }
+
+  private readSelectedExtractionContextItems(
+    projectId: string,
+    discussionId: string,
+    contextItemIds: readonly string[],
+    issues: Extract<
+      DiscussionExtractionSourceReadResult,
+      { status: 'invalid_sources' }
+    >['issues'],
+  ): DiscussionExtractionFrozenContextSource[] {
+    const findContextItem = this.database.prepare(
+      `
+        SELECT
+          item.*,
+          discussion.project_id,
+          discussion.deleted_at AS discussion_deleted_at
+        FROM discussion_context_items AS item
+        INNER JOIN discussions AS discussion
+          ON discussion.id = item.discussion_id
+        WHERE item.id = ?
+      `,
+    );
+    const contextItems: DiscussionExtractionFrozenContextSource[] = [];
+
+    for (const contextItemId of contextItemIds) {
+      const row = findContextItem.get(contextItemId) as unknown as
+        ExtractionContextItemRow | undefined;
+
+      if (!row) {
+        issues.push({
+          source_kind: 'frozen_context',
+          source_id: contextItemId,
+          reason: 'missing',
+        });
+        continue;
+      }
+
+      const reason =
+        row.project_id !== projectId
+          ? 'cross_project'
+          : row.discussion_id !== discussionId
+            ? 'cross_discussion'
+            : row.discussion_deleted_at !== null
+              ? 'inaccessible'
+              : undefined;
+
+      if (reason) {
+        issues.push({
+          source_kind: 'frozen_context',
+          source_id: contextItemId,
+          reason,
+        });
+        continue;
+      }
+
+      contextItems.push(this.validateExtractionContextItem(row, discussionId));
+    }
+
+    return contextItems.sort(
+      (first, second) =>
+        first.display_order - second.display_order ||
+        first.id.localeCompare(second.id),
+    );
+  }
+
+  private validateExtractionContextItem(
+    row: ExtractionContextItemRow,
+    discussionId: string,
+  ): DiscussionExtractionFrozenContextSource {
+    const {
+      id,
+      source_kind: sourceKind,
+      source_title: sourceTitle,
+      frozen_content: frozenContent,
+      created_at: createdAt,
+      display_order: displayOrder,
+    } = row;
+
+    if (
+      !this.isNonEmptyString(id) ||
+      (sourceKind !== 'project_description' &&
+        sourceKind !== 'bubble' &&
+        sourceKind !== 'document') ||
+      !this.isNonEmptyString(sourceTitle) ||
+      typeof frozenContent !== 'string' ||
+      !this.isIsoTimestamp(createdAt) ||
+      !Number.isInteger(displayOrder) ||
+      (displayOrder as number) < 0
+    ) {
+      throw new DiscussionContextIntegrityError(discussionId);
+    }
+
+    return {
+      id,
+      source_kind: sourceKind,
+      source_title: sourceTitle,
+      frozen_content: frozenContent,
+      created_at: createdAt,
+      display_order: displayOrder as number,
+    };
   }
 
   private toDiscussion(row: DiscussionRow): PersistedDiscussion {

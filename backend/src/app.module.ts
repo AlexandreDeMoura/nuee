@@ -11,6 +11,7 @@ import {
 } from './config/configuration';
 import { DatabaseModule } from './database/database.module';
 import { DiscussionsModule } from './discussions/discussions.module';
+import { KnowledgeExtractionModule } from './knowledge-extraction/knowledge-extraction.module';
 import { ProjectsModule } from './projects/projects.module';
 
 @Module({
@@ -26,6 +27,7 @@ import { ProjectsModule } from './projects/projects.module';
     ProjectsModule,
     BubblesModule,
     DiscussionsModule,
+    KnowledgeExtractionModule,
   ],
   controllers: [AppController],
   providers: [AppService],
