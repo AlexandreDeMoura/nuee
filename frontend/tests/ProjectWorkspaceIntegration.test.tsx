@@ -250,9 +250,12 @@ describe('workspace integration contracts', () => {
     const firstModalAction = within(modal).getByRole('button', {
       name: 'Extract knowledge from discussion',
     });
+    const lastModalAction = within(modal).getByRole('textbox', {
+      name: 'Discussion message',
+    });
     firstModalAction.focus();
     fireEvent.keyDown(document, { key: 'Tab', shiftKey: true });
-    expect(document.activeElement).toBe(closeInspector);
+    expect(document.activeElement).toBe(lastModalAction);
 
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(screen.queryByRole('region', {

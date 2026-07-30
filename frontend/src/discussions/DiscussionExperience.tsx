@@ -16,6 +16,13 @@ import {
 import { DiscussionMessages } from './DiscussionMessages';
 import type { DiscussionDetails } from '../api';
 import {
+  hasEligibleKnowledgeExtractionSource,
+  KnowledgeExtractionSourceActions,
+  KnowledgeExtractionSourceSelection,
+  useKnowledgeExtraction,
+  type KnowledgeExtractionRequests,
+} from '../knowledge-extraction';
+import {
   useDiscussionLifecycle,
   type DiscussionLifecycleRequests,
 } from './useDiscussionLifecycle';
@@ -34,6 +41,8 @@ export interface DiscussionExperienceProps {
   canSelectDocumentContext?: boolean;
   contextSelection?: DiscussionContextSelectionController;
   controller: DiscussionVisibilityController;
+  createExtractionAttemptId?: () => string;
+  extractionRequests?: KnowledgeExtractionRequests;
   isObscured?: boolean;
   onExtractKnowledge?: (source: DiscussionKnowledgeSource) => void;
   onInspectContext?: (inspection: DiscussionContextInspection) => void;
@@ -50,6 +59,8 @@ export function DiscussionExperience({
   canSelectDocumentContext,
   contextSelection,
   controller,
+  createExtractionAttemptId,
+  extractionRequests,
   isObscured,
   onExtractKnowledge,
   onInspectContext,
@@ -77,6 +88,8 @@ export function DiscussionExperience({
       canSelectBubbleContext={canSelectBubbleContext}
       canSelectDocumentContext={canSelectDocumentContext}
       contextSelection={contextSelection}
+      createExtractionAttemptId={createExtractionAttemptId}
+      extractionRequests={extractionRequests}
       isObscured={isObscured}
       onExtractKnowledge={onExtractKnowledge}
       onInspectContext={onInspectContext}
@@ -97,6 +110,8 @@ function DiscussionExperienceModal({
   canSelectDocumentContext,
   contextSelection,
   controller,
+  createExtractionAttemptId,
+  extractionRequests,
   isObscured,
   onExtractKnowledge,
   onInspectContext,
@@ -115,6 +130,10 @@ function DiscussionExperienceModal({
     null,
   );
   const inspectionTriggerRef = useRef<HTMLElement | null>(null);
+  const extractionTriggerRef = useRef<{
+    element: HTMLButtonElement;
+    source: DiscussionKnowledgeSource;
+  } | null>(null);
   const resolvedAnalyticsClient = analyticsClient ?? analytics;
   const handleDiscussionCreated = useCallback(
     (discussion: { id: string; title: string }) => {
@@ -131,6 +150,16 @@ function DiscussionExperienceModal({
     projectId,
     requests,
     visibleDiscussion,
+  });
+  const extractionDiscussionId =
+    visibleDiscussion.kind === 'persisted'
+      ? visibleDiscussion.discussionId
+      : (lifecycle.details?.id ?? '');
+  const extraction = useKnowledgeExtraction({
+    createAttemptId: createExtractionAttemptId,
+    discussionId: extractionDiscussionId,
+    projectId,
+    requests: extractionRequests,
   });
   const isDraft = visibleDiscussion.kind === 'draft';
   const isSelectingSources =
@@ -186,10 +215,6 @@ function DiscussionExperienceModal({
     });
   }, []);
 
-  if (isSelectingSources) {
-    return null;
-  }
-
   const unresolvedMessage = lifecycle.details?.messages.some(
     (message) =>
       message.role === 'user' &&
@@ -218,6 +243,90 @@ function DiscussionExperienceModal({
     lifecycle.details,
     inspectedContextId,
   );
+  const isExtractionFlowActive =
+    extraction.state.status !== 'idle' &&
+    extraction.state.status !== 'resolved' &&
+    extraction.state.status !== 'discarded';
+  const canStartExtraction =
+    !isExtractionFlowActive &&
+    hasEligibleKnowledgeExtractionSource(lifecycle.details);
+  const startExtraction = useCallback(
+    (
+      source: DiscussionKnowledgeSource,
+      trigger: HTMLButtonElement,
+    ) => {
+      const details = lifecycle.details;
+
+      if (
+        !details ||
+        details.id !== source.discussionId ||
+        !hasEligibleKnowledgeExtractionSource(details)
+      ) {
+        return;
+      }
+
+      if (
+        source.messageId &&
+        !details.messages.some(
+          (message) =>
+            message.id === source.messageId &&
+            message.status === 'completed' &&
+            message.content.trim().length > 0,
+        )
+      ) {
+        return;
+      }
+
+      extractionTriggerRef.current = { element: trigger, source };
+      setInspectedContextId(null);
+      extraction.start(source.messageId);
+      onExtractKnowledge?.(source);
+    },
+    [extraction, lifecycle.details, onExtractKnowledge],
+  );
+  const cancelExtraction = useCallback(async () => {
+    await extraction.discard();
+    extraction.reset();
+
+    queueMicrotask(() => {
+      const launch = extractionTriggerRef.current;
+
+      if (!launch) {
+        return;
+      }
+
+      if (launch.element.isConnected) {
+        launch.element.focus();
+        return;
+      }
+
+      const restoredMessageTrigger = launch.source.messageId
+        ? Array.from(
+            document.querySelectorAll<HTMLButtonElement>(
+              '[data-knowledge-extraction-entry="message"]',
+            ),
+          ).find(
+            (candidate) =>
+              candidate.dataset.knowledgeExtractionMessageId ===
+              launch.source.messageId,
+          )
+        : null;
+
+      restoredMessageTrigger?.focus();
+    });
+  }, [extraction]);
+  const minimize = useCallback(() => {
+    if (isExtractionFlowActive) {
+      void extraction.discard();
+    }
+
+    (onMinimize ?? controller.minimize)();
+  }, [
+    controller.minimize,
+    extraction,
+    isExtractionFlowActive,
+    onMinimize,
+  ]);
   const submit = () => {
     if (
       isDraft &&
@@ -235,19 +344,37 @@ function DiscussionExperienceModal({
     );
   };
 
+  if (isSelectingSources) {
+    return null;
+  }
+
   return (
     <DiscussionModal
       actionsSlot={
         discussionId ? (
           <DiscussionKnowledgeAction
-            onExtract={onExtractKnowledge}
+            disabled={!canStartExtraction}
+            disabledReason={
+              isExtractionFlowActive
+                ? 'Finish or cancel the current extraction first'
+                : 'Complete a message or add non-empty frozen context first'
+            }
+            onExtract={startExtraction}
             source={{ discussionId }}
             variant="header"
           />
         ) : undefined
       }
       composerSlot={
-        isChoosingContext ? (
+        isExtractionFlowActive && lifecycle.details ? (
+          <KnowledgeExtractionSourceActions
+            controller={extraction}
+            discussion={lifecycle.details}
+            onCancel={() => {
+              void cancelExtraction();
+            }}
+          />
+        ) : isChoosingContext ? (
           <></>
         ) : (
           <DiscussionComposer
@@ -271,7 +398,9 @@ function DiscussionExperienceModal({
       }
       isObscured={isObscured}
       contextSlot={
-        discussionId && contextBadges.length > 0 ? (
+        !isExtractionFlowActive &&
+        discussionId &&
+        contextBadges.length > 0 ? (
           <DiscussionContextBadges
             badges={contextBadges}
             discussionId={discussionId}
@@ -280,7 +409,12 @@ function DiscussionExperienceModal({
         ) : undefined
       }
       messagesSlot={
-        isChoosingContext && contextSelection ? (
+        isExtractionFlowActive && lifecycle.details ? (
+          <KnowledgeExtractionSourceSelection
+            controller={extraction}
+            discussion={lifecycle.details}
+          />
+        ) : isChoosingContext && contextSelection ? (
           <DiscussionContextSelection
             canSelectBubbles={canSelectBubbleContext}
             canSelectDocuments={canSelectDocumentContext}
@@ -294,7 +428,9 @@ function DiscussionExperienceModal({
             details={lifecycle.details}
             loadError={lifecycle.loadError}
             loadStatus={lifecycle.loadStatus}
-            onExtractKnowledge={onExtractKnowledge}
+            onExtractKnowledge={
+              canStartExtraction ? startExtraction : undefined
+            }
             onRetry={lifecycle.retryFailedTurn}
             pendingTurn={lifecycle.pendingTurn}
           />
@@ -313,7 +449,7 @@ function DiscussionExperienceModal({
         inspectedContextItem ? closeContextInspector : undefined
       }
       onDraftPromptChange={controller.updateDraftPrompt}
-      onMinimize={onMinimize ?? controller.minimize}
+      onMinimize={minimize}
       visibleDiscussion={presentedDiscussion}
     />
   );

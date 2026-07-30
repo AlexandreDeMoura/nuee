@@ -23,6 +23,7 @@ import {
   type DiscussionLifecycleRequests,
   type DiscussionKnowledgeSource,
 } from '../src/discussions';
+import type { KnowledgeExtractionRequests } from '../src/knowledge-extraction';
 
 const projectId = 'project-1';
 const projectDescription = 'A frozen launch description.';
@@ -92,12 +93,16 @@ function details(
 
 function Harness({
   analyticsClient,
+  createExtractionAttemptId,
+  extractionRequests,
   onDiscussionChanged,
   onExtractKnowledge,
   onInspectContext,
   requests,
 }: {
   analyticsClient?: AnalyticsClient;
+  createExtractionAttemptId?: () => string;
+  extractionRequests?: KnowledgeExtractionRequests;
   onDiscussionChanged?: (discussion: DiscussionDetails) => void;
   onExtractKnowledge?: (source: DiscussionKnowledgeSource) => void;
   onInspectContext?: (inspection: DiscussionContextInspection) => void;
@@ -137,6 +142,8 @@ function Harness({
       <DiscussionExperience
         analyticsClient={analyticsClient}
         controller={controller}
+        createExtractionAttemptId={createExtractionAttemptId}
+        extractionRequests={extractionRequests}
         onDiscussionChanged={onDiscussionChanged}
         onExtractKnowledge={onExtractKnowledge}
         onInspectContext={onInspectContext}
@@ -153,6 +160,471 @@ afterEach(() => {
 });
 
 describe('DiscussionExperience', () => {
+  it('selects mixed non-consecutive messages and frozen snapshots from a header-launched flow', async () => {
+    const create = vi.fn<
+      NonNullable<KnowledgeExtractionRequests['create']>
+    >(
+      () => new Promise<never>(() => undefined),
+    );
+    const extendedDetails = details({
+      messages: [
+        ...details().messages,
+        {
+          id: 'message-user-2',
+          discussion_id: 'discussion-1',
+          role: 'user',
+          content: 'What uncertainty remains?',
+          created_at: '2026-07-28T08:00:01.000Z',
+          status: 'completed',
+          request_id: 'request-2',
+        },
+        {
+          id: 'message-assistant-2',
+          discussion_id: 'discussion-1',
+          role: 'assistant',
+          content: 'The approval date is still uncertain.',
+          created_at: '2026-07-28T08:00:01.001Z',
+          status: 'completed',
+          request_id: null,
+        },
+      ],
+    });
+
+    render(
+      <Harness
+        createExtractionAttemptId={() => 'extraction-attempt-1'}
+        extractionRequests={{ create }}
+        requests={{ get: async () => extendedDetails }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Open first' }));
+
+    const headerAction = await screen.findByRole('button', {
+      name: 'Extract knowledge from discussion',
+    });
+    fireEvent.click(headerAction);
+
+    expect(
+      screen.getByRole('heading', { name: 'Choose source material' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('group', { name: 'Individual message sources' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('group', { name: 'Frozen context sources' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(
+        'These are the stored copies attached to this discussion, not current live project content.',
+      ),
+    ).toBeTruthy();
+
+    const generate = screen.getByRole('button', {
+      name: 'Generate proposal',
+    }) as HTMLButtonElement;
+    expect(generate.disabled).toBe(true);
+
+    const messageSources = Array.from(
+      document.querySelectorAll<HTMLButtonElement>(
+        '[data-extraction-source-kind="message"]',
+      ),
+    );
+    expect(messageSources).toHaveLength(4);
+    expect(
+      messageSources.every(
+        (source) => source.getAttribute('aria-pressed') === 'false',
+      ),
+    ).toBe(true);
+
+    fireEvent.click(messageSources[0]);
+    fireEvent.click(messageSources[3]);
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Select frozen context: Project description',
+      }),
+    );
+
+    expect(messageSources[0].getAttribute('aria-pressed')).toBe('true');
+    expect(messageSources[1].getAttribute('aria-pressed')).toBe('false');
+    expect(messageSources[2].getAttribute('aria-pressed')).toBe('false');
+    expect(messageSources[3].getAttribute('aria-pressed')).toBe('true');
+    expect(generate.disabled).toBe(false);
+
+    fireEvent.click(generate);
+
+    expect(create).toHaveBeenCalledWith(
+      projectId,
+      'discussion-1',
+      {
+        frozen_context_item_ids: ['context-project-1'],
+        idempotency_key: 'extraction-attempt-1',
+        message_selection: {
+          kind: 'selected',
+          message_ids: ['message-user-1', 'message-assistant-2'],
+        },
+      },
+      expect.any(AbortSignal),
+    );
+    expect(
+      (
+        screen.getByRole('button', {
+          name: 'Generating proposal…',
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+  });
+
+  it('preselects only the assistant response entry point and allows deselection', async () => {
+    render(
+      <Harness
+        requests={{ get: async () => details() }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Open first' }));
+    const responseAction = await screen.findByRole('button', {
+      name: 'Extract knowledge from this response',
+    });
+    fireEvent.click(responseAction);
+
+    const userSource = document.querySelector<HTMLButtonElement>(
+      '[data-extraction-source-id="message-user-1"]',
+    );
+    const assistantSource = document.querySelector<HTMLButtonElement>(
+      '[data-extraction-source-id="message-assistant-1"]',
+    );
+    const frozenSource = screen.getByRole('button', {
+      name: 'Select frozen context: Project description',
+    });
+    const generate = screen.getByRole('button', {
+      name: 'Generate proposal',
+    }) as HTMLButtonElement;
+
+    expect(userSource?.getAttribute('aria-pressed')).toBe('false');
+    expect(assistantSource?.getAttribute('aria-pressed')).toBe('true');
+    expect(frozenSource.getAttribute('aria-pressed')).toBe('false');
+    expect(generate.disabled).toBe(false);
+    expect(document.activeElement).toBe(assistantSource);
+
+    fireEvent.click(assistantSource!);
+    expect(assistantSource?.getAttribute('aria-pressed')).toBe('false');
+    expect(generate.disabled).toBe(true);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    await waitFor(() => {
+      const restoredAction = screen.getByRole('button', {
+        name: 'Extract knowledge from this response',
+      });
+
+      expect(document.activeElement).toBe(restoredAction);
+      expect(restoredAction).not.toBe(responseAction);
+    });
+  });
+
+  it('submits whole-discussion scope without expanding it into client message identifiers', async () => {
+    const create = vi.fn<
+      NonNullable<KnowledgeExtractionRequests['create']>
+    >(
+      () => new Promise<never>(() => undefined),
+    );
+
+    render(
+      <Harness
+        createExtractionAttemptId={() => 'whole-discussion-attempt'}
+        extractionRequests={{ create }}
+        requests={{ get: async () => details() }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Open first' }));
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Extract knowledge from discussion',
+      }),
+    );
+
+    const wholeDiscussion = screen.getByRole('button', {
+      name: 'Select complete discussion for extraction',
+    });
+    fireEvent.click(wholeDiscussion);
+    expect(wholeDiscussion.getAttribute('aria-pressed')).toBe('true');
+    expect(
+      screen.getByText(
+        'Complete discussion (2 messages) selected.',
+      ),
+    ).toBeTruthy();
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Generate proposal' }),
+    );
+
+    expect(create).toHaveBeenCalledWith(
+      projectId,
+      'discussion-1',
+      {
+        frozen_context_item_ids: [],
+        idempotency_key: 'whole-discussion-attempt',
+        message_selection: { kind: 'whole_discussion' },
+      },
+      expect.any(AbortSignal),
+    );
+  });
+
+  it('keeps a failed generation selection retryable with the same attempt identity', async () => {
+    const create = vi
+      .fn()
+      .mockRejectedValueOnce(
+        new ApiError(503, {
+          code: 'KNOWLEDGE_EXTRACTION_GENERATION_FAILED',
+          message: 'The extraction model is temporarily unavailable.',
+        }),
+      )
+      .mockImplementationOnce(
+        () => new Promise<never>(() => undefined),
+      );
+
+    render(
+      <Harness
+        createExtractionAttemptId={() => 'retryable-attempt'}
+        extractionRequests={{ create }}
+        requests={{ get: async () => details() }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Open first' }));
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Extract knowledge from this response',
+      }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Generate proposal' }),
+    );
+
+    expect(
+      await screen.findByText(
+        'The extraction model is temporarily unavailable.',
+      ),
+    ).toBeTruthy();
+    const selectedAssistant = document.querySelector<HTMLButtonElement>(
+      '[data-extraction-source-id="message-assistant-1"]',
+    );
+    expect(selectedAssistant?.getAttribute('aria-pressed')).toBe('true');
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Retry generation' }),
+    );
+
+    expect(create).toHaveBeenCalledTimes(2);
+    const firstInput = create.mock.calls[0]?.[2];
+    const retryInput = create.mock.calls[1]?.[2];
+    expect(retryInput).toEqual(firstInput);
+    expect(firstInput.idempotency_key).toBe('retryable-attempt');
+  });
+
+  it('identifies and focuses a source rejected during server-side resolution', async () => {
+    const create = vi.fn().mockRejectedValue(
+      new ApiError(422, {
+        code: 'KNOWLEDGE_EXTRACTION_SOURCE_INVALID',
+        message: 'The selected response is no longer available.',
+        source_errors: [
+          {
+            reason: 'missing',
+            source_id: 'message-assistant-1',
+            source_kind: 'message',
+          },
+        ],
+      }),
+    );
+
+    render(
+      <Harness
+        createExtractionAttemptId={() => 'invalid-source-attempt'}
+        extractionRequests={{ create }}
+        requests={{ get: async () => details() }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Open first' }));
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Extract knowledge from this response',
+      }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Generate proposal' }),
+    );
+
+    expect(
+      await screen.findByText(
+        'The selected response is no longer available.',
+      ),
+    ).toBeTruthy();
+    const affectedSource = document.querySelector<HTMLButtonElement>(
+      '[data-extraction-source-id="message-assistant-1"]',
+    );
+    expect(affectedSource?.getAttribute('aria-invalid')).toBe('true');
+    expect(affectedSource?.textContent).toContain(
+      'This source no longer exists.',
+    );
+    expect(document.activeElement).toBe(affectedSource);
+    expect(
+      (
+        screen.getByRole('button', {
+          name: 'Generate proposal',
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+
+    fireEvent.click(affectedSource!);
+    expect(
+      (
+        screen.getByRole('button', {
+          name: 'Generate proposal',
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+  });
+
+  it('does not offer pending, failed, or empty sources for extraction', async () => {
+    const unavailable = details({
+      frozen_context: {
+        version: 1,
+        items: [
+          {
+            id: 'context-project-1',
+            source_kind: 'project_description',
+            source_id: projectId,
+            source_title: 'Project description',
+            frozen_content: '',
+            created_at: '2026-07-28T08:00:00.000Z',
+            display_order: 0,
+          },
+        ],
+      },
+      messages: [
+        {
+          id: 'message-pending',
+          discussion_id: 'discussion-1',
+          role: 'user',
+          content: 'Pending user content',
+          created_at: '2026-07-28T08:00:00.000Z',
+          status: 'pending',
+          request_id: 'request-pending',
+        },
+        {
+          id: 'message-failed',
+          discussion_id: 'discussion-1',
+          role: 'user',
+          content: 'Failed user content',
+          created_at: '2026-07-28T08:00:00.001Z',
+          status: 'failed',
+          request_id: 'request-failed',
+        },
+      ],
+    });
+
+    render(
+      <Harness requests={{ get: async () => unavailable }} />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Open first' }));
+
+    const headerAction = await screen.findByRole('button', {
+      name: 'Extract knowledge from discussion',
+    });
+    expect((headerAction as HTMLButtonElement).disabled).toBe(true);
+    expect(headerAction.getAttribute('title')).toBe(
+      'Complete a message or add non-empty frozen context first',
+    );
+    expect(
+      screen.queryByRole('button', {
+        name: 'Extract knowledge from this response',
+      }),
+    ).toBeNull();
+    expect(
+      document.querySelector('[data-extraction-source-kind]'),
+    ).toBeNull();
+  });
+
+  it('does not expose an optimistic pending turn as a selectable source', async () => {
+    const send = vi.fn(
+      () => new Promise<DiscussionDetails>(() => undefined),
+    );
+
+    render(
+      <Harness
+        requests={{
+          get: async () => details(),
+          send,
+        }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Open first' }));
+    fireEvent.change(
+      await screen.findByRole('textbox', {
+        name: 'Discussion message',
+      }),
+      {
+        target: { value: 'An optimistic message still being persisted' },
+      },
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Send message' }),
+    );
+    expect(
+      screen.getAllByText('An optimistic message still being persisted'),
+    ).toHaveLength(2);
+
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Extract knowledge from this response',
+      }),
+    );
+
+    expect(
+      screen.queryByText('An optimistic message still being persisted'),
+    ).toBeNull();
+    expect(
+      document.querySelectorAll(
+        '[data-extraction-source-kind="message"]',
+      ),
+    ).toHaveLength(2);
+    expect(
+      document.querySelector(
+        '[data-extraction-source-id^="optimistic:"]',
+      ),
+    ).toBeNull();
+  });
+
+  it('discards local source selection when minimized and offers a fresh flow after reopening', async () => {
+    render(<Harness requests={{ get: async () => details() }} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Open first' }));
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Extract knowledge from this response',
+      }),
+    );
+
+    expect(
+      screen.getByRole('heading', { name: 'Choose source material' }),
+    ).toBeTruthy();
+    expect(
+      document
+        .querySelector('[data-extraction-source-id="message-assistant-1"]')
+        ?.getAttribute('aria-pressed'),
+    ).toBe('true');
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Minimize discussion' }),
+    );
+    expect(screen.queryByRole('dialog')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open first' }));
+    const headerAction = await screen.findByRole('button', {
+      name: 'Extract knowledge from discussion',
+    });
+    expect((headerAction as HTMLButtonElement).disabled).toBe(false);
+    expect(
+      screen.queryByRole('heading', { name: 'Choose source material' }),
+    ).toBeNull();
+  });
+
   it('generates a placeholder title without blocking the discussion and publishes the update', async () => {
     const generated = deferred<DiscussionDetails>();
     const generateTitle = vi.fn(() => generated.promise);
@@ -337,10 +809,13 @@ describe('DiscussionExperience', () => {
       screen.queryByRole('region', { name: 'Launch risks' }),
     ).toBeNull();
 
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: 'Extract knowledge from discussion',
-      }),
+    const headerExtractionAction = screen.getByRole('button', {
+      name: 'Extract knowledge from discussion',
+    });
+    fireEvent.click(headerExtractionAction);
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    await waitFor(() =>
+      expect(document.activeElement).toBe(headerExtractionAction),
     );
     fireEvent.click(
       screen.getByRole('button', {

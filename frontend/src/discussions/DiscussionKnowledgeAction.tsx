@@ -5,8 +5,15 @@ export interface DiscussionKnowledgeSource {
   messageId?: string;
 }
 
+export type DiscussionKnowledgeActionHandler = (
+  source: DiscussionKnowledgeSource,
+  trigger: HTMLButtonElement,
+) => void;
+
 interface DiscussionKnowledgeActionProps {
-  onExtract?: (source: DiscussionKnowledgeSource) => void;
+  disabled?: boolean;
+  disabledReason?: string;
+  onExtract?: DiscussionKnowledgeActionHandler;
   source: DiscussionKnowledgeSource;
   variant: 'header' | 'message';
 }
@@ -15,11 +22,14 @@ const focusRing =
   'focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/25';
 
 export function DiscussionKnowledgeAction({
+  disabled = false,
+  disabledReason,
   onExtract,
   source,
   variant,
 }: DiscussionKnowledgeActionProps) {
   const isHeader = variant === 'header';
+  const isDisabled = disabled || !onExtract;
 
   return (
     <button
@@ -34,13 +44,15 @@ export function DiscussionKnowledgeAction({
           ? 'Extract knowledge from this response'
           : 'Extract knowledge from discussion'
       }
-      disabled={!onExtract}
+      data-knowledge-extraction-entry={variant}
+      data-knowledge-extraction-message-id={source.messageId}
+      disabled={isDisabled}
       title={
-        onExtract
-          ? 'Extract knowledge'
-          : 'Knowledge extraction is not available yet'
+        isDisabled
+          ? (disabledReason ?? 'Knowledge extraction is not available')
+          : 'Extract knowledge'
       }
-      onClick={() => onExtract?.(source)}
+      onClick={(event) => onExtract?.(source, event.currentTarget)}
     >
       <Sparkles
         className={isHeader ? 'size-3.5' : 'size-3.25'}

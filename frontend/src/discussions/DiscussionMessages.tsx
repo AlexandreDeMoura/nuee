@@ -2,7 +2,7 @@ import { AlertCircle, LoaderCircle, MessageSquare } from 'lucide-react';
 import type { DiscussionDetails, DiscussionMessage } from '../api';
 import {
   DiscussionKnowledgeAction,
-  type DiscussionKnowledgeSource,
+  type DiscussionKnowledgeActionHandler,
 } from './DiscussionKnowledgeAction';
 import { RichResponse } from './RichResponse';
 import type { PendingDiscussionTurn } from './useDiscussionLifecycle';
@@ -11,7 +11,7 @@ interface DiscussionMessagesProps {
   details: DiscussionDetails | null;
   loadError: string | null;
   loadStatus: 'draft' | 'loading' | 'ready' | 'error';
-  onExtractKnowledge?: (source: DiscussionKnowledgeSource) => void;
+  onExtractKnowledge?: DiscussionKnowledgeActionHandler;
   onRetry: (turn: PendingDiscussionTurn) => void;
   pendingTurn: PendingDiscussionTurn | null;
 }
@@ -90,7 +90,7 @@ function Message({
   onExtractKnowledge,
 }: {
   message: DiscussionMessage;
-  onExtractKnowledge?: (source: DiscussionKnowledgeSource) => void;
+  onExtractKnowledge?: DiscussionKnowledgeActionHandler;
 }) {
   const isUser = message.role === 'user';
 

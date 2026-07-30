@@ -74,6 +74,7 @@ import {
   type DocumentMultiSelection,
   type DocumentMultiSelectionController,
 } from '../documents';
+import type { KnowledgeExtractionRequests } from '../knowledge-extraction';
 import {
   ProjectDescriptionEditor,
   type ProjectDescriptionSaveStatus,
@@ -149,6 +150,7 @@ export interface ProjectWorkspaceProps {
   emptyActionHandlers?: WorkspaceEmptyActionHandlers;
   discussionLifecycleRequests?: DiscussionLifecycleRequests;
   discussionPanelRequests?: ProjectDiscussionRequests;
+  extractionRequests?: KnowledgeExtractionRequests;
   onExtractDiscussionKnowledge?: (source: DiscussionKnowledgeSource) => void;
   onInspectDiscussionContext?: (
     inspection: DiscussionContextInspection,
@@ -608,6 +610,7 @@ export function ProjectWorkspace({
   emptyActionHandlers,
   discussionLifecycleRequests,
   discussionPanelRequests,
+  extractionRequests,
   onExtractDiscussionKnowledge,
   onInspectDiscussionContext,
   onDiscussionDraftSubmit,
@@ -1268,6 +1271,7 @@ export function ProjectWorkspace({
                 }
                 contextSelection={discussionContextSelection}
                 controller={discussionVisibility}
+                extractionRequests={extractionRequests}
                 isObscured={discussionPendingDeletion !== null}
                 onExtractKnowledge={onExtractDiscussionKnowledge}
                 onInspectContext={onInspectDiscussionContext}
