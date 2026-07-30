@@ -242,8 +242,25 @@ export type ResolveKnowledgeExtractionInput =
       proposal: KnowledgeExtractionProposal;
     }
   | {
+      kind: 'update_bubble';
+      proposal: KnowledgeExtractionProposal;
+      target_bubble_id: string;
+      expected_updated_at: string;
+    }
+  | {
       kind: 'reject';
     };
+
+export type KnowledgeExtractionTargetPreview = Pick<
+  Bubble,
+  'id' | 'title' | 'summary' | 'content' | 'updated_at'
+>;
+
+export interface KnowledgeExtractionTargetChangedError {
+  code: 'KNOWLEDGE_EXTRACTION_TARGET_CHANGED';
+  message: string;
+  current_target: KnowledgeExtractionTargetPreview;
+}
 
 export type KnowledgeExtractionResolutionResponse = {
   id: string;
@@ -253,6 +270,10 @@ export type KnowledgeExtractionResolutionResponse = {
   resolution:
     | {
         kind: 'new_bubble';
+        bubble: Bubble;
+      }
+    | {
+        kind: 'update_bubble';
         bubble: Bubble;
       }
     | {

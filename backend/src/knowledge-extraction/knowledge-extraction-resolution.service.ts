@@ -11,6 +11,8 @@ import { createHash } from 'node:crypto';
 import type {
   Bubble,
   KnowledgeExtractionResolutionResponse,
+  KnowledgeExtractionTargetChangedError,
+  KnowledgeExtractionTargetPreview,
 } from '@nuee/shared-types';
 import { BubblePlacementService } from '../bubbles/bubble-placement.service';
 import {
@@ -38,6 +40,16 @@ type NormalizedResolutionInput =
         summary: string | null;
         content: string;
       };
+    }
+  | {
+      kind: 'update_bubble';
+      proposal: {
+        title: string;
+        summary: string | null;
+        content: string;
+      };
+      target_bubble_id: string;
+      expected_updated_at: string;
     }
   | {
       kind: 'reject';
@@ -122,17 +134,12 @@ export class KnowledgeExtractionResolutionService {
           return this.toRejectedResolutionResponse(resolved);
         }
 
-        const position = this.bubblePlacement.place(projectId, {
-          strategy: 'cluster',
-        });
-        const bubbleResult = this.bubbleWriter.createFromDiscussionExtraction({
+        const provenance = {
           project_id: projectId,
           extraction_id: extractionId,
           title: resolution.proposal.title,
           summary: resolution.proposal.summary,
           content: resolution.proposal.content,
-          position_x: position.position_x,
-          position_y: position.position_y,
           source_discussion_id: discussionId,
           source_discussion_title: attempt.source_snapshot.discussion_title,
           source_message_ids: attempt.source_snapshot.messages.map(
@@ -142,10 +149,62 @@ export class KnowledgeExtractionResolutionService {
             attempt.source_snapshot.frozen_context_items.map(
               ({ source_id }) => source_id,
             ),
+        };
+
+        if (resolution.kind === 'new_bubble') {
+          const position = this.bubblePlacement.place(projectId, {
+            strategy: 'cluster',
+          });
+          const bubbleResult = this.bubbleWriter.createFromDiscussionExtraction(
+            {
+              ...provenance,
+              position_x: position.position_x,
+              position_y: position.position_y,
+            },
+          );
+
+          if (bubbleResult.status === 'extraction_conflict') {
+            throw this.resolutionConflict();
+          }
+
+          const resolved = this.extractions.markResolved(
+            projectId,
+            discussionId,
+            extractionId,
+            {
+              fingerprint: resolutionFingerprint,
+              kind: 'new_bubble',
+              resulting_bubble_id: bubbleResult.bubble.id,
+              updated_at: updatedAt,
+            },
+          );
+
+          if (!resolved) {
+            throw new Error('The new-bubble resolution was not persisted.');
+          }
+
+          return this.toNewBubbleResolutionResponse(
+            resolved,
+            bubbleResult.bubble,
+          );
+        }
+
+        const bubbleResult = this.bubbleWriter.updateFromDiscussionExtraction({
+          ...provenance,
+          bubble_id: resolution.target_bubble_id,
+          expected_updated_at: resolution.expected_updated_at,
         });
 
         if (bubbleResult.status === 'extraction_conflict') {
           throw this.resolutionConflict();
+        }
+
+        if (bubbleResult.status === 'target_missing') {
+          throw this.targetNotFound(projectId, resolution.target_bubble_id);
+        }
+
+        if (bubbleResult.status === 'target_changed') {
+          throw this.targetChanged(bubbleResult.bubble);
         }
 
         const resolved = this.extractions.markResolved(
@@ -154,17 +213,17 @@ export class KnowledgeExtractionResolutionService {
           extractionId,
           {
             fingerprint: resolutionFingerprint,
-            kind: 'new_bubble',
+            kind: 'update_bubble',
             resulting_bubble_id: bubbleResult.bubble.id,
             updated_at: updatedAt,
           },
         );
 
         if (!resolved) {
-          throw new Error('The new-bubble resolution was not persisted.');
+          throw new Error('The bubble-update resolution was not persisted.');
         }
 
-        return this.toNewBubbleResolutionResponse(
+        return this.toUpdateBubbleResolutionResponse(
           resolved,
           bubbleResult.bubble,
         );
@@ -250,7 +309,9 @@ export class KnowledgeExtractionResolutionService {
       throw new Error('The resolved extraction bubble is unavailable.');
     }
 
-    return this.toNewBubbleResolutionResponse(attempt, bubble);
+    return resolution.kind === 'new_bubble'
+      ? this.toNewBubbleResolutionResponse(attempt, bubble)
+      : this.toUpdateBubbleResolutionResponse(attempt, bubble);
   }
 
   private toNewBubbleResolutionResponse(
@@ -283,6 +344,22 @@ export class KnowledgeExtractionResolutionService {
     };
   }
 
+  private toUpdateBubbleResolutionResponse(
+    attempt: KnowledgeExtractionAttempt,
+    bubble: Bubble,
+  ): KnowledgeExtractionResolutionResponse {
+    return {
+      id: attempt.id,
+      project_id: attempt.project_id,
+      discussion_id: attempt.discussion_id,
+      status: 'resolved',
+      resolution: {
+        kind: 'update_bubble',
+        bubble,
+      },
+    };
+  }
+
   private validateResolutionInput(input: unknown): NormalizedResolutionInput {
     const fieldErrors: Record<string, string> = {};
 
@@ -302,13 +379,24 @@ export class KnowledgeExtractionResolutionService {
       return { kind: 'reject' };
     }
 
-    if (input.kind !== 'new_bubble') {
-      this.rejectUnknownFields(input, ['kind', 'proposal'], fieldErrors);
-      fieldErrors.kind = 'Resolution kind must be "new_bubble" or "reject".';
+    if (input.kind !== 'new_bubble' && input.kind !== 'update_bubble') {
+      this.rejectUnknownFields(
+        input,
+        ['kind', 'proposal', 'target_bubble_id', 'expected_updated_at'],
+        fieldErrors,
+      );
+      fieldErrors.kind =
+        'Resolution kind must be "new_bubble", "update_bubble", or "reject".';
       throw this.resolutionValidationFailed(fieldErrors);
     }
 
-    this.rejectUnknownFields(input, ['kind', 'proposal'], fieldErrors);
+    this.rejectUnknownFields(
+      input,
+      input.kind === 'update_bubble'
+        ? ['kind', 'proposal', 'target_bubble_id', 'expected_updated_at']
+        : ['kind', 'proposal'],
+      fieldErrors,
+    );
 
     if (!this.isRecord(input.proposal)) {
       fieldErrors.proposal = 'Reviewed proposal must be an object.';
@@ -337,6 +425,24 @@ export class KnowledgeExtractionResolutionService {
       KNOWLEDGE_PROPOSAL_CONTENT_MAX_LENGTH,
       fieldErrors,
     );
+    const targetBubbleId =
+      input.kind === 'update_bubble'
+        ? this.reviewedIdentifier(
+            input.target_bubble_id,
+            'target_bubble_id',
+            'Target bubble identifier',
+            fieldErrors,
+          )
+        : undefined;
+    const expectedUpdatedAt =
+      input.kind === 'update_bubble'
+        ? this.reviewedIdentifier(
+            input.expected_updated_at,
+            'expected_updated_at',
+            'Observed target update timestamp',
+            fieldErrors,
+          )
+        : undefined;
 
     if (Object.keys(fieldErrors).length > 0) {
       throw this.resolutionValidationFailed(fieldErrors);
@@ -348,13 +454,26 @@ export class KnowledgeExtractionResolutionService {
       );
     }
 
+    const reviewedProposal = { title, summary, content };
+
+    if (input.kind === 'new_bubble') {
+      return {
+        kind: 'new_bubble',
+        proposal: reviewedProposal,
+      };
+    }
+
+    if (targetBubbleId === undefined || expectedUpdatedAt === undefined) {
+      throw new Error(
+        'Validated bubble-update resolution is unexpectedly missing.',
+      );
+    }
+
     return {
-      kind: 'new_bubble',
-      proposal: {
-        title,
-        summary,
-        content,
-      },
+      kind: 'update_bubble',
+      proposal: reviewedProposal,
+      target_bubble_id: targetBubbleId,
+      expected_updated_at: expectedUpdatedAt,
     };
   }
 
@@ -401,6 +520,20 @@ export class KnowledgeExtractionResolutionService {
     return normalized.length === 0 ? null : normalized;
   }
 
+  private reviewedIdentifier(
+    value: unknown,
+    field: string,
+    label: string,
+    fieldErrors: Record<string, string>,
+  ): string | undefined {
+    if (typeof value !== 'string' || value.trim().length === 0) {
+      fieldErrors[field] = `${label} is required.`;
+      return undefined;
+    }
+
+    return value.trim();
+  }
+
   private resolutionFingerprint(resolution: NormalizedResolutionInput): string {
     return createHash('sha256')
       .update(JSON.stringify(resolution))
@@ -423,6 +556,34 @@ export class KnowledgeExtractionResolutionService {
       code: 'KNOWLEDGE_EXTRACTION_RESOLUTION_CONFLICT',
       message: 'This extraction attempt has already been resolved differently.',
     });
+  }
+
+  private targetNotFound(
+    projectId: string,
+    bubbleId: string,
+  ): NotFoundException {
+    return new NotFoundException({
+      code: 'KNOWLEDGE_EXTRACTION_TARGET_NOT_FOUND',
+      message: `Target bubble "${bubbleId}" was not found in project "${projectId}".`,
+    });
+  }
+
+  private targetChanged(bubble: Bubble): ConflictException {
+    const currentTarget: KnowledgeExtractionTargetPreview = {
+      id: bubble.id,
+      title: bubble.title,
+      summary: bubble.summary,
+      content: bubble.content,
+      updated_at: bubble.updated_at,
+    };
+    const response: KnowledgeExtractionTargetChangedError = {
+      code: 'KNOWLEDGE_EXTRACTION_TARGET_CHANGED',
+      message:
+        'The target bubble changed after it was selected. Review the current target before confirming again.',
+      current_target: currentTarget,
+    };
+
+    return new ConflictException(response);
   }
 
   private resolutionValidationFailed(

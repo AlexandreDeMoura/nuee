@@ -24,6 +24,7 @@ import type {
   PersistedDiscussionMessage,
   VersionedPersistedDiscussion,
 } from '../discussions/discussion.types';
+import { BubbleLinksService } from '../bubbles/bubble-links.service';
 import { SqliteDiscussionRepository } from '../discussions/sqlite-discussion.repository';
 import { ProjectsService } from '../projects/projects.service';
 import { SqliteProjectRepository } from '../projects/sqlite-project.repository';
@@ -37,6 +38,7 @@ describe('Knowledge extraction generation and resolution services', () => {
   let discussions: SqliteDiscussionRepository;
   let extractions: SqliteKnowledgeExtractionRepository;
   let bubbles: BubblesService;
+  let bubbleLinks: BubbleLinksService;
   let bubblePlacement: BubblePlacementService;
   let transactions: DatabaseTransaction;
   let resolutions: KnowledgeExtractionResolutionService;
@@ -55,6 +57,7 @@ describe('Knowledge extraction generation and resolution services', () => {
     extractions = new SqliteKnowledgeExtractionRepository(databaseProvider);
     const bubbleRepository = new SqliteBubbleRepository(databaseProvider);
     bubbles = new BubblesService(projects, bubbleRepository);
+    bubbleLinks = new BubbleLinksService(projects, bubbles, bubbleRepository);
     bubblePlacement = new BubblePlacementService(projects, bubbleRepository);
     transactions = new DatabaseTransaction(databaseProvider);
     resolutions = new KnowledgeExtractionResolutionService(
@@ -1220,6 +1223,368 @@ describe('Knowledge extraction generation and resolution services', () => {
     });
   });
 
+  it('atomically updates one target while preserving position, links, creation time, and frozen context', async () => {
+    const project = createProject('Updated knowledge');
+    const target = bubbles.create(project.id, {
+      title: 'Original target',
+      summary: 'Original summary.',
+      content: 'Original target content.',
+      position_x: 640,
+      position_y: -320,
+    });
+    const linkedBubble = bubbles.create(project.id, {
+      title: 'Linked neighbor',
+      content: 'Keep this manual relationship.',
+      position_x: 900,
+      position_y: -320,
+    });
+    const link = bubbleLinks.create(project.id, {
+      bubble_a_id: target.id,
+      bubble_b_id: linkedBubble.id,
+    });
+    const source = createDiscussion(project.id, 'discussion-update', {
+      extraContextItems: [
+        {
+          id: 'context-update-target',
+          source_kind: 'bubble',
+          source_id: target.id,
+          source_title: target.title,
+          frozen_content: target.content,
+          created_at: '2026-07-30T09:00:00.000Z',
+          display_order: 1,
+        },
+      ],
+    });
+    const frozenDiscussionBefore = discussions.findByProjectAndId(
+      project.id,
+      source.record.id,
+    );
+    const generated = await service.generateProposal(
+      project.id,
+      source.record.id,
+      {
+        idempotency_key: 'resolve-as-bubble-update',
+        message_selection: {
+          kind: 'selected',
+          message_ids: [source.firstAssistant.id],
+        },
+        frozen_context_item_ids: ['context-update-target'],
+      },
+    );
+    const resolutionInput = {
+      kind: 'update_bubble',
+      proposal: {
+        title: '  Reviewed replacement  ',
+        summary: '   ',
+        content: '  Replace only the editable knowledge fields.  ',
+      },
+      target_bubble_id: target.id,
+      expected_updated_at: target.updated_at,
+    };
+
+    const resolved = resolutions.resolveProposal(
+      project.id,
+      source.record.id,
+      generated.id,
+      resolutionInput,
+    );
+
+    expect(resolved).toMatchObject({
+      id: generated.id,
+      project_id: project.id,
+      discussion_id: source.record.id,
+      status: 'resolved',
+      resolution: {
+        kind: 'update_bubble',
+        bubble: {
+          id: target.id,
+          project_id: project.id,
+          title: 'Reviewed replacement',
+          summary: null,
+          content: 'Replace only the editable knowledge fields.',
+          position_x: target.position_x,
+          position_y: target.position_y,
+          created_at: target.created_at,
+          source_kind: 'discussion',
+          source_discussion_id: source.record.id,
+          source_discussion_title: source.record.title,
+          source_discussion_deleted_at: null,
+          source_message_ids: [source.firstAssistant.id],
+          source_context_item_ids: ['context-update-target'],
+        },
+      },
+    });
+
+    if (resolved.resolution.kind !== 'update_bubble') {
+      throw new Error('Expected a bubble-update resolution.');
+    }
+
+    expect(Date.parse(resolved.resolution.bubble.updated_at)).toBeGreaterThan(
+      Date.parse(target.updated_at),
+    );
+    expect(bubbleLinks.list(project.id)).toEqual([link]);
+    expect(
+      discussions.findByProjectAndId(project.id, source.record.id),
+    ).toEqual(frozenDiscussionBefore);
+    expect(
+      (
+        discussions.findByProjectAndId(project.id, source.record.id)
+          ?.frozen_context as { items: FrozenContextItem[] }
+      ).items[1],
+    ).toMatchObject({
+      source_id: target.id,
+      source_title: target.title,
+      frozen_content: target.content,
+    });
+    expect(
+      extractions.findByProjectDiscussionAndId(
+        project.id,
+        source.record.id,
+        generated.id,
+      ),
+    ).toMatchObject({
+      status: 'resolved',
+      resolution_kind: 'update_bubble',
+      resulting_bubble_id: target.id,
+    });
+
+    jest.setSystemTime(new Date('2026-07-30T13:00:00.000Z'));
+    expect(
+      resolutions.resolveProposal(
+        project.id,
+        source.record.id,
+        generated.id,
+        resolutionInput,
+      ),
+    ).toEqual(resolved);
+    expect(bubbles.get(project.id, target.id)).toEqual(
+      resolved.resolution.bubble,
+    );
+  });
+
+  it('returns a safe current-target preview after a concurrent edit and accepts a newly confirmed version', async () => {
+    const project = createProject('Concurrent target');
+    const target = bubbles.create(project.id, {
+      title: 'Selected target',
+      summary: 'Selected summary.',
+      content: 'Selected target content.',
+      position_x: 128,
+      position_y: 256,
+    });
+    const source = createDiscussion(project.id, 'discussion-target-conflict');
+    const generated = await service.generateProposal(
+      project.id,
+      source.record.id,
+      {
+        idempotency_key: 'resolve-after-target-conflict',
+        message_selection: {
+          kind: 'selected',
+          message_ids: [source.firstAssistant.id],
+        },
+        frozen_context_item_ids: [],
+      },
+    );
+    const concurrentTarget = bubbles.update(project.id, target.id, {
+      title: 'Concurrent edit',
+      summary: 'Review this current value.',
+      content: 'Another client changed this knowledge.',
+    });
+    const reviewedProposal = {
+      title: 'Confirmed extraction update',
+      summary: 'Apply only after reviewing the conflict.',
+      content: 'This proposal is explicitly confirmed against the new version.',
+    };
+
+    expect.assertions(7);
+
+    try {
+      resolutions.resolveProposal(project.id, source.record.id, generated.id, {
+        kind: 'update_bubble',
+        proposal: reviewedProposal,
+        target_bubble_id: target.id,
+        expected_updated_at: target.updated_at,
+      });
+    } catch (error) {
+      expect(error).toBeInstanceOf(ConflictException);
+      expect((error as ConflictException).getResponse()).toEqual({
+        code: 'KNOWLEDGE_EXTRACTION_TARGET_CHANGED',
+        message:
+          'The target bubble changed after it was selected. Review the current target before confirming again.',
+        current_target: {
+          id: concurrentTarget.id,
+          title: concurrentTarget.title,
+          summary: concurrentTarget.summary,
+          content: concurrentTarget.content,
+          updated_at: concurrentTarget.updated_at,
+        },
+      });
+    }
+
+    expect(bubbles.get(project.id, target.id)).toEqual(concurrentTarget);
+    expect(
+      extractions.findByProjectDiscussionAndId(
+        project.id,
+        source.record.id,
+        generated.id,
+      ),
+    ).toMatchObject({
+      status: 'ready',
+      resolution_kind: null,
+      resulting_bubble_id: null,
+    });
+
+    const resolved = resolutions.resolveProposal(
+      project.id,
+      source.record.id,
+      generated.id,
+      {
+        kind: 'update_bubble',
+        proposal: reviewedProposal,
+        target_bubble_id: target.id,
+        expected_updated_at: concurrentTarget.updated_at,
+      },
+    );
+
+    expect(resolved).toMatchObject({
+      resolution: {
+        kind: 'update_bubble',
+        bubble: {
+          id: target.id,
+          title: reviewedProposal.title,
+          summary: reviewedProposal.summary,
+          content: reviewedProposal.content,
+        },
+      },
+    });
+    expect(resolved.resolution).toHaveProperty(
+      'bubble.updated_at',
+      '2026-07-30T12:00:00.002Z',
+    );
+    expect(resolved.resolution).toHaveProperty(
+      'bubble.position_x',
+      target.position_x,
+    );
+  });
+
+  it('rejects missing, deleted, and cross-project update targets without resolving the proposal', async () => {
+    const project = createProject('Target owner');
+    const otherProject = createProject('Other target owner');
+    const source = createDiscussion(project.id, 'discussion-target-scope');
+    const crossProjectTarget = bubbles.create(otherProject.id, {
+      title: 'Private target',
+      content: 'This target belongs to another project.',
+    });
+    const deletedTarget = bubbles.create(project.id, {
+      title: 'Deleted target',
+      content: 'This target will become unavailable.',
+    });
+    bubbles.delete(project.id, deletedTarget.id);
+
+    for (const [suffix, targetBubbleId, expectedUpdatedAt] of [
+      ['missing', 'missing-target', '2026-07-30T12:00:00.000Z'],
+      ['deleted', deletedTarget.id, deletedTarget.updated_at],
+      ['cross-project', crossProjectTarget.id, crossProjectTarget.updated_at],
+    ] as const) {
+      const generated = await service.generateProposal(
+        project.id,
+        source.record.id,
+        {
+          idempotency_key: `resolve-${suffix}-target`,
+          message_selection: {
+            kind: 'selected',
+            message_ids: [source.firstAssistant.id],
+          },
+          frozen_context_item_ids: [],
+        },
+      );
+
+      try {
+        resolutions.resolveProposal(
+          project.id,
+          source.record.id,
+          generated.id,
+          {
+            kind: 'update_bubble',
+            proposal: generated.proposal,
+            target_bubble_id: targetBubbleId,
+            expected_updated_at: expectedUpdatedAt,
+          },
+        );
+        throw new Error('Expected the unavailable target to be rejected.');
+      } catch (error) {
+        expect(error).toBeInstanceOf(NotFoundException);
+        expect((error as NotFoundException).getResponse()).toEqual({
+          code: 'KNOWLEDGE_EXTRACTION_TARGET_NOT_FOUND',
+          message: `Target bubble "${targetBubbleId}" was not found in project "${project.id}".`,
+        });
+      }
+
+      expect(
+        extractions.findByProjectDiscussionAndId(
+          project.id,
+          source.record.id,
+          generated.id,
+        ),
+      ).toMatchObject({
+        status: 'ready',
+        resolution_kind: null,
+        resulting_bubble_id: null,
+      });
+    }
+
+    expect(bubbles.get(otherProject.id, crossProjectTarget.id)).toEqual(
+      crossProjectTarget,
+    );
+  });
+
+  it('rolls back updated content and provenance when final resolution persistence fails', async () => {
+    const project = createProject('Update rollback');
+    const target = bubbles.create(project.id, {
+      title: 'Stable target',
+      summary: 'Stable summary.',
+      content: 'Keep this content if the transaction fails.',
+      position_x: -150,
+      position_y: 75,
+    });
+    const source = createDiscussion(project.id, 'discussion-update-rollback');
+    const generated = await service.generateProposal(
+      project.id,
+      source.record.id,
+      {
+        idempotency_key: 'resolve-update-with-failed-persistence',
+        message_selection: {
+          kind: 'selected',
+          message_ids: [source.firstAssistant.id],
+        },
+        frozen_context_item_ids: [],
+      },
+    );
+    jest.spyOn(extractions, 'markResolved').mockImplementationOnce(() => {
+      throw new Error('Simulated attempt persistence failure.');
+    });
+
+    expect(() =>
+      resolutions.resolveProposal(project.id, source.record.id, generated.id, {
+        kind: 'update_bubble',
+        proposal: generated.proposal,
+        target_bubble_id: target.id,
+        expected_updated_at: target.updated_at,
+      }),
+    ).toThrow(ServiceUnavailableException);
+    expect(bubbles.get(project.id, target.id)).toEqual(target);
+    expect(
+      extractions.findByProjectDiscussionAndId(
+        project.id,
+        source.record.id,
+        generated.id,
+      ),
+    ).toMatchObject({
+      status: 'ready',
+      resolution_kind: null,
+      resulting_bubble_id: null,
+    });
+  });
+
   it('rejects or discards without creating bubbles or changing discussion activity', async () => {
     const project = createProject('No bubble resolutions');
     const source = createDiscussion(project.id, 'discussion-no-bubble');
@@ -1375,6 +1740,61 @@ describe('Knowledge extraction generation and resolution services', () => {
     ).toMatchObject({
       status: 'ready',
       proposal: generated.proposal,
+    });
+  });
+
+  it('requires one target identifier and its observed update timestamp', async () => {
+    const project = createProject('Update target validation');
+    const source = createDiscussion(
+      project.id,
+      'discussion-update-target-validation',
+    );
+    const generated = await service.generateProposal(
+      project.id,
+      source.record.id,
+      {
+        idempotency_key: 'invalid-update-target',
+        message_selection: {
+          kind: 'selected',
+          message_ids: [source.firstAssistant.id],
+        },
+        frozen_context_item_ids: [],
+      },
+    );
+
+    expect.assertions(4);
+
+    try {
+      resolutions.resolveProposal(project.id, source.record.id, generated.id, {
+        kind: 'update_bubble',
+        proposal: generated.proposal,
+        target_bubble_id: ['bubble-one', 'bubble-two'],
+        target_bubble_ids: ['bubble-one', 'bubble-two'],
+        expected_updated_at: ' ',
+      });
+    } catch (error) {
+      expect(error).toBeInstanceOf(BadRequestException);
+      expect((error as BadRequestException).getResponse()).toEqual({
+        code: 'KNOWLEDGE_EXTRACTION_RESOLUTION_VALIDATION_FAILED',
+        message: 'Knowledge extraction resolution is invalid.',
+        field_errors: {
+          target_bubble_ids: 'Unknown field.',
+          target_bubble_id: 'Target bubble identifier is required.',
+          expected_updated_at: 'Observed target update timestamp is required.',
+        },
+      });
+    }
+
+    expect(bubbles.list(project.id)).toEqual([]);
+    expect(
+      extractions.findByProjectDiscussionAndId(
+        project.id,
+        source.record.id,
+        generated.id,
+      ),
+    ).toMatchObject({
+      status: 'ready',
+      resolution_kind: null,
     });
   });
 

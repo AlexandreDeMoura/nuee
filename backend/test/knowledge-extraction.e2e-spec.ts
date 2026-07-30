@@ -344,4 +344,177 @@ describe('Knowledge extraction generation journey (e2e)', () => {
       .expect(200)
       .expect(discussionBefore);
   });
+
+  it('updates one current-project bubble only after confirming its latest observed version', async () => {
+    const projectResponse = await request(app!.getHttpServer())
+      .post('/projects')
+      .send({
+        title: 'Update resolution owner',
+        description: 'Extraction updates must not silently overwrite changes.',
+      })
+      .expect(201);
+    const project = projectResponse.body as Project;
+    const targetResponse = await request(app!.getHttpServer())
+      .post(`/projects/${project.id}/bubbles`)
+      .send({
+        title: 'Original target',
+        summary: 'Original summary.',
+        content: 'Original target content.',
+        position_x: 480,
+        position_y: -160,
+      })
+      .expect(201);
+    const target = targetResponse.body as Bubble;
+    const neighborResponse = await request(app!.getHttpServer())
+      .post(`/projects/${project.id}/bubbles`)
+      .send({
+        title: 'Linked neighbor',
+        content: 'The manual link must survive.',
+        position_x: 720,
+        position_y: -160,
+      })
+      .expect(201);
+    const neighbor = neighborResponse.body as Bubble;
+    const linkResponse = await request(app!.getHttpServer())
+      .post(`/projects/${project.id}/bubble-links`)
+      .send({
+        bubble_a_id: target.id,
+        bubble_b_id: neighbor.id,
+      })
+      .expect(201);
+    const discussionResponse = await request(app!.getHttpServer())
+      .post(`/projects/${project.id}/discussions`)
+      .send({
+        project_id: project.id,
+        first_prompt: 'How should this bubble be replaced?',
+        idempotency_key: 'create-update-resolution-source',
+        bubble_ids: [target.id],
+        document_ids: [],
+      })
+      .expect(201);
+    const discussion = discussionResponse.body as DiscussionDetails;
+    const frozenContext = discussion.frozen_context as FrozenContextV1;
+    const frozenTarget = frozenContext.items.find(
+      (item) => item.source_kind === 'bubble' && item.source_id === target.id,
+    );
+
+    expect(frozenTarget).toMatchObject({
+      source_title: target.title,
+      frozen_content: target.content,
+    });
+
+    const extractionRoute = `/projects/${project.id}/discussions/${discussion.id}/knowledge-extractions`;
+    const generatedResponse = await request(app!.getHttpServer())
+      .post(extractionRoute)
+      .send({
+        idempotency_key: 'resolve-existing-bubble',
+        message_selection: {
+          kind: 'selected',
+          message_ids: [discussion.messages[1].id],
+        },
+        frozen_context_item_ids: [frozenTarget!.id],
+      })
+      .expect(201);
+    const generated =
+      generatedResponse.body as KnowledgeExtractionProposalResponse;
+    const concurrentResponse = await request(app!.getHttpServer())
+      .patch(`/projects/${project.id}/bubbles/${target.id}`)
+      .send({
+        title: 'Concurrent target edit',
+        summary: 'This version must be reviewed.',
+        content: 'Another client changed the target after selection.',
+      })
+      .expect(200);
+    const concurrentTarget = concurrentResponse.body as Bubble;
+    const proposal = {
+      title: 'Reviewed extracted replacement',
+      summary: 'The final knowledge after explicit conflict review.',
+      content: 'Replace the target with this reviewed extraction proposal.',
+    };
+    const staleResolutionInput = {
+      kind: 'update_bubble',
+      proposal,
+      target_bubble_id: target.id,
+      expected_updated_at: target.updated_at,
+    };
+    const resolutionRoute = `${extractionRoute}/${generated.id}/resolution`;
+
+    await request(app!.getHttpServer())
+      .post(resolutionRoute)
+      .send(staleResolutionInput)
+      .expect(409)
+      .expect({
+        code: 'KNOWLEDGE_EXTRACTION_TARGET_CHANGED',
+        message:
+          'The target bubble changed after it was selected. Review the current target before confirming again.',
+        current_target: {
+          id: concurrentTarget.id,
+          title: concurrentTarget.title,
+          summary: concurrentTarget.summary,
+          content: concurrentTarget.content,
+          updated_at: concurrentTarget.updated_at,
+        },
+      });
+    await request(app!.getHttpServer())
+      .get(`/projects/${project.id}/bubbles/${target.id}`)
+      .expect(200)
+      .expect(concurrentTarget);
+
+    const confirmedResolutionInput = {
+      ...staleResolutionInput,
+      expected_updated_at: concurrentTarget.updated_at,
+    };
+    const resolvedResponse = await request(app!.getHttpServer())
+      .post(resolutionRoute)
+      .send(confirmedResolutionInput)
+      .expect(200);
+    const resolved =
+      resolvedResponse.body as KnowledgeExtractionResolutionResponse;
+
+    expect(resolved).toMatchObject({
+      id: generated.id,
+      project_id: project.id,
+      discussion_id: discussion.id,
+      status: 'resolved',
+      resolution: {
+        kind: 'update_bubble',
+        bubble: {
+          id: target.id,
+          project_id: project.id,
+          title: proposal.title,
+          summary: proposal.summary,
+          content: proposal.content,
+          position_x: target.position_x,
+          position_y: target.position_y,
+          created_at: target.created_at,
+          source_kind: 'discussion',
+          source_discussion_id: discussion.id,
+          source_discussion_title: discussion.title,
+          source_message_ids: [discussion.messages[1].id],
+          source_context_item_ids: [frozenTarget!.id],
+        },
+      },
+    });
+
+    if (resolved.resolution.kind !== 'update_bubble') {
+      throw new Error('Expected a bubble-update resolution.');
+    }
+
+    expect(Date.parse(resolved.resolution.bubble.updated_at)).toBeGreaterThan(
+      Date.parse(concurrentTarget.updated_at),
+    );
+    await request(app!.getHttpServer())
+      .post(resolutionRoute)
+      .send(confirmedResolutionInput)
+      .expect(200)
+      .expect(resolved);
+    await request(app!.getHttpServer())
+      .get(`/projects/${project.id}/bubble-links`)
+      .expect(200)
+      .expect([linkResponse.body]);
+    await request(app!.getHttpServer())
+      .get(`/projects/${project.id}/discussions/${discussion.id}`)
+      .expect(200)
+      .expect(discussion);
+  });
 });
