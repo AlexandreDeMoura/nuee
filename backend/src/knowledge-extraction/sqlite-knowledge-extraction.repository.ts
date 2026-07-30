@@ -244,6 +244,92 @@ export class SqliteKnowledgeExtractionRepository implements KnowledgeExtractionR
         );
   }
 
+  markResolved(
+    projectId: string,
+    discussionId: string,
+    extractionId: string,
+    resolution: {
+      fingerprint: string;
+      kind: KnowledgeExtractionResolutionKind;
+      resulting_bubble_id: string | null;
+      updated_at: string;
+    },
+  ): KnowledgeExtractionAttempt | undefined {
+    const result = this.database
+      .prepare(
+        `
+          UPDATE knowledge_extraction_attempts
+          SET
+            status = 'resolved',
+            resolution_fingerprint = ?,
+            resolution_kind = ?,
+            resulting_bubble_id = ?,
+            updated_at = ?
+          WHERE
+            project_id = ?
+            AND discussion_id = ?
+            AND id = ?
+            AND status = 'ready'
+            AND proposal IS NOT NULL
+            AND resolution_fingerprint IS NULL
+            AND resolution_kind IS NULL
+            AND resulting_bubble_id IS NULL
+        `,
+      )
+      .run(
+        resolution.fingerprint,
+        resolution.kind,
+        resolution.resulting_bubble_id,
+        resolution.updated_at,
+        projectId,
+        discussionId,
+        extractionId,
+      );
+
+    return result.changes === 0
+      ? undefined
+      : this.findByProjectDiscussionAndId(
+          projectId,
+          discussionId,
+          extractionId,
+        );
+  }
+
+  markDiscarded(
+    projectId: string,
+    discussionId: string,
+    extractionId: string,
+    updatedAt: string,
+  ): KnowledgeExtractionAttempt | undefined {
+    const result = this.database
+      .prepare(
+        `
+          UPDATE knowledge_extraction_attempts
+          SET
+            proposal = NULL,
+            status = 'discarded',
+            updated_at = ?
+          WHERE
+            project_id = ?
+            AND discussion_id = ?
+            AND id = ?
+            AND status IN ('generating', 'ready', 'failed')
+            AND resolution_fingerprint IS NULL
+            AND resolution_kind IS NULL
+            AND resulting_bubble_id IS NULL
+        `,
+      )
+      .run(updatedAt, projectId, discussionId, extractionId);
+
+    return result.changes === 0
+      ? undefined
+      : this.findByProjectDiscussionAndId(
+          projectId,
+          discussionId,
+          extractionId,
+        );
+  }
+
   private toAttempt(
     row: KnowledgeExtractionAttemptRow,
   ): KnowledgeExtractionAttempt {

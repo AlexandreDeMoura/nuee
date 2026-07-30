@@ -236,6 +236,30 @@ export interface KnowledgeExtractionProposalResponse {
   expires_at: string;
 }
 
+export type ResolveKnowledgeExtractionInput =
+  | {
+      kind: 'new_bubble';
+      proposal: KnowledgeExtractionProposal;
+    }
+  | {
+      kind: 'reject';
+    };
+
+export type KnowledgeExtractionResolutionResponse = {
+  id: string;
+  project_id: string;
+  discussion_id: string;
+  status: 'resolved';
+  resolution:
+    | {
+        kind: 'new_bubble';
+        bubble: Bubble;
+      }
+    | {
+        kind: 'reject';
+      };
+};
+
 export type DiscussionSummary = Omit<Discussion, 'frozen_context'> & {
   is_active: boolean;
 };

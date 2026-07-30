@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   ConflictException,
+  NotFoundException,
   PayloadTooLargeException,
   ServiceUnavailableException,
   UnprocessableEntityException,
@@ -14,7 +15,11 @@ import type {
   ModelInputBudget,
   ModelInputBudgetResult,
 } from '../ai/model-input-budget';
+import { BubblePlacementService } from '../bubbles/bubble-placement.service';
+import { BubblesService } from '../bubbles/bubbles.service';
+import { SqliteBubbleRepository } from '../bubbles/sqlite-bubble.repository';
 import { DatabaseProvider } from '../database/database.provider';
+import { DatabaseTransaction } from '../database/database-transaction';
 import type {
   PersistedDiscussionMessage,
   VersionedPersistedDiscussion,
@@ -22,14 +27,19 @@ import type {
 import { SqliteDiscussionRepository } from '../discussions/sqlite-discussion.repository';
 import { ProjectsService } from '../projects/projects.service';
 import { SqliteProjectRepository } from '../projects/sqlite-project.repository';
+import { KnowledgeExtractionResolutionService } from './knowledge-extraction-resolution.service';
 import { KnowledgeExtractionService } from './knowledge-extraction.service';
 import { SqliteKnowledgeExtractionRepository } from './sqlite-knowledge-extraction.repository';
 
-describe('KnowledgeExtractionService source snapshots', () => {
+describe('Knowledge extraction generation and resolution services', () => {
   let databaseProvider: DatabaseProvider;
   let projects: ProjectsService;
   let discussions: SqliteDiscussionRepository;
   let extractions: SqliteKnowledgeExtractionRepository;
+  let bubbles: BubblesService;
+  let bubblePlacement: BubblePlacementService;
+  let transactions: DatabaseTransaction;
+  let resolutions: KnowledgeExtractionResolutionService;
   let modelClient: ModelClient;
   let modelInputBudget: ModelInputBudget;
   let service: KnowledgeExtractionService;
@@ -43,6 +53,17 @@ describe('KnowledgeExtractionService source snapshots', () => {
     );
     discussions = new SqliteDiscussionRepository(databaseProvider);
     extractions = new SqliteKnowledgeExtractionRepository(databaseProvider);
+    const bubbleRepository = new SqliteBubbleRepository(databaseProvider);
+    bubbles = new BubblesService(projects, bubbleRepository);
+    bubblePlacement = new BubblePlacementService(projects, bubbleRepository);
+    transactions = new DatabaseTransaction(databaseProvider);
+    resolutions = new KnowledgeExtractionResolutionService(
+      projects,
+      extractions,
+      bubbles,
+      bubblePlacement,
+      transactions,
+    );
     modelClient = new FakeModelClient();
     modelInputBudget = new ConfiguredModelInputBudget(
       {
@@ -1050,5 +1071,366 @@ describe('KnowledgeExtractionService source snapshots', () => {
         .prepare('SELECT COUNT(*) AS count FROM knowledge_extraction_attempts')
         .get(),
     ).toEqual({ count: 0 });
+  });
+
+  it('atomically resolves a reviewed proposal as one cluster-placed bubble and replays it', async () => {
+    const project = createProject('Resolved knowledge');
+    const source = createDiscussion(project.id, 'discussion-resolution');
+    bubbles.create(project.id, {
+      title: 'Existing cluster',
+      content: 'Anchor the standard cluster placement.',
+      position_x: 100,
+      position_y: 200,
+    });
+    const discussionBefore = discussions.findByProjectAndId(
+      project.id,
+      source.record.id,
+    );
+    const messagesBefore = discussions.findAllMessages(
+      project.id,
+      source.record.id,
+    );
+    const generated = await service.generateProposal(
+      project.id,
+      source.record.id,
+      {
+        idempotency_key: 'resolve-as-new-bubble',
+        message_selection: {
+          kind: 'selected',
+          message_ids: [source.firstAssistant.id],
+        },
+        frozen_context_item_ids: [source.contextItems[0].id],
+      },
+    );
+    const resolutionInput = {
+      kind: 'new_bubble',
+      proposal: {
+        title: '  Reviewed decision  ',
+        summary: '   ',
+        content: '  Keep this final reviewed knowledge.  ',
+      },
+    };
+    const resolved = resolutions.resolveProposal(
+      project.id,
+      source.record.id,
+      generated.id,
+      resolutionInput,
+    );
+
+    expect(resolved).toMatchObject({
+      id: generated.id,
+      project_id: project.id,
+      discussion_id: source.record.id,
+      status: 'resolved',
+      resolution: {
+        kind: 'new_bubble',
+        bubble: {
+          project_id: project.id,
+          title: 'Reviewed decision',
+          summary: null,
+          content: 'Keep this final reviewed knowledge.',
+          position_x: 372,
+          position_y: 200,
+          source_kind: 'discussion',
+          source_discussion_id: source.record.id,
+          source_discussion_title: source.record.title,
+          source_discussion_deleted_at: null,
+          source_message_ids: [source.firstAssistant.id],
+          source_context_item_ids: [source.contextItems[0].id],
+        },
+      },
+    });
+    expect(
+      extractions.findByProjectDiscussionAndId(
+        project.id,
+        source.record.id,
+        generated.id,
+      ),
+    ).toMatchObject({
+      status: 'resolved',
+      resolution_kind: 'new_bubble',
+      resulting_bubble_id:
+        resolved.resolution.kind === 'new_bubble'
+          ? resolved.resolution.bubble.id
+          : undefined,
+    });
+    expect(
+      resolutions.resolveProposal(
+        project.id,
+        source.record.id,
+        generated.id,
+        resolutionInput,
+      ),
+    ).toEqual(resolved);
+    expect(() =>
+      resolutions.resolveProposal(project.id, source.record.id, generated.id, {
+        kind: 'new_bubble',
+        proposal: {
+          ...resolutionInput.proposal,
+          content: 'A conflicting second resolution.',
+        },
+      }),
+    ).toThrow(ConflictException);
+    expect(bubbles.list(project.id)).toHaveLength(2);
+    expect(
+      discussions.findByProjectAndId(project.id, source.record.id),
+    ).toEqual(discussionBefore);
+    expect(discussions.findAllMessages(project.id, source.record.id)).toEqual(
+      messagesBefore,
+    );
+  });
+
+  it('rolls back the bubble when final resolution persistence fails', async () => {
+    const project = createProject('Atomic rollback');
+    const source = createDiscussion(project.id, 'discussion-rollback');
+    const generated = await service.generateProposal(
+      project.id,
+      source.record.id,
+      {
+        idempotency_key: 'resolve-with-failed-persistence',
+        message_selection: {
+          kind: 'selected',
+          message_ids: [source.firstAssistant.id],
+        },
+        frozen_context_item_ids: [],
+      },
+    );
+    jest.spyOn(extractions, 'markResolved').mockImplementationOnce(() => {
+      throw new Error('Simulated attempt persistence failure.');
+    });
+
+    expect(() =>
+      resolutions.resolveProposal(project.id, source.record.id, generated.id, {
+        kind: 'new_bubble',
+        proposal: generated.proposal,
+      }),
+    ).toThrow(ServiceUnavailableException);
+    expect(bubbles.list(project.id)).toEqual([]);
+    expect(
+      extractions.findByProjectDiscussionAndId(
+        project.id,
+        source.record.id,
+        generated.id,
+      ),
+    ).toMatchObject({
+      status: 'ready',
+      proposal: generated.proposal,
+      resolution_kind: null,
+      resulting_bubble_id: null,
+    });
+  });
+
+  it('rejects or discards without creating bubbles or changing discussion activity', async () => {
+    const project = createProject('No bubble resolutions');
+    const source = createDiscussion(project.id, 'discussion-no-bubble');
+    const discussionBefore = discussions.findByProjectAndId(
+      project.id,
+      source.record.id,
+    );
+    const messagesBefore = discussions.findAllMessages(
+      project.id,
+      source.record.id,
+    );
+    const rejectedProposal = await service.generateProposal(
+      project.id,
+      source.record.id,
+      {
+        idempotency_key: 'reject-proposal',
+        message_selection: {
+          kind: 'selected',
+          message_ids: [source.firstAssistant.id],
+        },
+        frozen_context_item_ids: [],
+      },
+    );
+    const rejected = resolutions.resolveProposal(
+      project.id,
+      source.record.id,
+      rejectedProposal.id,
+      { kind: 'reject' },
+    );
+
+    expect(rejected).toEqual({
+      id: rejectedProposal.id,
+      project_id: project.id,
+      discussion_id: source.record.id,
+      status: 'resolved',
+      resolution: { kind: 'reject' },
+    });
+    expect(
+      resolutions.resolveProposal(
+        project.id,
+        source.record.id,
+        rejectedProposal.id,
+        { kind: 'reject' },
+      ),
+    ).toEqual(rejected);
+    expect(() =>
+      resolutions.resolveProposal(
+        project.id,
+        source.record.id,
+        rejectedProposal.id,
+        {
+          kind: 'new_bubble',
+          proposal: rejectedProposal.proposal,
+        },
+      ),
+    ).toThrow(ConflictException);
+    await expect(
+      service.generateProposal(project.id, source.record.id, {
+        idempotency_key: 'reject-proposal',
+        message_selection: {
+          kind: 'selected',
+          message_ids: [source.firstAssistant.id],
+        },
+        frozen_context_item_ids: [],
+      }),
+    ).resolves.toEqual(rejectedProposal);
+
+    const discardedProposal = await service.generateProposal(
+      project.id,
+      source.record.id,
+      {
+        idempotency_key: 'discard-proposal',
+        message_selection: {
+          kind: 'selected',
+          message_ids: [source.firstUser.id],
+        },
+        frozen_context_item_ids: [],
+      },
+    );
+
+    resolutions.discardProposal(
+      project.id,
+      source.record.id,
+      discardedProposal.id,
+    );
+    resolutions.discardProposal(
+      project.id,
+      source.record.id,
+      discardedProposal.id,
+    );
+    expect(
+      extractions.findByProjectDiscussionAndId(
+        project.id,
+        source.record.id,
+        discardedProposal.id,
+      ),
+    ).toMatchObject({
+      status: 'discarded',
+      proposal: null,
+      resolution_kind: null,
+      resulting_bubble_id: null,
+    });
+    expect(() =>
+      resolutions.resolveProposal(
+        project.id,
+        source.record.id,
+        discardedProposal.id,
+        { kind: 'reject' },
+      ),
+    ).toThrow(ConflictException);
+    expect(bubbles.list(project.id)).toEqual([]);
+    expect(
+      discussions.findByProjectAndId(project.id, source.record.id),
+    ).toEqual(discussionBefore);
+    expect(discussions.findAllMessages(project.id, source.record.id)).toEqual(
+      messagesBefore,
+    );
+  });
+
+  it('keeps invalid reviewed proposals available for correction', async () => {
+    const project = createProject('Reviewed validation');
+    const source = createDiscussion(project.id, 'discussion-validation');
+    const generated = await service.generateProposal(
+      project.id,
+      source.record.id,
+      {
+        idempotency_key: 'invalid-reviewed-proposal',
+        message_selection: {
+          kind: 'selected',
+          message_ids: [source.firstAssistant.id],
+        },
+        frozen_context_item_ids: [],
+      },
+    );
+
+    expect(() =>
+      resolutions.resolveProposal(project.id, source.record.id, generated.id, {
+        kind: 'new_bubble',
+        proposal: {
+          title: ' ',
+          summary: 'Still optional.',
+          content: ' ',
+        },
+      }),
+    ).toThrow(BadRequestException);
+    expect(bubbles.list(project.id)).toEqual([]);
+    expect(
+      extractions.findByProjectDiscussionAndId(
+        project.id,
+        source.record.id,
+        generated.id,
+      ),
+    ).toMatchObject({
+      status: 'ready',
+      proposal: generated.proposal,
+    });
+  });
+
+  it('requires a ready attempt in the exact project and discussion scope', async () => {
+    const project = createProject('Resolution scope');
+    const source = createDiscussion(project.id, 'discussion-scope');
+    const otherProject = createProject('Other resolution scope');
+    const otherDiscussion = createDiscussion(
+      otherProject.id,
+      'discussion-other-scope',
+    );
+    const generated = await service.generateProposal(
+      project.id,
+      source.record.id,
+      {
+        idempotency_key: 'scoped-resolution',
+        message_selection: {
+          kind: 'selected',
+          message_ids: [source.firstAssistant.id],
+        },
+        frozen_context_item_ids: [],
+      },
+    );
+
+    expect(() =>
+      resolutions.resolveProposal(
+        otherProject.id,
+        source.record.id,
+        generated.id,
+        {
+          kind: 'reject',
+        },
+      ),
+    ).toThrow(NotFoundException);
+    expect(() =>
+      resolutions.resolveProposal(
+        project.id,
+        otherDiscussion.record.id,
+        generated.id,
+        { kind: 'reject' },
+      ),
+    ).toThrow(NotFoundException);
+
+    const generating = createSnapshot(project.id, source.record.id, {
+      idempotencyKey: 'not-ready-resolution',
+      messageSelection: {
+        kind: 'selected',
+        message_ids: [source.firstAssistant.id],
+      },
+    });
+
+    expect(() =>
+      resolutions.resolveProposal(project.id, source.record.id, generating.id, {
+        kind: 'reject',
+      }),
+    ).toThrow(ConflictException);
+    expect(bubbles.list(project.id)).toEqual([]);
   });
 });

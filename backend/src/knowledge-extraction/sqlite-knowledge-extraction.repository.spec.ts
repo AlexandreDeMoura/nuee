@@ -282,4 +282,87 @@ describe('SqliteKnowledgeExtractionRepository', () => {
       ),
     ).toBeUndefined();
   });
+
+  it('persists one terminal resolution and one discard tombstone', () => {
+    const project = createProject('project-a');
+    const sourceDiscussion = createDiscussion(project.id, 'discussion-a');
+    const ready = repository.create({
+      ...attempt(project.id, sourceDiscussion.id),
+      proposal: {
+        title: 'Ready proposal',
+        summary: 'Ready for an explicit resolution.',
+        content: 'The proposal remains hidden until the user resolves it.',
+      },
+      status: 'ready',
+    });
+    const resolved = repository.markResolved(
+      project.id,
+      sourceDiscussion.id,
+      ready.id,
+      {
+        fingerprint: 'b'.repeat(64),
+        kind: 'reject',
+        resulting_bubble_id: null,
+        updated_at: '2026-07-30T10:01:00.000Z',
+      },
+    );
+
+    expect(resolved).toMatchObject({
+      status: 'resolved',
+      resolution_fingerprint: 'b'.repeat(64),
+      resolution_kind: 'reject',
+      resulting_bubble_id: null,
+    });
+    expect(
+      repository.markResolved(project.id, sourceDiscussion.id, ready.id, {
+        fingerprint: 'b'.repeat(64),
+        kind: 'reject',
+        resulting_bubble_id: null,
+        updated_at: '2026-07-30T10:02:00.000Z',
+      }),
+    ).toBeUndefined();
+    expect(
+      repository.markDiscarded(
+        project.id,
+        sourceDiscussion.id,
+        ready.id,
+        '2026-07-30T10:02:00.000Z',
+      ),
+    ).toBeUndefined();
+
+    const discardable = repository.create({
+      ...attempt(project.id, sourceDiscussion.id, 'extraction-b'),
+      idempotency_key: 'extract-discard',
+      request_fingerprint: 'c'.repeat(64),
+      proposal: {
+        title: 'Discardable proposal',
+        summary: 'This proposal will not become project knowledge.',
+        content: 'Discarding clears the ephemeral proposal.',
+      },
+      status: 'ready',
+    });
+
+    expect(
+      repository.markDiscarded(
+        project.id,
+        sourceDiscussion.id,
+        discardable.id,
+        '2026-07-30T10:03:00.000Z',
+      ),
+    ).toMatchObject({
+      status: 'discarded',
+      proposal: null,
+      resolution_fingerprint: null,
+      resolution_kind: null,
+      resulting_bubble_id: null,
+    });
+    expect(
+      repository.markDiscarded(
+        project.id,
+        sourceDiscussion.id,
+        discardable.id,
+        '2026-07-30T10:04:00.000Z',
+      ),
+    ).toBeUndefined();
+  });
 });

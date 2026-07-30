@@ -81,6 +81,17 @@ export class BubblesService
     return this.bubbles.create(bubble);
   }
 
+  findByDiscussionExtraction(
+    projectId: string,
+    extractionId: string,
+  ): Bubble | undefined {
+    const bubble = this.bubbles.findByLatestExtractionId(
+      this.requiredIdentifier(extractionId, 'extraction_id'),
+    );
+
+    return bubble?.project_id === projectId ? bubble : undefined;
+  }
+
   createFromDiscussionExtraction(
     input: CreateBubbleFromDiscussionExtractionInput,
   ): CreateBubbleFromDiscussionExtractionResult {

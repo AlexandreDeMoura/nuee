@@ -137,6 +137,10 @@ export type UpdateBubbleFromDiscussionExtractionResult =
   | { status: 'target_missing' };
 
 export interface BubbleExtractionWriter {
+  findByDiscussionExtraction(
+    projectId: string,
+    extractionId: string,
+  ): Bubble | undefined;
   createFromDiscussionExtraction(
     input: CreateBubbleFromDiscussionExtractionInput,
   ): CreateBubbleFromDiscussionExtractionResult;

@@ -98,6 +98,23 @@ export interface KnowledgeExtractionRepository {
     extractionId: string,
     updatedAt: string,
   ): KnowledgeExtractionAttempt | undefined;
+  markResolved(
+    projectId: string,
+    discussionId: string,
+    extractionId: string,
+    resolution: {
+      fingerprint: string;
+      kind: KnowledgeExtractionResolutionKind;
+      resulting_bubble_id: string | null;
+      updated_at: string;
+    },
+  ): KnowledgeExtractionAttempt | undefined;
+  markDiscarded(
+    projectId: string,
+    discussionId: string,
+    extractionId: string,
+    updatedAt: string,
+  ): KnowledgeExtractionAttempt | undefined;
 }
 
 export class KnowledgeExtractionIntegrityError extends Error {

@@ -40,6 +40,10 @@ From the repo root: `npm run dev` (frontend + backend watch), `npm run build`, `
 - `bubbles/` — what a bubble contains and its lifecycle: creation fields, content editing,
   source metadata, manual links, deletion, validation, content-save status. `BubbleInspector`
   lives here because it edits bubble content and relationships.
+- `discussions/` — focused-discussion presentation and client lifecycle: the write-first draft,
+  single-visible modal, composer and message states, failed-turn retry, generated-title display,
+  discussion list, Active display, reopening, and deletion. It renders frozen-context and
+  knowledge-extraction integration points but does not own either upstream workflow.
 - `api/`, `analytics.ts`, `utils/` — cross-cutting. `ui/` — shared primitives, no feature behavior.
 - Ownership follows the behavior's responsibility, not the bubble domain type; flows crossing
   both keep orchestration in the lowest common owner behind a typed callback or hook result.
@@ -85,12 +89,34 @@ broker only if that model cannot meet concrete requirements.
 
 - `projects/` — project lifecycle, metadata, viewport state, project persistence.
 - `bubbles/` — bubble lifecycle, content, placement, links, bubble persistence.
+- `discussions/` — project-scoped discussion and immutable-message lifecycle, title generation,
+  frozen-context persistence/forwarding, generation-attempt status and idempotency, soft deletion,
+  and discussion persistence. It owns the `last_activity_at` ordering/Active model: creation,
+  explicit open, and new-message activity qualify; title generation, minimization, scrolling, and
+  extraction do not.
+- `ai/` — cross-cutting, provider-neutral model access. It owns the `ModelClient` port, provider
+  adapter, and deterministic test implementation, but no discussion validation, persistence,
+  retry, activity, title-trigger, or context-selection policy.
 - Controllers, services, repository ports/implementations, migrations, types, and unit tests
   stay in the owning feature; no repository-wide `controllers/`, `services/`, or `interfaces/`
   folders.
 - Database construction, configuration, and migration execution are cross-cutting
   infrastructure; feature-specific SQL stays in feature repositories.
 - Export the narrowest cross-feature capability; direct service reuse is fine while the module graph stays small.
+
+### Discussion seams
+
+- Discussion routes remain nested under their project, and service and repository operations
+  scope reads and writes by both project and discussion ID.
+- Creating a discussion atomically persists the discussion and first user turn. Later user turns
+  use a per-discussion idempotency key; pending/failed state belongs to the persisted user turn,
+  while only valid model output becomes an immutable assistant message.
+- `FrozenContext` is an opaque serialized contract assembled by Discussion Context. The
+  discussions feature may enforce transport-size and JSON-object guards, but must persist and
+  forward the accepted package without interpreting source semantics or dereferencing live data.
+- Knowledge Extraction consumes discussion and message identifiers through an integration
+  boundary. It does not belong in `DiscussionsService` or `ModelClient`, and deleting a discussion
+  must not delete independently persisted bubbles created through extraction.
 
 ### Controllers, services, and persistence behavior
 
