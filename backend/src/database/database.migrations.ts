@@ -5,6 +5,7 @@ import { COMPLETE_DISCUSSION_EXTRACTION_PROVENANCE_MIGRATION } from '../bubbles/
 import { CREATE_DISCUSSIONS_MIGRATION } from '../discussions/migrations/004-create-discussions';
 import { CREATE_DISCUSSION_MESSAGES_MIGRATION } from '../discussions/migrations/005-create-discussion-messages';
 import { PERSIST_DISCUSSION_CONTEXT_ITEMS_MIGRATION } from '../discussions/migrations/006-persist-discussion-context-items';
+import { CREATE_DOCUMENTS_MIGRATION } from '../documents/migrations/009-create-documents';
 import { CREATE_KNOWLEDGE_EXTRACTION_ATTEMPTS_MIGRATION } from '../knowledge-extraction/migrations/008-create-knowledge-extraction-attempts';
 import { CREATE_PROJECTS_MIGRATION } from '../projects/migrations/001-create-projects';
 
@@ -59,6 +60,11 @@ export const DATABASE_MIGRATIONS: readonly DatabaseMigration[] = [
     version: 8,
     name: 'create-knowledge-extraction-attempts',
     sql: CREATE_KNOWLEDGE_EXTRACTION_ATTEMPTS_MIGRATION,
+  },
+  {
+    version: 9,
+    name: 'create-documents',
+    sql: CREATE_DOCUMENTS_MIGRATION,
   },
 ];
 

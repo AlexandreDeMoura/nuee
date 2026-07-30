@@ -38,9 +38,13 @@ describe('runDatabaseMigrations', () => {
           version: 8,
           name: 'create-knowledge-extraction-attempts',
         },
+        {
+          version: 9,
+          name: 'create-documents',
+        },
       ]);
       expect(database.prepare('PRAGMA user_version;').get()).toEqual({
-        user_version: 8,
+        user_version: 9,
       });
     } finally {
       database.close();
