@@ -149,6 +149,14 @@ export interface BubbleExtractionWriter {
   ): UpdateBubbleFromDiscussionExtractionResult;
 }
 
+export interface BubbleDiscussionProvenanceWriter {
+  markSourceDiscussionDeleted(
+    projectId: string,
+    discussionId: string,
+    deletedAt: string,
+  ): number;
+}
+
 export class BubbleProvenanceIntegrityError extends Error {
   constructor(bubbleId: string) {
     super(`Stored provenance for bubble "${bubbleId}" is invalid.`);
@@ -162,3 +170,6 @@ export const BUBBLE_CONTEXT_SOURCE_READER = Symbol(
   'BUBBLE_CONTEXT_SOURCE_READER',
 );
 export const BUBBLE_EXTRACTION_WRITER = Symbol('BUBBLE_EXTRACTION_WRITER');
+export const BUBBLE_DISCUSSION_PROVENANCE_WRITER = Symbol(
+  'BUBBLE_DISCUSSION_PROVENANCE_WRITER',
+);

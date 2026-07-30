@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AiModule } from '../ai/ai.module';
+import { BubblesModule } from '../bubbles/bubbles.module';
 import { DiscussionContextModule } from '../discussion-context/discussion-context.module';
 import { ProjectsModule } from '../projects/projects.module';
 import {
@@ -12,7 +13,7 @@ import { DiscussionsService } from './discussions.service';
 import { SqliteDiscussionRepository } from './sqlite-discussion.repository';
 
 @Module({
-  imports: [AiModule, ProjectsModule, DiscussionContextModule],
+  imports: [AiModule, ProjectsModule, BubblesModule, DiscussionContextModule],
   controllers: [DiscussionsController],
   providers: [
     DiscussionsService,

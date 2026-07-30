@@ -31,6 +31,11 @@ import {
   MODEL_INPUT_BUDGET,
   type ModelInputBudget,
 } from '../ai/model-input-budget';
+import {
+  BUBBLE_DISCUSSION_PROVENANCE_WRITER,
+  type BubbleDiscussionProvenanceWriter,
+} from '../bubbles/bubble.types';
+import { DatabaseTransaction } from '../database/database-transaction';
 import { DiscussionContextAssembler } from '../discussion-context/discussion-context.assembler';
 import { DiscussionContextSourceError } from '../discussion-context/discussion-context.types';
 import { ProjectsService } from '../projects/projects.service';
@@ -75,6 +80,9 @@ export class DiscussionsService {
     @Inject(MODEL_INPUT_BUDGET)
     private readonly modelInputBudget: ModelInputBudget,
     private readonly contextAssembler: DiscussionContextAssembler,
+    @Inject(BUBBLE_DISCUSSION_PROVENANCE_WRITER)
+    private readonly bubbleProvenance: BubbleDiscussionProvenanceWriter,
+    private readonly transactions: DatabaseTransaction,
   ) {}
 
   async create(
@@ -410,9 +418,17 @@ export class DiscussionsService {
       this.latestTimestamp(discussion.updated_at, discussion.last_activity_at),
     );
 
-    if (!this.discussions.softDelete(projectId, discussionId, deletedAt)) {
-      throw this.notFound(projectId, discussionId);
-    }
+    this.transactions.run(() => {
+      if (!this.discussions.softDelete(projectId, discussionId, deletedAt)) {
+        throw this.notFound(projectId, discussionId);
+      }
+
+      this.bubbleProvenance.markSourceDiscussionDeleted(
+        projectId,
+        discussionId,
+        deletedAt,
+      );
+    });
   }
 
   private async generateAndPersistTitle(

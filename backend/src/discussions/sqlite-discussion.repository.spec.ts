@@ -680,7 +680,7 @@ describe('SqliteDiscussionRepository', () => {
     ).toEqual({ count: record.expected_context_item_count });
   });
 
-  it('cascades hard project deletion through discussions, messages, and context', () => {
+  it('cascades hard project deletion through discussions, messages, context, and extracted bubbles', () => {
     const project = createProject('project-a');
     const record = versionedDiscussion(project.id, 'discussion-a');
 
@@ -688,6 +688,39 @@ describe('SqliteDiscussionRepository', () => {
       record,
       message(record.id, 'message-a', 'request-a'),
     );
+    databaseProvider.connection
+      .prepare(
+        `
+          INSERT INTO bubbles (
+            id,
+            project_id,
+            title,
+            content,
+            created_at,
+            updated_at,
+            source_kind,
+            source_discussion_id,
+            source_discussion_title,
+            source_message_ids,
+            source_context_item_ids,
+            latest_extraction_id
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `,
+      )
+      .run(
+        'extracted-bubble-a',
+        project.id,
+        'Extracted knowledge',
+        'Knowledge that remains owned by the project.',
+        '2026-07-27T10:05:00.000Z',
+        '2026-07-27T10:05:00.000Z',
+        'discussion',
+        record.id,
+        'Frozen source title',
+        '["message-a"]',
+        '[]',
+        'extraction-a',
+      );
     databaseProvider.connection
       .prepare('DELETE FROM projects WHERE id = ?')
       .run(project.id);
@@ -705,6 +738,11 @@ describe('SqliteDiscussionRepository', () => {
     expect(
       databaseProvider.connection
         .prepare('SELECT COUNT(*) AS count FROM discussion_context_items')
+        .get(),
+    ).toEqual({ count: 0 });
+    expect(
+      databaseProvider.connection
+        .prepare('SELECT COUNT(*) AS count FROM bubbles')
         .get(),
     ).toEqual({ count: 0 });
   });

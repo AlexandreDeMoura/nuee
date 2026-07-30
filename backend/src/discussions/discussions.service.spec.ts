@@ -19,6 +19,7 @@ import { ConfiguredModelInputBudget } from '../ai/model-input-budget';
 import { BubblesService } from '../bubbles/bubbles.service';
 import { SqliteBubbleRepository } from '../bubbles/sqlite-bubble.repository';
 import { DatabaseProvider } from '../database/database.provider';
+import { DatabaseTransaction } from '../database/database-transaction';
 import { DiscussionContextAssembler } from '../discussion-context/discussion-context.assembler';
 import type {
   DocumentContextSourceReadResult,
@@ -88,8 +89,10 @@ class ControllableModelClient implements ModelClient {
 describe('DiscussionsService', () => {
   let databaseProvider: DatabaseProvider;
   let projects: ProjectsService;
+  let bubbleRepository: SqliteBubbleRepository;
   let bubbles: BubblesService;
   let repository: SqliteDiscussionRepository;
+  let transactions: DatabaseTransaction;
   let modelClient: ControllableModelClient;
   let contextFormatter: CanonicalFrozenContextFormatter;
   let modelInputBudget: ConfiguredModelInputBudget;
@@ -104,11 +107,10 @@ describe('DiscussionsService', () => {
     projects = new ProjectsService(
       new SqliteProjectRepository(databaseProvider),
     );
-    bubbles = new BubblesService(
-      projects,
-      new SqliteBubbleRepository(databaseProvider),
-    );
+    bubbleRepository = new SqliteBubbleRepository(databaseProvider);
+    bubbles = new BubblesService(projects, bubbleRepository);
     repository = new SqliteDiscussionRepository(databaseProvider);
+    transactions = new DatabaseTransaction(databaseProvider);
     modelClient = new ControllableModelClient();
     contextFormatter = new CanonicalFrozenContextFormatter();
     modelInputBudget = new ConfiguredModelInputBudget(
@@ -134,6 +136,8 @@ describe('DiscussionsService', () => {
       contextFormatter,
       modelInputBudget,
       contextAssembler,
+      bubbleRepository,
+      transactions,
     );
   });
 
@@ -740,6 +744,130 @@ describe('DiscussionsService', () => {
     expect(() => service.get(project.id, first.id)).toThrow(NotFoundException);
   });
 
+  it('retains new and updated bubble provenance when their source discussion is deleted', async () => {
+    const project = createProject();
+    const createdDiscussion = await createDiscussion(
+      project.id,
+      'Which launch path is reversible?',
+    );
+    const sourceDiscussion = await service.generateTitle(
+      project.id,
+      createdDiscussion.id,
+    );
+    const sourceMessageId = sourceDiscussion.messages[1].id;
+    const frozenContext = sourceDiscussion.frozen_context as FrozenContextV1;
+    const sourceContextItemId = frozenContext.items[0]?.id;
+
+    if (!sourceContextItemId) {
+      throw new Error('Expected versioned frozen discussion context.');
+    }
+
+    const createdResult = bubbles.createFromDiscussionExtraction({
+      project_id: project.id,
+      extraction_id: 'extraction-created',
+      source_discussion_id: sourceDiscussion.id,
+      source_discussion_title: sourceDiscussion.title,
+      source_message_ids: [sourceMessageId],
+      source_context_item_ids: [sourceContextItemId],
+      title: 'Reversible launch path',
+      summary: 'Choose the option that preserves reversibility.',
+      content: 'Sequence the launch so the uncertain decision can be reversed.',
+      position_x: 320,
+      position_y: -160,
+    });
+    const updateTarget = bubbles.create(project.id, {
+      title: 'Earlier launch guidance',
+      content: 'An earlier draft of the launch guidance.',
+      position_x: -80,
+      position_y: 240,
+    });
+    const updatedResult = bubbles.updateFromDiscussionExtraction({
+      project_id: project.id,
+      extraction_id: 'extraction-updated',
+      bubble_id: updateTarget.id,
+      expected_updated_at: updateTarget.updated_at,
+      source_discussion_id: sourceDiscussion.id,
+      source_discussion_title: sourceDiscussion.title,
+      source_message_ids: [sourceMessageId],
+      source_context_item_ids: [],
+      title: 'Reviewed launch guidance',
+      summary: null,
+      content: 'Preserve the revised, reviewed launch guidance.',
+    });
+
+    if (
+      createdResult.status !== 'created' ||
+      updatedResult.status !== 'updated'
+    ) {
+      throw new Error('Expected both extraction resolutions to persist.');
+    }
+
+    const createdBubbleBefore = createdResult.bubble;
+    const updatedBubbleBefore = updatedResult.bubble;
+    jest.setSystemTime(new Date('2026-07-27T12:00:00.000Z'));
+
+    service.delete(project.id, sourceDiscussion.id);
+
+    expect(bubbles.get(project.id, createdBubbleBefore.id)).toEqual({
+      ...createdBubbleBefore,
+      source_discussion_deleted_at: '2026-07-27T12:00:00.000Z',
+    });
+    expect(bubbles.get(project.id, updatedBubbleBefore.id)).toEqual({
+      ...updatedBubbleBefore,
+      source_discussion_deleted_at: '2026-07-27T12:00:00.000Z',
+    });
+    expect(() => service.get(project.id, sourceDiscussion.id)).toThrow(
+      NotFoundException,
+    );
+    expect(
+      Object.keys(bubbles.get(project.id, createdBubbleBefore.id)),
+    ).not.toContain('source_transcript');
+  });
+
+  it('rolls back discussion deletion when provenance availability cannot be persisted', async () => {
+    const project = createProject();
+    const sourceDiscussion = await createDiscussion(
+      project.id,
+      'Keep deletion atomic',
+    );
+    const sourceBubbleResult = bubbles.createFromDiscussionExtraction({
+      project_id: project.id,
+      extraction_id: 'extraction-rollback',
+      source_discussion_id: sourceDiscussion.id,
+      source_discussion_title: 'Atomic deletion source',
+      source_message_ids: [sourceDiscussion.messages[1].id],
+      source_context_item_ids: [],
+      title: 'Atomic knowledge',
+      summary: null,
+      content: 'This bubble and its source availability change together.',
+      position_x: 0,
+      position_y: 0,
+    });
+
+    if (sourceBubbleResult.status !== 'created') {
+      throw new Error('Expected the extraction bubble to persist.');
+    }
+
+    const markSourceDiscussionDeleted =
+      bubbleRepository.markSourceDiscussionDeleted.bind(bubbleRepository);
+    jest
+      .spyOn(bubbleRepository, 'markSourceDiscussionDeleted')
+      .mockImplementationOnce((...args) => {
+        markSourceDiscussionDeleted(...args);
+        throw new Error('Simulated provenance persistence failure.');
+      });
+
+    expect(() => service.delete(project.id, sourceDiscussion.id)).toThrow(
+      'Simulated provenance persistence failure.',
+    );
+    expect(service.get(project.id, sourceDiscussion.id)).toEqual(
+      sourceDiscussion,
+    );
+    expect(bubbles.get(project.id, sourceBubbleResult.bubble.id)).toEqual(
+      sourceBubbleResult.bubble,
+    );
+  });
+
   it('sends complete history and makes completed submissions idempotent', async () => {
     const project = createProject();
     const created = await createDiscussion(project.id, 'First question');
@@ -1030,6 +1158,8 @@ describe('DiscussionsService', () => {
       contextFormatter,
       modelInputBudget,
       contextAssembler,
+      bubbleRepository,
+      transactions,
     );
 
     try {
@@ -1087,6 +1217,8 @@ describe('DiscussionsService', () => {
       contextFormatter,
       tightBudget,
       contextAssembler,
+      bubbleRepository,
+      transactions,
     );
 
     await expect(

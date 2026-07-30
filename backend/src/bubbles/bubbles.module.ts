@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ProjectsModule } from '../projects/projects.module';
 import {
   BUBBLE_CONTEXT_SOURCE_READER,
+  BUBBLE_DISCUSSION_PROVENANCE_WRITER,
   BUBBLE_EXTRACTION_WRITER,
   BUBBLE_LINK_REPOSITORY,
   BUBBLE_REPOSITORY,
@@ -36,6 +37,10 @@ import { SqliteBubbleRepository } from './sqlite-bubble.repository';
       provide: BUBBLE_EXTRACTION_WRITER,
       useExisting: BubblesService,
     },
+    {
+      provide: BUBBLE_DISCUSSION_PROVENANCE_WRITER,
+      useExisting: SqliteBubbleRepository,
+    },
     BubbleLinksService,
   ],
   exports: [
@@ -44,6 +49,7 @@ import { SqliteBubbleRepository } from './sqlite-bubble.repository';
     BubbleLinksService,
     BUBBLE_CONTEXT_SOURCE_READER,
     BUBBLE_EXTRACTION_WRITER,
+    BUBBLE_DISCUSSION_PROVENANCE_WRITER,
   ],
 })
 export class BubblesModule {}

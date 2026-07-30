@@ -4,6 +4,7 @@ import { DatabaseProvider } from '../database/database.provider';
 import { BubbleProvenanceIntegrityError } from './bubble.types';
 import type {
   Bubble,
+  BubbleDiscussionProvenanceWriter,
   BubbleLink,
   BubbleLinkRepository,
   BubblePositionUpdate,
@@ -40,7 +41,10 @@ interface BubbleLinkRow {
 
 @Injectable()
 export class SqliteBubbleRepository
-  implements BubbleRepository, BubbleLinkRepository
+  implements
+    BubbleRepository,
+    BubbleLinkRepository,
+    BubbleDiscussionProvenanceWriter
 {
   private readonly database: DatabaseSync;
 
@@ -300,6 +304,28 @@ export class SqliteBubbleRepository
 
       return bubble;
     });
+  }
+
+  markSourceDiscussionDeleted(
+    projectId: string,
+    discussionId: string,
+    deletedAt: string,
+  ): number {
+    const result = this.database
+      .prepare(
+        `
+          UPDATE bubbles
+          SET source_discussion_deleted_at = ?
+          WHERE
+            project_id = ?
+            AND source_kind = 'discussion'
+            AND source_discussion_id = ?
+            AND source_discussion_deleted_at IS NULL
+        `,
+      )
+      .run(deletedAt, projectId, discussionId);
+
+    return Number(result.changes);
   }
 
   delete(projectId: string, id: string): boolean {

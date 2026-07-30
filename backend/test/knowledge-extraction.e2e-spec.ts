@@ -343,6 +343,35 @@ describe('Knowledge extraction generation journey (e2e)', () => {
       .get(`/projects/${project.id}/discussions/${discussion.id}`)
       .expect(200)
       .expect(discussionBefore);
+
+    if (resolved.resolution.kind !== 'new_bubble') {
+      throw new Error('Expected a new-bubble resolution.');
+    }
+
+    const extractedBubbleBeforeDeletion = resolved.resolution.bubble;
+    await request(app!.getHttpServer())
+      .delete(`/projects/${project.id}/discussions/${discussion.id}`)
+      .expect(204);
+    await request(app!.getHttpServer())
+      .get(
+        `/projects/${project.id}/bubbles/${extractedBubbleBeforeDeletion.id}`,
+      )
+      .expect(200)
+      .expect(({ body }) => {
+        const deletedSourceBubble = body as Bubble;
+        const { source_discussion_deleted_at: deletedAt, ...retainedBubble } =
+          deletedSourceBubble;
+        const {
+          source_discussion_deleted_at: previousDeletedAt,
+          ...bubbleBeforeDeletion
+        } = extractedBubbleBeforeDeletion;
+
+        expect(previousDeletedAt).toBeNull();
+        expect(deletedAt).not.toBeNull();
+        expect(new Date(deletedAt!).toISOString()).toBe(deletedAt);
+        expect(retainedBubble).toEqual(bubbleBeforeDeletion);
+        expect(deletedSourceBubble).not.toHaveProperty('source_transcript');
+      });
   });
 
   it('updates one current-project bubble only after confirming its latest observed version', async () => {
@@ -516,5 +545,27 @@ describe('Knowledge extraction generation journey (e2e)', () => {
       .get(`/projects/${project.id}/discussions/${discussion.id}`)
       .expect(200)
       .expect(discussion);
+
+    const updatedBubbleBeforeDeletion = resolved.resolution.bubble;
+    await request(app!.getHttpServer())
+      .delete(`/projects/${project.id}/discussions/${discussion.id}`)
+      .expect(204);
+    await request(app!.getHttpServer())
+      .get(`/projects/${project.id}/bubbles/${updatedBubbleBeforeDeletion.id}`)
+      .expect(200)
+      .expect(({ body }) => {
+        const deletedSourceBubble = body as Bubble;
+        const { source_discussion_deleted_at: deletedAt, ...retainedBubble } =
+          deletedSourceBubble;
+        const {
+          source_discussion_deleted_at: previousDeletedAt,
+          ...bubbleBeforeDeletion
+        } = updatedBubbleBeforeDeletion;
+
+        expect(previousDeletedAt).toBeNull();
+        expect(deletedAt).not.toBeNull();
+        expect(new Date(deletedAt!).toISOString()).toBe(deletedAt);
+        expect(retainedBubble).toEqual(bubbleBeforeDeletion);
+      });
   });
 });
