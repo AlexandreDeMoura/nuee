@@ -6,10 +6,12 @@ import {
 } from './answer-instructions';
 import type {
   GenerateAnswerInput,
+  GenerateStructuredOutputInput,
   GenerateTitleInput,
   ModelClient,
   ModelGeneration,
   ModelMessage,
+  StructuredModelGeneration,
 } from './model-client';
 export { buildFocusedResponseInstructions } from './answer-instructions';
 
@@ -22,6 +24,15 @@ interface OpenAiResponseRequest {
   model: string;
   instructions: string;
   input: OpenAiInputMessage[];
+  text?: {
+    format: {
+      type: 'json_schema';
+      name: string;
+      description: string;
+      strict: true;
+      schema: Record<string, unknown>;
+    };
+  };
 }
 
 interface OpenAiResponse {
@@ -118,6 +129,39 @@ export class OpenAiModelClient implements ModelClient {
       instructions: TITLE_INSTRUCTIONS,
       input: transcriptMessages(input.messages),
     });
+  }
+
+  async generateStructuredOutput(
+    input: GenerateStructuredOutputInput,
+  ): Promise<StructuredModelGeneration> {
+    const generation = await this.generate({
+      model: this.config.model,
+      instructions: input.instructions,
+      input: transcriptMessages(input.messages),
+      text: {
+        format: {
+          type: 'json_schema',
+          name: input.format.name,
+          description: input.format.description,
+          strict: true,
+          schema: input.format.schema,
+        },
+      },
+    });
+    let output: unknown;
+
+    try {
+      output = JSON.parse(generation.content) as unknown;
+    } catch (error) {
+      throw new ModelProviderError('invalid_response', { cause: error });
+    }
+
+    return {
+      output,
+      model: generation.model,
+      inputTokens: generation.inputTokens,
+      outputTokens: generation.outputTokens,
+    };
   }
 
   private async generate(

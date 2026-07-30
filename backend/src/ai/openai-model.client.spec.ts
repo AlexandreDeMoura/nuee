@@ -111,6 +111,69 @@ describe('OpenAiModelClient', () => {
     });
   });
 
+  it('requests and parses strict structured output', async () => {
+    let request: Parameters<OpenAiResponsesClient['create']>[0] | undefined;
+    const client = new OpenAiModelClient(config, {
+      create(nextRequest) {
+        request = nextRequest;
+        return Promise.resolve({
+          outputText:
+            '{"title":"Grounded title","summary":"One sentence.","content":"Grounded content."}',
+          model: 'gpt-5.6-sol',
+          status: 'completed',
+          inputTokens: 50,
+          outputTokens: 20,
+        });
+      },
+    });
+    const schema = {
+      type: 'object',
+      additionalProperties: false,
+      properties: {
+        title: { type: 'string' },
+        summary: { type: 'string' },
+        content: { type: 'string' },
+      },
+      required: ['title', 'summary', 'content'],
+    };
+
+    await expect(
+      client.generateStructuredOutput({
+        instructions: 'Create one grounded proposal.',
+        messages: [{ role: 'user', content: 'Selected source data' }],
+        format: {
+          name: 'knowledge_proposal',
+          description: 'One knowledge proposal.',
+          schema,
+        },
+      }),
+    ).resolves.toEqual({
+      output: {
+        title: 'Grounded title',
+        summary: 'One sentence.',
+        content: 'Grounded content.',
+      },
+      model: 'gpt-5.6-sol',
+      inputTokens: 50,
+      outputTokens: 20,
+    });
+
+    expect(request).toEqual({
+      model: 'gpt-5.6-sol',
+      instructions: 'Create one grounded proposal.',
+      input: [{ role: 'user', content: 'Selected source data' }],
+      text: {
+        format: {
+          type: 'json_schema',
+          name: 'knowledge_proposal',
+          description: 'One knowledge proposal.',
+          strict: true,
+          schema,
+        },
+      },
+    });
+  });
+
   it.each([
     [
       Object.assign(new Error('request timed out'), {
@@ -156,6 +219,31 @@ describe('OpenAiModelClient', () => {
       client.generateAnswer({
         formattedContext: 'FROZEN_DISCUSSION_CONTEXT_LEGACY',
         messages: [{ role: 'user', content: 'Question' }],
+      }),
+    ).rejects.toMatchObject({
+      constructor: ModelProviderError,
+      reason: 'invalid_response',
+    });
+  });
+
+  it('rejects malformed structured output after a completed response', async () => {
+    const client = new OpenAiModelClient(config, {
+      create: jest.fn().mockResolvedValue({
+        outputText: 'not-json',
+        model: 'gpt-5.6-sol',
+        status: 'completed',
+      }),
+    });
+
+    await expect(
+      client.generateStructuredOutput({
+        instructions: 'Return JSON.',
+        messages: [{ role: 'user', content: 'Source' }],
+        format: {
+          name: 'proposal',
+          description: 'A proposal.',
+          schema: { type: 'object' },
+        },
       }),
     ).rejects.toMatchObject({
       constructor: ModelProviderError,

@@ -1,17 +1,34 @@
 import {
   BadRequestException,
+  ConflictException,
   Inject,
   Injectable,
   NotFoundException,
+  PayloadTooLargeException,
   ServiceUnavailableException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import { createHash, randomUUID } from 'node:crypto';
+import type {
+  KnowledgeExtractionProposal,
+  KnowledgeExtractionProposalResponse,
+} from '@nuee/shared-types';
+import { MODEL_CLIENT, type ModelClient } from '../ai/model-client';
+import {
+  MODEL_INPUT_BUDGET,
+  type ModelInputBudget,
+} from '../ai/model-input-budget';
 import {
   DISCUSSION_EXTRACTION_SOURCE_READER,
   type DiscussionExtractionSourceReader,
 } from '../discussions/discussion.types';
 import { ProjectsService } from '../projects/projects.service';
+import {
+  buildKnowledgeExtractionModelInput,
+  KNOWLEDGE_PROPOSAL_CONTENT_MAX_LENGTH,
+  KNOWLEDGE_PROPOSAL_SUMMARY_MAX_LENGTH,
+  KNOWLEDGE_PROPOSAL_TITLE_MAX_LENGTH,
+} from './knowledge-extraction.prompt';
 import {
   KNOWLEDGE_EXTRACTION_REPOSITORY,
   type KnowledgeExtractionAttempt,
@@ -33,13 +50,68 @@ interface NormalizedSnapshotInput {
 
 @Injectable()
 export class KnowledgeExtractionService {
+  private readonly inFlightGenerations = new Map<
+    string,
+    Promise<KnowledgeExtractionProposalResponse>
+  >();
+
   constructor(
     private readonly projects: ProjectsService,
     @Inject(DISCUSSION_EXTRACTION_SOURCE_READER)
     private readonly discussionSources: DiscussionExtractionSourceReader,
     @Inject(KNOWLEDGE_EXTRACTION_REPOSITORY)
     private readonly extractions: KnowledgeExtractionRepository,
+    @Inject(MODEL_CLIENT)
+    private readonly modelClient: ModelClient,
+    @Inject(MODEL_INPUT_BUDGET)
+    private readonly modelInputBudget: ModelInputBudget,
   ) {}
+
+  async generateProposal(
+    projectId: string,
+    discussionId: string,
+    input: unknown,
+  ): Promise<KnowledgeExtractionProposalResponse> {
+    this.projects.get(projectId);
+    const normalized = this.validateInput(input);
+    const requestFingerprint = this.requestFingerprint(normalized);
+    const existing = this.findByIdempotencyKey(
+      projectId,
+      discussionId,
+      normalized.idempotency_key,
+    );
+
+    if (existing) {
+      return this.replayOrRetry(existing, requestFingerprint);
+    }
+
+    const attempt = this.buildSourceSnapshot(
+      projectId,
+      discussionId,
+      normalized,
+      requestFingerprint,
+    );
+    const modelInput = this.prepareModelInput(attempt.source_snapshot);
+    let persisted: KnowledgeExtractionAttempt;
+
+    try {
+      persisted = this.extractions.create(attempt);
+    } catch {
+      const concurrent = this.findByIdempotencyKey(
+        projectId,
+        discussionId,
+        normalized.idempotency_key,
+      );
+
+      if (concurrent) {
+        return this.replayOrRetry(concurrent, requestFingerprint);
+      }
+
+      throw this.snapshotPersistenceFailed();
+    }
+
+    return this.startGeneration(persisted, modelInput);
+  }
 
   createSourceSnapshot(
     projectId: string,
@@ -48,6 +120,26 @@ export class KnowledgeExtractionService {
   ): KnowledgeExtractionAttempt {
     this.projects.get(projectId);
     const normalized = this.validateInput(input);
+    const attempt = this.buildSourceSnapshot(
+      projectId,
+      discussionId,
+      normalized,
+      this.requestFingerprint(normalized),
+    );
+
+    try {
+      return this.extractions.create(attempt);
+    } catch {
+      throw this.snapshotPersistenceFailed();
+    }
+  }
+
+  private buildSourceSnapshot(
+    projectId: string,
+    discussionId: string,
+    normalized: NormalizedSnapshotInput,
+    requestFingerprint: string,
+  ): KnowledgeExtractionAttempt {
     const requestedAt = new Date().toISOString();
     const sourceResult = this.discussionSources.readExtractionSources(
       projectId,
@@ -123,7 +215,7 @@ export class KnowledgeExtractionService {
       project_id: projectId,
       discussion_id: discussionId,
       idempotency_key: normalized.idempotency_key,
-      request_fingerprint: this.requestFingerprint(normalized),
+      request_fingerprint: requestFingerprint,
       source_snapshot: sourceSnapshot,
       proposal: null,
       status: 'generating',
@@ -136,15 +228,276 @@ export class KnowledgeExtractionService {
       expires_at: expiresAt,
     };
 
-    try {
-      return this.extractions.create(attempt);
-    } catch {
-      throw new ServiceUnavailableException({
-        code: 'KNOWLEDGE_EXTRACTION_SNAPSHOT_PERSISTENCE_FAILED',
+    return attempt;
+  }
+
+  private replayOrRetry(
+    attempt: KnowledgeExtractionAttempt,
+    requestFingerprint: string,
+  ): Promise<KnowledgeExtractionProposalResponse> {
+    if (attempt.request_fingerprint !== requestFingerprint) {
+      throw new ConflictException({
+        code: 'KNOWLEDGE_EXTRACTION_IDEMPOTENCY_CONFLICT',
         message:
-          'The extraction source snapshot could not be saved. Retry with the same idempotency key.',
+          'The idempotency key has already been used with a different source selection.',
       });
     }
+
+    if (
+      (attempt.status === 'ready' || attempt.status === 'resolved') &&
+      attempt.proposal
+    ) {
+      return Promise.resolve(this.toProposalResponse(attempt));
+    }
+
+    if (attempt.status === 'discarded') {
+      throw new ConflictException({
+        code: 'KNOWLEDGE_EXTRACTION_DISCARDED',
+        message: 'This extraction attempt has already been discarded.',
+      });
+    }
+
+    const inFlight = this.inFlightGenerations.get(attempt.id);
+
+    if (inFlight) {
+      return inFlight;
+    }
+
+    const modelInput = this.prepareModelInput(attempt.source_snapshot);
+    let retry: KnowledgeExtractionAttempt | undefined;
+
+    try {
+      retry = this.extractions.markGeneratingForRetry(
+        attempt.project_id,
+        attempt.discussion_id,
+        attempt.id,
+        new Date().toISOString(),
+      );
+    } catch {
+      throw this.proposalPersistenceFailed();
+    }
+
+    if (!retry) {
+      const reloaded = this.findByIdempotencyKey(
+        attempt.project_id,
+        attempt.discussion_id,
+        attempt.idempotency_key,
+      );
+
+      if (
+        reloaded &&
+        (reloaded.status === 'ready' || reloaded.status === 'resolved') &&
+        reloaded.proposal
+      ) {
+        return Promise.resolve(this.toProposalResponse(reloaded));
+      }
+
+      throw this.proposalPersistenceFailed();
+    }
+
+    return this.startGeneration(retry, modelInput);
+  }
+
+  private startGeneration(
+    attempt: KnowledgeExtractionAttempt,
+    modelInput: ReturnType<typeof buildKnowledgeExtractionModelInput>,
+  ): Promise<KnowledgeExtractionProposalResponse> {
+    const existing = this.inFlightGenerations.get(attempt.id);
+
+    if (existing) {
+      return existing;
+    }
+
+    const generation = this.runGeneration(attempt, modelInput);
+    this.inFlightGenerations.set(attempt.id, generation);
+    const clear = () => {
+      if (this.inFlightGenerations.get(attempt.id) === generation) {
+        this.inFlightGenerations.delete(attempt.id);
+      }
+    };
+    void generation.then(clear, clear);
+
+    return generation;
+  }
+
+  private async runGeneration(
+    attempt: KnowledgeExtractionAttempt,
+    modelInput: ReturnType<typeof buildKnowledgeExtractionModelInput>,
+  ): Promise<KnowledgeExtractionProposalResponse> {
+    let proposal: KnowledgeExtractionProposal;
+
+    try {
+      const generation =
+        await this.modelClient.generateStructuredOutput(modelInput);
+      proposal = this.normalizeProposal(generation.output);
+    } catch {
+      try {
+        const failed = this.extractions.markGenerationFailed(
+          attempt.project_id,
+          attempt.discussion_id,
+          attempt.id,
+          new Date().toISOString(),
+        );
+
+        if (!failed) {
+          throw new Error('The failed generation state was not persisted.');
+        }
+      } catch {
+        throw this.proposalPersistenceFailed();
+      }
+
+      throw new ServiceUnavailableException({
+        code: 'KNOWLEDGE_EXTRACTION_GENERATION_FAILED',
+        message:
+          'The knowledge proposal could not be generated. Retry with the same idempotency key.',
+      });
+    }
+
+    let ready: KnowledgeExtractionAttempt | undefined;
+
+    try {
+      ready = this.extractions.saveProposal(
+        attempt.project_id,
+        attempt.discussion_id,
+        attempt.id,
+        proposal,
+        new Date().toISOString(),
+      );
+    } catch {
+      throw this.proposalPersistenceFailed();
+    }
+
+    if (!ready) {
+      throw this.proposalPersistenceFailed();
+    }
+
+    return this.toProposalResponse(ready);
+  }
+
+  private prepareModelInput(
+    snapshot: KnowledgeExtractionSourceSnapshotV1,
+  ): ReturnType<typeof buildKnowledgeExtractionModelInput> {
+    const input = buildKnowledgeExtractionModelInput(snapshot);
+    const budget = this.modelInputBudget.evaluateStructuredOutput(input);
+
+    if (!budget.fits) {
+      throw new PayloadTooLargeException({
+        code: 'KNOWLEDGE_EXTRACTION_SOURCE_TOO_LARGE',
+        message:
+          'The selected extraction sources exceed the supported model input budget. Select fewer messages or frozen context items and try again.',
+        estimated_input_tokens: budget.estimatedInputTokens,
+        available_input_tokens: budget.availableInputTokens,
+        input_token_limit: budget.inputTokenLimit,
+        reserved_output_tokens: budget.reservedOutputTokens,
+        safety_margin_tokens: budget.safetyMarginTokens,
+      });
+    }
+
+    return input;
+  }
+
+  private normalizeProposal(output: unknown): KnowledgeExtractionProposal {
+    if (
+      !this.isRecord(output) ||
+      Object.keys(output).length !== 3 ||
+      !Object.keys(output).every((key) =>
+        ['title', 'summary', 'content'].includes(key),
+      )
+    ) {
+      throw new Error('The model returned an invalid knowledge proposal.');
+    }
+
+    const title = this.normalizedSingleLine(
+      output.title,
+      KNOWLEDGE_PROPOSAL_TITLE_MAX_LENGTH,
+    );
+    const summary = this.normalizedSingleLine(
+      output.summary,
+      KNOWLEDGE_PROPOSAL_SUMMARY_MAX_LENGTH,
+    );
+    const content =
+      typeof output.content === 'string' ? output.content.trim() : '';
+
+    if (
+      !title ||
+      !summary ||
+      content.length === 0 ||
+      content.length > KNOWLEDGE_PROPOSAL_CONTENT_MAX_LENGTH
+    ) {
+      throw new Error('The model returned an invalid knowledge proposal.');
+    }
+
+    return { title, summary, content };
+  }
+
+  private normalizedSingleLine(value: unknown, maximumLength: number): string {
+    if (typeof value !== 'string') {
+      return '';
+    }
+
+    const normalized = value.trim().replace(/\s+/g, ' ');
+
+    return normalized.length <= maximumLength ? normalized : '';
+  }
+
+  private toProposalResponse(
+    attempt: KnowledgeExtractionAttempt,
+  ): KnowledgeExtractionProposalResponse {
+    if (!attempt.proposal) {
+      throw new Error('A ready knowledge extraction has no proposal.');
+    }
+
+    return {
+      id: attempt.id,
+      project_id: attempt.project_id,
+      discussion_id: attempt.discussion_id,
+      status: 'ready',
+      proposal: attempt.proposal,
+      source: {
+        message_selection_kind: attempt.source_snapshot.message_selection_kind,
+        message_ids: attempt.source_snapshot.messages.map(
+          ({ source_id }) => source_id,
+        ),
+        frozen_context_item_ids:
+          attempt.source_snapshot.frozen_context_items.map(
+            ({ source_id }) => source_id,
+          ),
+      },
+      created_at: attempt.created_at,
+      expires_at: attempt.expires_at,
+    };
+  }
+
+  private findByIdempotencyKey(
+    projectId: string,
+    discussionId: string,
+    idempotencyKey: string,
+  ): KnowledgeExtractionAttempt | undefined {
+    try {
+      return this.extractions.findByProjectDiscussionAndIdempotencyKey(
+        projectId,
+        discussionId,
+        idempotencyKey,
+      );
+    } catch {
+      throw this.proposalPersistenceFailed();
+    }
+  }
+
+  private snapshotPersistenceFailed(): ServiceUnavailableException {
+    return new ServiceUnavailableException({
+      code: 'KNOWLEDGE_EXTRACTION_SNAPSHOT_PERSISTENCE_FAILED',
+      message:
+        'The extraction source snapshot could not be saved. Retry with the same idempotency key.',
+    });
+  }
+
+  private proposalPersistenceFailed(): ServiceUnavailableException {
+    return new ServiceUnavailableException({
+      code: 'KNOWLEDGE_EXTRACTION_PROPOSAL_PERSISTENCE_FAILED',
+      message:
+        'The generated proposal state could not be saved. Retry with the same idempotency key.',
+    });
   }
 
   private validateInput(input: unknown): NormalizedSnapshotInput {

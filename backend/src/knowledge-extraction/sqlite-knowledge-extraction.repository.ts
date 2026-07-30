@@ -1,6 +1,12 @@
 import type { DatabaseSync } from 'node:sqlite';
 import { Injectable } from '@nestjs/common';
+import type { KnowledgeExtractionProposal } from '@nuee/shared-types';
 import { DatabaseProvider } from '../database/database.provider';
+import {
+  KNOWLEDGE_PROPOSAL_CONTENT_MAX_LENGTH,
+  KNOWLEDGE_PROPOSAL_SUMMARY_MAX_LENGTH,
+  KNOWLEDGE_PROPOSAL_TITLE_MAX_LENGTH,
+} from './knowledge-extraction.prompt';
 import {
   KnowledgeExtractionIntegrityError,
   type KnowledgeExtractionAttempt,
@@ -130,6 +136,112 @@ export class SqliteKnowledgeExtractionRepository implements KnowledgeExtractionR
       KnowledgeExtractionAttemptRow | undefined;
 
     return row ? this.toAttempt(row) : undefined;
+  }
+
+  markGeneratingForRetry(
+    projectId: string,
+    discussionId: string,
+    extractionId: string,
+    updatedAt: string,
+  ): KnowledgeExtractionAttempt | undefined {
+    const result = this.database
+      .prepare(
+        `
+          UPDATE knowledge_extraction_attempts
+          SET
+            status = 'generating',
+            retry_count = retry_count + 1,
+            updated_at = ?
+          WHERE
+            project_id = ?
+            AND discussion_id = ?
+            AND id = ?
+            AND status IN ('generating', 'failed')
+            AND proposal IS NULL
+        `,
+      )
+      .run(updatedAt, projectId, discussionId, extractionId);
+
+    return result.changes === 0
+      ? undefined
+      : this.findByProjectDiscussionAndId(
+          projectId,
+          discussionId,
+          extractionId,
+        );
+  }
+
+  saveProposal(
+    projectId: string,
+    discussionId: string,
+    extractionId: string,
+    proposal: KnowledgeExtractionProposal,
+    updatedAt: string,
+  ): KnowledgeExtractionAttempt | undefined {
+    const serializedProposal = JSON.stringify(proposal);
+    const result = this.database
+      .prepare(
+        `
+          UPDATE knowledge_extraction_attempts
+          SET
+            proposal = ?,
+            status = 'ready',
+            updated_at = ?
+          WHERE
+            project_id = ?
+            AND discussion_id = ?
+            AND id = ?
+            AND status = 'generating'
+            AND proposal IS NULL
+        `,
+      )
+      .run(
+        serializedProposal,
+        updatedAt,
+        projectId,
+        discussionId,
+        extractionId,
+      );
+
+    return result.changes === 0
+      ? undefined
+      : this.findByProjectDiscussionAndId(
+          projectId,
+          discussionId,
+          extractionId,
+        );
+  }
+
+  markGenerationFailed(
+    projectId: string,
+    discussionId: string,
+    extractionId: string,
+    updatedAt: string,
+  ): KnowledgeExtractionAttempt | undefined {
+    const result = this.database
+      .prepare(
+        `
+          UPDATE knowledge_extraction_attempts
+          SET
+            status = 'failed',
+            updated_at = ?
+          WHERE
+            project_id = ?
+            AND discussion_id = ?
+            AND id = ?
+            AND status = 'generating'
+            AND proposal IS NULL
+        `,
+      )
+      .run(updatedAt, projectId, discussionId, extractionId);
+
+    return result.changes === 0
+      ? undefined
+      : this.findByProjectDiscussionAndId(
+          projectId,
+          discussionId,
+          extractionId,
+        );
   }
 
   private toAttempt(
@@ -381,7 +493,7 @@ export class SqliteKnowledgeExtractionRepository implements KnowledgeExtractionR
   private parseNullableJsonObject(
     serialized: unknown,
     extractionId: string,
-  ): Record<string, unknown> | null {
+  ): KnowledgeExtractionProposal | null {
     if (serialized === null) {
       return null;
     }
@@ -393,11 +505,33 @@ export class SqliteKnowledgeExtractionRepository implements KnowledgeExtractionR
     try {
       const value = JSON.parse(serialized) as unknown;
 
-      if (!this.isRecord(value)) {
+      if (
+        !this.isRecord(value) ||
+        !this.hasExactKeys(value, ['title', 'summary', 'content']) ||
+        !this.isNormalizedText(
+          value.title,
+          KNOWLEDGE_PROPOSAL_TITLE_MAX_LENGTH,
+          true,
+        ) ||
+        !this.isNormalizedText(
+          value.summary,
+          KNOWLEDGE_PROPOSAL_SUMMARY_MAX_LENGTH,
+          true,
+        ) ||
+        !this.isNormalizedText(
+          value.content,
+          KNOWLEDGE_PROPOSAL_CONTENT_MAX_LENGTH,
+          false,
+        )
+      ) {
         throw new KnowledgeExtractionIntegrityError(extractionId);
       }
 
-      return value;
+      return {
+        title: value.title,
+        summary: value.summary,
+        content: value.content,
+      };
     } catch (error) {
       if (error instanceof KnowledgeExtractionIntegrityError) {
         throw error;
@@ -461,6 +595,20 @@ export class SqliteKnowledgeExtractionRepository implements KnowledgeExtractionR
 
   private isNonEmptyString(value: unknown): value is string {
     return typeof value === 'string' && value.trim().length > 0;
+  }
+
+  private isNormalizedText(
+    value: unknown,
+    maximumLength: number,
+    singleLine: boolean,
+  ): value is string {
+    return (
+      typeof value === 'string' &&
+      value.length > 0 &&
+      value.length <= maximumLength &&
+      value === value.trim() &&
+      (!singleLine || !/[\r\n]|\s{2,}/.test(value))
+    );
   }
 
   private isNullableNonEmptyString(value: unknown): value is string | null {

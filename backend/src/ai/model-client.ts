@@ -14,8 +14,27 @@ export interface GenerateTitleInput {
   messages: readonly ModelMessage[];
 }
 
+export interface StructuredOutputFormat {
+  name: string;
+  description: string;
+  schema: Record<string, unknown>;
+}
+
+export interface GenerateStructuredOutputInput {
+  instructions: string;
+  messages: readonly ModelMessage[];
+  format: StructuredOutputFormat;
+}
+
 export interface ModelGeneration {
   content: string;
+  model: string;
+  inputTokens?: number;
+  outputTokens?: number;
+}
+
+export interface StructuredModelGeneration {
+  output: unknown;
   model: string;
   inputTokens?: number;
   outputTokens?: number;
@@ -24,6 +43,9 @@ export interface ModelGeneration {
 export interface ModelClient {
   generateAnswer(input: GenerateAnswerInput): Promise<ModelGeneration>;
   generateTitle(input: GenerateTitleInput): Promise<ModelGeneration>;
+  generateStructuredOutput(
+    input: GenerateStructuredOutputInput,
+  ): Promise<StructuredModelGeneration>;
 }
 
 export const GENERATED_TITLE_MAX_LENGTH = 60;

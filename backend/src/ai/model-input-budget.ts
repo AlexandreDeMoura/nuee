@@ -1,7 +1,10 @@
 import type { AiConfig } from '../config/configuration';
 import { buildFocusedResponseInstructions } from './answer-instructions';
 import type { InputTokenEstimator } from './input-token-estimator';
-import type { GenerateAnswerInput } from './model-client';
+import type {
+  GenerateAnswerInput,
+  GenerateStructuredOutputInput,
+} from './model-client';
 
 const REQUEST_OVERHEAD_TOKENS = 12;
 const MESSAGE_OVERHEAD_TOKENS = 4;
@@ -17,6 +20,9 @@ export interface ModelInputBudgetResult {
 
 export interface ModelInputBudget {
   evaluateAnswer(input: GenerateAnswerInput): ModelInputBudgetResult;
+  evaluateStructuredOutput(
+    input: GenerateStructuredOutputInput,
+  ): ModelInputBudgetResult;
 }
 
 export const MODEL_INPUT_BUDGET = Symbol('MODEL_INPUT_BUDGET');
@@ -39,12 +45,37 @@ export class ConfiguredModelInputBudget implements ModelInputBudget {
     const instructions = buildFocusedResponseInstructions(
       this.config.focusedResponseWordBudget,
     );
+
+    return this.evaluate(
+      instructions,
+      input.messages,
+      MESSAGE_OVERHEAD_TOKENS,
+      ['developer', input.formattedContext],
+    );
+  }
+
+  evaluateStructuredOutput(
+    input: GenerateStructuredOutputInput,
+  ): ModelInputBudgetResult {
+    return this.evaluate(input.instructions, input.messages, 0, [
+      input.format.name,
+      input.format.description,
+      JSON.stringify(input.format.schema),
+    ]);
+  }
+
+  private evaluate(
+    instructions: string,
+    messages: GenerateAnswerInput['messages'],
+    fixedExtraTokens: number,
+    extraTexts: readonly string[],
+  ): ModelInputBudgetResult {
     const instructionTokens = this.estimator.estimateText(instructions);
-    const contextTokens =
-      MESSAGE_OVERHEAD_TOKENS +
-      this.estimator.estimateText('developer') +
-      this.estimator.estimateText(input.formattedContext);
-    const messageTokens = input.messages.reduce(
+    const extraTokens = extraTexts.reduce(
+      (total, text) => total + this.estimator.estimateText(text),
+      fixedExtraTokens,
+    );
+    const messageTokens = messages.reduce(
       (total, message) =>
         total +
         MESSAGE_OVERHEAD_TOKENS +
@@ -53,10 +84,7 @@ export class ConfiguredModelInputBudget implements ModelInputBudget {
       0,
     );
     const estimatedInputTokens =
-      REQUEST_OVERHEAD_TOKENS +
-      instructionTokens +
-      contextTokens +
-      messageTokens;
+      REQUEST_OVERHEAD_TOKENS + instructionTokens + extraTokens + messageTokens;
     const availableInputTokens =
       this.config.modelInputTokenLimit -
       this.config.reservedOutputTokens -

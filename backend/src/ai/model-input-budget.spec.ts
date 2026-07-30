@@ -91,4 +91,46 @@ describe('ConfiguredModelInputBudget', () => {
     expect(exactBudget.evaluateAnswer(input).fits).toBe(true);
     expect(tooSmallBudget.evaluateAnswer(input).fits).toBe(false);
   });
+
+  it('accounts for structured-output instructions, sources, and JSON schema', () => {
+    const estimator = new CharacterCountingEstimator();
+    const budget = new ConfiguredModelInputBudget(
+      {
+        focusedResponseWordBudget: 200,
+        modelInputTokenLimit: 10_000,
+        reservedOutputTokens: 100,
+        inputSafetyMarginTokens: 50,
+      },
+      estimator,
+    );
+    const schema = {
+      type: 'object',
+      properties: { title: { type: 'string' } },
+      required: ['title'],
+    };
+
+    const result = budget.evaluateStructuredOutput({
+      instructions: 'Create one grounded proposal.',
+      messages: [{ role: 'user', content: 'Canonical selected sources' }],
+      format: {
+        name: 'knowledge_proposal',
+        description: 'One proposal.',
+        schema,
+      },
+    });
+
+    expect(estimator.inputs).toEqual([
+      'Create one grounded proposal.',
+      'knowledge_proposal',
+      'One proposal.',
+      JSON.stringify(schema),
+      'user',
+      'Canonical selected sources',
+    ]);
+    expect(result).toMatchObject({
+      fits: true,
+      inputTokenLimit: 10_000,
+      availableInputTokens: 9_850,
+    });
+  });
 });

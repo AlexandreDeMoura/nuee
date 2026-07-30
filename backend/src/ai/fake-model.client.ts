@@ -5,11 +5,18 @@ import type {
   ModelClient,
   ModelGeneration,
   ModelMessage,
+  StructuredModelGeneration,
 } from './model-client';
 import { GENERATED_TITLE_MAX_LENGTH } from './model-client';
 
 export const FAKE_MODEL_ID = 'nuee-deterministic-fake';
 export const FAKE_TITLE_MAX_LENGTH = GENERATED_TITLE_MAX_LENGTH;
+export const FAKE_STRUCTURED_PROPOSAL = {
+  title: 'Deterministic knowledge proposal',
+  summary: 'A grounded proposal synthesized from the selected sources.',
+  content:
+    'This deterministic proposal represents one reusable knowledge unit grounded in the selected discussion sources.',
+};
 
 function normalizeWhitespace(value: string): string {
   return value.trim().replace(/\s+/g, ' ');
@@ -57,6 +64,13 @@ export class FakeModelClient implements ModelClient {
 
     return Promise.resolve({
       content,
+      model: FAKE_MODEL_ID,
+    });
+  }
+
+  generateStructuredOutput(): Promise<StructuredModelGeneration> {
+    return Promise.resolve({
+      output: { ...FAKE_STRUCTURED_PROPOSAL },
       model: FAKE_MODEL_ID,
     });
   }

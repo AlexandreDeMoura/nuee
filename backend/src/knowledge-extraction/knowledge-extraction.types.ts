@@ -1,16 +1,11 @@
 import type {
   DiscussionContextSourceKind,
   DiscussionRole,
+  KnowledgeExtractionMessageSelection,
+  KnowledgeExtractionProposal,
 } from '@nuee/shared-types';
 
-export type KnowledgeExtractionMessageSelection =
-  | {
-      kind: 'selected';
-      message_ids: string[];
-    }
-  | {
-      kind: 'whole_discussion';
-    };
+export type { KnowledgeExtractionMessageSelection } from '@nuee/shared-types';
 
 export interface CreateKnowledgeExtractionSnapshotInput {
   idempotency_key: string;
@@ -61,7 +56,7 @@ export interface KnowledgeExtractionAttempt {
   idempotency_key: string;
   request_fingerprint: string;
   source_snapshot: KnowledgeExtractionSourceSnapshotV1;
-  proposal: Record<string, unknown> | null;
+  proposal: KnowledgeExtractionProposal | null;
   status: KnowledgeExtractionAttemptStatus;
   resolution_fingerprint: string | null;
   resolution_kind: KnowledgeExtractionResolutionKind | null;
@@ -83,6 +78,25 @@ export interface KnowledgeExtractionRepository {
     projectId: string,
     discussionId: string,
     idempotencyKey: string,
+  ): KnowledgeExtractionAttempt | undefined;
+  markGeneratingForRetry(
+    projectId: string,
+    discussionId: string,
+    extractionId: string,
+    updatedAt: string,
+  ): KnowledgeExtractionAttempt | undefined;
+  saveProposal(
+    projectId: string,
+    discussionId: string,
+    extractionId: string,
+    proposal: KnowledgeExtractionProposal,
+    updatedAt: string,
+  ): KnowledgeExtractionAttempt | undefined;
+  markGenerationFailed(
+    projectId: string,
+    discussionId: string,
+    extractionId: string,
+    updatedAt: string,
   ): KnowledgeExtractionAttempt | undefined;
 }
 

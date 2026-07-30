@@ -8,6 +8,7 @@ import {
 import { AiModule } from './ai.module';
 import {
   FAKE_MODEL_ID,
+  FAKE_STRUCTURED_PROPOSAL,
   FAKE_TITLE_MAX_LENGTH,
   FakeModelClient,
 } from './fake-model.client';
@@ -74,6 +75,34 @@ describe('FakeModelClient', () => {
       }),
     ).resolves.toEqual({
       content: 'Untitled discussion',
+      model: FAKE_MODEL_ID,
+    });
+  });
+
+  it('generates one deterministic structured proposal', async () => {
+    const input = {
+      instructions: 'Return one proposal.',
+      messages: [{ role: 'user' as const, content: 'Selected sources' }],
+      format: {
+        name: 'knowledge_proposal',
+        description: 'A proposal.',
+        schema: {
+          type: 'object',
+          properties: {
+            title: { type: 'string' },
+            summary: { type: 'string' },
+            content: { type: 'string' },
+          },
+        },
+      },
+    };
+
+    await expect(client.generateStructuredOutput(input)).resolves.toEqual({
+      output: FAKE_STRUCTURED_PROPOSAL,
+      model: FAKE_MODEL_ID,
+    });
+    await expect(client.generateStructuredOutput(input)).resolves.toEqual({
+      output: FAKE_STRUCTURED_PROPOSAL,
       model: FAKE_MODEL_ID,
     });
   });

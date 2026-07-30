@@ -1,9 +1,19 @@
 import {
   BadRequestException,
+  ConflictException,
+  PayloadTooLargeException,
   ServiceUnavailableException,
   UnprocessableEntityException,
 } from '@nestjs/common';
 import type { FrozenContextItem } from '@nuee/shared-types';
+import { FakeModelClient } from '../ai/fake-model.client';
+import { ConservativeInputTokenEstimator } from '../ai/input-token-estimator';
+import type { ModelClient } from '../ai/model-client';
+import { ConfiguredModelInputBudget } from '../ai/model-input-budget';
+import type {
+  ModelInputBudget,
+  ModelInputBudgetResult,
+} from '../ai/model-input-budget';
 import { DatabaseProvider } from '../database/database.provider';
 import type {
   PersistedDiscussionMessage,
@@ -20,6 +30,8 @@ describe('KnowledgeExtractionService source snapshots', () => {
   let projects: ProjectsService;
   let discussions: SqliteDiscussionRepository;
   let extractions: SqliteKnowledgeExtractionRepository;
+  let modelClient: ModelClient;
+  let modelInputBudget: ModelInputBudget;
   let service: KnowledgeExtractionService;
 
   beforeEach(() => {
@@ -31,10 +43,22 @@ describe('KnowledgeExtractionService source snapshots', () => {
     );
     discussions = new SqliteDiscussionRepository(databaseProvider);
     extractions = new SqliteKnowledgeExtractionRepository(databaseProvider);
+    modelClient = new FakeModelClient();
+    modelInputBudget = new ConfiguredModelInputBudget(
+      {
+        focusedResponseWordBudget: 200,
+        modelInputTokenLimit: 128_000,
+        reservedOutputTokens: 4_000,
+        inputSafetyMarginTokens: 8_000,
+      },
+      new ConservativeInputTokenEstimator(),
+    );
     service = new KnowledgeExtractionService(
       projects,
       discussions,
       extractions,
+      modelClient,
+      modelInputBudget,
     );
   });
 
@@ -213,6 +237,23 @@ describe('KnowledgeExtractionService source snapshots', () => {
       message_selection: messageSelection,
       frozen_context_item_ids: contextItemIds,
     });
+  }
+
+  function useModel(
+    generateStructuredOutput: ModelClient['generateStructuredOutput'],
+  ) {
+    modelClient = {
+      generateAnswer: jest.fn(),
+      generateTitle: jest.fn(),
+      generateStructuredOutput,
+    };
+    service = new KnowledgeExtractionService(
+      projects,
+      discussions,
+      extractions,
+      modelClient,
+      modelInputBudget,
+    );
   }
 
   it('persists single and mixed non-consecutive messages in discussion chronology', () => {
@@ -675,5 +716,339 @@ describe('KnowledgeExtractionService source snapshots', () => {
         },
       }),
     ).toThrow(ServiceUnavailableException);
+  });
+
+  it('generates and durably replays one deterministic grounded proposal', async () => {
+    const project = createProject('Proposal');
+    const source = createDiscussion(project.id, 'discussion-proposal');
+    const generate = jest.spyOn(modelClient, 'generateStructuredOutput');
+    const input = {
+      idempotency_key: 'extract-proposal',
+      message_selection: {
+        kind: 'selected' as const,
+        message_ids: [source.firstAssistant.id],
+      },
+      frozen_context_item_ids: [source.contextItems[0].id],
+    };
+
+    const generated = await service.generateProposal(
+      project.id,
+      source.record.id,
+      input,
+    );
+    const replayed = await service.generateProposal(
+      project.id,
+      source.record.id,
+      input,
+    );
+    const stored = extractions.findByProjectDiscussionAndId(
+      project.id,
+      source.record.id,
+      generated.id,
+    );
+
+    expect(typeof generated.id).toBe('string');
+    expect(generated).toEqual({
+      id: generated.id,
+      project_id: project.id,
+      discussion_id: source.record.id,
+      status: 'ready',
+      proposal: {
+        title: 'Deterministic knowledge proposal',
+        summary: 'A grounded proposal synthesized from the selected sources.',
+        content:
+          'This deterministic proposal represents one reusable knowledge unit grounded in the selected discussion sources.',
+      },
+      source: {
+        message_selection_kind: 'selected',
+        message_ids: [source.firstAssistant.id],
+        frozen_context_item_ids: [source.contextItems[0].id],
+      },
+      created_at: '2026-07-30T12:00:00.000Z',
+      expires_at: '2026-07-31T12:00:00.000Z',
+    });
+    expect(replayed).toEqual(generated);
+    expect(generate).toHaveBeenCalledTimes(1);
+    expect(stored).toMatchObject({
+      status: 'ready',
+      proposal: generated.proposal,
+      retry_count: 0,
+    });
+    expect(JSON.stringify(generated.proposal)).not.toContain(source.record.id);
+    expect(JSON.stringify(generated.proposal)).not.toContain(
+      source.firstAssistant.id,
+    );
+    expect(JSON.stringify(generated.proposal)).not.toContain(
+      source.contextItems[0].id,
+    );
+  });
+
+  it.each([
+    {
+      name: 'a non-object',
+      idempotencySuffix: 'non-object',
+      output: 'not a proposal',
+    },
+    {
+      name: 'an empty field',
+      idempotencySuffix: 'empty-field',
+      output: { title: 'Title', summary: ' ', content: 'Content' },
+    },
+    {
+      name: 'an extra metadata field',
+      idempotencySuffix: 'metadata-field',
+      output: {
+        title: 'Title',
+        summary: 'Summary.',
+        content: 'Content',
+        message_id: 'internal',
+      },
+    },
+  ])(
+    'fails generation when the model returns $name',
+    async ({ output, idempotencySuffix }) => {
+      const project = createProject('Malformed');
+      const source = createDiscussion(project.id, 'discussion-malformed');
+      const idempotencyKey = `extract-malformed-${idempotencySuffix}`;
+      useModel(
+        jest.fn().mockResolvedValue({
+          output,
+          model: 'malformed-test-model',
+        }),
+      );
+
+      await expect(
+        service.generateProposal(project.id, source.record.id, {
+          idempotency_key: idempotencyKey,
+          message_selection: {
+            kind: 'selected',
+            message_ids: [source.firstAssistant.id],
+          },
+          frozen_context_item_ids: [],
+        }),
+      ).rejects.toMatchObject({
+        constructor: ServiceUnavailableException,
+        response: {
+          code: 'KNOWLEDGE_EXTRACTION_GENERATION_FAILED',
+          message:
+            'The knowledge proposal could not be generated. Retry with the same idempotency key.',
+        },
+      });
+
+      expect(
+        extractions.findByProjectDiscussionAndIdempotencyKey(
+          project.id,
+          source.record.id,
+          idempotencyKey,
+        ),
+      ).toMatchObject({
+        status: 'failed',
+        proposal: null,
+      });
+    },
+  );
+
+  it('retries provider failure against the original stored snapshot', async () => {
+    const project = createProject('Retry');
+    const source = createDiscussion(project.id, 'discussion-retry');
+    const modelInputs: unknown[] = [];
+    const generate = jest
+      .fn<ModelClient['generateStructuredOutput']>()
+      .mockImplementation((input) => {
+        modelInputs.push(input);
+
+        if (modelInputs.length === 1) {
+          return Promise.reject(new Error('Provider unavailable'));
+        }
+
+        return Promise.resolve({
+          output: {
+            title: 'Recovered proposal',
+            summary: 'The original source snapshot was reused.',
+            content: 'The retry did not include messages added later.',
+          },
+          model: 'retry-test-model',
+        });
+      });
+    useModel(generate);
+    const input = {
+      idempotency_key: 'extract-provider-retry',
+      message_selection: { kind: 'whole_discussion' as const },
+      frozen_context_item_ids: [],
+    };
+
+    await expect(
+      service.generateProposal(project.id, source.record.id, input),
+    ).rejects.toMatchObject({
+      constructor: ServiceUnavailableException,
+      response: { code: 'KNOWLEDGE_EXTRACTION_GENERATION_FAILED' },
+    });
+    appendCompletedTurn(
+      project.id,
+      source.record.id,
+      2,
+      '2026-07-30T12:01:00.000Z',
+    );
+
+    const recovered = await service.generateProposal(
+      project.id,
+      source.record.id,
+      input,
+    );
+    const stored = extractions.findByProjectDiscussionAndId(
+      project.id,
+      source.record.id,
+      recovered.id,
+    );
+
+    expect(recovered.proposal.title).toBe('Recovered proposal');
+    expect(generate).toHaveBeenCalledTimes(2);
+    expect(modelInputs[1]).toEqual(modelInputs[0]);
+    expect(stored).toMatchObject({
+      status: 'ready',
+      retry_count: 1,
+    });
+    expect(stored?.source_snapshot.messages).toHaveLength(2);
+  });
+
+  it('shares one in-flight generation and replays the completed proposal', async () => {
+    const project = createProject('Concurrent');
+    const source = createDiscussion(project.id, 'discussion-concurrent');
+    let resolveGeneration:
+      | ((
+          value: Awaited<ReturnType<ModelClient['generateStructuredOutput']>>,
+        ) => void)
+      | undefined;
+    const pendingGeneration = new Promise<
+      Awaited<ReturnType<ModelClient['generateStructuredOutput']>>
+    >((resolve) => {
+      resolveGeneration = resolve;
+    });
+    const generate = jest.fn(() => pendingGeneration);
+    useModel(generate);
+    const input = {
+      idempotency_key: 'extract-concurrent',
+      message_selection: {
+        kind: 'selected' as const,
+        message_ids: [source.firstAssistant.id],
+      },
+      frozen_context_item_ids: [],
+    };
+
+    const first = service.generateProposal(project.id, source.record.id, input);
+    const second = service.generateProposal(
+      project.id,
+      source.record.id,
+      input,
+    );
+
+    expect(generate).toHaveBeenCalledTimes(1);
+    resolveGeneration?.({
+      output: {
+        title: 'One proposal',
+        summary: 'Concurrent requests shared one generation.',
+        content: 'Exactly one proposal was generated and persisted.',
+      },
+      model: 'concurrency-test-model',
+    });
+    const [firstResult, secondResult] = await Promise.all([first, second]);
+    const repeated = await service.generateProposal(
+      project.id,
+      source.record.id,
+      input,
+    );
+
+    expect(secondResult).toEqual(firstResult);
+    expect(repeated).toEqual(firstResult);
+    expect(generate).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects idempotency-key reuse with a different selection', async () => {
+    const project = createProject('Conflict');
+    const source = createDiscussion(project.id, 'discussion-conflict');
+    const second = appendCompletedTurn(
+      project.id,
+      source.record.id,
+      2,
+      '2026-07-30T09:01:00.000Z',
+    );
+    const generate = jest.spyOn(modelClient, 'generateStructuredOutput');
+
+    await service.generateProposal(project.id, source.record.id, {
+      idempotency_key: 'extract-conflict',
+      message_selection: {
+        kind: 'selected',
+        message_ids: [source.firstAssistant.id],
+      },
+      frozen_context_item_ids: [],
+    });
+
+    await expect(
+      service.generateProposal(project.id, source.record.id, {
+        idempotency_key: 'extract-conflict',
+        message_selection: {
+          kind: 'selected',
+          message_ids: [second.assistant.id],
+        },
+        frozen_context_item_ids: [],
+      }),
+    ).rejects.toMatchObject({
+      constructor: ConflictException,
+      response: {
+        code: 'KNOWLEDGE_EXTRACTION_IDEMPOTENCY_CONFLICT',
+        message:
+          'The idempotency key has already been used with a different source selection.',
+      },
+    });
+    expect(generate).toHaveBeenCalledTimes(1);
+  });
+
+  it('rejects oversized source input before persisting or calling the model', async () => {
+    const project = createProject('Oversized');
+    const source = createDiscussion(project.id, 'discussion-oversized');
+    const budgetResult: ModelInputBudgetResult = {
+      fits: false,
+      estimatedInputTokens: 1_001,
+      inputTokenLimit: 1_100,
+      availableInputTokens: 1_000,
+      reservedOutputTokens: 50,
+      safetyMarginTokens: 50,
+    };
+    modelInputBudget = {
+      evaluateAnswer: jest.fn(),
+      evaluateStructuredOutput: jest.fn().mockReturnValue(budgetResult),
+    };
+    const generate = jest.spyOn(modelClient, 'generateStructuredOutput');
+    service = new KnowledgeExtractionService(
+      projects,
+      discussions,
+      extractions,
+      modelClient,
+      modelInputBudget,
+    );
+
+    await expect(
+      service.generateProposal(project.id, source.record.id, {
+        idempotency_key: 'extract-oversized',
+        message_selection: {
+          kind: 'selected',
+          message_ids: [source.firstAssistant.id],
+        },
+        frozen_context_item_ids: [],
+      }),
+    ).rejects.toMatchObject({
+      constructor: PayloadTooLargeException,
+      response: {
+        code: 'KNOWLEDGE_EXTRACTION_SOURCE_TOO_LARGE',
+        estimated_input_tokens: 1_001,
+        available_input_tokens: 1_000,
+      },
+    });
+    expect(generate).not.toHaveBeenCalled();
+    expect(
+      databaseProvider.connection
+        .prepare('SELECT COUNT(*) AS count FROM knowledge_extraction_attempts')
+        .get(),
+    ).toEqual({ count: 0 });
   });
 });

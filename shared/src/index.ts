@@ -198,6 +198,44 @@ export interface SendMessageInput {
   idempotency_key: string;
 }
 
+export type KnowledgeExtractionMessageSelection =
+  | {
+      kind: 'selected';
+      message_ids: string[];
+    }
+  | {
+      kind: 'whole_discussion';
+    };
+
+export interface CreateKnowledgeExtractionInput {
+  idempotency_key: string;
+  message_selection: KnowledgeExtractionMessageSelection;
+  frozen_context_item_ids: string[];
+}
+
+export interface KnowledgeExtractionProposal {
+  title: string;
+  summary: string;
+  content: string;
+}
+
+export interface KnowledgeExtractionSourceReference {
+  message_selection_kind: KnowledgeExtractionMessageSelection['kind'];
+  message_ids: string[];
+  frozen_context_item_ids: string[];
+}
+
+export interface KnowledgeExtractionProposalResponse {
+  id: string;
+  project_id: string;
+  discussion_id: string;
+  status: 'ready';
+  proposal: KnowledgeExtractionProposal;
+  source: KnowledgeExtractionSourceReference;
+  created_at: string;
+  expires_at: string;
+}
+
 export type DiscussionSummary = Omit<Discussion, 'frozen_context'> & {
   is_active: boolean;
 };

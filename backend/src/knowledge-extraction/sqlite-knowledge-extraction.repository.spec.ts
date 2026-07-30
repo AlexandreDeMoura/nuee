@@ -217,4 +217,69 @@ describe('SqliteKnowledgeExtractionRepository', () => {
       ),
     ).toThrow(KnowledgeExtractionIntegrityError);
   });
+
+  it('persists failed, retrying, and ready generation transitions', () => {
+    const project = createProject('project-a');
+    const sourceDiscussion = createDiscussion(project.id, 'discussion-a');
+    const record = repository.create(attempt(project.id, sourceDiscussion.id));
+
+    expect(
+      repository.markGenerationFailed(
+        project.id,
+        sourceDiscussion.id,
+        record.id,
+        '2026-07-30T10:01:00.000Z',
+      ),
+    ).toMatchObject({
+      status: 'failed',
+      proposal: null,
+      retry_count: 0,
+    });
+    expect(
+      repository.markGeneratingForRetry(
+        project.id,
+        sourceDiscussion.id,
+        record.id,
+        '2026-07-30T10:02:00.000Z',
+      ),
+    ).toMatchObject({
+      status: 'generating',
+      proposal: null,
+      retry_count: 1,
+    });
+    expect(
+      repository.saveProposal(
+        project.id,
+        sourceDiscussion.id,
+        record.id,
+        {
+          title: 'Grounded proposal',
+          summary: 'One concise sentence.',
+          content: 'One durable knowledge unit.',
+        },
+        '2026-07-30T10:03:00.000Z',
+      ),
+    ).toMatchObject({
+      status: 'ready',
+      proposal: {
+        title: 'Grounded proposal',
+        summary: 'One concise sentence.',
+        content: 'One durable knowledge unit.',
+      },
+      retry_count: 1,
+    });
+    expect(
+      repository.saveProposal(
+        project.id,
+        sourceDiscussion.id,
+        record.id,
+        {
+          title: 'Duplicate',
+          summary: 'Must not replace the proposal.',
+          content: 'A second proposal is forbidden.',
+        },
+        '2026-07-30T10:04:00.000Z',
+      ),
+    ).toBeUndefined();
+  });
 });
