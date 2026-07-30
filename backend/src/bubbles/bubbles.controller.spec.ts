@@ -55,7 +55,10 @@ describe('BubblesController', () => {
       position_y: 0,
       source_kind: 'manual',
       source_discussion_id: null,
+      source_discussion_title: null,
+      source_discussion_deleted_at: null,
       source_message_ids: [],
+      source_context_item_ids: [],
     });
     expect(controller.list(project.id)).toEqual([created]);
     expect(controller.get(project.id, created.id)).toEqual(created);

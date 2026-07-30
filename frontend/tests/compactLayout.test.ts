@@ -25,7 +25,10 @@ function bubble(
     updated_at: created_at,
     source_kind: 'manual',
     source_discussion_id: null,
+    source_discussion_title: null,
+    source_discussion_deleted_at: null,
     source_message_ids: [],
+    source_context_item_ids: [],
   };
 }
 

@@ -30,9 +30,13 @@ describe('runDatabaseMigrations', () => {
         { version: 4, name: 'create-discussions' },
         { version: 5, name: 'create-discussion-messages' },
         { version: 6, name: 'persist-discussion-context-items' },
+        {
+          version: 7,
+          name: 'complete-discussion-extraction-provenance',
+        },
       ]);
       expect(database.prepare('PRAGMA user_version;').get()).toEqual({
-        user_version: 6,
+        user_version: 7,
       });
     } finally {
       database.close();
@@ -137,6 +141,266 @@ describe('runDatabaseMigrations', () => {
         creation_idempotency_key: null,
         creation_request_fingerprint: null,
       });
+    } finally {
+      database.close();
+    }
+  });
+
+  it('upgrades existing bubbles with complete provenance defaults and frozen discussion metadata', () => {
+    const database = new DatabaseSync(':memory:');
+
+    try {
+      database.exec('PRAGMA foreign_keys = ON;');
+      runDatabaseMigrations(database, DATABASE_MIGRATIONS.slice(0, 6));
+      database
+        .prepare(
+          `
+            INSERT INTO projects (
+              id,
+              title,
+              description,
+              created_at,
+              updated_at
+            ) VALUES (?, ?, ?, ?, ?)
+          `,
+        )
+        .run(
+          'project-a',
+          'Existing project',
+          'Existing project description',
+          '2026-07-29T08:00:00.000Z',
+          '2026-07-29T08:00:00.000Z',
+        );
+      database
+        .prepare(
+          `
+            INSERT INTO discussions (
+              id,
+              project_id,
+              title,
+              frozen_context,
+              created_at,
+              updated_at,
+              last_activity_at,
+              deleted_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          `,
+        )
+        .run(
+          'discussion-a',
+          'project-a',
+          'Frozen source title',
+          '{}',
+          '2026-07-29T09:00:00.000Z',
+          '2026-07-29T09:00:00.000Z',
+          '2026-07-29T09:00:00.000Z',
+          '2026-07-29T10:00:00.000Z',
+        );
+      const insertBubble = database.prepare(
+        `
+          INSERT INTO bubbles (
+            id,
+            project_id,
+            title,
+            content,
+            created_at,
+            updated_at,
+            source_kind,
+            source_discussion_id,
+            source_message_ids
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `,
+      );
+      insertBubble.run(
+        'manual-bubble',
+        'project-a',
+        'Manual bubble',
+        'Manual content',
+        '2026-07-29T08:30:00.000Z',
+        '2026-07-29T08:30:00.000Z',
+        'manual',
+        null,
+        '[]',
+      );
+      insertBubble.run(
+        'discussion-bubble',
+        'project-a',
+        'Extracted bubble',
+        'Extracted content',
+        '2026-07-29T09:30:00.000Z',
+        '2026-07-29T09:30:00.000Z',
+        'discussion',
+        'discussion-a',
+        '["message-a"]',
+      );
+      insertBubble.run(
+        'orphaned-discussion-bubble',
+        'project-a',
+        'Orphaned extracted bubble',
+        'Orphaned extracted content',
+        '2026-07-29T09:45:00.000Z',
+        '2026-07-29T09:45:00.000Z',
+        'discussion',
+        'missing-discussion',
+        '["message-b"]',
+      );
+
+      runDatabaseMigrations(database);
+
+      expect(
+        database
+          .prepare(
+            `
+              SELECT
+                id,
+                source_discussion_title,
+                source_discussion_deleted_at,
+                source_context_item_ids,
+                latest_extraction_id
+              FROM bubbles
+              ORDER BY id ASC
+            `,
+          )
+          .all(),
+      ).toEqual([
+        {
+          id: 'discussion-bubble',
+          source_discussion_title: 'Frozen source title',
+          source_discussion_deleted_at: '2026-07-29T10:00:00.000Z',
+          source_context_item_ids: '[]',
+          latest_extraction_id: 'legacy:discussion-bubble',
+        },
+        {
+          id: 'manual-bubble',
+          source_discussion_title: null,
+          source_discussion_deleted_at: null,
+          source_context_item_ids: '[]',
+          latest_extraction_id: null,
+        },
+        {
+          id: 'orphaned-discussion-bubble',
+          source_discussion_title: 'Unavailable discussion',
+          source_discussion_deleted_at: '2026-07-29T09:45:00.000Z',
+          source_context_item_ids: '[]',
+          latest_extraction_id: 'legacy:orphaned-discussion-bubble',
+        },
+      ]);
+    } finally {
+      database.close();
+    }
+  });
+
+  it('rejects malformed JSON and inconsistent extraction provenance', () => {
+    const database = new DatabaseSync(':memory:');
+
+    try {
+      database.exec('PRAGMA foreign_keys = ON;');
+      runDatabaseMigrations(database);
+      database
+        .prepare(
+          `
+            INSERT INTO projects (
+              id,
+              title,
+              description,
+              created_at,
+              updated_at
+            ) VALUES (?, ?, ?, ?, ?)
+          `,
+        )
+        .run(
+          'project-a',
+          'Guarded project',
+          'Guarded project description',
+          '2026-07-29T08:00:00.000Z',
+          '2026-07-29T08:00:00.000Z',
+        );
+      const insertBubble = database.prepare(
+        `
+          INSERT INTO bubbles (
+            id,
+            project_id,
+            title,
+            content,
+            created_at,
+            updated_at,
+            source_kind,
+            source_discussion_id,
+            source_discussion_title,
+            source_message_ids,
+            source_context_item_ids,
+            latest_extraction_id
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `,
+      );
+      const common = [
+        'project-a',
+        'Bubble title',
+        'Bubble content',
+        '2026-07-29T08:00:00.000Z',
+        '2026-07-29T08:00:00.000Z',
+      ] as const;
+
+      expect(() =>
+        insertBubble.run(
+          'bad-json',
+          ...common,
+          'discussion',
+          'discussion-a',
+          'Discussion title',
+          '["message-a"]',
+          '{not-json}',
+          'extraction-a',
+        ),
+      ).toThrow();
+      expect(() =>
+        insertBubble.run(
+          'manual-with-source',
+          ...common,
+          'manual',
+          'discussion-a',
+          'Discussion title',
+          '[]',
+          '[]',
+          null,
+        ),
+      ).toThrow(/invalid bubble discussion extraction provenance/);
+      expect(() =>
+        insertBubble.run(
+          'source-less-extraction',
+          ...common,
+          'discussion',
+          'discussion-a',
+          'Discussion title',
+          '[]',
+          '[]',
+          'extraction-b',
+        ),
+      ).toThrow(/invalid bubble discussion extraction provenance/);
+      expect(() =>
+        insertBubble.run(
+          'missing-discussion',
+          ...common,
+          'discussion',
+          null,
+          'Discussion title',
+          '["message-a"]',
+          '[]',
+          'extraction-missing-discussion',
+        ),
+      ).toThrow(/invalid bubble discussion extraction provenance/);
+      expect(() =>
+        insertBubble.run(
+          'duplicate-sources',
+          ...common,
+          'discussion',
+          'discussion-a',
+          'Discussion title',
+          '["message-a","message-a"]',
+          '[]',
+          'extraction-c',
+        ),
+      ).toThrow(/invalid bubble discussion extraction provenance/);
     } finally {
       database.close();
     }

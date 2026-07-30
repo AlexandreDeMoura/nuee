@@ -1,6 +1,7 @@
 import type { DatabaseSync } from 'node:sqlite';
 import { CREATE_BUBBLES_MIGRATION } from '../bubbles/migrations/002-create-bubbles';
 import { CREATE_BUBBLE_LINKS_MIGRATION } from '../bubbles/migrations/003-create-bubble-links';
+import { COMPLETE_DISCUSSION_EXTRACTION_PROVENANCE_MIGRATION } from '../bubbles/migrations/007-complete-discussion-extraction-provenance';
 import { CREATE_DISCUSSIONS_MIGRATION } from '../discussions/migrations/004-create-discussions';
 import { CREATE_DISCUSSION_MESSAGES_MIGRATION } from '../discussions/migrations/005-create-discussion-messages';
 import { PERSIST_DISCUSSION_CONTEXT_ITEMS_MIGRATION } from '../discussions/migrations/006-persist-discussion-context-items';
@@ -47,6 +48,11 @@ export const DATABASE_MIGRATIONS: readonly DatabaseMigration[] = [
     version: 6,
     name: 'persist-discussion-context-items',
     sql: PERSIST_DISCUSSION_CONTEXT_ITEMS_MIGRATION,
+  },
+  {
+    version: 7,
+    name: 'complete-discussion-extraction-provenance',
+    sql: COMPLETE_DISCUSSION_EXTRACTION_PROVENANCE_MIGRATION,
   },
 ];
 

@@ -8,6 +8,7 @@ import {
   createBubbleLink,
   deleteBubble,
   deleteBubbleLink,
+  isBubbleResponse,
   updateBubble,
   type Bubble,
   type BubbleLink,
@@ -76,14 +77,9 @@ function assertSavedBubble(
   bubbleId: string,
 ): Bubble {
   if (
+    !isBubbleResponse(bubble, projectId) ||
     bubble.id !== bubbleId ||
-    bubble.project_id !== projectId ||
-    typeof bubble.title !== 'string' ||
-    bubble.title.trim().length === 0 ||
-    typeof bubble.content !== 'string' ||
-    bubble.content.trim().length === 0 ||
-    (bubble.summary !== null && typeof bubble.summary !== 'string') ||
-    typeof bubble.updated_at !== 'string'
+    bubble.project_id !== projectId
   ) {
     throw new Error('The saved bubble response was invalid.');
   }

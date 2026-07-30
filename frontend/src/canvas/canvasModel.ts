@@ -3,6 +3,7 @@ import type {
   Project,
   UpdateProjectViewportInput,
 } from '../api';
+import { isBubbleResponse } from '../api';
 import type { CanvasViewport } from './canvasTypes';
 
 export const MIN_ZOOM = 0.25;
@@ -61,33 +62,7 @@ export function isRenderableBubble(
   value: unknown,
   projectId: string,
 ): value is Bubble {
-  if (typeof value !== 'object' || value === null) {
-    return false;
-  }
-
-  const bubble = value as Partial<Bubble>;
-
-  return (
-    typeof bubble.id === 'string' &&
-    bubble.id.length > 0 &&
-    bubble.project_id === projectId &&
-    typeof bubble.title === 'string' &&
-    bubble.title.trim().length > 0 &&
-    (bubble.summary === null || typeof bubble.summary === 'string') &&
-    typeof bubble.content === 'string' &&
-    bubble.content.trim().length > 0 &&
-    typeof bubble.position_x === 'number' &&
-    Number.isFinite(bubble.position_x) &&
-    typeof bubble.position_y === 'number' &&
-    Number.isFinite(bubble.position_y) &&
-    typeof bubble.created_at === 'string' &&
-    typeof bubble.updated_at === 'string' &&
-    (bubble.source_kind === 'manual' || bubble.source_kind === 'discussion') &&
-    (bubble.source_discussion_id === null ||
-      typeof bubble.source_discussion_id === 'string') &&
-    Array.isArray(bubble.source_message_ids) &&
-    bubble.source_message_ids.every((id) => typeof id === 'string')
-  );
+  return isBubbleResponse(value, projectId);
 }
 
 export function renderableBubbles(records: unknown, projectId: string) {

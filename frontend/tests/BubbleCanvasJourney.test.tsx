@@ -45,7 +45,10 @@ function bubble(overrides: Partial<Bubble> = {}): Bubble {
     updated_at: '2026-07-23T08:00:00.000Z',
     source_kind: 'discussion',
     source_discussion_id: 'discussion-1',
+    source_discussion_title: 'Launch economics',
+    source_discussion_deleted_at: null,
     source_message_ids: ['message-1', 'message-2'],
+    source_context_item_ids: [],
     ...overrides,
   };
 }
@@ -174,7 +177,10 @@ describe('bubble canvas journey', () => {
             updated_at: '2026-07-23T09:00:00.000Z',
             source_kind: 'manual',
             source_discussion_id: null,
+            source_discussion_title: null,
+            source_discussion_deleted_at: null,
             source_message_ids: [],
+            source_context_item_ids: [],
           });
           persistedBubbles = [...persistedBubbles, createdBubble];
           return response(createdBubble, 201);
@@ -571,7 +577,10 @@ describe('bubble canvas journey', () => {
       position_y: -80,
       source_kind: 'manual',
       source_discussion_id: null,
+      source_discussion_title: null,
+      source_discussion_deleted_at: null,
       source_message_ids: [],
+      source_context_item_ids: [],
     });
     const persistedBubbles = [first, second];
     const beforeCancellation = JSON.parse(

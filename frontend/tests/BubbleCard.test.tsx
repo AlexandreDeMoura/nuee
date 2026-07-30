@@ -17,7 +17,10 @@ function bubble(overrides: Partial<Bubble> = {}): Bubble {
     updated_at: '2026-07-20T10:00:00.000Z',
     source_kind: 'discussion',
     source_discussion_id: 'discussion-1',
+    source_discussion_title: 'Launch economics',
+    source_discussion_deleted_at: null,
     source_message_ids: ['message-1'],
+    source_context_item_ids: [],
     ...overrides,
   };
 }

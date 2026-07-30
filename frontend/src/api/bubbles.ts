@@ -35,6 +35,81 @@ export type BatchUpdateBubblePositionsInput = BatchRepositionBubblesInput;
 export type UpdateBubbleInput = Required<SharedUpdateBubbleInput>;
 export type BubblePlacementInput = PlaceBubbleInput;
 
+function isNonEmptyIdentifier(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function isIdentifierList(value: unknown): value is string[] {
+  return (
+    Array.isArray(value) &&
+    value.every(isNonEmptyIdentifier) &&
+    new Set(value).size === value.length
+  );
+}
+
+function isIsoTimestamp(value: unknown): value is string {
+  if (typeof value !== 'string') {
+    return false;
+  }
+
+  const milliseconds = Date.parse(value);
+
+  return (
+    Number.isFinite(milliseconds) &&
+    new Date(milliseconds).toISOString() === value
+  );
+}
+
+export function isBubbleResponse(
+  value: unknown,
+  projectId: string,
+): value is Bubble {
+  if (typeof value !== 'object' || value === null) {
+    return false;
+  }
+
+  const bubble = value as Partial<Bubble>;
+  const sourceMessageIds = bubble.source_message_ids;
+  const sourceContextItemIds = bubble.source_context_item_ids;
+  const hasCommonFields =
+    isNonEmptyIdentifier(bubble.id) &&
+    bubble.project_id === projectId &&
+    isNonEmptyIdentifier(bubble.title) &&
+    (bubble.summary === null || typeof bubble.summary === 'string') &&
+    isNonEmptyIdentifier(bubble.content) &&
+    typeof bubble.position_x === 'number' &&
+    Number.isFinite(bubble.position_x) &&
+    typeof bubble.position_y === 'number' &&
+    Number.isFinite(bubble.position_y) &&
+    isIsoTimestamp(bubble.created_at) &&
+    isIsoTimestamp(bubble.updated_at) &&
+    isIdentifierList(sourceMessageIds) &&
+    isIdentifierList(sourceContextItemIds);
+
+  if (!hasCommonFields) {
+    return false;
+  }
+
+  if (bubble.source_kind === 'manual') {
+    return (
+      bubble.source_discussion_id === null &&
+      bubble.source_discussion_title === null &&
+      bubble.source_discussion_deleted_at === null &&
+      sourceMessageIds.length === 0 &&
+      sourceContextItemIds.length === 0
+    );
+  }
+
+  return (
+    bubble.source_kind === 'discussion' &&
+    isNonEmptyIdentifier(bubble.source_discussion_id) &&
+    isNonEmptyIdentifier(bubble.source_discussion_title) &&
+    (bubble.source_discussion_deleted_at === null ||
+      isIsoTimestamp(bubble.source_discussion_deleted_at)) &&
+    sourceMessageIds.length + sourceContextItemIds.length > 0
+  );
+}
+
 export function getProjectBubbles(
   projectId: string,
   signal?: AbortSignal,

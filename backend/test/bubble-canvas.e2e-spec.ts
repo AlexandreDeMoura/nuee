@@ -30,7 +30,10 @@ interface JourneyBubble {
   updated_at: string;
   source_kind: 'manual' | 'discussion';
   source_discussion_id: string | null;
+  source_discussion_title: string | null;
+  source_discussion_deleted_at: string | null;
   source_message_ids: string[];
+  source_context_item_ids: string[];
 }
 
 interface JourneyLink {

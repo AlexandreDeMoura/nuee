@@ -324,7 +324,10 @@ describe('discussions panel lifecycle', () => {
       updated_at: '2026-07-28T10:00:01.000Z',
       source_kind: 'discussion',
       source_discussion_id: latest.id,
+      source_discussion_title: latest.title,
+      source_discussion_deleted_at: null,
       source_message_ids: ['assistant-discussion-latest'],
+      source_context_item_ids: [],
     };
     const deleteRequest = vi.fn(async () => undefined);
 

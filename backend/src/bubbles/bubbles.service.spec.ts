@@ -5,6 +5,7 @@ import { join } from 'node:path';
 import { DatabaseProvider } from '../database/database.provider';
 import { ProjectsService } from '../projects/projects.service';
 import { SqliteProjectRepository } from '../projects/sqlite-project.repository';
+import type { CreateBubbleFromDiscussionExtractionInput } from './bubble.types';
 import { BubblesService } from './bubbles.service';
 import { SqliteBubbleRepository } from './sqlite-bubble.repository';
 
@@ -42,6 +43,26 @@ describe('BubblesService', () => {
     return projects.create({ title, description: `${title} description` });
   }
 
+  function extractionInput(
+    projectId: string,
+    overrides: Partial<CreateBubbleFromDiscussionExtractionInput> = {},
+  ): CreateBubbleFromDiscussionExtractionInput {
+    return {
+      project_id: projectId,
+      extraction_id: 'extraction-1',
+      source_discussion_id: 'discussion-1',
+      source_discussion_title: 'Launch tradeoffs',
+      source_message_ids: ['message-1', 'message-2'],
+      source_context_item_ids: ['context-1'],
+      title: 'Extracted decision',
+      summary: 'A reusable decision from the discussion.',
+      content: 'Choose the reversible launch path while demand is uncertain.',
+      position_x: 272,
+      position_y: -178,
+      ...overrides,
+    };
+  }
+
   it('creates a trimmed manual bubble with persistence defaults', () => {
     jest.setSystemTime(new Date('2026-07-21T09:00:00.000Z'));
     const project = createProject();
@@ -65,7 +86,10 @@ describe('BubblesService', () => {
       updated_at: '2026-07-21T09:00:00.000Z',
       source_kind: 'manual',
       source_discussion_id: null,
+      source_discussion_title: null,
+      source_discussion_deleted_at: null,
       source_message_ids: [],
+      source_context_item_ids: [],
     });
     expect(service.list(project.id)).toEqual([bubble]);
     expect(service.get(project.id, bubble.id)).toEqual(bubble);
@@ -87,6 +111,135 @@ describe('BubblesService', () => {
       position_x: -125.5,
       position_y: 240,
     });
+  });
+
+  it('creates a discussion extraction bubble with complete frozen provenance and supports replay', () => {
+    jest.setSystemTime(new Date('2026-07-29T09:00:00.000Z'));
+    const project = createProject();
+    const input = extractionInput(project.id);
+
+    const created = service.createFromDiscussionExtraction(input);
+
+    expect(created).toEqual({
+      status: 'created',
+      bubble: {
+        id: created.bubble.id,
+        project_id: project.id,
+        title: 'Extracted decision',
+        summary: 'A reusable decision from the discussion.',
+        content: 'Choose the reversible launch path while demand is uncertain.',
+        position_x: 272,
+        position_y: -178,
+        created_at: '2026-07-29T09:00:00.000Z',
+        updated_at: '2026-07-29T09:00:00.000Z',
+        source_kind: 'discussion',
+        source_discussion_id: 'discussion-1',
+        source_discussion_title: 'Launch tradeoffs',
+        source_discussion_deleted_at: null,
+        source_message_ids: ['message-1', 'message-2'],
+        source_context_item_ids: ['context-1'],
+      },
+    });
+    expect(
+      databaseProvider.connection
+        .prepare('SELECT latest_extraction_id FROM bubbles WHERE id = ?')
+        .get(created.bubble.id),
+    ).toEqual({ latest_extraction_id: 'extraction-1' });
+    expect(service.createFromDiscussionExtraction(input)).toEqual({
+      status: 'replayed',
+      bubble: created.bubble,
+    });
+    expect(
+      service.createFromDiscussionExtraction({
+        ...input,
+        content: 'A conflicting replay.',
+      }),
+    ).toEqual({
+      status: 'extraction_conflict',
+      bubble: created.bubble,
+    });
+    expect(service.list(project.id)).toEqual([created.bubble]);
+    expect(created.bubble).not.toHaveProperty('latest_extraction_id');
+  });
+
+  it('updates a bubble through the extraction port with optimistic concurrency and replay protection', () => {
+    jest.setSystemTime(new Date('2026-07-29T09:00:00.000Z'));
+    const project = createProject();
+    const original = service.create(project.id, {
+      title: 'Original title',
+      content: 'Original content',
+      position_x: 42,
+      position_y: -24,
+    });
+    const updateInput = {
+      ...extractionInput(project.id),
+      bubble_id: original.id,
+      expected_updated_at: original.updated_at,
+    };
+
+    const updated = service.updateFromDiscussionExtraction(updateInput);
+
+    expect(updated.status).toBe('updated');
+
+    if (updated.status !== 'updated') {
+      throw new Error('Expected the extraction update to succeed.');
+    }
+
+    expect(updated.bubble).toEqual({
+      ...original,
+      title: 'Extracted decision',
+      summary: 'A reusable decision from the discussion.',
+      content: 'Choose the reversible launch path while demand is uncertain.',
+      updated_at: '2026-07-29T09:00:00.001Z',
+      source_kind: 'discussion',
+      source_discussion_id: 'discussion-1',
+      source_discussion_title: 'Launch tradeoffs',
+      source_discussion_deleted_at: null,
+      source_message_ids: ['message-1', 'message-2'],
+      source_context_item_ids: ['context-1'],
+    });
+    expect(service.updateFromDiscussionExtraction(updateInput)).toEqual({
+      status: 'replayed',
+      bubble: updated.bubble,
+    });
+
+    const laterManualEdit = service.update(project.id, original.id, {
+      title: 'Later manual edit',
+    });
+    expect(
+      service.updateFromDiscussionExtraction({
+        ...updateInput,
+        extraction_id: 'extraction-2',
+        expected_updated_at: updated.bubble.updated_at,
+      }),
+    ).toEqual({
+      status: 'target_changed',
+      bubble: laterManualEdit,
+    });
+    expect(laterManualEdit.position_x).toBe(original.position_x);
+    expect(laterManualEdit.position_y).toBe(original.position_y);
+  });
+
+  it('rejects invalid extraction provenance before persistence', () => {
+    const project = createProject();
+
+    expect(() =>
+      service.createFromDiscussionExtraction(
+        extractionInput(project.id, {
+          source_message_ids: ['message-1', 'message-1'],
+          source_context_item_ids: [],
+        }),
+      ),
+    ).toThrow(BadRequestException);
+    expect(() =>
+      service.createFromDiscussionExtraction(
+        extractionInput(project.id, {
+          source_message_ids: [],
+          source_context_item_ids: [],
+        }),
+      ),
+    ).toThrow(BadRequestException);
+    expect(service.list(project.id)).toEqual([]);
   });
 
   it.each([
