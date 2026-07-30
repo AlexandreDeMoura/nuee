@@ -22,6 +22,7 @@ import {
   getProjectBubbles,
   type Bubble,
   type BubbleLink,
+  type KnowledgeExtractionResolutionResponse,
   type Project,
 } from '../api';
 import {
@@ -658,6 +659,7 @@ export function ProjectWorkspace({
     requestBubbles,
   });
   const {
+    addBubble,
     isBubbleRemoved,
     removeBubble,
     replaceBubble,
@@ -810,6 +812,19 @@ export function ProjectWorkspace({
       replaceBubble(bubble);
     },
     [currentProject.id, replaceBubble],
+  );
+  const handleKnowledgeExtractionResolved = useCallback(
+    (response: KnowledgeExtractionResolutionResponse) => {
+      if (
+        response.project_id !== currentProject.id ||
+        response.resolution.kind !== 'new_bubble'
+      ) {
+        return;
+      }
+
+      addBubble(response.resolution.bubble);
+    },
+    [addBubble, currentProject.id],
   );
 
   const handleBubbleLinkCreated = useCallback((link: BubbleLink) => {
@@ -1274,6 +1289,9 @@ export function ProjectWorkspace({
                 extractionRequests={extractionRequests}
                 isObscured={discussionPendingDeletion !== null}
                 onExtractKnowledge={onExtractDiscussionKnowledge}
+                onKnowledgeExtractionResolved={
+                  handleKnowledgeExtractionResolved
+                }
                 onInspectContext={onInspectDiscussionContext}
                 onDiscussionChanged={projectDiscussions.updateDiscussion}
                 onDelete={openDiscussionDeleteConfirmation}

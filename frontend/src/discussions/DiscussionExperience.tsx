@@ -14,7 +14,10 @@ import {
   type DiscussionKnowledgeSource,
 } from './DiscussionKnowledgeAction';
 import { DiscussionMessages } from './DiscussionMessages';
-import type { DiscussionDetails } from '../api';
+import type {
+  DiscussionDetails,
+  KnowledgeExtractionResolutionResponse,
+} from '../api';
 import {
   hasEligibleKnowledgeExtractionSource,
   KnowledgeExtractionDiscardDialog,
@@ -47,6 +50,9 @@ export interface DiscussionExperienceProps {
   extractionRequests?: KnowledgeExtractionRequests;
   isObscured?: boolean;
   onExtractKnowledge?: (source: DiscussionKnowledgeSource) => void;
+  onKnowledgeExtractionResolved?: (
+    response: KnowledgeExtractionResolutionResponse,
+  ) => void;
   onInspectContext?: (inspection: DiscussionContextInspection) => void;
   onDiscussionChanged?: (discussion: DiscussionDetails) => void;
   onDelete?: (discussion: DiscussionDeleteTarget) => void;
@@ -65,6 +71,7 @@ export function DiscussionExperience({
   extractionRequests,
   isObscured,
   onExtractKnowledge,
+  onKnowledgeExtractionResolved,
   onInspectContext,
   onDiscussionChanged,
   onDelete,
@@ -94,6 +101,7 @@ export function DiscussionExperience({
       extractionRequests={extractionRequests}
       isObscured={isObscured}
       onExtractKnowledge={onExtractKnowledge}
+      onKnowledgeExtractionResolved={onKnowledgeExtractionResolved}
       onInspectContext={onInspectContext}
       key={identity}
       onDiscussionChanged={onDiscussionChanged}
@@ -116,6 +124,7 @@ function DiscussionExperienceModal({
   extractionRequests,
   isObscured,
   onExtractKnowledge,
+  onKnowledgeExtractionResolved,
   onInspectContext,
   onDiscussionChanged,
   onDelete,
@@ -165,6 +174,7 @@ function DiscussionExperienceModal({
   const extraction = useKnowledgeExtraction({
     createAttemptId: createExtractionAttemptId,
     discussionId: extractionDiscussionId,
+    onResolved: onKnowledgeExtractionResolved,
     projectId,
     requests: extractionRequests,
   });
@@ -351,6 +361,16 @@ function DiscussionExperienceModal({
       setIsRejectingExtraction(false);
     }
   }, [extraction, restoreExtractionTriggerFocus]);
+  const approveExtractionAsNewBubble = useCallback(async () => {
+    const response = await extraction.approveAsNewBubble();
+
+    if (response?.resolution.kind !== 'new_bubble') {
+      return;
+    }
+
+    extraction.reset();
+    restoreExtractionTriggerFocus();
+  }, [extraction, restoreExtractionTriggerFocus]);
   const closeDiscussion = onMinimize ?? controller.minimize;
   const minimize = useCallback(() => {
     if (extraction.state.proposal) {
@@ -462,6 +482,7 @@ function DiscussionExperienceModal({
           <KnowledgeExtractionProposalReview
             controller={extraction}
             isRejecting={isRejectingExtraction}
+            onApproveAsNewBubble={approveExtractionAsNewBubble}
             onReject={rejectExtraction}
           />
         ) : isExtractionFlowActive && lifecycle.details ? (

@@ -57,6 +57,36 @@ function formatInspectorDate(value: string): string {
   }).format(date);
 }
 
+function extractionSourceDetails(
+  bubble: BubbleInspectorProps['bubble'],
+): string {
+  const details = [
+    bubble.source_discussion_title
+      ? `Discussion: ${bubble.source_discussion_title}`
+      : 'Discussion extraction',
+  ];
+  const messageCount = bubble.source_message_ids.length;
+  const contextCount = bubble.source_context_item_ids.length;
+
+  if (bubble.source_discussion_deleted_at) {
+    details.push('Source discussion deleted');
+  }
+
+  if (messageCount > 0) {
+    details.push(
+      `${messageCount} source ${messageCount === 1 ? 'message' : 'messages'}`,
+    );
+  }
+
+  if (contextCount > 0) {
+    details.push(
+      `${contextCount} frozen context ${contextCount === 1 ? 'item' : 'items'}`,
+    );
+  }
+
+  return details.join(' · ');
+}
+
 export function BubbleInspector(props: BubbleInspectorProps) {
   const {
     linkLoadStatus = 'ready',
@@ -137,13 +167,7 @@ export function BubbleInspector(props: BubbleInspectorProps) {
                       aria-hidden="true"
                     />
                     <span className="min-w-0 break-words">
-                      Discussion {persistedBubble.source_discussion_id}
-                      {persistedBubble.source_message_ids.length > 0 &&
-                        ` · ${persistedBubble.source_message_ids.length} source ${
-                          persistedBubble.source_message_ids.length === 1
-                            ? 'message'
-                            : 'messages'
-                        }`}
+                      {extractionSourceDetails(persistedBubble)}
                     </span>
                   </dd>
                 </div>

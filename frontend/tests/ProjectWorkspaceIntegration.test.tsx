@@ -13,6 +13,8 @@ import type {
   BubbleLink,
   CreateDiscussionInput,
   DiscussionDetails,
+  KnowledgeExtractionProposalResponse,
+  KnowledgeExtractionResolutionResponse,
   Project,
   UpdateBubbleInput,
 } from '../src/api';
@@ -116,6 +118,27 @@ function discussionDetails(
     last_activity_at: '2026-07-28T08:00:00.001Z',
     messages: [],
     ...overrides,
+  };
+}
+
+function extractionProposalResponse(): KnowledgeExtractionProposalResponse {
+  return {
+    created_at: '2026-07-30T08:00:00.000Z',
+    discussion_id: 'discussion-1',
+    expires_at: '2026-07-31T08:00:00.000Z',
+    id: 'extraction-1',
+    project_id: project.id,
+    proposal: {
+      content: 'Licensing must be resolved before launch.',
+      summary: 'Licensing is the longest lead-time constraint.',
+      title: 'Launch licensing constraint',
+    },
+    source: {
+      frozen_context_item_ids: [],
+      message_ids: ['message-assistant-1'],
+      message_selection_kind: 'selected',
+    },
+    status: 'ready',
   };
 }
 
@@ -268,6 +291,150 @@ describe('workspace integration contracts', () => {
     expect(
       document.querySelector('[data-workspace-content]')?.hasAttribute('inert'),
     ).toBe(false);
+  });
+
+  it('adds one persisted extraction bubble at the server position only after approval succeeds', async () => {
+    const persisted = discussionDetails({
+      title: 'Launch review',
+      messages: [
+        {
+          content: 'What blocks the launch?',
+          created_at: '2026-07-28T08:00:00.000Z',
+          discussion_id: 'discussion-1',
+          id: 'message-user-1',
+          request_id: 'request-1',
+          role: 'user',
+          status: 'completed',
+        },
+        {
+          content: 'Licensing is the longest lead-time constraint.',
+          created_at: '2026-07-28T08:00:00.001Z',
+          discussion_id: 'discussion-1',
+          id: 'message-assistant-1',
+          request_id: null,
+          role: 'assistant',
+          status: 'completed',
+        },
+      ],
+    });
+    const extractedBubble = bubble({
+      content: 'Licensing must be resolved before launch.',
+      id: 'bubble-extracted',
+      position_x: 696,
+      position_y: -120,
+      source_discussion_id: persisted.id,
+      source_discussion_title: persisted.title,
+      source_kind: 'discussion',
+      source_message_ids: ['message-assistant-1'],
+      summary: 'Licensing is the longest lead-time constraint.',
+      title: 'Launch licensing constraint',
+    });
+    const resolution = deferred<KnowledgeExtractionResolutionResponse>();
+    const resolve = vi.fn(() => resolution.promise);
+    const recordOpen = vi.fn(async () => persisted);
+
+    render(
+      <ProjectWorkspace
+        discussionCount={1}
+        discussionLifecycleRequests={{ get: async () => persisted }}
+        discussionPanelRequests={{
+          list: async () => [
+            {
+              created_at: persisted.created_at,
+              id: persisted.id,
+              is_active: true,
+              last_activity_at: persisted.last_activity_at,
+              project_id: persisted.project_id,
+              title: persisted.title,
+              updated_at: persisted.updated_at,
+            },
+          ],
+          recordOpen,
+        }}
+        extractionRequests={{
+          create: async () => extractionProposalResponse(),
+          resolve,
+        }}
+        project={project}
+        requestBubbleLinks={async () => []}
+        requestBubbles={requestEmptyBubbles}
+      />,
+    );
+
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Open discussion: Launch review',
+      }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Extract knowledge from this response',
+      }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Generate proposal' }),
+    );
+    fireEvent.click(
+      await screen.findByRole('button', {
+        name: 'Approve as new bubble',
+      }),
+    );
+
+    expect(resolve).toHaveBeenCalledWith(
+      project.id,
+      persisted.id,
+      'extraction-1',
+      {
+        kind: 'new_bubble',
+        proposal: extractionProposalResponse().proposal,
+      },
+      expect.any(AbortSignal),
+    );
+    expect(
+      document.querySelector(
+        `[data-bubble-id="${extractedBubble.id}"]`,
+      ),
+    ).toBeNull();
+    expect(
+      (
+        screen.getByRole('button', {
+          name: 'Approving…',
+        }) as HTMLButtonElement
+      ).disabled,
+    ).toBe(true);
+
+    resolution.resolve({
+      discussion_id: persisted.id,
+      id: 'extraction-1',
+      project_id: project.id,
+      resolution: {
+        bubble: extractedBubble,
+        kind: 'new_bubble',
+      },
+      status: 'resolved',
+    });
+
+    const card = await waitFor(() => {
+      const persistedCard = document.querySelector<HTMLElement>(
+        `[data-bubble-id="${extractedBubble.id}"]`,
+      );
+
+      expect(persistedCard).not.toBeNull();
+      return persistedCard as HTMLElement;
+    });
+    expect(card.style.left).toBe('696px');
+    expect(card.style.top).toBe('-120px');
+    expect(
+      document.querySelectorAll(
+        `[data-bubble-id="${extractedBubble.id}"]`,
+      ),
+    ).toHaveLength(1);
+    expect(
+      screen.queryByRole('heading', {
+        name: 'Review knowledge proposal',
+      }),
+    ).toBeNull();
+    expect(recordOpen).toHaveBeenCalledTimes(1);
   });
 
   it('can start a discussion from the panel when the canvas is not empty', async () => {

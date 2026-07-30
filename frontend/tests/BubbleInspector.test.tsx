@@ -80,11 +80,33 @@ describe('BubbleInspector', () => {
       ),
     ).toBeTruthy();
     expect(
-      screen.getByText('Discussion discussion-1 · 2 source messages'),
+      screen.getByText('Discussion: Launch economics · 2 source messages'),
     ).toBeTruthy();
+    expect(screen.queryByText(/discussion-1/)).toBeNull();
     expect(document.querySelector('time')?.getAttribute('dateTime')).toBe(
       '2026-07-20T10:00:00.000Z',
     );
+  });
+
+  it('shows frozen-context counts and a graceful deleted-source state without identifiers', () => {
+    render(
+      <BubbleInspector
+        bubble={bubble({
+          source_context_item_ids: ['context-1'],
+          source_discussion_deleted_at: '2026-07-29T10:00:00.000Z',
+          source_message_ids: ['message-1'],
+        })}
+        onBubbleUpdated={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByText(
+        'Discussion: Launch economics · Source discussion deleted · 1 source message · 1 frozen context item',
+      ),
+    ).toBeTruthy();
+    expect(screen.queryByText(/discussion-1/)).toBeNull();
+    expect(screen.queryByText(/message-1|context-1/)).toBeNull();
   });
 
   it('debounces edits, trims saved fields, refreshes details, and records a successful edit', async () => {
