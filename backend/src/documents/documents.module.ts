@@ -1,11 +1,13 @@
 import { Module } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { appConfig } from '../config/configuration';
+import { DOCUMENT_CONTEXT_SOURCE_READER } from '../discussion-context/discussion-context.types';
 import { ProjectsModule } from '../projects/projects.module';
 import { ClamAvDocumentMalwareScanner } from './clamav-document-malware.scanner';
 import { DeterministicDocumentMalwareScanner } from './deterministic-document-malware.scanner';
 import { DocumentProcessingCoordinator } from './document-processing.coordinator';
 import { DocumentTextNormalizer } from './document-text.normalizer';
+import { DocumentUploadInterceptor } from './document-upload.interceptor';
 import { DocumentUploadValidator } from './document-upload.validator';
 import {
   DOCUMENT_FILE_STORAGE,
@@ -14,6 +16,10 @@ import {
   DOCUMENT_REPOSITORY,
   PDF_UPLOAD_INSPECTOR,
 } from './document.types';
+import {
+  DocumentsController,
+  DocumentUploadPolicyController,
+} from './documents.controller';
 import { DocumentsService } from './documents.service';
 import { PdfJsDocumentTextExtractor } from './pdfjs-document-text.extractor';
 import { PdfJsUploadInspector } from './pdfjs-upload.inspector';
@@ -26,8 +32,10 @@ import {
 
 @Module({
   imports: [ProjectsModule],
+  controllers: [DocumentUploadPolicyController, DocumentsController],
   providers: [
     DocumentsService,
+    DocumentUploadInterceptor,
     DocumentProcessingCoordinator,
     DocumentTextNormalizer,
     DocumentUploadValidator,
@@ -68,7 +76,11 @@ import {
       provide: DOCUMENT_PROCESSING_QUEUE,
       useExisting: DocumentProcessingCoordinator,
     },
+    {
+      provide: DOCUMENT_CONTEXT_SOURCE_READER,
+      useExisting: DocumentsService,
+    },
   ],
-  exports: [DocumentsService],
+  exports: [DocumentsService, DOCUMENT_CONTEXT_SOURCE_READER],
 })
 export class DocumentsModule {}

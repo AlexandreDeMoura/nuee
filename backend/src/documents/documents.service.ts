@@ -5,12 +5,23 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
   PayloadTooLargeException,
   ServiceUnavailableException,
 } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
-import type { DocumentSummary } from '@nuee/shared-types';
+import type {
+  DocumentDetail,
+  DocumentListResponse,
+  DocumentSummary,
+  DocumentUploadPolicyResponse,
+  RetryDocumentProcessingResponse,
+} from '@nuee/shared-types';
 import { documentsConfig } from '../config/configuration';
+import type {
+  DocumentContextSourceReadResult,
+  DocumentContextSourceReader,
+} from '../discussion-context/discussion-context.types';
 import { ProjectsService } from '../projects/projects.service';
 import { DocumentUploadValidator } from './document-upload.validator';
 import {
@@ -18,11 +29,12 @@ import {
   DOCUMENT_PROCESSING_QUEUE,
   DOCUMENT_REPOSITORY,
   DocumentUploadValidationError,
+  toDocumentDetail,
   toDocumentSummary,
   type DocumentFileStorage,
   type DocumentRecord,
   type DocumentProcessingQueue,
-  type DocumentUploadRepository,
+  type DocumentRepository,
   type UploadDocumentInput,
   type ValidatedDocumentUpload,
 } from './document.types';
@@ -30,12 +42,12 @@ import {
 const MAX_IDEMPOTENCY_KEY_LENGTH = 200;
 
 @Injectable()
-export class DocumentsService {
+export class DocumentsService implements DocumentContextSourceReader {
   private readonly projectUploadTails = new Map<string, Promise<void>>();
 
   constructor(
     @Inject(DOCUMENT_REPOSITORY)
-    private readonly documents: DocumentUploadRepository,
+    private readonly documents: DocumentRepository,
     @Inject(DOCUMENT_FILE_STORAGE)
     private readonly fileStorage: DocumentFileStorage,
     private readonly projects: ProjectsService,
@@ -122,6 +134,101 @@ export class DocumentsService {
       this.scheduleProcessing(created);
       return toDocumentSummary(created);
     });
+  }
+
+  uploadPolicy(): DocumentUploadPolicyResponse {
+    return {
+      supported_formats: this.config.supported_formats.map((format) => ({
+        category: format.category,
+        extensions: [...format.extensions],
+        mime_types: [...format.mime_types],
+      })),
+      max_file_size_bytes: this.config.max_file_size_bytes,
+      max_files_per_request: this.config.max_files_per_request,
+      max_documents_per_project: this.config.max_documents_per_project,
+      max_project_storage_bytes: this.config.max_project_storage_bytes,
+    };
+  }
+
+  list(projectId: string): DocumentListResponse {
+    this.projects.get(projectId);
+
+    return this.documents
+      .findAllByProjectId(projectId)
+      .map((document) => toDocumentSummary(document));
+  }
+
+  get(projectId: string, documentId: string): DocumentDetail {
+    this.projects.get(projectId);
+
+    return toDocumentDetail(this.getPersisted(projectId, documentId));
+  }
+
+  retry(
+    projectId: string,
+    documentId: string,
+  ): RetryDocumentProcessingResponse {
+    this.projects.get(projectId);
+    const document = this.getPersisted(projectId, documentId);
+
+    if (
+      document.processing_status !== 'failed' ||
+      !document.processing_error_retryable
+    ) {
+      throw new ConflictException({
+        code: 'DOCUMENT_PROCESSING_RETRY_UNAVAILABLE',
+        message: 'This document is not eligible for processing retry.',
+      });
+    }
+
+    const queued = this.documents.queueProcessingRetry({
+      project_id: projectId,
+      document_id: documentId,
+      expected_generation: document.processing_generation,
+      queued_at: this.nextTimestamp(document.updated_at),
+    });
+
+    if (!queued) {
+      throw new ConflictException({
+        code: 'DOCUMENT_PROCESSING_RETRY_CONFLICT',
+        message:
+          'The document processing state changed before the retry was queued. Refresh the document and try again.',
+      });
+    }
+
+    this.scheduleProcessing(queued);
+    return toDocumentSummary(queued);
+  }
+
+  readContextSource(
+    projectId: string,
+    documentId: string,
+  ): DocumentContextSourceReadResult {
+    const document = this.documents.findByProjectAndId(projectId, documentId);
+
+    if (!document) {
+      return {
+        status: 'unavailable',
+        reason:
+          this.documents.findProjectIdById(documentId) === undefined
+            ? 'missing'
+            : 'cross_project',
+      };
+    }
+
+    const detail = toDocumentDetail(document);
+
+    return {
+      status: 'available',
+      source: {
+        id: detail.id,
+        project_id: detail.project_id,
+        title: detail.title,
+        processing_status: detail.processing_status,
+        processed_text:
+          detail.processing_status === 'ready' ? detail.extracted_text : null,
+      },
+    };
   }
 
   private async validateFile(
@@ -225,6 +332,19 @@ export class DocumentsService {
     return existing;
   }
 
+  private getPersisted(projectId: string, documentId: string): DocumentRecord {
+    const document = this.documents.findByProjectAndId(projectId, documentId);
+
+    if (!document) {
+      throw new NotFoundException({
+        code: 'DOCUMENT_NOT_FOUND',
+        message: `Document "${documentId}" was not found in project "${projectId}".`,
+      });
+    }
+
+    return document;
+  }
+
   private async compensateStoredFile(fileReference: string): Promise<void> {
     try {
       await this.fileStorage.remove(fileReference);
@@ -289,5 +409,12 @@ export class DocumentsService {
       message:
         'This idempotency key was already used for a different document upload.',
     });
+  }
+
+  private nextTimestamp(previousTimestamp: string): string {
+    const currentTime = Date.now();
+    const previousTime = new Date(previousTimestamp).getTime();
+
+    return new Date(Math.max(currentTime, previousTime + 1)).toISOString();
   }
 }

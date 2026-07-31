@@ -1,4 +1,4 @@
-import { Inject, Injectable, Optional } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import type {
   DiscussionContextSelectionInput,
@@ -37,9 +37,8 @@ export class DiscussionContextAssembler {
     private readonly projects: ProjectsService,
     @Inject(BUBBLE_CONTEXT_SOURCE_READER)
     private readonly bubbles: BubbleContextSourceReader,
-    @Optional()
     @Inject(DOCUMENT_CONTEXT_SOURCE_READER)
-    private readonly documents?: DocumentContextSourceReader,
+    private readonly documents: DocumentContextSourceReader,
   ) {}
 
   assemble(
@@ -152,13 +151,13 @@ export class DiscussionContextAssembler {
     const sources: ReadyDocumentContextSource[] = [];
 
     for (const sourceId of documentIds) {
-      const result = this.documents?.readContextSource(projectId, sourceId);
+      const result = this.documents.readContextSource(projectId, sourceId);
 
-      if (!result || result.status === 'unavailable') {
+      if (result.status === 'unavailable') {
         issues.push({
           source_kind: 'document',
           source_id: sourceId,
-          reason: result?.reason ?? 'inaccessible',
+          reason: result.reason,
         });
         continue;
       }

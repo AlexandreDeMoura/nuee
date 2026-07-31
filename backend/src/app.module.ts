@@ -12,6 +12,7 @@ import {
 } from './config/configuration';
 import { DatabaseModule } from './database/database.module';
 import { DiscussionsModule } from './discussions/discussions.module';
+import { DocumentsModule } from './documents/documents.module';
 import { KnowledgeExtractionModule } from './knowledge-extraction/knowledge-extraction.module';
 import { ProjectsModule } from './projects/projects.module';
 
@@ -27,6 +28,7 @@ import { ProjectsModule } from './projects/projects.module';
     DatabaseModule,
     ProjectsModule,
     BubblesModule,
+    DocumentsModule,
     DiscussionsModule,
     KnowledgeExtractionModule,
   ],

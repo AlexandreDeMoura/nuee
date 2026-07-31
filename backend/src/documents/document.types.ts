@@ -1,4 +1,5 @@
 import type {
+  DocumentDetail,
   DocumentFormatCategory,
   DocumentProcessingErrorCode,
   DocumentProcessingStatus,
@@ -243,6 +244,33 @@ export function toDocumentSummary(record: DocumentRecord): DocumentSummary {
   };
 }
 
+export function toDocumentDetail(record: DocumentRecord): DocumentDetail {
+  const summary = toDocumentSummary(record);
+
+  if (summary.processing_status !== 'ready') {
+    return {
+      ...summary,
+      extracted_text: null,
+    };
+  }
+
+  if (
+    typeof record.extracted_text !== 'string' ||
+    record.extracted_text.trim().length === 0 ||
+    record.processed_source_hash !== record.source_hash
+  ) {
+    throw new DocumentIntegrityError(record.id);
+  }
+
+  return {
+    ...summary,
+    processing_status: 'ready',
+    processing_error_code: null,
+    can_retry: false,
+    extracted_text: record.extracted_text,
+  };
+}
+
 export interface ClaimDocumentProcessingLeaseInput {
   project_id: string;
   document_id: string;
@@ -291,19 +319,13 @@ export interface QueueDocumentProcessingRetryInput {
   queued_at: string;
 }
 
-export interface DocumentRepository {
-  create(document: NewDocumentRecord): DocumentRecord;
+export interface DocumentRepository extends DocumentUploadRepository {
   findAllByProjectId(projectId: string): DocumentRecord[];
   findProjectIdById(documentId: string): string | undefined;
   findByProjectAndId(
     projectId: string,
     documentId: string,
   ): DocumentRecord | undefined;
-  findByProjectAndUploadIdempotencyKey(
-    projectId: string,
-    idempotencyKey: string,
-  ): DocumentRecord | undefined;
-  getProjectUsage(projectId: string): DocumentProjectUsage;
   findProcessingCandidates(
     availableAt: string,
     limit: number,

@@ -9,7 +9,7 @@ import {
   type DocumentFileStorage,
   type DocumentRecord,
   type DocumentProcessingQueue,
-  type DocumentUploadRepository,
+  type DocumentRepository,
   type PdfUploadInspector,
   type StoredDocumentFile,
   type UploadDocumentInput,
@@ -56,25 +56,9 @@ class FakeDocumentFileStorage implements DocumentFileStorage {
   }
 }
 
-class FailingDocumentUploadRepository implements DocumentUploadRepository {
-  constructor(private readonly delegate: DocumentUploadRepository) {}
-
-  create(): DocumentRecord {
+class FailingDocumentRepository extends SqliteDocumentRepository {
+  override create(): DocumentRecord {
     throw new Error('private sqlite details');
-  }
-
-  findByProjectAndUploadIdempotencyKey(
-    projectId: string,
-    idempotencyKey: string,
-  ): DocumentRecord | undefined {
-    return this.delegate.findByProjectAndUploadIdempotencyKey(
-      projectId,
-      idempotencyKey,
-    );
-  }
-
-  getProjectUsage(projectId: string) {
-    return this.delegate.getProjectUsage(projectId);
   }
 }
 
@@ -146,7 +130,7 @@ describe('DocumentsService upload creation', () => {
   });
 
   function createService(
-    uploadRepository: DocumentUploadRepository,
+    uploadRepository: DocumentRepository,
   ): DocumentsService {
     return new DocumentsService(
       uploadRepository,
@@ -302,7 +286,7 @@ describe('DocumentsService upload creation', () => {
 
   it('removes an orphaned source when record creation fails', async () => {
     const project = createProject();
-    service = createService(new FailingDocumentUploadRepository(repository));
+    service = createService(new FailingDocumentRepository(databaseProvider));
 
     await expect(
       service.upload(project.id, uploadInput('upload-a')),
@@ -318,7 +302,7 @@ describe('DocumentsService upload creation', () => {
   it('reports cleanup failure without exposing persistence or storage details', async () => {
     const project = createProject();
     storage.failRemove = true;
-    service = createService(new FailingDocumentUploadRepository(repository));
+    service = createService(new FailingDocumentRepository(databaseProvider));
 
     await expect(
       service.upload(project.id, uploadInput('upload-a')),
@@ -347,5 +331,159 @@ describe('DocumentsService upload creation', () => {
     );
     expect(repository.findAllByProjectId(project.id)).toEqual([]);
     expect(storage.storeCount).toBe(0);
+  });
+
+  it('returns public policy, metadata-only lists, and ready text only from detail', async () => {
+    const project = createProject();
+    const processing = await service.upload(
+      project.id,
+      uploadInput('upload-processing', 'Still processing.'),
+    );
+    const ready = await service.upload(
+      project.id,
+      uploadInput('upload-ready', 'Complete ready source.'),
+    );
+    const readyRecord = repository.findByProjectAndId(project.id, ready.id)!;
+
+    repository.claimProcessingLease({
+      project_id: project.id,
+      document_id: ready.id,
+      expected_generation: readyRecord.processing_generation,
+      lease_owner: 'worker-ready',
+      claimed_at: '2026-07-30T12:01:00.000Z',
+      lease_expires_at: '2026-07-30T12:06:00.000Z',
+    });
+    repository.completeProcessing({
+      project_id: project.id,
+      document_id: ready.id,
+      expected_generation: readyRecord.processing_generation,
+      lease_owner: 'worker-ready',
+      extracted_text: 'Complete ready source.',
+      processed_source_hash: readyRecord.source_hash,
+      completed_at: '2026-07-30T12:02:00.000Z',
+    });
+
+    const policy = service.uploadPolicy();
+    policy.supported_formats[0].extensions.push('.changed');
+
+    expect(service.uploadPolicy()).toEqual({
+      supported_formats: config.supported_formats,
+      max_file_size_bytes: config.max_file_size_bytes,
+      max_files_per_request: 1,
+      max_documents_per_project: config.max_documents_per_project,
+      max_project_storage_bytes: config.max_project_storage_bytes,
+    });
+
+    const list = service.list(project.id);
+    expect(list.map((document) => document.id)).toEqual(
+      repository.findAllByProjectId(project.id).map((document) => document.id),
+    );
+    expect(
+      list.every(
+        (document) =>
+          !('extracted_text' in document) && !('file_reference' in document),
+      ),
+    ).toBe(true);
+    expect(service.get(project.id, processing.id)).toMatchObject({
+      id: processing.id,
+      processing_status: 'processing',
+      extracted_text: null,
+    });
+    expect(service.get(project.id, ready.id)).toMatchObject({
+      id: ready.id,
+      processing_status: 'ready',
+      extracted_text: 'Complete ready source.',
+    });
+  });
+
+  it('hides cross-project records from detail while classifying context sources internally', async () => {
+    const project = createProject();
+    const otherProject = projects.create({
+      title: 'Other document project',
+      description: 'Sources owned by another project.',
+    });
+    const uploaded = await service.upload(
+      otherProject.id,
+      uploadInput('upload-other', 'Other project source.'),
+    );
+
+    expect(() => service.get(project.id, uploaded.id)).toThrow(
+      NotFoundException,
+    );
+
+    try {
+      service.get(project.id, uploaded.id);
+    } catch (error) {
+      expect(error).toHaveProperty('response.code', 'DOCUMENT_NOT_FOUND');
+    }
+
+    expect(service.readContextSource(project.id, uploaded.id)).toEqual({
+      status: 'unavailable',
+      reason: 'cross_project',
+    });
+    expect(service.readContextSource(project.id, 'missing-document')).toEqual({
+      status: 'unavailable',
+      reason: 'missing',
+    });
+    expect(
+      service.readContextSource(otherProject.id, uploaded.id),
+    ).toMatchObject({
+      status: 'available',
+      source: {
+        id: uploaded.id,
+        project_id: otherProject.id,
+        processing_status: 'processing',
+        processed_text: null,
+      },
+    });
+  });
+
+  it('queues only recoverable failed records for processing retry', async () => {
+    const project = createProject();
+    const uploaded = await service.upload(
+      project.id,
+      uploadInput('upload-retry', 'Retry this source.'),
+    );
+    const record = repository.findByProjectAndId(project.id, uploaded.id)!;
+
+    repository.claimProcessingLease({
+      project_id: project.id,
+      document_id: uploaded.id,
+      expected_generation: record.processing_generation,
+      lease_owner: 'worker-failed',
+      claimed_at: '2026-07-30T12:01:00.000Z',
+      lease_expires_at: '2026-07-30T12:06:00.000Z',
+    });
+    repository.failProcessing({
+      project_id: project.id,
+      document_id: uploaded.id,
+      expected_generation: record.processing_generation,
+      lease_owner: 'worker-failed',
+      error_code: 'scanner_unavailable',
+      retryable: true,
+      completed_at: '2026-07-30T12:02:00.000Z',
+    });
+    scheduleProcessing.mockClear();
+
+    expect(service.retry(project.id, uploaded.id)).toMatchObject({
+      id: uploaded.id,
+      processing_status: 'processing',
+      processing_error_code: null,
+      can_retry: false,
+    });
+    expect(
+      repository.findByProjectAndId(project.id, uploaded.id),
+    ).toMatchObject({
+      processing_generation: 2,
+      processing_attempt_count: 0,
+    });
+    expect(scheduleProcessing).toHaveBeenCalledWith({
+      project_id: project.id,
+      document_id: uploaded.id,
+      processing_generation: 2,
+    });
+    expect(() => service.retry(project.id, uploaded.id)).toThrow(
+      ConflictException,
+    );
   });
 });

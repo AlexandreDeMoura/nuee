@@ -1,0 +1,320 @@
+import { createHash } from 'node:crypto';
+import { INestApplication } from '@nestjs/common';
+import { Test, TestingModule } from '@nestjs/testing';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import request from 'supertest';
+import { App } from 'supertest/types';
+import type {
+  DiscussionDetails,
+  DocumentDetail,
+  DocumentListResponse,
+  DocumentSummary,
+  DocumentUploadPolicyResponse,
+  FrozenContextV1,
+  Project,
+} from '@nuee/shared-types';
+import { AppModule } from './../src/app.module';
+import { DocumentProcessingCoordinator } from './../src/documents/document-processing.coordinator';
+import {
+  DOCUMENT_REPOSITORY,
+  type DocumentRepository,
+} from './../src/documents/document.types';
+
+describe('Document library journey (e2e)', () => {
+  const temporaryDirectory = mkdtempSync(
+    join(tmpdir(), 'nuee-document-journey-'),
+  );
+  const databasePath = join(temporaryDirectory, 'documents.sqlite');
+  const privateStoragePath = join(temporaryDirectory, 'private-documents');
+  const previousDatabasePath = process.env.PROJECT_DATABASE_PATH;
+  const previousPrivateStoragePath = process.env.DOCUMENT_PRIVATE_STORAGE_PATH;
+  const previousMaxFileSize = process.env.DOCUMENT_MAX_FILE_SIZE_BYTES;
+  let app: INestApplication<App>;
+
+  beforeAll(async () => {
+    process.env.PROJECT_DATABASE_PATH = databasePath;
+    process.env.DOCUMENT_PRIVATE_STORAGE_PATH = privateStoragePath;
+    process.env.DOCUMENT_MAX_FILE_SIZE_BYTES = '64';
+
+    const moduleFixture: TestingModule = await Test.createTestingModule({
+      imports: [AppModule],
+    }).compile();
+    app = moduleFixture.createNestApplication();
+    await app.init();
+  });
+
+  afterAll(async () => {
+    await app.close();
+    restoreEnvironment('PROJECT_DATABASE_PATH', previousDatabasePath);
+    restoreEnvironment(
+      'DOCUMENT_PRIVATE_STORAGE_PATH',
+      previousPrivateStoragePath,
+    );
+    restoreEnvironment('DOCUMENT_MAX_FILE_SIZE_BYTES', previousMaxFileSize);
+    rmSync(temporaryDirectory, { recursive: true, force: true });
+  });
+
+  async function createProject(title: string): Promise<Project> {
+    const response = await request(app.getHttpServer())
+      .post('/projects')
+      .send({
+        title,
+        description: `Description for ${title}.`,
+      })
+      .expect(201);
+
+    return response.body as Project;
+  }
+
+  it('publishes the configured upload policy and stable multipart errors', async () => {
+    const policyResponse = await request(app.getHttpServer())
+      .get('/document-upload-policy')
+      .expect(200);
+    const policy = policyResponse.body as DocumentUploadPolicyResponse;
+
+    expect(policy).toMatchObject({
+      max_file_size_bytes: 64,
+      max_files_per_request: 1,
+      max_documents_per_project: 25,
+      max_project_storage_bytes: 100 * 1024 * 1024,
+    });
+    expect(policy.supported_formats).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          category: 'plain_text',
+          extensions: ['.txt'],
+        }),
+        expect.objectContaining({
+          category: 'markdown',
+          extensions: ['.md'],
+        }),
+        expect.objectContaining({
+          category: 'pdf',
+          extensions: ['.pdf'],
+        }),
+      ]),
+    );
+
+    const project = await createProject('Upload validation');
+
+    await request(app.getHttpServer())
+      .post(`/projects/${project.id}/documents`)
+      .field('idempotency_key', 'missing-file')
+      .expect(400)
+      .expect(({ body }) => {
+        expect(body).toMatchObject({
+          code: 'DOCUMENT_UPLOAD_VALIDATION_FAILED',
+          field_errors: {
+            file: 'A valid document filename is required.',
+          },
+        });
+      });
+
+    await request(app.getHttpServer())
+      .post(`/projects/${project.id}/documents`)
+      .field('idempotency_key', 'oversized-file')
+      .attach('file', Buffer.alloc(65, 'a'), {
+        filename: 'oversized.txt',
+        contentType: 'text/plain',
+      })
+      .expect(413)
+      .expect(({ body }) => {
+        expect(body).toMatchObject({
+          code: 'DOCUMENT_UPLOAD_LIMIT_EXCEEDED',
+          reason: 'file_too_large',
+          max_file_size_bytes: 64,
+        });
+      });
+  });
+
+  it('uploads, lists, inspects, scopes, and freezes a ready document', async () => {
+    const project = await createProject('Document owner');
+    const otherProject = await createProject('Other document owner');
+    const sourceText = '# Finding\n\nThe launch remains reversible.';
+
+    const uploadResponse = await request(app.getHttpServer())
+      .post(`/projects/${project.id}/documents`)
+      .field('idempotency_key', 'upload-finding')
+      .attach('file', Buffer.from(sourceText), {
+        filename: 'Research Finding.md',
+        contentType: 'text/markdown',
+      })
+      .expect(201);
+    const uploaded = uploadResponse.body as DocumentSummary;
+
+    expect(uploaded).toMatchObject({
+      project_id: project.id,
+      title: 'Research Finding',
+      original_filename: 'Research Finding.md',
+      format: 'markdown',
+      mime_type: 'text/markdown',
+      processing_status: 'processing',
+    });
+    expect(uploaded).not.toHaveProperty('extracted_text');
+
+    await request(app.getHttpServer())
+      .post(`/projects/${project.id}/documents`)
+      .field('idempotency_key', 'upload-finding')
+      .attach('file', Buffer.from(sourceText), {
+        filename: 'Research Finding.md',
+        contentType: 'text/markdown',
+      })
+      .expect(201)
+      .expect(({ body }) => {
+        expect(body).toMatchObject({ id: uploaded.id });
+      });
+
+    await app.get(DocumentProcessingCoordinator).drain();
+
+    const listResponse = await request(app.getHttpServer())
+      .get(`/projects/${project.id}/documents`)
+      .expect(200);
+    const list = listResponse.body as DocumentListResponse;
+    expect(list).toEqual([
+      expect.objectContaining({
+        id: uploaded.id,
+        processing_status: 'ready',
+      }),
+    ]);
+    expect(list[0]).not.toHaveProperty('extracted_text');
+    expect(list[0]).not.toHaveProperty('file_reference');
+
+    await request(app.getHttpServer())
+      .get(`/projects/${otherProject.id}/documents`)
+      .expect(200)
+      .expect([]);
+    await request(app.getHttpServer())
+      .get(`/projects/${otherProject.id}/documents/${uploaded.id}`)
+      .expect(404)
+      .expect(({ body }) => {
+        expect(body).toMatchObject({ code: 'DOCUMENT_NOT_FOUND' });
+      });
+
+    const detailResponse = await request(app.getHttpServer())
+      .get(`/projects/${project.id}/documents/${uploaded.id}`)
+      .expect(200);
+    const detail = detailResponse.body as DocumentDetail;
+    expect(detail).toMatchObject({
+      id: uploaded.id,
+      processing_status: 'ready',
+      extracted_text: sourceText,
+    });
+    const unchangedUpdatedAt = detail.updated_at;
+
+    const discussionResponse = await request(app.getHttpServer())
+      .post(`/projects/${project.id}/discussions`)
+      .send({
+        project_id: project.id,
+        first_prompt: 'Use the selected document.',
+        idempotency_key: 'discussion-with-document',
+        bubble_ids: [],
+        document_ids: [uploaded.id],
+      })
+      .expect(201);
+    const discussion = discussionResponse.body as DiscussionDetails;
+    const frozenContext = discussion.frozen_context as FrozenContextV1;
+
+    expect(frozenContext.items).toEqual([
+      expect.objectContaining({
+        source_kind: 'project_description',
+        source_id: project.id,
+        frozen_content: project.description,
+        display_order: 0,
+      }),
+      expect.objectContaining({
+        source_kind: 'document',
+        source_id: uploaded.id,
+        source_title: 'Research Finding',
+        frozen_content: sourceText,
+        display_order: 1,
+      }),
+    ]);
+
+    await request(app.getHttpServer())
+      .get(`/projects/${project.id}/documents/${uploaded.id}`)
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body).toMatchObject({
+          processing_status: 'ready',
+          extracted_text: sourceText,
+          updated_at: unchangedUpdatedAt,
+        });
+      });
+  });
+
+  it('retries only recoverable failures without creating another record', async () => {
+    const project = await createProject('Retry owner');
+    const repository = app.get<DocumentRepository>(DOCUMENT_REPOSITORY);
+    const sourceText = 'Recoverable source.';
+    const sourceHash = createHash('sha256').update(sourceText).digest('hex');
+
+    repository.create({
+      id: 'recoverable-document',
+      project_id: project.id,
+      title: 'Recoverable source',
+      original_filename: 'recoverable.txt',
+      file_reference: 'originals/aa/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+      format: 'plain_text',
+      mime_type: 'text/plain',
+      size_bytes: Buffer.byteLength(sourceText),
+      source_hash: sourceHash,
+      upload_idempotency_key: 'recoverable-upload',
+      upload_request_fingerprint: createHash('sha256')
+        .update('recoverable-upload-request')
+        .digest('hex'),
+      created_at: '2026-07-31T10:00:00.000Z',
+      updated_at: '2026-07-31T10:00:00.000Z',
+    });
+    repository.claimProcessingLease({
+      project_id: project.id,
+      document_id: 'recoverable-document',
+      expected_generation: 1,
+      lease_owner: 'failed-worker',
+      claimed_at: '2026-07-31T10:01:00.000Z',
+      lease_expires_at: '2026-07-31T10:06:00.000Z',
+    });
+    repository.failProcessing({
+      project_id: project.id,
+      document_id: 'recoverable-document',
+      expected_generation: 1,
+      lease_owner: 'failed-worker',
+      error_code: 'storage_unavailable',
+      retryable: true,
+      completed_at: '2026-07-31T10:02:00.000Z',
+    });
+
+    await request(app.getHttpServer())
+      .post(`/projects/${project.id}/documents/recoverable-document/retry`)
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body).toMatchObject({
+          id: 'recoverable-document',
+          processing_status: 'processing',
+          processing_error_code: null,
+          can_retry: false,
+        });
+      });
+
+    expect(
+      repository
+        .findAllByProjectId(project.id)
+        .filter(({ id }) => id === 'recoverable-document'),
+    ).toHaveLength(1);
+  });
+});
+
+function restoreEnvironment(
+  key:
+    | 'PROJECT_DATABASE_PATH'
+    | 'DOCUMENT_PRIVATE_STORAGE_PATH'
+    | 'DOCUMENT_MAX_FILE_SIZE_BYTES',
+  value: string | undefined,
+): void {
+  if (value === undefined) {
+    delete process.env[key];
+  } else {
+    process.env[key] = value;
+  }
+}

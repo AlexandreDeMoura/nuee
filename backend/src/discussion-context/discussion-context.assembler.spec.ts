@@ -403,30 +403,4 @@ describe('DiscussionContextAssembler', () => {
       source: documentSource,
     });
   });
-
-  it('rejects document selections when the Document Library reader is absent', () => {
-    const project = createProject();
-    const assemblerWithoutDocuments = new DiscussionContextAssembler(
-      projects,
-      bubbles,
-    );
-
-    expect.assertions(2);
-
-    try {
-      assemblerWithoutDocuments.assemble(project.id, {
-        bubble_ids: [],
-        document_ids: ['document-1'],
-      });
-    } catch (error) {
-      expect(error).toBeInstanceOf(DiscussionContextSourceError);
-      expect((error as DiscussionContextSourceError).issues).toEqual([
-        {
-          source_kind: 'document',
-          source_id: 'document-1',
-          reason: 'inaccessible',
-        },
-      ]);
-    }
-  });
 });
