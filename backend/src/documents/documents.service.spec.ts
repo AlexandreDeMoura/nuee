@@ -8,6 +8,7 @@ import {
   DocumentFileStorageError,
   type DocumentFileStorage,
   type DocumentRecord,
+  type DocumentProcessingQueue,
   type DocumentUploadRepository,
   type PdfUploadInspector,
   type StoredDocumentFile,
@@ -84,6 +85,8 @@ describe('DocumentsService upload creation', () => {
   let storage: FakeDocumentFileStorage;
   let config: DocumentsConfig;
   let validator: DocumentUploadValidator;
+  let processingQueue: DocumentProcessingQueue;
+  let scheduleProcessing: jest.Mock;
   let service: DocumentsService;
 
   beforeEach(() => {
@@ -119,7 +122,17 @@ describe('DocumentsService upload creation', () => {
       max_documents_per_project: 25,
       max_project_storage_bytes: 4096,
       maxPdfPages: 200,
+      maxExtractedTextBytes: 2048,
+      processingTimeoutMs: 30_000,
+      processingLeaseMs: 45_000,
+      maxProcessingConcurrency: 2,
+      maxProcessingAttempts: 3,
+      malwareScannerHost: '127.0.0.1',
+      malwareScannerPort: 3310,
+      malwareScannerTimeoutMs: 10_000,
     };
+    scheduleProcessing = jest.fn();
+    processingQueue = { schedule: scheduleProcessing };
     const pdfInspector: PdfUploadInspector = {
       inspect: () => Promise.resolve({ page_count: 1 }),
     };
@@ -140,6 +153,7 @@ describe('DocumentsService upload creation', () => {
       storage,
       projects,
       validator,
+      processingQueue,
       config,
     );
   }
@@ -194,6 +208,11 @@ describe('DocumentsService upload creation', () => {
     expect(storage.files.get(record.file_reference)?.toString('utf8')).toBe(
       'Complete source text.',
     );
+    expect(scheduleProcessing).toHaveBeenCalledWith({
+      project_id: project.id,
+      document_id: record.id,
+      processing_generation: 1,
+    });
   });
 
   it('replays the same request without another file or record and conflicts on changed input', async () => {

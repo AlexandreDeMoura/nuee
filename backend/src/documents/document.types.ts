@@ -131,6 +131,63 @@ export interface DocumentFileStorage {
   remove(fileReference: string): Promise<void>;
 }
 
+export type DocumentMalwareScanResult = 'clean' | 'unsafe';
+
+export interface DocumentMalwareScanner {
+  scan(
+    bytes: Uint8Array,
+    signal: AbortSignal,
+  ): Promise<DocumentMalwareScanResult>;
+}
+
+export class DocumentMalwareScannerError extends Error {
+  constructor(options?: ErrorOptions) {
+    super('Document malware scanning is unavailable.', options);
+    this.name = 'DocumentMalwareScannerError';
+  }
+}
+
+export interface DocumentTextExtractionLimits {
+  max_output_bytes: number;
+  max_pdf_pages: number;
+}
+
+export interface ExtractDocumentTextInput {
+  bytes: Uint8Array;
+  signal: AbortSignal;
+  limits: DocumentTextExtractionLimits;
+}
+
+export interface DocumentTextExtractor {
+  extract(input: ExtractDocumentTextInput): Promise<string>;
+}
+
+export class DocumentTextExtractionError extends Error {
+  constructor(
+    readonly code:
+      | 'encrypted'
+      | 'corrupted'
+      | 'no_text'
+      | 'too_complex'
+      | 'processing_unavailable',
+    readonly retryable: boolean,
+    options?: ErrorOptions,
+  ) {
+    super('The document text could not be extracted safely.', options);
+    this.name = 'DocumentTextExtractionError';
+  }
+}
+
+export interface ScheduleDocumentProcessingInput {
+  project_id: string;
+  document_id: string;
+  processing_generation: number;
+}
+
+export interface DocumentProcessingQueue {
+  schedule(input?: ScheduleDocumentProcessingInput): void;
+}
+
 export type DocumentFileStorageOperation = 'store' | 'read' | 'remove';
 
 export class DocumentFileStorageError extends Error {
@@ -247,6 +304,10 @@ export interface DocumentRepository {
     idempotencyKey: string,
   ): DocumentRecord | undefined;
   getProjectUsage(projectId: string): DocumentProjectUsage;
+  findProcessingCandidates(
+    availableAt: string,
+    limit: number,
+  ): DocumentRecord[];
   claimProcessingLease(
     input: ClaimDocumentProcessingLeaseInput,
   ): DocumentRecord | undefined;
@@ -279,3 +340,5 @@ export class DocumentIntegrityError extends Error {
 export const DOCUMENT_REPOSITORY = Symbol('DOCUMENT_REPOSITORY');
 export const DOCUMENT_FILE_STORAGE = Symbol('DOCUMENT_FILE_STORAGE');
 export const PDF_UPLOAD_INSPECTOR = Symbol('PDF_UPLOAD_INSPECTOR');
+export const DOCUMENT_MALWARE_SCANNER = Symbol('DOCUMENT_MALWARE_SCANNER');
+export const DOCUMENT_PROCESSING_QUEUE = Symbol('DOCUMENT_PROCESSING_QUEUE');

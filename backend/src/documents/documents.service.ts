@@ -15,11 +15,13 @@ import { ProjectsService } from '../projects/projects.service';
 import { DocumentUploadValidator } from './document-upload.validator';
 import {
   DOCUMENT_FILE_STORAGE,
+  DOCUMENT_PROCESSING_QUEUE,
   DOCUMENT_REPOSITORY,
   DocumentUploadValidationError,
   toDocumentSummary,
   type DocumentFileStorage,
   type DocumentRecord,
+  type DocumentProcessingQueue,
   type DocumentUploadRepository,
   type UploadDocumentInput,
   type ValidatedDocumentUpload,
@@ -38,6 +40,8 @@ export class DocumentsService {
     private readonly fileStorage: DocumentFileStorage,
     private readonly projects: ProjectsService,
     private readonly validator: DocumentUploadValidator,
+    @Inject(DOCUMENT_PROCESSING_QUEUE)
+    private readonly processingQueue: DocumentProcessingQueue,
     @Inject(documentsConfig.KEY)
     private readonly config: ConfigType<typeof documentsConfig>,
   ) {}
@@ -59,6 +63,7 @@ export class DocumentsService {
       );
 
       if (replay) {
+        this.scheduleProcessing(replay);
         return toDocumentSummary(replay);
       }
 
@@ -114,6 +119,7 @@ export class DocumentsService {
         });
       }
 
+      this.scheduleProcessing(created);
       return toDocumentSummary(created);
     });
   }
@@ -228,6 +234,18 @@ export class DocumentsService {
         message: 'The failed upload could not be cleaned up safely.',
       });
     }
+  }
+
+  private scheduleProcessing(document: DocumentRecord): void {
+    if (document.processing_status !== 'processing') {
+      return;
+    }
+
+    this.processingQueue.schedule({
+      project_id: document.project_id,
+      document_id: document.id,
+      processing_generation: document.processing_generation,
+    });
   }
 
   private async withProjectUploadLock<T>(

@@ -54,6 +54,14 @@ describe('DocumentUploadValidator', () => {
       max_documents_per_project: 25,
       max_project_storage_bytes: 100,
       maxPdfPages: 200,
+      maxExtractedTextBytes: 64,
+      processingTimeoutMs: 30_000,
+      processingLeaseMs: 45_000,
+      maxProcessingConcurrency: 2,
+      maxProcessingAttempts: 3,
+      malwareScannerHost: '127.0.0.1',
+      malwareScannerPort: 3310,
+      malwareScannerTimeoutMs: 10_000,
     };
     pdfInspector = new FakePdfUploadInspector();
     validator = new DocumentUploadValidator(config, pdfInspector);

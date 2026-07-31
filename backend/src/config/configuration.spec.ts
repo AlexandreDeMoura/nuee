@@ -47,6 +47,14 @@ describe('configuration', () => {
       max_documents_per_project: 25,
       max_project_storage_bytes: 100 * 1024 * 1024,
       maxPdfPages: 200,
+      maxExtractedTextBytes: 16 * 1024 * 1024,
+      processingTimeoutMs: 30_000,
+      processingLeaseMs: 45_000,
+      maxProcessingConcurrency: 2,
+      maxProcessingAttempts: 3,
+      malwareScannerHost: '127.0.0.1',
+      malwareScannerPort: 3310,
+      malwareScannerTimeoutMs: 10_000,
     });
   });
 
@@ -69,6 +77,14 @@ describe('configuration', () => {
       DOCUMENT_MAX_DOCUMENTS_PER_PROJECT: '40',
       DOCUMENT_MAX_PROJECT_STORAGE_BYTES: '209715200',
       DOCUMENT_MAX_PDF_PAGES: '300',
+      DOCUMENT_MAX_EXTRACTED_TEXT_BYTES: '25165824',
+      DOCUMENT_PROCESSING_TIMEOUT_MS: '45000',
+      DOCUMENT_PROCESSING_LEASE_MS: '60000',
+      DOCUMENT_PROCESSING_CONCURRENCY: '4',
+      DOCUMENT_PROCESSING_MAX_ATTEMPTS: '5',
+      DOCUMENT_MALWARE_SCANNER_HOST: 'clamav.internal',
+      DOCUMENT_MALWARE_SCANNER_PORT: '3311',
+      DOCUMENT_MALWARE_SCANNER_TIMEOUT_MS: '15000',
     };
 
     expect(createAppConfig(source)).toEqual({
@@ -94,6 +110,14 @@ describe('configuration', () => {
       max_documents_per_project: 40,
       max_project_storage_bytes: 200 * 1024 * 1024,
       maxPdfPages: 300,
+      maxExtractedTextBytes: 24 * 1024 * 1024,
+      processingTimeoutMs: 45_000,
+      processingLeaseMs: 60_000,
+      maxProcessingConcurrency: 4,
+      maxProcessingAttempts: 5,
+      malwareScannerHost: 'clamav.internal',
+      malwareScannerPort: 3311,
+      malwareScannerTimeoutMs: 15_000,
     });
   });
 
@@ -147,6 +171,22 @@ describe('configuration', () => {
     [
       { NODE_ENV: 'test', DOCUMENT_MAX_PDF_PAGES: '0' },
       'DOCUMENT_MAX_PDF_PAGES must be an integer',
+    ],
+    [
+      {
+        NODE_ENV: 'test',
+        DOCUMENT_PROCESSING_TIMEOUT_MS: '30000',
+        DOCUMENT_PROCESSING_LEASE_MS: '30000',
+      },
+      'DOCUMENT_PROCESSING_LEASE_MS must be greater',
+    ],
+    [
+      {
+        NODE_ENV: 'test',
+        DOCUMENT_PROCESSING_TIMEOUT_MS: '10000',
+        DOCUMENT_MALWARE_SCANNER_TIMEOUT_MS: '10000',
+      },
+      'DOCUMENT_MALWARE_SCANNER_TIMEOUT_MS must be less',
     ],
   ])('rejects invalid environment values', (source, message) => {
     expect(() => validateEnvironment(source)).toThrow(message);

@@ -28,6 +28,14 @@ export interface AiConfig {
 export interface DocumentsConfig extends DocumentUploadPolicy {
   privateStoragePath?: string;
   maxPdfPages: number;
+  maxExtractedTextBytes: number;
+  processingTimeoutMs: number;
+  processingLeaseMs: number;
+  maxProcessingConcurrency: number;
+  maxProcessingAttempts: number;
+  malwareScannerHost: string;
+  malwareScannerPort: number;
+  malwareScannerTimeoutMs: number;
 }
 
 const DEFAULT_PORT = 3000;
@@ -42,6 +50,14 @@ const DEFAULT_MAX_DOCUMENT_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 const DEFAULT_MAX_DOCUMENTS_PER_PROJECT = 25;
 const DEFAULT_MAX_DOCUMENT_PROJECT_STORAGE_BYTES = 100 * 1024 * 1024;
 const DEFAULT_MAX_PDF_PAGES = 200;
+const DEFAULT_MAX_EXTRACTED_TEXT_BYTES = 16 * 1024 * 1024;
+const DEFAULT_DOCUMENT_PROCESSING_TIMEOUT_MS = 30_000;
+const DEFAULT_DOCUMENT_PROCESSING_LEASE_MS = 45_000;
+const DEFAULT_DOCUMENT_PROCESSING_CONCURRENCY = 2;
+const DEFAULT_DOCUMENT_PROCESSING_ATTEMPTS = 3;
+const DEFAULT_MALWARE_SCANNER_HOST = '127.0.0.1';
+const DEFAULT_MALWARE_SCANNER_PORT = 3310;
+const DEFAULT_MALWARE_SCANNER_TIMEOUT_MS = 10_000;
 
 const SUPPORTED_DOCUMENT_FORMATS: readonly DocumentUploadFormatPolicy[] = [
   {
@@ -260,6 +276,40 @@ export function createDocumentsConfig(
     );
   }
 
+  const processingTimeoutMs = integerValue(
+    source,
+    'DOCUMENT_PROCESSING_TIMEOUT_MS',
+    DEFAULT_DOCUMENT_PROCESSING_TIMEOUT_MS,
+    1_000,
+    600_000,
+  );
+  const processingLeaseMs = integerValue(
+    source,
+    'DOCUMENT_PROCESSING_LEASE_MS',
+    DEFAULT_DOCUMENT_PROCESSING_LEASE_MS,
+    2_000,
+    900_000,
+  );
+  const malwareScannerTimeoutMs = integerValue(
+    source,
+    'DOCUMENT_MALWARE_SCANNER_TIMEOUT_MS',
+    DEFAULT_MALWARE_SCANNER_TIMEOUT_MS,
+    1_000,
+    120_000,
+  );
+
+  if (processingLeaseMs <= processingTimeoutMs) {
+    throw new Error(
+      'DOCUMENT_PROCESSING_LEASE_MS must be greater than DOCUMENT_PROCESSING_TIMEOUT_MS.',
+    );
+  }
+
+  if (malwareScannerTimeoutMs >= processingTimeoutMs) {
+    throw new Error(
+      'DOCUMENT_MALWARE_SCANNER_TIMEOUT_MS must be less than DOCUMENT_PROCESSING_TIMEOUT_MS.',
+    );
+  }
+
   return {
     privateStoragePath: optionalString(source, 'DOCUMENT_PRIVATE_STORAGE_PATH'),
     supported_formats: SUPPORTED_DOCUMENT_FORMATS.map((format) => ({
@@ -278,6 +328,40 @@ export function createDocumentsConfig(
       1,
       10_000,
     ),
+    maxExtractedTextBytes: integerValue(
+      source,
+      'DOCUMENT_MAX_EXTRACTED_TEXT_BYTES',
+      DEFAULT_MAX_EXTRACTED_TEXT_BYTES,
+      1_024,
+      100 * 1024 * 1024,
+    ),
+    processingTimeoutMs,
+    processingLeaseMs,
+    maxProcessingConcurrency: integerValue(
+      source,
+      'DOCUMENT_PROCESSING_CONCURRENCY',
+      DEFAULT_DOCUMENT_PROCESSING_CONCURRENCY,
+      1,
+      8,
+    ),
+    maxProcessingAttempts: integerValue(
+      source,
+      'DOCUMENT_PROCESSING_MAX_ATTEMPTS',
+      DEFAULT_DOCUMENT_PROCESSING_ATTEMPTS,
+      1,
+      10,
+    ),
+    malwareScannerHost:
+      optionalString(source, 'DOCUMENT_MALWARE_SCANNER_HOST') ??
+      DEFAULT_MALWARE_SCANNER_HOST,
+    malwareScannerPort: integerValue(
+      source,
+      'DOCUMENT_MALWARE_SCANNER_PORT',
+      DEFAULT_MALWARE_SCANNER_PORT,
+      1,
+      65_535,
+    ),
+    malwareScannerTimeoutMs,
   };
 }
 

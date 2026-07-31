@@ -278,6 +278,45 @@ describe('SqliteDocumentRepository', () => {
     });
   });
 
+  it('discovers unclaimed and expired durable jobs in stable queue order', () => {
+    const project = createProject();
+    repository.create(documentInput(project.id));
+    repository.create(
+      documentInput(project.id, {
+        id: 'document-b',
+        file_reference: 'private/project/document-b/source',
+        upload_idempotency_key: 'upload-b',
+        upload_request_fingerprint: '2'.repeat(64),
+        created_at: '2026-07-30T10:00:01.000Z',
+        updated_at: '2026-07-30T10:00:01.000Z',
+      }),
+    );
+    repository.claimProcessingLease({
+      project_id: project.id,
+      document_id: 'document-a',
+      expected_generation: 1,
+      lease_owner: 'worker-a',
+      claimed_at: '2026-07-30T10:01:00.000Z',
+      lease_expires_at: '2026-07-30T10:02:00.000Z',
+    });
+
+    expect(
+      repository
+        .findProcessingCandidates('2026-07-30T10:01:30.000Z', 10)
+        .map((document) => document.id),
+    ).toEqual(['document-b']);
+    expect(
+      repository
+        .findProcessingCandidates('2026-07-30T10:02:00.000Z', 1)
+        .map((document) => document.id),
+    ).toEqual(['document-b']);
+    expect(
+      repository
+        .findProcessingCandidates('2026-07-30T10:02:00.000Z', 10)
+        .map((document) => document.id),
+    ).toEqual(['document-b', 'document-a']);
+  });
+
   it('rejects expired completion and mismatched source content without a false-ready state', () => {
     const project = createProject();
     repository.create(documentInput(project.id));

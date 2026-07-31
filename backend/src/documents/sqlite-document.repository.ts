@@ -229,6 +229,39 @@ export class SqliteDocumentRepository implements DocumentRepository {
     };
   }
 
+  findProcessingCandidates(
+    availableAt: string,
+    limit: number,
+  ): DocumentRecord[] {
+    if (
+      !this.isIsoTimestamp(availableAt) ||
+      !Number.isSafeInteger(limit) ||
+      limit <= 0 ||
+      limit > 100
+    ) {
+      throw new DocumentIntegrityError('processing-queue');
+    }
+
+    const rows = this.database
+      .prepare(
+        `
+          SELECT *
+          FROM documents
+          WHERE
+            processing_status = 'processing'
+            AND (
+              processing_lease_owner IS NULL
+              OR processing_lease_expires_at <= ?
+            )
+          ORDER BY updated_at ASC, id ASC
+          LIMIT ?
+        `,
+      )
+      .all(availableAt, limit) as unknown as DocumentRow[];
+
+    return rows.map((row) => this.toDocument(row));
+  }
+
   claimProcessingLease(
     input: ClaimDocumentProcessingLeaseInput,
   ): DocumentRecord | undefined {
