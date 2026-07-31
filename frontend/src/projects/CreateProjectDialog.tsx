@@ -1,12 +1,30 @@
-import { useEffect, useRef, useState } from 'react';
-import type { FormEvent, MouseEvent as ReactMouseEvent } from 'react';
-import { CircleAlert, CircleHelp, LoaderCircle } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type {
+  ChangeEvent,
+  FormEvent,
+  MouseEvent as ReactMouseEvent,
+} from 'react';
+import {
+  CircleAlert,
+  CircleHelp,
+  FileText,
+  LoaderCircle,
+  RotateCcw,
+  X,
+} from 'lucide-react';
 import {
   createProject,
+  getDocumentUploadPolicy,
   type CreateProjectInput,
+  type DocumentUploadPolicy,
   type Project,
 } from '../api';
 import { analytics, trackAnalytics, type AnalyticsClient } from '../analytics';
+import {
+  documentPolicyDescription,
+  documentPolicyExtensions,
+  formatDocumentSize,
+} from '../documents';
 
 const DESCRIPTION_LIMIT = 280;
 
@@ -16,11 +34,15 @@ const fieldClasses =
   `w-full rounded-[9px] border bg-white px-3 py-2.5 text-[13px] text-[#1e2733] placeholder:text-[#b6c0cc] disabled:cursor-not-allowed disabled:border-[#eef1f5] disabled:bg-[#fafbfc] disabled:text-[#8b97a6] ${focusRing}`;
 
 type CreateProjectRequest = (input: CreateProjectInput) => Promise<Project>;
+type DocumentPolicyRequest = (
+  signal?: AbortSignal,
+) => Promise<DocumentUploadPolicy>;
 
 export interface CreateProjectDialogProps {
   onCancel: () => void;
-  onCreated: (project: Project) => void;
+  onCreated: (project: Project, documentFiles?: readonly File[]) => void;
   requestCreate?: CreateProjectRequest;
+  requestDocumentPolicy?: DocumentPolicyRequest;
   analyticsClient?: AnalyticsClient;
 }
 
@@ -28,6 +50,7 @@ export function CreateProjectDialog({
   onCancel,
   onCreated,
   requestCreate = createProject,
+  requestDocumentPolicy = getDocumentUploadPolicy,
   analyticsClient = analytics,
 }: CreateProjectDialogProps) {
   const [title, setTitle] = useState('');
@@ -35,8 +58,14 @@ export function CreateProjectDialog({
   const [touched, setTouched] = useState({ title: false, description: false });
   const [isCreating, setIsCreating] = useState(false);
   const [hasCreateError, setHasCreateError] = useState(false);
+  const [documentFiles, setDocumentFiles] = useState<File[]>([]);
+  const [documentPolicy, setDocumentPolicy] =
+    useState<DocumentUploadPolicy | null>(null);
+  const [documentPolicyError, setDocumentPolicyError] = useState(false);
+  const [documentPolicyRequestKey, setDocumentPolicyRequestKey] = useState(0);
   const dialogRef = useRef<HTMLDivElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
+  const documentInputRef = useRef<HTMLInputElement>(null);
   const isCreatingRef = useRef(false);
   const onCancelRef = useRef(onCancel);
 
@@ -45,6 +74,13 @@ export function CreateProjectDialog({
   const isValid = normalizedTitle.length > 0 && normalizedDescription.length > 0;
   const titleError = touched.title && normalizedTitle.length === 0;
   const descriptionError = touched.description && normalizedDescription.length === 0;
+  const documentAccept = useMemo(
+    () =>
+      documentPolicy
+        ? documentPolicyExtensions(documentPolicy).join(',')
+        : '',
+    [documentPolicy],
+  );
 
   useEffect(() => {
     onCancelRef.current = onCancel;
@@ -113,6 +149,29 @@ export function CreateProjectDialog({
     };
   }, []);
 
+  useEffect(() => {
+    const controller = new AbortController();
+
+    requestDocumentPolicy(controller.signal)
+      .then((policy) => {
+        if (!controller.signal.aborted) {
+          setDocumentPolicy(policy);
+        }
+      })
+      .catch((error: unknown) => {
+        if (
+          controller.signal.aborted ||
+          (error instanceof Error && error.name === 'AbortError')
+        ) {
+          return;
+        }
+
+        setDocumentPolicyError(true);
+      });
+
+    return () => controller.abort();
+  }, [documentPolicyRequestKey, requestDocumentPolicy]);
+
   const handleBackdropMouseDown = (event: ReactMouseEvent<HTMLDivElement>) => {
     if (event.target === event.currentTarget && !isCreatingRef.current) {
       onCancel();
@@ -140,11 +199,24 @@ export function CreateProjectDialog({
       isCreatingRef.current = false;
       setIsCreating(false);
       trackAnalytics(analyticsClient, 'project_created', { project_id: project.id });
-      onCreated(project);
+      if (documentFiles.length > 0) {
+        onCreated(project, documentFiles);
+      } else {
+        onCreated(project);
+      }
     } catch {
       isCreatingRef.current = false;
       setIsCreating(false);
       setHasCreateError(true);
+    }
+  };
+
+  const handleDocumentsSelected = (event: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(event.currentTarget.files ?? []);
+    event.currentTarget.value = '';
+
+    if (files.length > 0) {
+      setDocumentFiles((current) => [...current, ...files]);
     }
   };
 
@@ -200,7 +272,13 @@ export function CreateProjectDialog({
                     aria-hidden="true"
                   />
                 )}
-                {isCreating ? 'CREATING' : isValid ? '2 FIELDS · NO SETUP' : 'INCOMPLETE'}
+                {isCreating
+                  ? 'CREATING'
+                  : isValid
+                    ? documentFiles.length > 0
+                      ? `${documentFiles.length} ${documentFiles.length === 1 ? 'DOCUMENT' : 'DOCUMENTS'}`
+                      : '2 FIELDS · NO DOCUMENTS'
+                    : 'INCOMPLETE'}
               </span>
             </div>
 
@@ -313,6 +391,97 @@ export function CreateProjectDialog({
               <CircleHelp className="mt-px size-[13px] shrink-0" strokeWidth={1.7} aria-hidden="true" />
               Captured as context in every discussion. You can edit it anytime from the Project panel.
             </p>
+
+            <div className="mt-5 border-t border-[#eef1f5] pt-4">
+              <div className="mb-2 flex items-baseline gap-2">
+                <label
+                  className="text-[11.5px] font-semibold text-[#3a4453]"
+                  htmlFor="create-project-documents"
+                >
+                  Documents <span className="font-normal text-[#9aa6b4]">(optional)</span>
+                </label>
+                {documentFiles.length > 0 && (
+                  <span className="ml-auto text-[10px] font-medium text-[#7b8899] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
+                    {documentFiles.length} selected
+                  </span>
+                )}
+              </div>
+              <input
+                className="sr-only"
+                accept={documentAccept}
+                aria-describedby="create-project-documents-hint"
+                disabled={isCreating || !documentPolicy}
+                id="create-project-documents"
+                multiple
+                ref={documentInputRef}
+                type="file"
+                onChange={handleDocumentsSelected}
+              />
+              <button
+                className={`inline-flex min-h-9 w-full items-center justify-center gap-2 rounded-[9px] border border-dashed border-[#cdd8ea] bg-[#f8faff] px-3 py-2 text-[12px] font-semibold text-[#3f63a8] hover:border-[#aebed8] hover:bg-[#f1f5fc] disabled:cursor-not-allowed disabled:border-[#e4e9ef] disabled:bg-[#fafbfc] disabled:text-[#9aa6b4] ${focusRing}`}
+                type="button"
+                disabled={isCreating || !documentPolicy}
+                onClick={() => documentInputRef.current?.click()}
+              >
+                <FileText className="size-[14px]" strokeWidth={1.8} aria-hidden="true" />
+                Choose documents
+              </button>
+              <p
+                className="mt-2 mb-0 text-[10.5px] leading-[1.45] text-[#8b97a6]"
+                id="create-project-documents-hint"
+              >
+                {documentPolicy
+                  ? `${documentPolicyDescription(documentPolicy)}. Uploads start after the project is created.`
+                  : documentPolicyError
+                    ? 'Upload requirements are unavailable. You can add documents from the project later.'
+                    : 'Loading supported formats and upload limit…'}
+              </p>
+              {documentPolicyError && (
+                <button
+                  className={`mt-2 inline-flex items-center gap-1.5 rounded-md px-1 py-1 text-[11px] font-semibold text-[#8d4944] hover:bg-[#f8e7e5] ${focusRing}`}
+                  type="button"
+                  disabled={isCreating}
+                  onClick={() => {
+                    setDocumentPolicyError(false);
+                    setDocumentPolicyRequestKey((key) => key + 1);
+                  }}
+                >
+                  <RotateCcw className="size-3" strokeWidth={1.8} aria-hidden="true" />
+                  Retry upload requirements
+                </button>
+              )}
+              {documentFiles.length > 0 && (
+                <ul className="mt-3 max-h-28 space-y-1.5 overflow-y-auto" aria-label="Selected documents">
+                  {documentFiles.map((file, index) => (
+                    <li
+                      className="flex items-center gap-2 rounded-lg border border-[#e7ebf0] bg-[#fafbfc] px-2.5 py-2"
+                      key={`${file.name}:${file.size}:${file.lastModified}:${index}`}
+                    >
+                      <FileText className="size-3.5 shrink-0 text-[#7182a0]" strokeWidth={1.7} aria-hidden="true" />
+                      <span className="min-w-0 flex-1 truncate text-[11px] text-[#4d5968]">
+                        {file.name}
+                      </span>
+                      <span className="shrink-0 text-[9.5px] text-[#9aa6b4] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
+                        {formatDocumentSize(file.size)}
+                      </span>
+                      <button
+                        className={`shrink-0 rounded p-0.5 text-[#8b97a6] hover:bg-[#eef1f5] hover:text-[#5c6a7a] ${focusRing}`}
+                        type="button"
+                        aria-label={`Remove ${file.name}`}
+                        disabled={isCreating}
+                        onClick={() =>
+                          setDocumentFiles((current) =>
+                            current.filter((_, fileIndex) => fileIndex !== index),
+                          )
+                        }
+                      >
+                        <X className="size-3.5" strokeWidth={1.8} aria-hidden="true" />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </div>
 
           <div className="flex items-center gap-2.5 border-t border-[#eef1f5] bg-[#fafbfc] px-5 py-3.5 sm:px-6">

@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import App from '../src/App';
-import type { Project } from '../src/api';
+import type { DocumentUploadPolicy, Project } from '../src/api';
 import { CreateProjectDialog } from '../src/projects/CreateProjectDialog';
 
 const project: Project = {
@@ -14,6 +14,22 @@ const project: Project = {
   canvas_viewport_y: 0,
   canvas_zoom: 1,
 };
+
+const documentUploadPolicy: DocumentUploadPolicy = {
+  max_documents_per_project: 25,
+  max_file_size_bytes: 10 * 1024 * 1024,
+  max_files_per_request: 1,
+  max_project_storage_bytes: 100 * 1024 * 1024,
+  supported_formats: [
+    {
+      category: 'plain_text',
+      extensions: ['.txt'],
+      mime_types: ['text/plain'],
+    },
+  ],
+};
+
+const requestDocumentPolicy = async () => documentUploadPolicy;
 
 function fillValidForm() {
   fireEvent.change(screen.getByLabelText(/^Title/), {
@@ -38,6 +54,7 @@ describe('CreateProjectDialog', () => {
         onCancel={vi.fn()}
         onCreated={vi.fn()}
         requestCreate={vi.fn()}
+        requestDocumentPolicy={requestDocumentPolicy}
       />,
     );
 
@@ -54,7 +71,7 @@ describe('CreateProjectDialog', () => {
 
     expect(submit.disabled).toBe(false);
     expect(screen.getByText('35 / 280')).toBeTruthy();
-    expect(screen.getByText('2 FIELDS · NO SETUP')).toBeTruthy();
+    expect(screen.getByText('2 FIELDS · NO DOCUMENTS')).toBeTruthy();
   });
 
   it('keeps whitespace-only fields invalid and exposes field-level errors after blur', () => {
@@ -63,6 +80,7 @@ describe('CreateProjectDialog', () => {
         onCancel={vi.fn()}
         onCreated={vi.fn()}
         requestCreate={vi.fn()}
+        requestDocumentPolicy={requestDocumentPolicy}
       />,
     );
 
@@ -98,6 +116,7 @@ describe('CreateProjectDialog', () => {
         onCancel={onCancel}
         onCreated={onCreated}
         requestCreate={requestCreate}
+        requestDocumentPolicy={requestDocumentPolicy}
       />,
     );
 
@@ -133,6 +152,7 @@ describe('CreateProjectDialog', () => {
         onCancel={vi.fn()}
         onCreated={onCreated}
         requestCreate={requestCreate}
+        requestDocumentPolicy={requestDocumentPolicy}
       />,
     );
 
@@ -163,6 +183,7 @@ describe('CreateProjectDialog', () => {
         onCancel={cancelFromButton}
         onCreated={vi.fn()}
         requestCreate={vi.fn()}
+        requestDocumentPolicy={requestDocumentPolicy}
       />,
     );
 
@@ -177,6 +198,7 @@ describe('CreateProjectDialog', () => {
         onCancel={cancelFromEscape}
         onCreated={vi.fn()}
         requestCreate={vi.fn()}
+        requestDocumentPolicy={requestDocumentPolicy}
       />,
     );
 
@@ -184,29 +206,82 @@ describe('CreateProjectDialog', () => {
     expect(cancelFromEscape).toHaveBeenCalledTimes(1);
   });
 
+  it('hands optional selected documents off only after creating the project', async () => {
+    const requestCreate = vi.fn().mockResolvedValue(project);
+    const onCreated = vi.fn();
+    const brief = new File(['Launch notes'], 'launch-brief.txt', {
+      type: 'text/plain',
+    });
+    const risks = new File(['Known risks'], 'risks.txt', {
+      type: 'text/plain',
+    });
+
+    render(
+      <CreateProjectDialog
+        onCancel={vi.fn()}
+        onCreated={onCreated}
+        requestCreate={requestCreate}
+        requestDocumentPolicy={requestDocumentPolicy}
+      />,
+    );
+
+    const documentInput = await screen.findByLabelText(/^Documents/);
+    expect(documentInput.getAttribute('accept')).toBe('.txt');
+    expect(screen.getByText(/TXT · Up to 10 MiB per file/)).toBeTruthy();
+
+    fireEvent.change(documentInput, {
+      target: { files: [brief, risks] },
+    });
+    expect(screen.getByText('2 selected')).toBeTruthy();
+    expect(screen.getByText('launch-brief.txt')).toBeTruthy();
+    expect(screen.getByText('risks.txt')).toBeTruthy();
+
+    fillValidForm();
+    expect(screen.getByText('2 DOCUMENTS')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Create project' }));
+
+    await waitFor(() =>
+      expect(onCreated).toHaveBeenCalledWith(project, [brief, risks]),
+    );
+    expect(requestCreate).toHaveBeenCalledTimes(1);
+    expect(requestCreate.mock.invocationCallOrder[0]).toBeLessThan(
+      onCreated.mock.invocationCallOrder[0],
+    );
+  });
+
   it('closes and navigates to the returned project canvas after successful creation', async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => [],
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => project,
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => project,
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => [],
-      })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => [],
-      });
+    const fetchMock = vi.fn(
+      async (input: string | URL | Request, init?: RequestInit) => {
+        const url = new URL(
+          typeof input === 'string' || input instanceof URL
+            ? input
+            : input.url,
+        );
+        const method = init?.method ?? 'GET';
+
+        if (method === 'GET' && url.pathname === '/projects') {
+          return { ok: true, json: async () => [] };
+        }
+        if (method === 'GET' && url.pathname === '/document-upload-policy') {
+          return { ok: true, json: async () => documentUploadPolicy };
+        }
+        if (method === 'POST' && url.pathname === '/projects') {
+          return { ok: true, json: async () => project };
+        }
+        if (method === 'GET' && url.pathname === '/projects/project-123') {
+          return { ok: true, json: async () => project };
+        }
+        if (
+          method === 'GET' &&
+          (url.pathname === '/projects/project-123/bubbles' ||
+            url.pathname === '/projects/project-123/bubble-links')
+        ) {
+          return { ok: true, json: async () => [] };
+        }
+
+        throw new Error(`Unexpected request: ${method} ${url.pathname}`);
+      },
+    );
     vi.stubGlobal('fetch', fetchMock);
 
     render(<App />);
@@ -219,20 +294,26 @@ describe('CreateProjectDialog', () => {
 
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(await screen.findByText("Nothing here yet — that's on purpose.")).toBeTruthy();
-    expect(fetchMock).toHaveBeenCalledTimes(5);
-    expect(fetchMock.mock.calls[1]?.[1]).toMatchObject({
+    expect(fetchMock).toHaveBeenCalledTimes(6);
+    const createCall = fetchMock.mock.calls.find(([input, init]) => {
+      const url = new URL(String(input));
+      return url.pathname === '/projects' && init?.method === 'POST';
+    });
+    expect(createCall?.[1]).toMatchObject({
       method: 'POST',
       body: JSON.stringify({
         title: 'Launch plan',
         description: 'Explore the launch constraints.',
       }),
     });
-    expect(fetchMock.mock.calls[2]?.[0]).toBe('http://localhost:3000/projects/project-123');
-    expect(fetchMock.mock.calls[3]?.[0]).toBe(
-      'http://localhost:3000/projects/project-123/bubbles',
-    );
-    expect(fetchMock.mock.calls[4]?.[0]).toBe(
-      'http://localhost:3000/projects/project-123/bubble-links',
+    expect(
+      fetchMock.mock.calls.map(([input]) => String(input)),
+    ).toEqual(
+      expect.arrayContaining([
+        'http://localhost:3000/projects/project-123',
+        'http://localhost:3000/projects/project-123/bubbles',
+        'http://localhost:3000/projects/project-123/bubble-links',
+      ]),
     );
   });
 });

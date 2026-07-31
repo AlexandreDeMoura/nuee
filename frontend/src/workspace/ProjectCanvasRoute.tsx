@@ -33,6 +33,8 @@ type ProjectRequest = (projectId: string, signal?: AbortSignal) => Promise<Proje
 
 export interface ProjectCanvasRouteProps {
   projectId: string;
+  initialDocumentUploads?: readonly File[];
+  onInitialDocumentUploadsStarted?: () => void;
   requestProject?: ProjectRequest;
   requestBubbleCreate?: BubbleCreateRequest;
   requestBubbles?: BubbleListRequest;
@@ -150,6 +152,8 @@ function ProjectRouteState({
 
 export function ProjectCanvasRoute({
   projectId,
+  initialDocumentUploads,
+  onInitialDocumentUploadsStarted,
   requestProject = getProject,
   requestBubbleCreate,
   requestBubbles,
@@ -212,6 +216,8 @@ export function ProjectCanvasRoute({
         canvasMultiSelection={canvasMultiSelection}
         documentLibraryRequests={documentLibraryRequests}
         documentPollIntervalMs={documentPollIntervalMs}
+        initialDocumentUploads={initialDocumentUploads}
+        onInitialDocumentUploadsStarted={onInitialDocumentUploadsStarted}
         project={loadState.project}
         requestBubbleCreate={requestBubbleCreate}
         requestBubbles={requestBubbles}

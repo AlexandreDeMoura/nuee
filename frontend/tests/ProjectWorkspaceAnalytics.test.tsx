@@ -83,9 +83,25 @@ describe('project workspace analytics contract', () => {
     const fetchMock = vi
       .fn()
       .mockResolvedValueOnce(jsonResponse([]))
+      .mockResolvedValueOnce(
+        jsonResponse({
+          max_documents_per_project: 25,
+          max_file_size_bytes: 10 * 1024 * 1024,
+          max_files_per_request: 1,
+          max_project_storage_bytes: 100 * 1024 * 1024,
+          supported_formats: [
+            {
+              category: 'plain_text',
+              extensions: ['.txt'],
+              mime_types: ['text/plain'],
+            },
+          ],
+        }),
+      )
       .mockRejectedValueOnce(new Error('Unavailable'))
       .mockResolvedValueOnce(jsonResponse(project))
       .mockResolvedValueOnce(jsonResponse(project))
+      .mockResolvedValueOnce(jsonResponse([]))
       .mockResolvedValueOnce(jsonResponse([]));
     vi.stubGlobal('fetch', fetchMock);
 

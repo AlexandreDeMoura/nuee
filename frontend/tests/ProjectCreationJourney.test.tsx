@@ -25,6 +25,120 @@ afterEach(() => {
 });
 
 describe('project creation journey', () => {
+  it('creates the project before handing optional uploads to its Documents panel', async () => {
+    const createdProject: Project = {
+      id: 'project-with-documents',
+      title: 'Source review',
+      description: 'Review the supplied source material.',
+      created_at: '2026-07-31T08:00:00.000Z',
+      updated_at: '2026-07-31T08:00:00.000Z',
+      canvas_viewport_x: 0,
+      canvas_viewport_y: 0,
+      canvas_zoom: 1,
+    };
+    const requestOrder: string[] = [];
+    const fetchMock = vi.fn(
+      async (input: string | URL | Request, init?: RequestInit) => {
+        const url = new URL(
+          typeof input === 'string' || input instanceof URL
+            ? input
+            : input.url,
+        );
+        const method = init?.method ?? 'GET';
+        requestOrder.push(`${method} ${url.pathname}`);
+
+        if (method === 'GET' && url.pathname === '/projects') {
+          return jsonResponse([]);
+        }
+        if (method === 'GET' && url.pathname === '/document-upload-policy') {
+          return jsonResponse({
+            max_documents_per_project: 25,
+            max_file_size_bytes: 10 * 1024 * 1024,
+            max_files_per_request: 1,
+            max_project_storage_bytes: 100 * 1024 * 1024,
+            supported_formats: [
+              {
+                category: 'plain_text',
+                extensions: ['.txt'],
+                mime_types: ['text/plain'],
+              },
+            ],
+          });
+        }
+        if (method === 'POST' && url.pathname === '/projects') {
+          return jsonResponse(createdProject);
+        }
+        if (
+          method === 'GET' &&
+          url.pathname === '/projects/project-with-documents'
+        ) {
+          return jsonResponse(createdProject);
+        }
+        if (
+          method === 'GET' &&
+          (url.pathname === '/projects/project-with-documents/bubbles' ||
+            url.pathname === '/projects/project-with-documents/bubble-links' ||
+            url.pathname === '/projects/project-with-documents/documents')
+        ) {
+          return jsonResponse([]);
+        }
+        if (
+          method === 'POST' &&
+          url.pathname === '/projects/project-with-documents/documents'
+        ) {
+          return {
+            ok: false,
+            status: 503,
+            json: async () => ({ message: 'Upload unavailable.' }),
+          };
+        }
+
+        throw new Error(`Unexpected request: ${method} ${url.pathname}`);
+      },
+    );
+    vi.stubGlobal('fetch', fetchMock);
+
+    render(<App />);
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'New project' }),
+    );
+    const documentInput = await screen.findByLabelText(/^Documents/);
+    const source = new File(['Source material'], 'source.txt', {
+      type: 'text/plain',
+    });
+    fireEvent.change(documentInput, { target: { files: [source] } });
+    fireEvent.change(screen.getByLabelText(/^Title/), {
+      target: { value: 'Source review' },
+    });
+    fireEvent.change(screen.getByLabelText(/^Short description/), {
+      target: { value: 'Review the supplied source material.' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Create project' }));
+
+    await waitFor(() =>
+      expect(window.location.pathname).toBe('/projects/project-with-documents'),
+    );
+    expect(
+      screen.getByRole('tab', { name: 'Documents' }).getAttribute(
+        'aria-selected',
+      ),
+    ).toBe('true');
+    expect(await screen.findByText('Upload unavailable.')).toBeTruthy();
+    expect(screen.getByText('source.txt')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Retry upload' })).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(
+      'Source review',
+    );
+
+    const createIndex = requestOrder.indexOf('POST /projects');
+    const uploadIndex = requestOrder.indexOf(
+      'POST /projects/project-with-documents/documents',
+    );
+    expect(createIndex).toBeGreaterThan(-1);
+    expect(uploadIndex).toBeGreaterThan(createIndex);
+  });
+
   it('creates an empty project, reopens it, and reloads its edited description', async () => {
     let persistedProject: Project | null = null;
     const fetchMock = vi.fn(
@@ -141,7 +255,7 @@ describe('project creation journey', () => {
     expect(createButton.disabled).toBe(true);
     expect(screen.getByText('A title is required.')).toBeTruthy();
     expect(screen.getByText('A short description is required.')).toBeTruthy();
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
 
     fireEvent.change(titleInput, { target: { value: '  Launch plan  ' } });
     fireEvent.change(descriptionInput, {

@@ -173,7 +173,13 @@ function ProjectList({ projects }: { projects: Project[] }) {
   );
 }
 
-function ProjectEntry({ analyticsClient }: { analyticsClient: AnalyticsClient }) {
+function ProjectEntry({
+  analyticsClient,
+  onProjectCreated,
+}: {
+  analyticsClient: AnalyticsClient;
+  onProjectCreated: (project: Project, documentFiles?: readonly File[]) => void;
+}) {
   const [projects, setProjects] = useState<Project[] | null>(null);
   const [hasError, setHasError] = useState(false);
   const [requestKey, setRequestKey] = useState(0);
@@ -203,9 +209,12 @@ function ProjectEntry({ analyticsClient }: { analyticsClient: AnalyticsClient })
 
   const openCreateDialog = () => setIsCreateDialogOpen(true);
 
-  const handleProjectCreated = (project: Project) => {
+  const handleProjectCreated = (
+    project: Project,
+    documentFiles?: readonly File[],
+  ) => {
     setIsCreateDialogOpen(false);
-    navigateTo(`/projects/${encodeURIComponent(project.id)}`);
+    onProjectCreated(project, documentFiles);
   };
 
   return (
@@ -280,6 +289,10 @@ export interface AppProps {
 
 function App({ analyticsClient = analytics }: AppProps) {
   const [pathname, setPathname] = useState(window.location.pathname);
+  const [projectCreationUploads, setProjectCreationUploads] = useState<{
+    files: readonly File[];
+    projectId: string;
+  } | null>(null);
 
   useEffect(() => {
     const updatePathname = () => setPathname(window.location.pathname);
@@ -291,13 +304,35 @@ function App({ analyticsClient = analytics }: AppProps) {
   const route = resolveRoute(pathname);
 
   if (route.name === 'project-entry') {
-    return <ProjectEntry analyticsClient={analyticsClient} />;
+    return (
+      <ProjectEntry
+        analyticsClient={analyticsClient}
+        onProjectCreated={(project, documentFiles) => {
+          setProjectCreationUploads(
+            documentFiles && documentFiles.length > 0
+              ? { files: documentFiles, projectId: project.id }
+              : null,
+          );
+          navigateTo(`/projects/${encodeURIComponent(project.id)}`);
+        }}
+      />
+    );
   }
 
   if (route.name === 'project-canvas') {
     return (
       <ProjectCanvasRoute
         analyticsClient={analyticsClient}
+        initialDocumentUploads={
+          projectCreationUploads?.projectId === route.projectId
+            ? projectCreationUploads.files
+            : undefined
+        }
+        onInitialDocumentUploadsStarted={() =>
+          setProjectCreationUploads((current) =>
+            current?.projectId === route.projectId ? null : current,
+          )
+        }
         projectId={route.projectId}
         key={route.projectId}
       />

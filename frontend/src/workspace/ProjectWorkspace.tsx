@@ -134,6 +134,8 @@ export interface WorkspaceOverlaySlots {
 
 export interface ProjectWorkspaceProps {
   project: Project;
+  initialDocumentUploads?: readonly File[];
+  onInitialDocumentUploadsStarted?: () => void;
   requestBubbleCreate?: BubbleCreateRequest;
   requestBubbles?: BubbleListRequest;
   requestBubblePlacement?: BubblePlacementRequest;
@@ -589,6 +591,8 @@ function WorkspacePanel({
 
 export function ProjectWorkspace({
   project,
+  initialDocumentUploads,
+  onInitialDocumentUploadsStarted,
   requestBubbleCreate,
   requestBubbles = getProjectBubbles,
   requestBubblePlacement,
@@ -627,10 +631,16 @@ export function ProjectWorkspace({
   const [descriptionStatus, setDescriptionStatus] =
     useState<ProjectDescriptionSaveStatus>('saved');
   const [activePanel, setActivePanel] = useState<WorkspacePanelView>(() =>
-    getDefaultPanelView(discussionCount),
+    initialDocumentUploads && initialDocumentUploads.length > 0
+      ? 'documents'
+      : getDefaultPanelView(discussionCount),
   );
   const [activatedDocumentLibraryProjectId, setActivatedDocumentLibraryProjectId] =
-    useState<string | null>(null);
+    useState<string | null>(() =>
+      initialDocumentUploads && initialDocumentUploads.length > 0
+        ? project.id
+        : null,
+    );
   const [documentUploadPickerProjectId, setDocumentUploadPickerProjectId] =
     useState<string | null>(null);
   const [selectedBubbleId, setSelectedBubbleId] = useState<string | null>(null);
@@ -662,6 +672,9 @@ export function ProjectWorkspace({
     projectId: currentProject.id,
     requests: documentLibraryRequests,
   });
+  const initialUploadPolicy = documentLibrary.policy;
+  const uploadInitialDocument = documentLibrary.uploadFile;
+  const initialDocumentUploadsStartedRef = useRef(false);
   const previousContextSelectionPhaseRef = useRef(
     discussionContextSelection.phase,
   );
@@ -695,6 +708,38 @@ export function ProjectWorkspace({
     inspectorSelection?.isValid === false
       ? null
       : inspectorSelection ?? canvasInspectorSelection;
+
+  useEffect(() => {
+    if (
+      initialDocumentUploadsStartedRef.current ||
+      !initialDocumentUploads ||
+      initialDocumentUploads.length === 0 ||
+      !initialUploadPolicy
+    ) {
+      return;
+    }
+
+    // Deferring the handoff lets React's development-only Strict Mode cleanup
+    // finish before upload controllers are created.
+    const timeout = window.setTimeout(() => {
+      if (initialDocumentUploadsStartedRef.current) {
+        return;
+      }
+
+      initialDocumentUploadsStartedRef.current = true;
+      for (const file of initialDocumentUploads) {
+        uploadInitialDocument(file);
+      }
+      onInitialDocumentUploadsStarted?.();
+    }, 0);
+
+    return () => window.clearTimeout(timeout);
+  }, [
+    initialUploadPolicy,
+    initialDocumentUploads,
+    onInitialDocumentUploadsStarted,
+    uploadInitialDocument,
+  ]);
 
   useEffect(() => {
     if (inspectorSelection?.isValid === false) {
