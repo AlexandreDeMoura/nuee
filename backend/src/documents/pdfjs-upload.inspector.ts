@@ -14,7 +14,6 @@ interface PdfJsLoadingTask {
 
 interface PdfJsDocument {
   numPages: number;
-  destroy(): Promise<void>;
 }
 
 interface PdfJsModule {
@@ -53,10 +52,8 @@ export class PdfJsUploadInspector implements PdfUploadInspector {
       useSystemFonts: false,
     });
 
-    let document: PdfJsDocument | undefined;
-
     try {
-      document = await loadingTask.promise;
+      const document = await loadingTask.promise;
 
       if (!Number.isSafeInteger(document.numPages) || document.numPages <= 0) {
         throw new PdfUploadInspectionError('corrupted');
@@ -76,11 +73,9 @@ export class PdfJsUploadInspector implements PdfUploadInspector {
 
       throw new PdfUploadInspectionError(errorCode, { cause: error });
     } finally {
-      if (document) {
-        await document.destroy().catch(() => undefined);
-      } else {
-        await loadingTask.destroy().catch(() => undefined);
-      }
+      // Destroying the loading task tears down the parsed document with it.
+      // `PDFDocumentProxy` itself exposes no `destroy`.
+      await loadingTask.destroy().catch(() => undefined);
     }
   }
 

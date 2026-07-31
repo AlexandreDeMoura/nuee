@@ -29,7 +29,6 @@ export interface PdfJsDocument {
   numPages: number;
   getPage(pageNumber: number): Promise<PdfJsPage>;
   cleanup(): Promise<void>;
-  destroy(): Promise<void>;
 }
 
 export interface PdfJsLoadingTask {
@@ -128,10 +127,11 @@ export class PdfJsDocumentTextExtractor implements DocumentTextExtractor {
 
       if (document) {
         await document.cleanup().catch(() => undefined);
-        await document.destroy().catch(() => undefined);
-      } else {
-        await loadingTask.destroy().catch(() => undefined);
       }
+
+      // Destroying the loading task tears down the parsed document with it.
+      // `PDFDocumentProxy` itself exposes no `destroy`.
+      await loadingTask.destroy().catch(() => undefined);
     }
   }
 

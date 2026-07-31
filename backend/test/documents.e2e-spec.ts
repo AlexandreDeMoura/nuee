@@ -127,6 +127,59 @@ describe('Document library journey (e2e)', () => {
           max_file_size_bytes: 64,
         });
       });
+
+    await request(app.getHttpServer())
+      .post(`/projects/${project.id}/documents`)
+      .field('idempotency_key', 'two-files')
+      .attach('file', Buffer.from('first'), {
+        filename: 'first.txt',
+        contentType: 'text/plain',
+      })
+      .attach('file', Buffer.from('second'), {
+        filename: 'second.txt',
+        contentType: 'text/plain',
+      })
+      .expect(400)
+      .expect(({ body }) => {
+        expect(body).toMatchObject({
+          code: 'DOCUMENT_UPLOAD_VALIDATION_FAILED',
+          reason: 'multipart_too_many_files',
+        });
+      });
+
+    await request(app.getHttpServer())
+      .post(`/projects/${project.id}/documents`)
+      .field('idempotency_key', 'extra-field')
+      .field('unexpected', 'value')
+      .attach('file', Buffer.from('only'), {
+        filename: 'only.txt',
+        contentType: 'text/plain',
+      })
+      .expect(400)
+      .expect(({ body }) => {
+        expect(body).toMatchObject({
+          code: 'DOCUMENT_UPLOAD_VALIDATION_FAILED',
+          reason: 'multipart_too_many_fields',
+        });
+      });
+
+    await request(app.getHttpServer())
+      .post(`/projects/${project.id}/documents`)
+      .field('idempotency_key', 'wrong-field-name')
+      .attach('document', Buffer.from('only'), {
+        filename: 'only.txt',
+        contentType: 'text/plain',
+      })
+      .expect(400)
+      .expect(({ body }) => {
+        expect(body).toMatchObject({
+          code: 'DOCUMENT_UPLOAD_VALIDATION_FAILED',
+          reason: 'multipart_unexpected_field',
+          field_errors: {
+            file: 'Send the document in a field named "file".',
+          },
+        });
+      });
   });
 
   it('uploads, lists, inspects, scopes, and freezes a ready document', async () => {

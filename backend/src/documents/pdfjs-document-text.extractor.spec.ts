@@ -25,7 +25,6 @@ class FakePdfPage implements PdfJsPage {
 class FakePdfDocument implements PdfJsDocument {
   readonly pages: FakePdfPage[];
   cleaned = false;
-  destroyed = false;
 
   constructor(contents: PdfJsTextContent[]) {
     this.pages = contents.map((content) => new FakePdfPage(content));
@@ -45,11 +44,6 @@ class FakePdfDocument implements PdfJsDocument {
 
   cleanup(): Promise<void> {
     this.cleaned = true;
-    return Promise.resolve();
-  }
-
-  destroy(): Promise<void> {
-    this.destroyed = true;
     return Promise.resolve();
   }
 }
@@ -95,11 +89,11 @@ describe('PdfJsDocumentTextExtractor', () => {
       module,
     );
 
-    return { document, extractor };
+    return { document, loadingTask, extractor };
   }
 
   it('preserves line and page order while ignoring parser metadata', async () => {
-    const { document, extractor } = setup([
+    const { document, loadingTask, extractor } = setup([
       {
         items: [
           { str: 'First', hasEOL: false },
@@ -122,7 +116,7 @@ describe('PdfJsDocumentTextExtractor', () => {
     ).resolves.toBe('First line\nSecond line\n\nNext page');
     expect(document.pages.every((page) => page.cleaned)).toBe(true);
     expect(document.cleaned).toBe(true);
-    expect(document.destroyed).toBe(true);
+    expect(loadingTask.destroyed).toBe(true);
   });
 
   it('rejects no-text and over-limit PDFs instead of truncating them', async () => {
@@ -165,7 +159,7 @@ describe('PdfJsDocumentTextExtractor', () => {
   });
 
   it('enforces the configured page bound before reading page content', async () => {
-    const { document, extractor } = setup([
+    const { document, loadingTask, extractor } = setup([
       { items: [{ str: 'Page one' }] },
       { items: [{ str: 'Page two' }] },
     ]);
@@ -178,6 +172,6 @@ describe('PdfJsDocumentTextExtractor', () => {
       }),
     ).rejects.toHaveProperty('code', 'too_complex');
     expect(document.pages.every((page) => !page.cleaned)).toBe(true);
-    expect(document.destroyed).toBe(true);
+    expect(loadingTask.destroyed).toBe(true);
   });
 });
