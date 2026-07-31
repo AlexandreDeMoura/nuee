@@ -490,7 +490,7 @@ describe('Discussion lifecycle journey (e2e)', () => {
             {
               source_kind: 'document',
               source_id: 'document-reader-unavailable',
-              reason: 'inaccessible',
+              reason: 'missing',
             },
           ],
         });

@@ -16,11 +16,19 @@ import type {
   Project,
 } from '@nuee/shared-types';
 import { AppModule } from './../src/app.module';
+import { DatabaseProvider } from './../src/database/database.provider';
 import { DocumentProcessingCoordinator } from './../src/documents/document-processing.coordinator';
 import {
   DOCUMENT_REPOSITORY,
   type DocumentRepository,
 } from './../src/documents/document.types';
+import {
+  markdownDocumentFixture,
+  noTextPdfDocumentFixture,
+  plainTextDocumentFixture,
+  textPdfDocumentFixture,
+  unsafeTextDocumentFixture,
+} from './fixtures/document-files';
 
 describe('Document library journey (e2e)', () => {
   const temporaryDirectory = mkdtempSync(
@@ -36,7 +44,7 @@ describe('Document library journey (e2e)', () => {
   beforeAll(async () => {
     process.env.PROJECT_DATABASE_PATH = databasePath;
     process.env.DOCUMENT_PRIVATE_STORAGE_PATH = privateStoragePath;
-    process.env.DOCUMENT_MAX_FILE_SIZE_BYTES = '64';
+    process.env.DOCUMENT_MAX_FILE_SIZE_BYTES = '2048';
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -75,7 +83,7 @@ describe('Document library journey (e2e)', () => {
     const policy = policyResponse.body as DocumentUploadPolicyResponse;
 
     expect(policy).toMatchObject({
-      max_file_size_bytes: 64,
+      max_file_size_bytes: 2048,
       max_files_per_request: 1,
       max_documents_per_project: 25,
       max_project_storage_bytes: 100 * 1024 * 1024,
@@ -115,7 +123,7 @@ describe('Document library journey (e2e)', () => {
     await request(app.getHttpServer())
       .post(`/projects/${project.id}/documents`)
       .field('idempotency_key', 'oversized-file')
-      .attach('file', Buffer.alloc(65, 'a'), {
+      .attach('file', Buffer.alloc(2049, 'a'), {
         filename: 'oversized.txt',
         contentType: 'text/plain',
       })
@@ -124,7 +132,7 @@ describe('Document library journey (e2e)', () => {
         expect(body).toMatchObject({
           code: 'DOCUMENT_UPLOAD_LIMIT_EXCEEDED',
           reason: 'file_too_large',
-          max_file_size_bytes: 64,
+          max_file_size_bytes: 2048,
         });
       });
 
@@ -179,6 +187,170 @@ describe('Document library journey (e2e)', () => {
             file: 'Send the document in a field named "file".',
           },
         });
+      });
+  });
+
+  it('processes supported fixtures independently and rejects invalid sources before ready state', async () => {
+    const project = await createProject('Format fixtures');
+    const uploads = [
+      {
+        bytes: plainTextDocumentFixture,
+        filename: 'notes.txt',
+        contentType: 'text/plain',
+        idempotencyKey: 'fixture-txt',
+        expectedFormat: 'plain_text',
+        expectedText: 'First paragraph.\n\nSecond paragraph.',
+      },
+      {
+        bytes: markdownDocumentFixture,
+        filename: 'finding.md',
+        contentType: 'text/markdown',
+        idempotencyKey: 'fixture-markdown',
+        expectedFormat: 'markdown',
+        expectedText: markdownDocumentFixture.toString('utf8'),
+      },
+      {
+        bytes: textPdfDocumentFixture([
+          'Frozen context stays stable.',
+          'Second line of the fixture.',
+        ]),
+        filename: 'report.pdf',
+        contentType: 'application/pdf',
+        idempotencyKey: 'fixture-pdf',
+        expectedFormat: 'pdf',
+        expectedText:
+          'Frozen context stays stable.\nSecond line of the fixture.',
+      },
+    ] as const;
+    const accepted: DocumentSummary[] = [];
+
+    for (const fixture of uploads) {
+      const response = await request(app.getHttpServer())
+        .post(`/projects/${project.id}/documents`)
+        .field('idempotency_key', fixture.idempotencyKey)
+        .attach('file', fixture.bytes, {
+          filename: fixture.filename,
+          contentType: fixture.contentType,
+        })
+        .expect(201);
+      accepted.push(response.body as DocumentSummary);
+      expect(response.body).toMatchObject({
+        format: fixture.expectedFormat,
+        processing_status: 'processing',
+      });
+    }
+
+    const noTextResponse = await request(app.getHttpServer())
+      .post(`/projects/${project.id}/documents`)
+      .field('idempotency_key', 'fixture-no-text')
+      .attach('file', noTextPdfDocumentFixture(), {
+        filename: 'scanned.pdf',
+        contentType: 'application/pdf',
+      })
+      .expect(201);
+    const noText = noTextResponse.body as DocumentSummary;
+
+    const unsafeResponse = await request(app.getHttpServer())
+      .post(`/projects/${project.id}/documents`)
+      .field('idempotency_key', 'fixture-unsafe')
+      .attach('file', unsafeTextDocumentFixture, {
+        filename: 'unsafe.txt',
+        contentType: 'text/plain',
+      })
+      .expect(201);
+    const unsafe = unsafeResponse.body as DocumentSummary;
+
+    await app.get(DocumentProcessingCoordinator).drain();
+
+    for (const [index, fixture] of uploads.entries()) {
+      await request(app.getHttpServer())
+        .get(`/projects/${project.id}/documents/${accepted[index]?.id}`)
+        .expect(200)
+        .expect(({ body }) => {
+          expect(body).toMatchObject({
+            processing_status: 'ready',
+            extracted_text: fixture.expectedText,
+          });
+        });
+    }
+
+    await request(app.getHttpServer())
+      .get(`/projects/${project.id}/documents/${noText.id}`)
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body).toMatchObject({
+          processing_status: 'failed',
+          processing_error_code: 'no_text',
+          extracted_text: null,
+        });
+      });
+    await request(app.getHttpServer())
+      .get(`/projects/${project.id}/documents/${unsafe.id}`)
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body).toMatchObject({
+          processing_status: 'failed',
+          processing_error_code: 'unsafe',
+          extracted_text: null,
+        });
+      });
+
+    const rejectedFixtures = [
+      {
+        bytes: Buffer.alloc(0),
+        filename: 'empty.txt',
+        contentType: 'text/plain',
+        reason: 'empty_file',
+      },
+      {
+        bytes: Buffer.from([0x61, 0, 0x62]),
+        filename: 'binary.txt',
+        contentType: 'text/plain',
+        reason: 'binary_content',
+      },
+      {
+        bytes: Buffer.from('not a pdf'),
+        filename: 'mismatch.txt',
+        contentType: 'application/pdf',
+        reason: 'mime_type_mismatch',
+      },
+      {
+        bytes: Buffer.from('%PDF-1.4\nnot a document'),
+        filename: 'corrupted.pdf',
+        contentType: 'application/pdf',
+        reason: 'invalid_pdf',
+      },
+      {
+        bytes: Buffer.from('unsupported'),
+        filename: 'unsupported.docx',
+        contentType:
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        reason: 'unsupported_extension',
+      },
+    ] as const;
+
+    for (const [index, fixture] of rejectedFixtures.entries()) {
+      await request(app.getHttpServer())
+        .post(`/projects/${project.id}/documents`)
+        .field('idempotency_key', `rejected-${index}`)
+        .attach('file', fixture.bytes, {
+          filename: fixture.filename,
+          contentType: fixture.contentType,
+        })
+        .expect(400)
+        .expect(({ body }) => {
+          expect(body).toMatchObject({
+            code: 'DOCUMENT_UPLOAD_VALIDATION_FAILED',
+            reason: fixture.reason,
+          });
+        });
+    }
+
+    await request(app.getHttpServer())
+      .get(`/projects/${project.id}/documents`)
+      .expect(200)
+      .expect(({ body }) => {
+        expect(body).toHaveLength(uploads.length + 2);
       });
   });
 
@@ -294,6 +466,51 @@ describe('Document library journey (e2e)', () => {
           extracted_text: sourceText,
           updated_at: unchangedUpdatedAt,
         });
+      });
+
+    app
+      .get(DatabaseProvider)
+      .connection.prepare(
+        `
+          UPDATE documents
+          SET title = ?, extracted_text = ?, updated_at = ?
+          WHERE project_id = ? AND id = ?
+        `,
+      )
+      .run(
+        'Changed live title',
+        'Changed live content.',
+        '2026-07-31T12:00:00.000Z',
+        project.id,
+        uploaded.id,
+      );
+
+    await request(app.getHttpServer())
+      .get(`/projects/${project.id}/discussions/${discussion.id}`)
+      .expect(200)
+      .expect(({ body }) => {
+        expect((body as DiscussionDetails).frozen_context).toEqual(
+          discussion.frozen_context,
+        );
+      });
+
+    app
+      .get(DatabaseProvider)
+      .connection.prepare(
+        'DELETE FROM documents WHERE project_id = ? AND id = ?',
+      )
+      .run(project.id, uploaded.id);
+
+    await request(app.getHttpServer())
+      .get(`/projects/${project.id}/documents/${uploaded.id}`)
+      .expect(404);
+    await request(app.getHttpServer())
+      .get(`/projects/${project.id}/discussions/${discussion.id}`)
+      .expect(200)
+      .expect(({ body }) => {
+        expect((body as DiscussionDetails).frozen_context).toEqual(
+          discussion.frozen_context,
+        );
       });
   });
 

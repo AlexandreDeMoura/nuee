@@ -127,6 +127,29 @@ describe('SqliteDocumentRepository', () => {
     });
   });
 
+  it('restores document records and deterministic ordering after reopening SQLite', () => {
+    const project = createProject();
+    const earlier = repository.create(documentInput(project.id));
+    const later = repository.create(
+      documentInput(project.id, {
+        id: 'document-b',
+        file_reference: 'private/project/document-b/source',
+        upload_idempotency_key: 'upload-b',
+        upload_request_fingerprint: '2'.repeat(64),
+        created_at: '2026-07-30T11:00:00.000Z',
+        updated_at: '2026-07-30T11:00:00.000Z',
+      }),
+    );
+
+    databaseProvider.onModuleDestroy();
+    databaseProvider = new DatabaseProvider({
+      databasePath: join(temporaryDirectory, 'documents.sqlite'),
+    });
+    repository = new SqliteDocumentRepository(databaseProvider);
+
+    expect(repository.findAllByProjectId(project.id)).toEqual([later, earlier]);
+  });
+
   it('enforces project-scoped upload idempotency while allowing duplicate filenames', () => {
     const project = createProject();
     const otherProject = createProject('Other project');
