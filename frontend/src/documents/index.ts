@@ -2,6 +2,7 @@ export * from './DocumentContextSelectionPanel';
 export * from './DocumentInspectionPanel';
 export * from './DocumentsPanel';
 export * from './documentContextSelectionTypes';
+export * from './documentAnalytics';
 export * from './documentPresentation';
 export * from './documentUploadPreflight';
 export * from './useDocumentLibrary';

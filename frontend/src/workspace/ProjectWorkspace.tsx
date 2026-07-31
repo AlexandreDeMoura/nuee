@@ -72,6 +72,7 @@ import {
 import {
   DocumentContextSelectionPanel,
   DocumentsPanel,
+  trackDocumentAnalytics,
   useDocumentLibrary,
   useDocumentMultiSelection,
   type DocumentDetailRequest,
@@ -552,6 +553,7 @@ function WorkspacePanel({
         ) : (
           panelSlots?.documents ?? (
             <DocumentsPanel
+              analyticsClient={analyticsClient}
               controller={documentLibrary}
               projectId={project.id}
               requestDocument={requestDocument}
@@ -667,6 +669,7 @@ export function ProjectWorkspace({
     activePanel === 'documents' ||
     discussionContextSelection.phase === 'selecting_documents';
   const documentLibrary = useDocumentLibrary({
+    analyticsClient,
     enabled: documentLibraryEnabled,
     pollIntervalMs: documentPollIntervalMs,
     projectId: currentProject.id,
@@ -678,6 +681,7 @@ export function ProjectWorkspace({
   const previousContextSelectionPhaseRef = useRef(
     discussionContextSelection.phase,
   );
+  const documentContextReadinessTrackedRef = useRef(false);
   const projectDiscussions = useProjectDiscussions({
     analyticsClient,
     enabled:
@@ -728,7 +732,7 @@ export function ProjectWorkspace({
 
       initialDocumentUploadsStartedRef.current = true;
       for (const file of initialDocumentUploads) {
-        uploadInitialDocument(file);
+        uploadInitialDocument(file, 'project_creation');
       }
       onInitialDocumentUploadsStarted?.();
     }, 0);
@@ -1113,6 +1117,13 @@ export function ProjectWorkspace({
         instruction: 'Choose documents for this discussion',
         onCancel: discussionContextSelection.backFromSourceSelection,
         onConfirm: (selection) => {
+          trackDocumentAnalytics(analyticsClient, 'document_context_readiness_checked', {
+            project_id: currentProject.id,
+            document_ids: selection.documentIds,
+            action: 'selection_confirmed',
+            ready_count: selection.documents.length,
+            unavailable_count: 0,
+          });
           discussionContextSelection.confirmSourceSelection(
             'document',
             selection.documents.map((document) => ({
@@ -1124,7 +1135,7 @@ export function ProjectWorkspace({
           );
         },
       };
-    }, [discussionContextSelection]);
+    }, [analyticsClient, currentProject.id, discussionContextSelection]);
   const documentContextSelection = useDocumentMultiSelection({
     documents: documentLibrary.documents,
     multiSelection: discussionContextDocumentSelection,
@@ -1136,6 +1147,10 @@ export function ProjectWorkspace({
     previousContextSelectionPhaseRef.current =
       discussionContextSelection.phase;
 
+    if (discussionContextSelection.phase !== 'selecting_documents') {
+      documentContextReadinessTrackedRef.current = false;
+    }
+
     if (
       discussionContextSelection.phase === 'selecting_documents' &&
       previousPhase !== 'selecting_documents'
@@ -1143,7 +1158,31 @@ export function ProjectWorkspace({
       setActivatedDocumentLibraryProjectId(currentProject.id);
       setActivePanel('documents');
     }
-  }, [currentProject.id, discussionContextSelection.phase]);
+
+    if (
+      discussionContextSelection.phase === 'selecting_documents' &&
+      documentLibrary.status === 'ready' &&
+      !documentContextReadinessTrackedRef.current
+    ) {
+      const readyCount = documentLibrary.documents.filter(
+        ({ processing_status }) => processing_status === 'ready',
+      ).length;
+      documentContextReadinessTrackedRef.current = true;
+      trackDocumentAnalytics(analyticsClient, 'document_context_readiness_checked', {
+        project_id: currentProject.id,
+        document_ids: documentLibrary.documents.map(({ id }) => id),
+        action: 'selection_opened',
+        ready_count: readyCount,
+        unavailable_count: documentLibrary.documents.length - readyCount,
+      });
+    }
+  }, [
+    analyticsClient,
+    currentProject.id,
+    discussionContextSelection.phase,
+    documentLibrary.documents,
+    documentLibrary.status,
+  ]);
 
   const isContextSourceSelection =
     discussionVisibility.visibleDiscussion?.kind === 'draft' &&

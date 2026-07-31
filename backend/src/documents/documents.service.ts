@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import {
   BadRequestException,
   ConflictException,
+  HttpException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -25,6 +26,11 @@ import type {
 import { ProjectsService } from '../projects/projects.service';
 import { DocumentUploadValidator } from './document-upload.validator';
 import {
+  DocumentTelemetry,
+  documentCorrelationId,
+  documentSizeBand,
+} from './document.telemetry';
+import {
   DOCUMENT_FILE_STORAGE,
   DOCUMENT_PROCESSING_QUEUE,
   DOCUMENT_REPOSITORY,
@@ -41,6 +47,12 @@ import {
 
 const MAX_IDEMPOTENCY_KEY_LENGTH = 200;
 
+interface DocumentUploadResult {
+  document: DocumentSummary;
+  outcome: 'accepted' | 'idempotent_replay';
+  retryCount: number;
+}
+
 @Injectable()
 export class DocumentsService implements DocumentContextSourceReader {
   private readonly projectUploadTails = new Map<string, Promise<void>>();
@@ -56,12 +68,55 @@ export class DocumentsService implements DocumentContextSourceReader {
     private readonly processingQueue: DocumentProcessingQueue,
     @Inject(documentsConfig.KEY)
     private readonly config: ConfigType<typeof documentsConfig>,
+    private readonly telemetry: DocumentTelemetry = new DocumentTelemetry(),
   ) {}
 
   async upload(
     projectId: string,
     input: UploadDocumentInput,
   ): Promise<DocumentSummary> {
+    const startedAt = Date.now();
+    const correlationId = documentCorrelationId(input?.idempotency_key);
+    const inputBytes = input?.file?.bytes;
+    const inputSize =
+      inputBytes instanceof Uint8Array ? inputBytes.byteLength : 0;
+
+    try {
+      const result = await this.persistUpload(projectId, input);
+      this.telemetry.record({
+        event: 'document_upload_finished',
+        project_id: projectId,
+        document_id: result.document.id,
+        correlation_id: correlationId,
+        format_category: result.document.format,
+        size_band: documentSizeBand(result.document.size_bytes),
+        duration_ms: Math.max(0, Date.now() - startedAt),
+        retry_count: result.retryCount,
+        outcome: result.outcome,
+        error_code: null,
+      });
+      return result.document;
+    } catch (error) {
+      this.telemetry.record({
+        event: 'document_upload_finished',
+        project_id: projectId,
+        document_id: null,
+        correlation_id: correlationId,
+        format_category: 'unknown',
+        size_band: documentSizeBand(inputSize),
+        duration_ms: Math.max(0, Date.now() - startedAt),
+        retry_count: 0,
+        outcome: 'failed',
+        error_code: this.applicationErrorCode(error),
+      });
+      throw error;
+    }
+  }
+
+  private async persistUpload(
+    projectId: string,
+    input: UploadDocumentInput,
+  ): Promise<DocumentUploadResult> {
     this.projects.get(projectId);
 
     const idempotencyKey = this.validateIdempotencyKey(input?.idempotency_key);
@@ -76,7 +131,11 @@ export class DocumentsService implements DocumentContextSourceReader {
 
       if (replay) {
         this.scheduleProcessing(replay);
-        return toDocumentSummary(replay);
+        return {
+          document: toDocumentSummary(replay),
+          outcome: 'idempotent_replay',
+          retryCount: 1,
+        };
       }
 
       this.enforceProjectQuota(projectId, upload.size_bytes);
@@ -122,7 +181,11 @@ export class DocumentsService implements DocumentContextSourceReader {
         );
 
         if (replay) {
-          return toDocumentSummary(replay);
+          return {
+            document: toDocumentSummary(replay),
+            outcome: 'idempotent_replay',
+            retryCount: 1,
+          };
         }
 
         throw new InternalServerErrorException({
@@ -132,7 +195,11 @@ export class DocumentsService implements DocumentContextSourceReader {
       }
 
       this.scheduleProcessing(created);
-      return toDocumentSummary(created);
+      return {
+        document: toDocumentSummary(created),
+        outcome: 'accepted',
+        retryCount: 0,
+      };
     });
   }
 
@@ -165,6 +232,34 @@ export class DocumentsService implements DocumentContextSourceReader {
   }
 
   retry(
+    projectId: string,
+    documentId: string,
+  ): RetryDocumentProcessingResponse {
+    const startedAt = Date.now();
+
+    try {
+      const result = this.queueProcessingRetry(projectId, documentId);
+      const persisted = this.getPersisted(projectId, documentId);
+      this.recordProcessingRetry(persisted, startedAt, 'accepted', null);
+      return result;
+    } catch (error) {
+      const persisted = this.documents.findByProjectAndId(
+        projectId,
+        documentId,
+      );
+      if (persisted) {
+        this.recordProcessingRetry(
+          persisted,
+          startedAt,
+          'failed',
+          this.applicationErrorCode(error),
+        );
+      }
+      throw error;
+    }
+  }
+
+  private queueProcessingRetry(
     projectId: string,
     documentId: string,
   ): RetryDocumentProcessingResponse {
@@ -416,5 +511,39 @@ export class DocumentsService implements DocumentContextSourceReader {
     const previousTime = new Date(previousTimestamp).getTime();
 
     return new Date(Math.max(currentTime, previousTime + 1)).toISOString();
+  }
+
+  private recordProcessingRetry(
+    document: DocumentRecord,
+    startedAt: number,
+    outcome: 'accepted' | 'failed',
+    errorCode: string | null,
+  ): void {
+    this.telemetry.record({
+      event: 'document_processing_retry_finished',
+      project_id: document.project_id,
+      document_id: document.id,
+      correlation_id: documentCorrelationId(document.id),
+      format_category: document.format,
+      size_band: documentSizeBand(document.size_bytes),
+      duration_ms: Math.max(0, Date.now() - startedAt),
+      retry_count: Math.max(0, document.processing_generation - 1),
+      outcome,
+      error_code: errorCode,
+    });
+  }
+
+  private applicationErrorCode(error: unknown): string {
+    if (error instanceof HttpException) {
+      const response = error.getResponse();
+      if (response && typeof response === 'object') {
+        const code: unknown = (response as { code?: unknown }).code;
+        if (typeof code === 'string' && code.length > 0) {
+          return code;
+        }
+      }
+    }
+
+    return 'DOCUMENT_UNKNOWN_FAILURE';
   }
 }

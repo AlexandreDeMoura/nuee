@@ -12,6 +12,11 @@ import type {
 } from '@nuee/shared-types';
 import { documentsConfig } from '../config/configuration';
 import {
+  DocumentTelemetry,
+  documentCorrelationId,
+  documentSizeBand,
+} from './document.telemetry';
+import {
   DOCUMENT_FILE_STORAGE,
   DOCUMENT_MALWARE_SCANNER,
   DOCUMENT_REPOSITORY,
@@ -60,6 +65,7 @@ export class DocumentProcessingCoordinator
     private readonly pdfExtractor: PdfJsDocumentTextExtractor,
     @Inject(documentsConfig.KEY)
     private readonly config: ConfigType<typeof documentsConfig>,
+    private readonly telemetry: DocumentTelemetry = new DocumentTelemetry(),
   ) {}
 
   onModuleInit(): void {
@@ -173,6 +179,7 @@ export class DocumentProcessingCoordinator
     document: DocumentRecord,
     leaseOwner: string,
   ): Promise<void> {
+    const startedAt = Date.now();
     const controller = new AbortController();
     let rejectWhenAborted!: () => void;
     const aborted = new Promise<never>((_resolve, reject) => {
@@ -199,12 +206,21 @@ export class DocumentProcessingCoordinator
     );
 
     try {
-      await Promise.race([operation, aborted]);
-    } catch (error) {
-      this.recordFailure(
+      const completed = await Promise.race([operation, aborted]);
+      this.recordProcessingTelemetry(
         document,
-        leaseOwner,
-        this.classifyFailure(error, controller.signal),
+        startedAt,
+        completed ? 'ready' : 'stale',
+        null,
+      );
+    } catch (error) {
+      const failure = this.classifyFailure(error, controller.signal);
+      const outcome = this.recordFailure(document, leaseOwner, failure);
+      this.recordProcessingTelemetry(
+        document,
+        startedAt,
+        outcome,
+        failure.code,
       );
     } finally {
       clearTimeout(timeout);
@@ -217,7 +233,7 @@ export class DocumentProcessingCoordinator
     document: DocumentRecord,
     leaseOwner: string,
     signal: AbortSignal,
-  ): Promise<void> {
+  ): Promise<DocumentRecord | undefined> {
     let sourceBytes: Buffer | undefined;
 
     try {
@@ -241,7 +257,7 @@ export class DocumentProcessingCoordinator
       });
       this.throwIfAborted(signal);
 
-      this.documents.completeProcessing({
+      return this.documents.completeProcessing({
         project_id: document.project_id,
         document_id: document.id,
         expected_generation: document.processing_generation,
@@ -259,7 +275,7 @@ export class DocumentProcessingCoordinator
     document: DocumentRecord,
     leaseOwner: string,
     failure: ProcessingFailure,
-  ): void {
+  ): 'retry_scheduled' | 'failed' | 'stale' {
     const completedAt = new Date().toISOString();
     const lease = {
       project_id: document.project_id,
@@ -273,18 +289,39 @@ export class DocumentProcessingCoordinator
       (failure.retryable &&
         document.processing_attempt_count < this.config.maxProcessingAttempts)
     ) {
-      this.documents.releaseProcessingLease({
+      const released = this.documents.releaseProcessingLease({
         ...lease,
         released_at: completedAt,
       });
-      return;
+      return released ? 'retry_scheduled' : 'stale';
     }
 
-    this.documents.failProcessing({
+    const failed = this.documents.failProcessing({
       ...lease,
       error_code: failure.code,
       retryable: failure.retryable,
       completed_at: completedAt,
+    });
+    return failed ? 'failed' : 'stale';
+  }
+
+  private recordProcessingTelemetry(
+    document: DocumentRecord,
+    startedAt: number,
+    outcome: 'ready' | 'retry_scheduled' | 'failed' | 'stale',
+    errorCode: DocumentProcessingErrorCode | null,
+  ): void {
+    this.telemetry.record({
+      event: 'document_processing_finished',
+      project_id: document.project_id,
+      document_id: document.id,
+      correlation_id: documentCorrelationId(document.id),
+      format_category: document.format,
+      size_band: documentSizeBand(document.size_bytes),
+      duration_ms: Math.max(0, Date.now() - startedAt),
+      retry_count: Math.max(0, document.processing_attempt_count - 1),
+      outcome,
+      error_code: errorCode,
     });
   }
 

@@ -17,7 +17,9 @@ import {
   Upload,
 } from 'lucide-react';
 import type { DocumentSummary } from '../api';
+import { analytics, type AnalyticsClient } from '../analytics';
 import { DocumentInspectionPanel, type DocumentDetailRequest } from './DocumentInspectionPanel';
+import { documentSizeBand, trackDocumentAnalytics } from './documentAnalytics';
 import {
   documentPolicyDescription,
   documentPolicyExtensions,
@@ -40,6 +42,7 @@ interface InspectionSelection {
 }
 
 export interface DocumentsPanelProps {
+  analyticsClient?: AnalyticsClient;
   controller: DocumentLibraryController;
   projectId: string;
   requestDocument?: DocumentDetailRequest;
@@ -258,6 +261,7 @@ function DocumentItem({
 }
 
 export function DocumentsPanel({
+  analyticsClient = analytics,
   controller,
   projectId,
   requestDocument,
@@ -320,6 +324,13 @@ export function DocumentsPanel({
   };
 
   const inspectDocument = (document: DocumentSummary) => {
+    trackDocumentAnalytics(analyticsClient, 'document_inspected', {
+      project_id: projectId,
+      document_id: document.id,
+      format_category: document.format,
+      size_band: documentSizeBand(document.size_bytes),
+      context_readiness: document.processing_status === 'ready' ? 'ready' : 'not_ready',
+    });
     controller.clearProcessingError(document.id);
     setSelection({ documentId: document.id, projectId });
   };

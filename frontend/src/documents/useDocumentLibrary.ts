@@ -17,6 +17,14 @@ import {
   type DocumentUploadPolicy,
   type UploadDocumentInput,
 } from '../api';
+import { analytics, type AnalyticsClient } from '../analytics';
+import {
+  configuredDocumentFormat,
+  documentProcessingDurationMs,
+  documentSizeBand,
+  trackDocumentAnalytics,
+  type DocumentUploadSource,
+} from './documentAnalytics';
 import { preflightDocumentUpload } from './documentUploadPreflight';
 
 export type DocumentListRequest = typeof getProjectDocuments;
@@ -62,10 +70,11 @@ export interface DocumentLibraryController {
   retryingDocumentIds: ReadonlySet<string>;
   status: DocumentLibraryLoadStatus;
   transfers: readonly DocumentTransferRow[];
-  uploadFile: (file: File) => string;
+  uploadFile: (file: File, source?: DocumentUploadSource) => string;
 }
 
 export interface UseDocumentLibraryOptions {
+  analyticsClient?: AnalyticsClient;
   createUploadId?: () => string;
   enabled?: boolean;
   pollIntervalMs?: number;
@@ -88,9 +97,11 @@ interface PolicyStore {
 
 interface TransferRecord extends DocumentTransferRow {
   file: File;
+  formatCategory: DocumentSummary['format'] | 'unknown';
   idempotencyKey: string;
   operation: number;
   projectId: string;
+  uploadSource: DocumentUploadSource;
 }
 
 interface TransferStore {
@@ -152,6 +163,7 @@ function publicTransfer(record: TransferRecord): DocumentTransferRow {
 }
 
 export function useDocumentLibrary({
+  analyticsClient = analytics,
   createUploadId = defaultCreateUploadId,
   enabled = true,
   pollIntervalMs = 2_000,
@@ -202,6 +214,7 @@ export function useDocumentLibrary({
     new Map<string, AbortController>(),
   );
   const uploadSequenceRef = useRef(0);
+  const observedProcessingStatesRef = useRef(new Map<string, string>());
 
   activeProjectIdRef.current = enabled ? projectId : null;
 
@@ -412,6 +425,28 @@ export function useDocumentLibrary({
   }, [enabled, projectId]);
 
   useEffect(() => {
+    for (const document of currentStore.documents) {
+      const key = `${document.project_id}:${document.id}`;
+      const signature = `${document.processing_status}:${document.updated_at}`;
+
+      if (observedProcessingStatesRef.current.get(key) === signature) {
+        continue;
+      }
+
+      observedProcessingStatesRef.current.set(key, signature);
+      trackDocumentAnalytics(analyticsClient, 'document_processing_observed', {
+        project_id: document.project_id,
+        document_id: document.id,
+        format_category: document.format,
+        size_band: documentSizeBand(document.size_bytes),
+        processing_state: document.processing_status,
+        processing_duration_ms: documentProcessingDurationMs(document),
+        error_code: document.processing_error_code,
+      });
+    }
+  }, [analyticsClient, currentStore.documents]);
+
+  useEffect(() => {
     if (
       !enabled ||
       currentStore.status === 'loading' ||
@@ -470,6 +505,15 @@ export function useDocumentLibrary({
               : record,
           ),
         );
+        trackDocumentAnalytics(analyticsClient, 'document_upload_finished', {
+          project_id: boundProjectId,
+          document_id: null,
+          upload_source: initialRecord.uploadSource,
+          format_category: initialRecord.formatCategory,
+          size_band: documentSizeBand(initialRecord.size_bytes),
+          outcome: 'failed',
+          processing_state: 'not_started',
+        });
         return;
       }
 
@@ -500,6 +544,15 @@ export function useDocumentLibrary({
               : record,
           ),
         );
+        trackDocumentAnalytics(analyticsClient, 'document_upload_finished', {
+          project_id: boundProjectId,
+          document_id: null,
+          upload_source: initialRecord.uploadSource,
+          format_category: initialRecord.formatCategory,
+          size_band: documentSizeBand(initialRecord.size_bytes),
+          outcome: 'client_rejected',
+          processing_state: 'not_started',
+        });
         return;
       }
 
@@ -532,6 +585,15 @@ export function useDocumentLibrary({
           response,
           boundProjectId,
         );
+        trackDocumentAnalytics(analyticsClient, 'document_upload_finished', {
+          project_id: boundProjectId,
+          document_id: document.id,
+          upload_source: initialRecord.uploadSource,
+          format_category: document.format,
+          size_band: documentSizeBand(document.size_bytes),
+          outcome: 'accepted',
+          processing_state: document.processing_status,
+        });
         commitDocument(boundProjectId, document);
         commitTransferRecords(boundProjectId, (records) =>
           records.filter(({ id }) => id !== initialRecord.id),
@@ -559,6 +621,15 @@ export function useDocumentLibrary({
               : record,
           ),
         );
+        trackDocumentAnalytics(analyticsClient, 'document_upload_finished', {
+          project_id: boundProjectId,
+          document_id: null,
+          upload_source: initialRecord.uploadSource,
+          format_category: preflight.format,
+          size_band: documentSizeBand(initialRecord.size_bytes),
+          outcome: 'failed',
+          processing_state: 'not_started',
+        });
       } finally {
         if (
           uploadControllersRef.current.get(initialRecord.id) === controller
@@ -570,18 +641,22 @@ export function useDocumentLibrary({
     [
       commitDocument,
       commitTransferRecords,
+      analyticsClient,
       policyStore.policy,
       uploadRequest,
     ],
   );
 
   const uploadFile = useCallback(
-    (file: File): string => {
+    (file: File, source: DocumentUploadSource = 'documents_panel'): string => {
       const id = createUploadId();
       const sequence = ++uploadSequenceRef.current;
       const record: TransferRecord = {
         error: null,
         file,
+        formatCategory: policyStore.policy
+          ? configuredDocumentFormat(file.name, policyStore.policy.supported_formats)
+          : 'unknown',
         id: `${id}:${sequence}`,
         idempotencyKey: `document-upload:${id}:${sequence}`,
         operation: 1,
@@ -589,13 +664,14 @@ export function useDocumentLibrary({
         projectId,
         size_bytes: file.size,
         status: 'transferring',
+        uploadSource: source,
       };
 
       commitTransferRecords(projectId, (records) => [...records, record]);
       void runTransfer(record);
       return record.id;
     },
-    [commitTransferRecords, createUploadId, projectId, runTransfer],
+    [commitTransferRecords, createUploadId, policyStore.policy, projectId, runTransfer],
   );
 
   const retryTransfer = useCallback(
@@ -615,12 +691,18 @@ export function useDocumentLibrary({
         operation: existing.operation + 1,
         status: 'transferring' as const,
       };
+      trackDocumentAnalytics(analyticsClient, 'document_upload_retry_requested', {
+        project_id: projectId,
+        upload_source: existing.uploadSource,
+        format_category: existing.formatCategory,
+        size_band: documentSizeBand(existing.size_bytes),
+      });
       commitTransferRecords(projectId, (records) =>
         records.map((record) => (record.id === transferId ? retry : record)),
       );
       void runTransfer(retry);
     },
-    [commitTransferRecords, projectId, runTransfer],
+    [analyticsClient, commitTransferRecords, projectId, runTransfer],
   );
 
   const dismissTransfer = useCallback(
@@ -697,6 +779,14 @@ export function useDocumentLibrary({
           projectId,
           documentId,
         );
+        trackDocumentAnalytics(analyticsClient, 'document_processing_retry_finished', {
+          project_id: projectId,
+          document_id: document.id,
+          format_category: document.format,
+          size_band: documentSizeBand(document.size_bytes),
+          outcome: 'accepted',
+          processing_state: 'processing',
+        });
         commitDocument(projectId, updated);
         return true;
       } catch (error) {
@@ -719,6 +809,14 @@ export function useDocumentLibrary({
           },
           projectId,
         }));
+        trackDocumentAnalytics(analyticsClient, 'document_processing_retry_finished', {
+          project_id: projectId,
+          document_id: document.id,
+          format_category: document.format,
+          size_band: documentSizeBand(document.size_bytes),
+          outcome: 'failed',
+          processing_state: 'failed',
+        });
         return false;
       } finally {
         if (
@@ -735,7 +833,7 @@ export function useDocumentLibrary({
         }
       }
     },
-    [commitDocument, enabled, processingRetryRequest, projectId],
+    [analyticsClient, commitDocument, enabled, processingRetryRequest, projectId],
   );
 
   const clearProcessingError = useCallback(

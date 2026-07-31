@@ -7,6 +7,7 @@ import { ClamAvDocumentMalwareScanner } from './clamav-document-malware.scanner'
 import { DeterministicDocumentMalwareScanner } from './deterministic-document-malware.scanner';
 import { DocumentProcessingCoordinator } from './document-processing.coordinator';
 import { DocumentTextNormalizer } from './document-text.normalizer';
+import { DocumentTelemetry } from './document.telemetry';
 import { DocumentUploadInterceptor } from './document-upload.interceptor';
 import { DocumentUploadValidator } from './document-upload.validator';
 import {
@@ -38,6 +39,7 @@ import {
     DocumentUploadInterceptor,
     DocumentProcessingCoordinator,
     DocumentTextNormalizer,
+    DocumentTelemetry,
     DocumentUploadValidator,
     PlainTextDocumentTextExtractor,
     MarkdownDocumentTextExtractor,

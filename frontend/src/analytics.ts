@@ -162,6 +162,52 @@ export interface AnalyticsEventProperties {
     latency_ms: number;
     occurred_at: string;
   };
+  document_upload_finished: {
+    project_id: string;
+    document_id: string | null;
+    upload_source: 'documents_panel' | 'project_creation';
+    format_category: 'plain_text' | 'markdown' | 'pdf' | 'unknown';
+    size_band: 'under_100_kib' | '100_kib_to_1_mib' | '1_to_10_mib' | 'over_10_mib';
+    outcome: 'accepted' | 'client_rejected' | 'failed';
+    processing_state: 'not_started' | 'processing' | 'ready' | 'failed';
+  };
+  document_upload_retry_requested: {
+    project_id: string;
+    upload_source: 'documents_panel' | 'project_creation';
+    format_category: 'plain_text' | 'markdown' | 'pdf' | 'unknown';
+    size_band: 'under_100_kib' | '100_kib_to_1_mib' | '1_to_10_mib' | 'over_10_mib';
+  };
+  document_processing_observed: {
+    project_id: string;
+    document_id: string;
+    format_category: 'plain_text' | 'markdown' | 'pdf';
+    size_band: 'under_100_kib' | '100_kib_to_1_mib' | '1_to_10_mib' | 'over_10_mib';
+    processing_state: 'processing' | 'ready' | 'failed';
+    processing_duration_ms: number | null;
+    error_code: string | null;
+  };
+  document_processing_retry_finished: {
+    project_id: string;
+    document_id: string;
+    format_category: 'plain_text' | 'markdown' | 'pdf';
+    size_band: 'under_100_kib' | '100_kib_to_1_mib' | '1_to_10_mib' | 'over_10_mib';
+    outcome: 'accepted' | 'failed';
+    processing_state: 'processing' | 'failed';
+  };
+  document_inspected: {
+    project_id: string;
+    document_id: string;
+    format_category: 'plain_text' | 'markdown' | 'pdf';
+    size_band: 'under_100_kib' | '100_kib_to_1_mib' | '1_to_10_mib' | 'over_10_mib';
+    context_readiness: 'ready' | 'not_ready';
+  };
+  document_context_readiness_checked: {
+    project_id: string;
+    document_ids: readonly string[];
+    action: 'selection_opened' | 'selection_confirmed';
+    ready_count: number;
+    unavailable_count: number;
+  };
 }
 
 export type AnalyticsEventName = keyof AnalyticsEventProperties;
