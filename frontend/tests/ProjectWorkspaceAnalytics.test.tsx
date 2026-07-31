@@ -212,6 +212,14 @@ describe('project workspace analytics contract', () => {
       ],
       [
         'project_panel_viewed',
+        { project_id: project.id, view: 'documents' },
+      ],
+      [
+        'project_panel_viewed',
+        { project_id: project.id, view: 'project' },
+      ],
+      [
+        'project_panel_viewed',
         { project_id: project.id, view: 'discussions' },
       ],
       [

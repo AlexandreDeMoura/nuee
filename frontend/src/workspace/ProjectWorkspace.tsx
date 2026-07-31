@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
   type KeyboardEvent,
+  type Ref,
   type ReactNode,
 } from 'react';
 import type { LucideIcon } from 'lucide-react';
@@ -70,8 +71,12 @@ import {
 } from '../discussions';
 import {
   DocumentContextSelectionPanel,
+  DocumentsPanel,
+  useDocumentLibrary,
   useDocumentMultiSelection,
-  type DocumentContextSource,
+  type DocumentDetailRequest,
+  type DocumentLibraryController,
+  type DocumentLibraryRequests,
   type DocumentMultiSelection,
   type DocumentMultiSelectionController,
 } from '../documents';
@@ -143,11 +148,9 @@ export interface ProjectWorkspaceProps {
   canvasMultiSelection?: CanvasMultiSelection | null;
   viewportSaveDelayMs?: number;
   bubbleSaveDelayMs?: number;
-  /**
-   * Context-source metadata supplied by Document Library. Document content is
-   * resolved authoritatively by the server only when a discussion starts.
-   */
-  documentContextSources?: readonly DocumentContextSource[];
+  documentLibraryRequests?: DocumentLibraryRequests;
+  documentPollIntervalMs?: number;
+  requestDocument?: DocumentDetailRequest;
   discussionCount?: number;
   panelSlots?: WorkspacePanelSlots;
   overlaySlots?: WorkspaceOverlaySlots;
@@ -419,40 +422,20 @@ function EmptyCanvasContent({
   );
 }
 
-function PanelEmptyState({
-  view,
-}: {
-  view: 'documents' | 'inspector';
-}) {
-  const states: Record<
-    typeof view,
-    { description: string; icon: LucideIcon; title: string }
-  > = {
-    documents: {
-      description: 'Uploaded project sources will appear here.',
-      icon: FileText,
-      title: 'No documents yet',
-    },
-    inspector: {
-      description: 'Select a bubble or context item to inspect its details.',
-      icon: Search,
-      title: 'Nothing selected',
-    },
-  };
-  const state = states[view];
-  const Icon = state.icon;
-
+function InspectorEmptyState() {
   return (
     <div
       className="flex flex-1 flex-col items-center justify-center px-7 text-center"
-      data-panel-empty={view}
+      data-panel-empty="inspector"
     >
       <span className="mb-3 grid size-9 place-items-center rounded-[10px] bg-[#f2f5f9] text-[#7f8ea0]">
-        <Icon className="size-[17px]" strokeWidth={1.7} aria-hidden="true" />
+        <Search className="size-[17px]" strokeWidth={1.7} aria-hidden="true" />
       </span>
-      <h3 className="text-[13px] font-semibold text-[#344050]">{state.title}</h3>
+      <h3 className="text-[13px] font-semibold text-[#344050]">
+        Nothing selected
+      </h3>
       <p className="mt-1.5 max-w-[230px] text-xs leading-[1.55] text-[#8b97a6]">
-        {state.description}
+        Select a bubble or context item to inspect its details.
       </p>
     </div>
   );
@@ -477,6 +460,9 @@ function WorkspacePanel({
   requestBubbleLinkDelete,
   bubbleSaveDelayMs,
   documentContextSelection,
+  documentLibrary,
+  documentUploadInputRef,
+  requestDocument,
   availableBubbles,
   bubbleLinkLoadState,
   onBubbleLinkCreated,
@@ -503,6 +489,9 @@ function WorkspacePanel({
   requestBubbleLinkDelete?: BubbleLinkDeleteRequest;
   bubbleSaveDelayMs?: number;
   documentContextSelection: DocumentMultiSelectionController;
+  documentLibrary: DocumentLibraryController;
+  documentUploadInputRef: Ref<HTMLInputElement>;
+  requestDocument?: DocumentDetailRequest;
   availableBubbles: Bubble[];
   bubbleLinkLoadState: BubbleLinkLoadState;
   onBubbleLinkCreated: (link: BubbleLink) => void;
@@ -559,7 +548,14 @@ function WorkspacePanel({
             controller={documentContextSelection}
           />
         ) : (
-          panelSlots?.documents ?? <PanelEmptyState view="documents" />
+          panelSlots?.documents ?? (
+            <DocumentsPanel
+              controller={documentLibrary}
+              projectId={project.id}
+              requestDocument={requestDocument}
+              uploadInputRef={documentUploadInputRef}
+            />
+          )
         ))}
       {activeView === 'inspector' &&
         (inspectorSelection && inspectorContent != null ? (
@@ -585,7 +581,7 @@ function WorkspacePanel({
             saveDelayMs={bubbleSaveDelayMs}
           />
         ) : (
-          <PanelEmptyState view="inspector" />
+          <InspectorEmptyState />
         ))}
     </section>
   );
@@ -607,7 +603,9 @@ export function ProjectWorkspace({
   canvasMultiSelection = null,
   viewportSaveDelayMs,
   bubbleSaveDelayMs,
-  documentContextSources,
+  documentLibraryRequests,
+  documentPollIntervalMs,
+  requestDocument,
   discussionCount = 0,
   panelSlots,
   overlaySlots,
@@ -631,6 +629,10 @@ export function ProjectWorkspace({
   const [activePanel, setActivePanel] = useState<WorkspacePanelView>(() =>
     getDefaultPanelView(discussionCount),
   );
+  const [activatedDocumentLibraryProjectId, setActivatedDocumentLibraryProjectId] =
+    useState<string | null>(null);
+  const [documentUploadPickerProjectId, setDocumentUploadPickerProjectId] =
+    useState<string | null>(null);
   const [selectedBubbleId, setSelectedBubbleId] = useState<string | null>(null);
   const [
     knowledgeExtractionTargetSelection,
@@ -650,6 +652,16 @@ export function ProjectWorkspace({
   const discussionContextSelection = useDiscussionContextSelection(
     currentProject.id,
   );
+  const documentLibraryEnabled =
+    activatedDocumentLibraryProjectId === currentProject.id ||
+    activePanel === 'documents' ||
+    discussionContextSelection.phase === 'selecting_documents';
+  const documentLibrary = useDocumentLibrary({
+    enabled: documentLibraryEnabled,
+    pollIntervalMs: documentPollIntervalMs,
+    projectId: currentProject.id,
+    requests: documentLibraryRequests,
+  });
   const previousContextSelectionPhaseRef = useRef(
     discussionContextSelection.phase,
   );
@@ -661,6 +673,7 @@ export function ProjectWorkspace({
     requests: discussionPanelRequests,
   });
   const panelButtonRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const documentUploadInputRef = useRef<HTMLInputElement | null>(null);
   const bubbleCollection = useProjectBubbles({
     projectId: currentProject.id,
     requestBubbles,
@@ -688,6 +701,25 @@ export function ProjectWorkspace({
       onInspectorSelectionInvalidated?.(inspectorSelection);
     }
   }, [inspectorSelection, onInspectorSelectionInvalidated]);
+
+  useEffect(() => {
+    if (
+      documentUploadPickerProjectId !== currentProject.id ||
+      activePanel !== 'documents' ||
+      !documentLibrary.policy ||
+      !documentUploadInputRef.current
+    ) {
+      return;
+    }
+
+    setDocumentUploadPickerProjectId(null);
+    documentUploadInputRef.current.click();
+  }, [
+    activePanel,
+    currentProject.id,
+    documentLibrary.policy,
+    documentUploadPickerProjectId,
+  ]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -775,6 +807,12 @@ export function ProjectWorkspace({
   }
 
   function selectPanel(view: WorkspacePanelView) {
+    if (view === 'documents') {
+      setActivatedDocumentLibraryProjectId(currentProject.id);
+    } else {
+      setDocumentUploadPickerProjectId(null);
+    }
+
     if (view === activePanel) {
       return;
     }
@@ -937,6 +975,13 @@ export function ProjectWorkspace({
   const startDiscussionFromPanel =
     emptyActionHandlers?.['start-discussion'] ??
     internalStartDiscussionFromPanel;
+  const internalUploadDocumentFromCanvas = () => {
+    setDocumentUploadPickerProjectId(currentProject.id);
+    selectPanel('documents');
+  };
+  const uploadDocumentFromCanvas =
+    emptyActionHandlers?.['upload-document'] ??
+    internalUploadDocumentFromCanvas;
   const discussionContextMultiSelection =
     useMemo<CanvasMultiSelection | null>(() => {
       if (
@@ -1010,7 +1055,6 @@ export function ProjectWorkspace({
   const discussionContextDocumentSelection =
     useMemo<DocumentMultiSelection | null>(() => {
       if (
-        documentContextSources === undefined ||
         discussionContextSelection.phase !== 'selecting_documents'
       ) {
         return null;
@@ -1035,9 +1079,9 @@ export function ProjectWorkspace({
           );
         },
       };
-    }, [discussionContextSelection, documentContextSources]);
+    }, [discussionContextSelection]);
   const documentContextSelection = useDocumentMultiSelection({
-    documents: documentContextSources ?? [],
+    documents: documentLibrary.documents,
     multiSelection: discussionContextDocumentSelection,
     projectId: currentProject.id,
   });
@@ -1051,9 +1095,10 @@ export function ProjectWorkspace({
       discussionContextSelection.phase === 'selecting_documents' &&
       previousPhase !== 'selecting_documents'
     ) {
+      setActivatedDocumentLibraryProjectId(currentProject.id);
       setActivePanel('documents');
     }
-  }, [discussionContextSelection.phase]);
+  }, [currentProject.id, discussionContextSelection.phase]);
 
   const isContextSourceSelection =
     discussionVisibility.visibleDiscussion?.kind === 'draft' &&
@@ -1208,6 +1253,7 @@ export function ProjectWorkspace({
                   'start-discussion': startDiscussionFromCanvas,
                   'create-bubble':
                     emptyActionHandlers?.['create-bubble'] ?? onCreateBubble,
+                  'upload-document': uploadDocumentFromCanvas,
                 }}
                 primaryActions={primaryActions}
                 projectId={currentProject.id}
@@ -1290,6 +1336,8 @@ export function ProjectWorkspace({
               availableBubbles={availableBubbles}
               bubbleLinkLoadState={bubbleLinkLoadState}
               documentContextSelection={documentContextSelection}
+              documentLibrary={documentLibrary}
+              documentUploadInputRef={documentUploadInputRef}
               discussionCount={resolvedDiscussionCount}
               discussionsContent={discussionsContent}
               inspectorSelection={validInspectorSelection}
@@ -1299,6 +1347,7 @@ export function ProjectWorkspace({
               onProjectSaved={setCurrentProject}
               onDescriptionStatusChange={setDescriptionStatus}
               requestDescriptionUpdate={requestDescriptionUpdate}
+              requestDocument={requestDocument}
               descriptionSaveDelayMs={descriptionSaveDelayMs}
               requestBubbleUpdate={requestBubbleUpdate}
               requestBubbleDelete={requestBubbleDelete}
@@ -1342,9 +1391,7 @@ export function ProjectWorkspace({
               <DiscussionExperience
                 analyticsClient={analyticsClient}
                 canSelectBubbleContext={canvasMultiSelection === null}
-                canSelectDocumentContext={
-                  documentContextSources !== undefined
-                }
+                canSelectDocumentContext
                 contextSelection={discussionContextSelection}
                 controller={discussionVisibility}
                 extractionRequests={extractionRequests}

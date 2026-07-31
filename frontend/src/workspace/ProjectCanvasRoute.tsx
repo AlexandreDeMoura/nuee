@@ -14,6 +14,10 @@ import type {
   BubblePlacementRequest,
 } from '../bubbles/CreateBubbleDialog';
 import type {
+  DocumentDetailRequest,
+  DocumentLibraryRequests,
+} from '../documents';
+import type {
   BubbleDeleteRequest,
   BubbleLinkCreateRequest,
   BubbleLinkDeleteRequest,
@@ -44,6 +48,9 @@ export interface ProjectCanvasRouteProps {
   canvasMultiSelection?: CanvasMultiSelection | null;
   viewportSaveDelayMs?: number;
   bubbleSaveDelayMs?: number;
+  documentLibraryRequests?: DocumentLibraryRequests;
+  documentPollIntervalMs?: number;
+  requestDocument?: DocumentDetailRequest;
   analyticsClient?: AnalyticsClient;
 }
 
@@ -158,6 +165,9 @@ export function ProjectCanvasRoute({
   canvasMultiSelection = null,
   viewportSaveDelayMs,
   bubbleSaveDelayMs,
+  documentLibraryRequests,
+  documentPollIntervalMs,
+  requestDocument,
   analyticsClient = analytics,
 }: ProjectCanvasRouteProps) {
   const [loadState, setLoadState] = useState<ProjectLoadState>({ status: 'loading' });
@@ -200,6 +210,8 @@ export function ProjectCanvasRoute({
       <ProjectWorkspace
         analyticsClient={analyticsClient}
         canvasMultiSelection={canvasMultiSelection}
+        documentLibraryRequests={documentLibraryRequests}
+        documentPollIntervalMs={documentPollIntervalMs}
         project={loadState.project}
         requestBubbleCreate={requestBubbleCreate}
         requestBubbles={requestBubbles}
@@ -209,6 +221,7 @@ export function ProjectCanvasRoute({
         requestBubbleDelete={requestBubbleDelete}
         requestBubbleUpdate={requestBubbleUpdate}
         requestBubbleLinks={requestBubbleLinks}
+        requestDocument={requestDocument}
         requestBubbleLinkCreate={requestBubbleLinkCreate}
         requestBubbleLinkDelete={requestBubbleLinkDelete}
         requestViewportUpdate={requestViewportUpdate}

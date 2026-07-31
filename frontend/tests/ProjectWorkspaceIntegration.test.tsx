@@ -13,6 +13,8 @@ import type {
   BubbleLink,
   CreateDiscussionInput,
   DiscussionDetails,
+  DocumentSummary,
+  DocumentUploadPolicy,
   KnowledgeExtractionProposalResponse,
   KnowledgeExtractionResolutionResponse,
   Project,
@@ -20,7 +22,6 @@ import type {
 } from '../src/api';
 import { ApiError } from '../src/api';
 import type { AnalyticsClient } from '../src/analytics';
-import type { DocumentContextSource } from '../src/documents';
 import {
   ProjectWorkspace,
   type WorkspaceInspectorSelection,
@@ -82,16 +83,38 @@ function bubble(overrides: Partial<Bubble> = {}): Bubble {
   };
 }
 
-function documentContextSource(
-  overrides: Partial<DocumentContextSource> = {},
-): DocumentContextSource {
+const documentUploadPolicy: DocumentUploadPolicy = {
+  max_documents_per_project: 25,
+  max_file_size_bytes: 10 * 1024 * 1024,
+  max_files_per_request: 1,
+  max_project_storage_bytes: 100 * 1024 * 1024,
+  supported_formats: [
+    {
+      category: 'plain_text',
+      extensions: ['.txt'],
+      mime_types: ['text/plain'],
+    },
+  ],
+};
+
+function documentSummary(
+  overrides: Partial<DocumentSummary> = {},
+): DocumentSummary {
   return {
+    can_retry: false,
+    created_at: '2026-07-20T10:00:00.000Z',
+    format: 'plain_text',
     id: 'document-1',
+    mime_type: 'text/plain',
+    original_filename: 'launch-brief.txt',
+    processing_error_code: null,
     project_id: project.id,
+    size_bytes: 1_024,
     title: 'Launch brief',
     processing_status: 'ready',
+    updated_at: '2026-07-20T10:00:01.000Z',
     ...overrides,
-  };
+  } as DocumentSummary;
 }
 
 function discussionDetails(
@@ -1144,38 +1167,41 @@ describe('workspace integration contracts', () => {
     const create = vi.fn(
       () => new Promise<DiscussionDetails>(() => undefined),
     );
-    const firstDocument = documentContextSource();
-    const secondDocument = documentContextSource({
+    const firstDocument = documentSummary();
+    const secondDocument = documentSummary({
       id: 'document-2',
+      original_filename: 'customer-interviews.txt',
       title: 'Customer interviews',
     });
-    const pendingDocument = documentContextSource({
+    const pendingDocument = documentSummary({
       id: 'document-pending',
+      original_filename: 'market-research.txt',
       title: 'Market research',
       processing_status: 'processing',
     });
-    const failedDocument = documentContextSource({
+    const failedDocument = documentSummary({
+      can_retry: true,
       id: 'document-failed',
+      original_filename: 'regulatory-report.txt',
+      processing_error_code: 'processing_unavailable',
       title: 'Regulatory report',
       processing_status: 'failed',
     });
-    const foreignDocument = documentContextSource({
-      id: 'document-foreign',
-      project_id: 'project-other',
-      title: 'Another project',
-    });
     const selectedBubble = bubble();
+    const listDocuments = vi.fn(async () => [
+      firstDocument,
+      secondDocument,
+      pendingDocument,
+      failedDocument,
+    ]);
 
     render(
       <ProjectWorkspace
         discussionLifecycleRequests={{ create }}
-        documentContextSources={[
-          firstDocument,
-          secondDocument,
-          pendingDocument,
-          failedDocument,
-          foreignDocument,
-        ]}
+        documentLibraryRequests={{
+          list: listDocuments,
+          policy: async () => documentUploadPolicy,
+        }}
         project={project}
         requestBubbles={async () => [selectedBubble]}
       />,
@@ -1202,7 +1228,7 @@ describe('workspace integration contracts', () => {
         name: 'Choose documents for this discussion',
       }),
     ).toBeTruthy();
-    expect(screen.getByText('Market research')).toBeTruthy();
+    expect(await screen.findByText('Market research')).toBeTruthy();
     expect(
       screen.getByText(
         'Still processing. This document can be selected when it’s ready.',
@@ -1228,7 +1254,10 @@ describe('workspace integration contracts', () => {
         }) as HTMLButtonElement
       ).disabled,
     ).toBe(true);
-    expect(screen.queryByText(foreignDocument.title)).toBeNull();
+    expect(listDocuments).toHaveBeenCalledWith(
+      project.id,
+      expect.any(AbortSignal),
+    );
 
     fireEvent.click(
       screen.getByRole('checkbox', { name: firstDocument.title }),
@@ -1533,6 +1562,37 @@ describe('workspace integration contracts', () => {
     expect(uploadDocument).toHaveBeenCalledTimes(1);
   });
 
+  it('opens the Documents panel and file picker from the default empty-canvas action', async () => {
+    const listDocuments = vi.fn(async () => []);
+    const inputClick = vi.spyOn(HTMLInputElement.prototype, 'click');
+
+    render(
+      <ProjectWorkspace
+        documentLibraryRequests={{
+          list: listDocuments,
+          policy: async () => documentUploadPolicy,
+        }}
+        project={project}
+        requestBubbles={requestEmptyBubbles}
+      />,
+    );
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Upload a document' }),
+    );
+
+    expect(
+      screen.getByRole('tab', { name: 'Documents' }).getAttribute(
+        'aria-selected',
+      ),
+    ).toBe('true');
+    await waitFor(() => expect(inputClick).toHaveBeenCalledTimes(1));
+    expect(listDocuments).toHaveBeenCalledWith(
+      project.id,
+      expect.any(AbortSignal),
+    );
+  });
+
   it('shows one supplied panel at a time and does not navigate while switching', () => {
     window.history.replaceState({}, '', `/projects/${project.id}`);
 
@@ -1575,6 +1635,10 @@ describe('workspace integration contracts', () => {
   it('provides intentional empty states for unsupplied collection panels', async () => {
     render(
       <ProjectWorkspace
+        documentLibraryRequests={{
+          list: async () => [],
+          policy: async () => documentUploadPolicy,
+        }}
         discussionPanelRequests={{ list: async () => [] }}
         project={project}
         requestBubbles={requestEmptyBubbles}
@@ -1585,7 +1649,7 @@ describe('workspace integration contracts', () => {
     expect(await screen.findByText('No discussions yet')).toBeTruthy();
 
     fireEvent.click(screen.getByRole('tab', { name: 'Documents' }));
-    expect(screen.getByText('No documents yet')).toBeTruthy();
+    expect(await screen.findByText('No documents yet')).toBeTruthy();
     expect(screen.queryByText('No discussions yet')).toBeNull();
   });
 

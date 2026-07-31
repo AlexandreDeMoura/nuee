@@ -75,6 +75,29 @@ describe('project creation journey', () => {
           return jsonResponse([]);
         }
 
+        if (method === 'GET' && url.pathname === '/document-upload-policy') {
+          return jsonResponse({
+            max_documents_per_project: 25,
+            max_file_size_bytes: 10 * 1024 * 1024,
+            max_files_per_request: 1,
+            max_project_storage_bytes: 100 * 1024 * 1024,
+            supported_formats: [
+              {
+                category: 'plain_text',
+                extensions: ['.txt'],
+                mime_types: ['text/plain'],
+              },
+            ],
+          });
+        }
+
+        if (
+          method === 'GET' &&
+          url.pathname === '/projects/project-journey/documents'
+        ) {
+          return jsonResponse([]);
+        }
+
         if (
           method === 'PATCH' &&
           url.pathname === '/projects/project-journey/description' &&
@@ -149,7 +172,7 @@ describe('project creation journey', () => {
     fireEvent.click(screen.getByRole('tab', { name: 'Discussions' }));
     expect(await screen.findByText('No discussions yet')).toBeTruthy();
     fireEvent.click(screen.getByRole('tab', { name: 'Documents' }));
-    expect(screen.getByText('No documents yet')).toBeTruthy();
+    expect(await screen.findByText('No documents yet')).toBeTruthy();
     fireEvent.click(screen.getByRole('tab', { name: 'Inspector' }));
     expect(screen.getByText('Nothing selected')).toBeTruthy();
     expect(window.location.pathname).toBe('/projects/project-journey');
