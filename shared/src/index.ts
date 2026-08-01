@@ -204,6 +204,24 @@ export type DiscussionRole = 'user' | 'assistant';
 export type DiscussionMessageStatus = 'pending' | 'completed' | 'failed';
 
 /**
+ * A provider-neutral web source attributed to an assistant message.
+ * Citations describe outbound sources only and never contain fetched content.
+ */
+export interface MessageCitation {
+  url: string;
+  title: string;
+  snippet?: string;
+}
+
+/**
+ * AI features available to clients under the configured provider and
+ * application policy.
+ */
+export interface AiCapabilities {
+  web_search: boolean;
+}
+
+/**
  * The live source kind captured by an immutable discussion-context item.
  */
 export type DiscussionContextSourceKind =
@@ -285,6 +303,8 @@ export interface DiscussionMessage {
   created_at: string;
   status: DiscussionMessageStatus;
   request_id: string | null;
+  web_search_used?: boolean;
+  citations?: MessageCitation[];
 }
 
 export interface CreateDiscussionInput
@@ -292,11 +312,13 @@ export interface CreateDiscussionInput
   project_id: string;
   first_prompt: string;
   idempotency_key: string;
+  web_search?: boolean;
 }
 
 export interface SendMessageInput {
   content: string;
   idempotency_key: string;
+  web_search?: boolean;
 }
 
 export type KnowledgeExtractionMessageSelection =
