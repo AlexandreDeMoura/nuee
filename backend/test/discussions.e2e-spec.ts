@@ -6,6 +6,7 @@ import { join } from 'node:path';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import type {
+  AiCapabilities,
   Bubble,
   DiscussionDetails,
   DiscussionListResponse,
@@ -13,6 +14,8 @@ import type {
   Project,
 } from '@nuee/shared-types';
 import { AppModule } from './../src/app.module';
+import { AI_CAPABILITIES } from './../src/ai/ai-capabilities';
+import { FAKE_WEB_SEARCH_CITATIONS } from './../src/ai/fake-model.client';
 
 describe('Discussion lifecycle journey (e2e)', () => {
   const temporaryDirectory = mkdtempSync(
@@ -22,11 +25,19 @@ describe('Discussion lifecycle journey (e2e)', () => {
   const previousDatabasePath = process.env.PROJECT_DATABASE_PATH;
   let app: INestApplication<App> | undefined;
 
-  async function startApplication(): Promise<INestApplication<App>> {
+  async function startApplication(
+    capabilities?: AiCapabilities,
+  ): Promise<INestApplication<App>> {
     process.env.PROJECT_DATABASE_PATH = databasePath;
-    const moduleFixture: TestingModule = await Test.createTestingModule({
+    const builder = Test.createTestingModule({
       imports: [AppModule],
-    }).compile();
+    });
+
+    if (capabilities) {
+      builder.overrideProvider(AI_CAPABILITIES).useValue(capabilities);
+    }
+
+    const moduleFixture: TestingModule = await builder.compile();
     const application = moduleFixture.createNestApplication();
     await application.init();
     return application;
@@ -51,10 +62,12 @@ describe('Discussion lifecycle journey (e2e)', () => {
       bubbleIds = [],
       documentIds = [],
       idempotencyKey = `create:${prompt}`,
+      webSearch = false,
     }: {
       bubbleIds?: string[];
       documentIds?: string[];
       idempotencyKey?: string;
+      webSearch?: boolean;
     } = {},
   ): Promise<DiscussionDetails> {
     const response = await request(app!.getHttpServer())
@@ -65,6 +78,7 @@ describe('Discussion lifecycle journey (e2e)', () => {
         idempotency_key: idempotencyKey,
         bubble_ids: bubbleIds,
         document_ids: documentIds,
+        ...(webSearch ? { web_search: true } : {}),
       })
       .expect(201);
 
@@ -554,6 +568,72 @@ describe('Discussion lifecycle journey (e2e)', () => {
         field_errors: {
           current_project_description: 'Unknown field.',
         },
+      });
+  });
+
+  it('exposes capabilities, rejects unavailable search, and reloads persisted search attribution', async () => {
+    await request(app!.getHttpServer())
+      .get('/ai-capabilities')
+      .expect(200)
+      .expect({ web_search: false });
+
+    const project = await createProject('Search capability');
+    await request(app!.getHttpServer())
+      .post(`/projects/${project.id}/discussions`)
+      .send({
+        project_id: project.id,
+        first_prompt: 'Search while unavailable',
+        idempotency_key: 'search-unavailable',
+        bubble_ids: [],
+        document_ids: [],
+        web_search: true,
+      })
+      .expect(400)
+      .expect({
+        code: 'AI_WEB_SEARCH_UNAVAILABLE',
+        message: 'Web search is not available for this application.',
+      });
+
+    await app!.close();
+    app = await startApplication({ web_search: true });
+    await request(app.getHttpServer())
+      .get('/ai-capabilities')
+      .expect(200)
+      .expect({ web_search: true });
+
+    const searched = await createDiscussion(project, 'What is current?', {
+      idempotencyKey: 'search-enabled',
+      webSearch: true,
+    });
+    expect(searched.messages[0]).not.toHaveProperty('web_search');
+    expect(searched.messages[1]).toMatchObject({
+      role: 'assistant',
+      web_search_used: true,
+      citations: FAKE_WEB_SEARCH_CITATIONS,
+    });
+
+    await app.close();
+    app = await startApplication({ web_search: true });
+    await request(app.getHttpServer())
+      .get(`/projects/${project.id}/discussions/${searched.id}`)
+      .expect(200)
+      .expect(searched);
+
+    await request(app.getHttpServer())
+      .post(`/projects/${project.id}/discussions/${searched.id}/messages`)
+      .send({
+        content: 'Search again after restart',
+        idempotency_key: 'search-after-restart',
+        web_search: true,
+      })
+      .expect(200)
+      .expect(({ body }) => {
+        const reloaded = body as DiscussionDetails;
+        expect(reloaded.messages.at(-1)).toMatchObject({
+          role: 'assistant',
+          web_search_used: true,
+          citations: FAKE_WEB_SEARCH_CITATIONS,
+        });
       });
   });
 });

@@ -2,7 +2,10 @@ import { DatabaseProvider } from '../database/database.provider';
 import { SqliteProjectRepository } from '../projects/sqlite-project.repository';
 import type { Project } from '../projects/project.types';
 import type { FrozenContextV1 } from '@nuee/shared-types';
-import { DiscussionContextIntegrityError } from './discussion.types';
+import {
+  DiscussionContextIntegrityError,
+  DiscussionMessageIntegrityError,
+} from './discussion.types';
 import type {
   PersistedDiscussion,
   PersistedDiscussionMessage,
@@ -581,6 +584,128 @@ describe('SqliteDiscussionRepository', () => {
       updated_at: assistantMessage.created_at,
       last_activity_at: assistantMessage.created_at,
     });
+  });
+
+  it('persists immutable per-turn search permission and assistant attribution', () => {
+    const project = createProject('project-a');
+    const record = discussion(project.id, 'discussion-search');
+    const firstMessage = {
+      ...message(record.id, 'message-user-search', 'request-search'),
+      web_search: true,
+    };
+    const assistantMessage: PersistedDiscussionMessage = {
+      ...message(
+        record.id,
+        'message-assistant-search',
+        null,
+        '2026-07-27T10:00:02.000Z',
+      ),
+      web_search_used: true,
+      citations: [
+        {
+          url: 'https://example.com/current',
+          title: 'Current source',
+          snippet: 'Source summary.',
+        },
+      ],
+    };
+
+    repository.createWithFirstMessage(record, firstMessage);
+    repository.completeMessageGeneration(
+      project.id,
+      record.id,
+      firstMessage.id,
+      assistantMessage,
+      assistantMessage.created_at,
+    );
+
+    expect(repository.findAllMessages(project.id, record.id)).toEqual([
+      { ...firstMessage, status: 'completed' },
+      assistantMessage,
+    ]);
+    expect(
+      databaseProvider.connection
+        .prepare(
+          `
+            SELECT web_search, web_search_used, citations
+            FROM discussion_messages
+            WHERE id = ?
+          `,
+        )
+        .get(assistantMessage.id),
+    ).toEqual({
+      web_search: 0,
+      web_search_used: 1,
+      citations: JSON.stringify(assistantMessage.citations),
+    });
+    expect(() =>
+      databaseProvider.connection
+        .prepare(
+          `
+            UPDATE discussion_messages
+            SET citations = '[]'
+            WHERE id = ?
+          `,
+        )
+        .run(assistantMessage.id),
+    ).toThrow(/search attribution is immutable/);
+    expect(() =>
+      databaseProvider.connection
+        .prepare(
+          `
+            UPDATE discussion_messages
+            SET web_search = 0
+            WHERE id = ?
+          `,
+        )
+        .run(firstMessage.id),
+    ).toThrow(/search attribution is immutable/);
+  });
+
+  it('reports corrupt persisted citations as a controlled repository failure', () => {
+    const project = createProject('project-a');
+    const record = discussion(project.id, 'discussion-corrupt-citations');
+    const firstMessage = message(record.id, 'message-user', 'request-a');
+    const assistantMessage: PersistedDiscussionMessage = {
+      ...message(
+        record.id,
+        'message-assistant',
+        null,
+        '2026-07-27T10:00:02.000Z',
+      ),
+      web_search_used: true,
+      citations: [
+        {
+          url: 'https://example.com/source',
+          title: 'Valid source',
+        },
+      ],
+    };
+
+    repository.createWithFirstMessage(record, firstMessage);
+    repository.completeMessageGeneration(
+      project.id,
+      record.id,
+      firstMessage.id,
+      assistantMessage,
+      assistantMessage.created_at,
+    );
+    databaseProvider.connection.exec(
+      'DROP TRIGGER discussion_messages_search_metadata_immutable_guard;',
+    );
+    databaseProvider.connection
+      .prepare(
+        `
+          UPDATE discussion_messages
+          SET citations = '[{"url":7,"title":"Invalid source"}]'
+          WHERE id = ?
+        `,
+      )
+      .run(assistantMessage.id);
+
+    expect(() => repository.findAllMessages(project.id, record.id)).toThrow(
+      DiscussionMessageIntegrityError,
+    );
   });
 
   it('keeps open activity separate from content updated_at', () => {

@@ -42,9 +42,109 @@ describe('runDatabaseMigrations', () => {
           version: 9,
           name: 'create-documents',
         },
+        {
+          version: 10,
+          name: 'persist-discussion-search-attribution',
+        },
       ]);
       expect(database.prepare('PRAGMA user_version;').get()).toEqual({
-        user_version: 9,
+        user_version: 10,
+      });
+    } finally {
+      database.close();
+    }
+  });
+
+  it('upgrades existing discussion messages with legacy-safe search defaults', () => {
+    const database = new DatabaseSync(':memory:');
+
+    try {
+      database.exec('PRAGMA foreign_keys = ON;');
+      runDatabaseMigrations(database, DATABASE_MIGRATIONS.slice(0, 9));
+      database
+        .prepare(
+          `
+            INSERT INTO projects (
+              id,
+              title,
+              description,
+              created_at,
+              updated_at
+            ) VALUES (?, ?, ?, ?, ?)
+          `,
+        )
+        .run(
+          'project-search-upgrade',
+          'Existing project',
+          'Existing project description',
+          '2026-07-31T08:00:00.000Z',
+          '2026-07-31T08:00:00.000Z',
+        );
+      database
+        .prepare(
+          `
+            INSERT INTO discussions (
+              id,
+              project_id,
+              title,
+              frozen_context,
+              created_at,
+              updated_at,
+              last_activity_at,
+              deleted_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          `,
+        )
+        .run(
+          'discussion-search-upgrade',
+          'project-search-upgrade',
+          'Existing discussion',
+          '{}',
+          '2026-07-31T09:00:00.000Z',
+          '2026-07-31T09:00:00.000Z',
+          '2026-07-31T09:00:00.000Z',
+          null,
+        );
+      database
+        .prepare(
+          `
+            INSERT INTO discussion_messages (
+              id,
+              discussion_id,
+              role,
+              content,
+              created_at,
+              status,
+              request_id
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+          `,
+        )
+        .run(
+          'message-search-upgrade',
+          'discussion-search-upgrade',
+          'assistant',
+          'Existing answer',
+          '2026-07-31T09:00:01.000Z',
+          'completed',
+          null,
+        );
+
+      runDatabaseMigrations(database);
+
+      expect(
+        database
+          .prepare(
+            `
+              SELECT web_search, web_search_used, citations
+              FROM discussion_messages
+              WHERE id = ?
+            `,
+          )
+          .get('message-search-upgrade'),
+      ).toEqual({
+        web_search: 0,
+        web_search_used: null,
+        citations: null,
       });
     } finally {
       database.close();

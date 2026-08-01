@@ -10,13 +10,17 @@ import {
 } from '@nestjs/common';
 import { createHash, randomUUID } from 'node:crypto';
 import type {
+  AiCapabilities,
   CreateDiscussionInput,
   DiscussionDetails,
   DiscussionFrozenContext,
   DiscussionListResponse,
+  DiscussionMessage,
   DiscussionSummary,
+  MessageCitation,
   SendMessageInput,
 } from '@nuee/shared-types';
+import { AI_CAPABILITIES } from '../ai/ai-capabilities';
 import {
   FROZEN_CONTEXT_FORMATTER,
   type FrozenContextFormatter,
@@ -25,6 +29,7 @@ import { GENERATED_TITLE_MAX_LENGTH, MODEL_CLIENT } from '../ai/model-client';
 import type {
   GenerateAnswerInput,
   ModelClient,
+  ModelGeneration,
   ModelMessage,
 } from '../ai/model-client';
 import {
@@ -56,6 +61,7 @@ const MAX_MESSAGE_LENGTH = 20_000;
 const MAX_IDEMPOTENCY_KEY_LENGTH = 200;
 const MAX_CONTEXT_SOURCE_ID_LENGTH = 200;
 const MAX_CONTEXT_SELECTION_COUNT = 100;
+const MAX_CITATIONS_SERIALIZED_BYTES = 64 * 1024;
 
 type DiscussionField =
   'project_id' | 'first_prompt' | 'content' | 'idempotency_key';
@@ -83,6 +89,8 @@ export class DiscussionsService {
     @Inject(BUBBLE_DISCUSSION_PROVENANCE_WRITER)
     private readonly bubbleProvenance: BubbleDiscussionProvenanceWriter,
     private readonly transactions: DatabaseTransaction,
+    @Inject(AI_CAPABILITIES)
+    private readonly aiCapabilities: AiCapabilities,
   ) {}
 
   async create(
@@ -100,6 +108,7 @@ export class DiscussionsService {
         'idempotency_key',
         'bubble_ids',
         'document_ids',
+        'web_search',
       ],
       fieldErrors,
     );
@@ -127,6 +136,7 @@ export class DiscussionsService {
       'document_ids',
       fieldErrors,
     );
+    const webSearch = this.webSearch(input?.web_search, fieldErrors);
 
     if (inputProjectId && inputProjectId !== projectId) {
       fieldErrors.project_id =
@@ -134,6 +144,7 @@ export class DiscussionsService {
     }
 
     this.throwIfInvalid(fieldErrors);
+    this.assertWebSearchAvailable(webSearch);
 
     if (!firstPrompt || !creationIdempotencyKey || !bubbleIds || !documentIds) {
       throw new Error('Validated discussion input is unexpectedly missing.');
@@ -151,6 +162,7 @@ export class DiscussionsService {
       projectId,
       creationIdempotencyKey,
       requestFingerprint,
+      webSearch,
     );
 
     if (replay) {
@@ -174,9 +186,11 @@ export class DiscussionsService {
       throw error;
     }
 
-    const modelInput = this.prepareModelInput(frozenContext, [
-      { role: 'user', content: firstPrompt },
-    ]);
+    const modelInput = this.prepareModelInput(
+      frozenContext,
+      [{ role: 'user', content: firstPrompt }],
+      webSearch,
+    );
 
     const timestamp = new Date().toISOString();
     const discussion: VersionedPersistedDiscussion = {
@@ -201,6 +215,7 @@ export class DiscussionsService {
       created_at: timestamp,
       status: 'pending',
       request_id: randomUUID(),
+      ...(webSearch ? { web_search: true } : {}),
     };
 
     try {
@@ -210,6 +225,7 @@ export class DiscussionsService {
         projectId,
         creationIdempotencyKey,
         requestFingerprint,
+        webSearch,
       );
 
       if (concurrentReplay) {
@@ -269,12 +285,14 @@ export class DiscussionsService {
     const fieldErrors: Record<string, string> = {};
     this.rejectUnknownFields(
       input,
-      ['content', 'idempotency_key'],
+      ['content', 'idempotency_key', 'web_search'],
       fieldErrors,
     );
     const content = this.messageText(input?.content, 'content', fieldErrors);
     const requestId = this.idempotencyKey(input?.idempotency_key, fieldErrors);
+    const webSearch = this.webSearch(input?.web_search, fieldErrors);
     this.throwIfInvalid(fieldErrors);
+    this.assertWebSearchAvailable(webSearch);
 
     if (!content || !requestId) {
       throw new Error('Validated discussion input is unexpectedly missing.');
@@ -291,7 +309,7 @@ export class DiscussionsService {
     );
 
     if (existingRequest) {
-      this.assertIdempotentContent(existingRequest, content);
+      this.assertIdempotentTurn(existingRequest, content, webSearch);
 
       if (existingRequest.status === 'completed') {
         return this.get(projectId, discussionId);
@@ -304,6 +322,7 @@ export class DiscussionsService {
       const modelInput = this.prepareModelInput(
         discussion.frozen_context,
         this.toModelMessages(existingMessages),
+        existingRequest.web_search === true,
       );
 
       const pendingAt = this.nextTimestamp(discussion.updated_at);
@@ -327,6 +346,7 @@ export class DiscussionsService {
     const modelInput = this.prepareModelInput(
       discussion.frozen_context,
       this.toModelMessages(existingMessages, content),
+      webSearch,
     );
 
     const createdAt = this.nextTimestamp(
@@ -340,6 +360,7 @@ export class DiscussionsService {
       created_at: createdAt,
       status: 'pending',
       request_id: requestId,
+      ...(webSearch ? { web_search: true } : {}),
     };
 
     try {
@@ -363,7 +384,7 @@ export class DiscussionsService {
         throw error;
       }
 
-      this.assertIdempotentContent(concurrentRequest, content);
+      this.assertIdempotentTurn(concurrentRequest, content, webSearch);
       return this.get(projectId, discussionId);
     }
 
@@ -496,6 +517,11 @@ export class DiscussionsService {
         throw new Error('The model returned an empty response.');
       }
 
+      const attribution = this.generatedAttribution(
+        generation,
+        userMessage.web_search === true,
+      );
+
       const completedAt = this.nextTimestamp(
         this.latestTimestamp(
           discussion.updated_at,
@@ -515,6 +541,7 @@ export class DiscussionsService {
           created_at: completedAt,
           status: 'completed',
           request_id: null,
+          ...attribution,
         },
         completedAt,
       );
@@ -573,8 +600,16 @@ export class DiscussionsService {
       created_at: discussion.created_at,
       updated_at: discussion.updated_at,
       last_activity_at: discussion.last_activity_at,
-      messages,
+      messages: messages.map((message) => this.toPublicMessage(message)),
     };
+  }
+
+  private toPublicMessage(
+    message: PersistedDiscussionMessage,
+  ): DiscussionMessage {
+    const publicMessage = { ...message };
+    delete publicMessage.web_search;
+    return publicMessage;
   }
 
   private toSummary(
@@ -667,6 +702,22 @@ export class DiscussionsService {
     return isValid ? sourceIds : undefined;
   }
 
+  private webSearch(
+    value: unknown,
+    fieldErrors: Record<string, string>,
+  ): boolean {
+    if (value === undefined) {
+      return false;
+    }
+
+    if (typeof value !== 'boolean') {
+      fieldErrors.web_search = 'Web search must be a boolean.';
+      return false;
+    }
+
+    return value;
+  }
+
   private requiredText(
     value: unknown,
     field: DiscussionField,
@@ -708,6 +759,7 @@ export class DiscussionsService {
     projectId: string,
     idempotencyKey: string,
     requestFingerprint: string,
+    webSearch: boolean,
   ): DiscussionDetails | undefined {
     let existing: PersistedDiscussion | undefined;
 
@@ -724,7 +776,18 @@ export class DiscussionsService {
       return undefined;
     }
 
-    if (existing.creation_request_fingerprint !== requestFingerprint) {
+    const existingMessages = this.messages.findAllMessages(
+      projectId,
+      existing.id,
+    );
+    const firstUserMessage = existingMessages.find(
+      ({ role }) => role === 'user',
+    );
+
+    if (
+      existing.creation_request_fingerprint !== requestFingerprint ||
+      (firstUserMessage?.web_search === true) !== webSearch
+    ) {
       throw new ConflictException({
         code: 'DISCUSSION_CREATION_IDEMPOTENCY_CONFLICT',
         message:
@@ -732,10 +795,7 @@ export class DiscussionsService {
       });
     }
 
-    return this.toDetails(
-      existing,
-      this.messages.findAllMessages(projectId, existing.id),
-    );
+    return this.toDetails(existing, existingMessages);
   }
 
   private rejectUnknownFields(
@@ -766,14 +826,96 @@ export class DiscussionsService {
     });
   }
 
+  private assertWebSearchAvailable(webSearch: boolean): void {
+    if (!webSearch || this.aiCapabilities.web_search) {
+      return;
+    }
+
+    throw new BadRequestException({
+      code: 'AI_WEB_SEARCH_UNAVAILABLE',
+      message: 'Web search is not available for this application.',
+    });
+  }
+
+  private generatedAttribution(
+    generation: ModelGeneration,
+    webSearchRequested: boolean,
+  ): Pick<PersistedDiscussionMessage, 'web_search_used' | 'citations'> {
+    const webSearchUsed = generation.webSearchUsed as unknown;
+    const rawCitations = generation.citations as unknown;
+
+    if (
+      (webSearchUsed !== undefined && typeof webSearchUsed !== 'boolean') ||
+      (!webSearchRequested && webSearchUsed === true) ||
+      (rawCitations !== undefined && webSearchUsed !== true)
+    ) {
+      throw new Error('The model returned invalid search attribution.');
+    }
+
+    if (webSearchUsed !== true) {
+      return {};
+    }
+
+    if (rawCitations !== undefined && !Array.isArray(rawCitations)) {
+      throw new Error('The model returned invalid search citations.');
+    }
+
+    const citations = (rawCitations ?? []).map((citation) =>
+      this.validatedCitation(citation),
+    );
+    const serialized = JSON.stringify(citations);
+
+    if (
+      Buffer.byteLength(serialized, 'utf8') > MAX_CITATIONS_SERIALIZED_BYTES
+    ) {
+      throw new Error('The model returned too many search citations.');
+    }
+
+    return {
+      web_search_used: true,
+      citations,
+    };
+  }
+
+  private validatedCitation(value: unknown): MessageCitation {
+    if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+      throw new Error('The model returned an invalid search citation.');
+    }
+
+    const citation = value as Record<string, unknown>;
+    const { url, title, snippet } = citation;
+    const hasOnlyKnownFields = Object.keys(citation).every((key) =>
+      ['url', 'title', 'snippet'].includes(key),
+    );
+
+    if (
+      !hasOnlyKnownFields ||
+      typeof url !== 'string' ||
+      url.trim().length === 0 ||
+      typeof title !== 'string' ||
+      title.trim().length === 0 ||
+      (snippet !== undefined && typeof snippet !== 'string')
+    ) {
+      throw new Error('The model returned an invalid search citation.');
+    }
+
+    return {
+      url,
+      title,
+      ...(snippet === undefined ? {} : { snippet }),
+    };
+  }
+
   private prepareModelInput(
     frozenContext: DiscussionFrozenContext,
     messages: readonly ModelMessage[],
+    webSearch = false,
   ): GenerateAnswerInput {
     const formattedContext = this.contextFormatter.format(frozenContext);
     const input = {
       formattedContext,
       messages,
+      ...(webSearch ? { webSearch: true } : {}),
     };
     const budget = this.modelInputBudget.evaluateAnswer(input);
 
@@ -812,11 +954,15 @@ export class DiscussionsService {
       : [...history, { role: 'user', content: nextContent }];
   }
 
-  private assertIdempotentContent(
+  private assertIdempotentTurn(
     existing: PersistedDiscussionMessage,
     content: string,
+    webSearch: boolean,
   ): void {
-    if (existing.content === content) {
+    if (
+      existing.content === content &&
+      (existing.web_search === true) === webSearch
+    ) {
       return;
     }
 

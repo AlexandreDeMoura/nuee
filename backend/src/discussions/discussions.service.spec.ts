@@ -52,6 +52,7 @@ class ControllableModelClient implements ModelClient {
   answer = 'A focused answer.';
   title = 'Generated discussion title';
   answerFailure: Error | undefined;
+  answerAttribution: Pick<ModelGeneration, 'webSearchUsed' | 'citations'> = {};
   titleFailure: Error | undefined;
   titleGeneration: Promise<ModelGeneration> | undefined;
 
@@ -65,6 +66,7 @@ class ControllableModelClient implements ModelClient {
     return Promise.resolve({
       content: this.answer,
       model: 'test-model',
+      ...this.answerAttribution,
     });
   }
 
@@ -138,6 +140,7 @@ describe('DiscussionsService', () => {
       contextAssembler,
       bubbleRepository,
       transactions,
+      { web_search: false },
     );
   });
 
@@ -160,10 +163,12 @@ describe('DiscussionsService', () => {
       bubbleIds = [],
       documentIds = [],
       idempotencyKey = `create:${prompt}`,
+      webSearch = false,
     }: {
       bubbleIds?: string[];
       documentIds?: string[];
       idempotencyKey?: string;
+      webSearch?: boolean;
     } = {},
   ) {
     return service.create(projectId, {
@@ -172,7 +177,23 @@ describe('DiscussionsService', () => {
       idempotency_key: idempotencyKey,
       bubble_ids: bubbleIds,
       document_ids: documentIds,
+      ...(webSearch ? { web_search: true } : {}),
     });
+  }
+
+  function enableWebSearch(): void {
+    service = new DiscussionsService(
+      projects,
+      repository,
+      repository,
+      modelClient,
+      contextFormatter,
+      modelInputBudget,
+      contextAssembler,
+      bubbleRepository,
+      transactions,
+      { web_search: true },
+    );
   }
 
   it('atomically creates selected context and the first turn before forwarding the frozen package', async () => {
@@ -260,6 +281,58 @@ describe('DiscussionsService', () => {
       creation_idempotency_key: 'create-first-decision',
     });
     expect(stored?.creation_request_fingerprint).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it('persists a search-enabled first turn and attributed assistant citations without exposing the internal flag', async () => {
+    enableWebSearch();
+    const project = createProject();
+    const citations = [
+      {
+        url: 'https://example.com/current',
+        title: 'Current source',
+        snippet: 'Current source summary.',
+      },
+    ];
+    modelClient.answerAttribution = {
+      webSearchUsed: true,
+      citations,
+    };
+
+    const created = await createDiscussion(project.id, 'What is current?', {
+      idempotencyKey: 'create-current',
+      webSearch: true,
+    });
+
+    expect(modelClient.answerInputs).toEqual([
+      {
+        formattedContext: contextFormatter.format(created.frozen_context),
+        messages: [{ role: 'user', content: 'What is current?' }],
+        webSearch: true,
+      },
+    ]);
+    expect(created.messages[0]).not.toHaveProperty('web_search');
+    expect(created.messages[1]).toMatchObject({
+      role: 'assistant',
+      web_search_used: true,
+      citations,
+    });
+    expect(
+      repository.findMessageByRequestId(
+        project.id,
+        created.id,
+        created.messages[0].request_id!,
+      ),
+    ).toMatchObject({ web_search: true });
+    expect(service.get(project.id, created.id)).toEqual(created);
+
+    await expect(
+      createDiscussion(project.id, 'What is current?', {
+        idempotencyKey: 'create-current',
+      }),
+    ).rejects.toMatchObject({
+      constructor: ConflictException,
+      response: { code: 'DISCUSSION_CREATION_IDEMPOTENCY_CONFLICT' },
+    });
   });
 
   it('persists one and several documents with mixed selections in confirmed order', async () => {
@@ -591,6 +664,56 @@ describe('DiscussionsService', () => {
       expect(service.list(project.id)).toEqual([]);
     },
   );
+
+  it('validates the search flag and rejects search-enabled turns when the capability is unavailable', async () => {
+    const project = createProject();
+
+    await expect(
+      service.create(project.id, {
+        project_id: project.id,
+        first_prompt: 'Malformed search choice',
+        idempotency_key: 'malformed-search-choice',
+        bubble_ids: [],
+        document_ids: [],
+        web_search: 'true',
+      } as never),
+    ).rejects.toMatchObject({
+      constructor: BadRequestException,
+      response: {
+        code: 'DISCUSSION_VALIDATION_FAILED',
+        field_errors: {
+          web_search: 'Web search must be a boolean.',
+        },
+      },
+    });
+
+    await expect(
+      createDiscussion(project.id, 'Unavailable search', {
+        idempotencyKey: 'unavailable-search',
+        webSearch: true,
+      }),
+    ).rejects.toMatchObject({
+      constructor: BadRequestException,
+      response: {
+        code: 'AI_WEB_SEARCH_UNAVAILABLE',
+        message: 'Web search is not available for this application.',
+      },
+    });
+    expect(service.list(project.id)).toEqual([]);
+
+    const created = await createDiscussion(project.id, 'Ordinary turn');
+    await expect(
+      service.sendMessage(project.id, created.id, {
+        content: 'Unavailable follow-up search',
+        idempotency_key: 'unavailable-follow-up-search',
+        web_search: true,
+      }),
+    ).rejects.toMatchObject({
+      constructor: BadRequestException,
+      response: { code: 'AI_WEB_SEARCH_UNAVAILABLE' },
+    });
+    expect(service.get(project.id, created.id)).toEqual(created);
+  });
 
   it('returns structured source errors without persisting a partial discussion', async () => {
     const project = createProject('Owner');
@@ -1047,6 +1170,7 @@ describe('DiscussionsService', () => {
   );
 
   it('preserves a failed user turn and retries it without duplicating messages', async () => {
+    enableWebSearch();
     const project = createProject();
     const created = await createDiscussion(project.id, 'First question');
     modelClient.answerFailure = new Error('provider unavailable');
@@ -1055,6 +1179,7 @@ describe('DiscussionsService', () => {
       service.sendMessage(project.id, created.id, {
         content: 'Question that fails',
         idempotency_key: 'failed-request',
+        web_search: true,
       }),
     ).rejects.toBeInstanceOf(ServiceUnavailableException);
 
@@ -1066,11 +1191,33 @@ describe('DiscussionsService', () => {
       status: 'failed',
       request_id: 'failed-request',
     });
+    expect(
+      repository.findMessageByRequestId(
+        project.id,
+        created.id,
+        'failed-request',
+      ),
+    ).toMatchObject({ web_search: true });
+
+    await expect(
+      service.sendMessage(project.id, created.id, {
+        content: 'Question that fails',
+        idempotency_key: 'failed-request',
+      }),
+    ).rejects.toMatchObject({
+      constructor: ConflictException,
+      response: { code: 'DISCUSSION_IDEMPOTENCY_CONFLICT' },
+    });
 
     modelClient.answerFailure = undefined;
+    modelClient.answerAttribution = {
+      webSearchUsed: true,
+      citations: [],
+    };
     const retried = await service.sendMessage(project.id, created.id, {
       content: 'Question that fails',
       idempotency_key: 'failed-request',
+      web_search: true,
     });
 
     expect(retried.messages).toHaveLength(4);
@@ -1084,6 +1231,47 @@ describe('DiscussionsService', () => {
         role: 'assistant',
         status: 'completed',
         request_id: null,
+        web_search_used: true,
+        citations: [],
+      }),
+    ]);
+    expect(modelClient.answerInputs.slice(-2)).toEqual([
+      expect.objectContaining({ webSearch: true }),
+      expect.objectContaining({ webSearch: true }),
+    ]);
+  });
+
+  it('fails a searched turn without persisting an assistant message when citations exceed the guard', async () => {
+    enableWebSearch();
+    const project = createProject();
+    const created = await createDiscussion(project.id, 'First question');
+    modelClient.answerAttribution = {
+      webSearchUsed: true,
+      citations: [
+        {
+          url: 'https://example.com/oversized',
+          title: 'Oversized citation',
+          snippet: 'x'.repeat(64 * 1024),
+        },
+      ],
+    };
+
+    await expect(
+      service.sendMessage(project.id, created.id, {
+        content: 'Search with oversized attribution',
+        idempotency_key: 'oversized-attribution',
+        web_search: true,
+      }),
+    ).rejects.toMatchObject({
+      constructor: ServiceUnavailableException,
+      response: { code: 'AI_GENERATION_FAILED' },
+    });
+
+    expect(service.get(project.id, created.id).messages.slice(-1)).toEqual([
+      expect.objectContaining({
+        role: 'user',
+        status: 'failed',
+        request_id: 'oversized-attribution',
       }),
     ]);
   });
@@ -1160,6 +1348,7 @@ describe('DiscussionsService', () => {
       contextAssembler,
       bubbleRepository,
       transactions,
+      { web_search: false },
     );
 
     try {
@@ -1219,6 +1408,7 @@ describe('DiscussionsService', () => {
       contextAssembler,
       bubbleRepository,
       transactions,
+      { web_search: false },
     );
 
     await expect(

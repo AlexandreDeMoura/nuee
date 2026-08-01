@@ -1,8 +1,11 @@
 import type { DatabaseSync } from 'node:sqlite';
 import { Injectable } from '@nestjs/common';
-import type { FrozenContextItem } from '@nuee/shared-types';
+import type { FrozenContextItem, MessageCitation } from '@nuee/shared-types';
 import { DatabaseProvider } from '../database/database.provider';
-import { DiscussionContextIntegrityError } from './discussion.types';
+import {
+  DiscussionContextIntegrityError,
+  DiscussionMessageIntegrityError,
+} from './discussion.types';
 import type {
   DiscussionExtractionFrozenContextSource,
   DiscussionExtractionMessageSource,
@@ -51,6 +54,9 @@ interface DiscussionMessageRow {
   created_at: string;
   status: DiscussionMessageStatus;
   request_id: string | null;
+  web_search: unknown;
+  web_search_used: unknown;
+  citations: unknown;
 }
 
 interface ExtractionDiscussionRow {
@@ -68,6 +74,8 @@ interface ExtractionContextItemRow extends DiscussionContextItemRow {
   project_id: unknown;
   discussion_deleted_at: unknown;
 }
+
+const MAX_CITATIONS_SERIALIZED_BYTES = 64 * 1024;
 
 @Injectable()
 export class SqliteDiscussionRepository
@@ -621,8 +629,11 @@ export class SqliteDiscussionRepository
             content,
             created_at,
             status,
-            request_id
-          ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            request_id,
+            web_search,
+            web_search_used,
+            citations
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `,
       )
       .run(
@@ -633,6 +644,11 @@ export class SqliteDiscussionRepository
         message.created_at,
         message.status,
         message.request_id,
+        message.role === 'user' && message.web_search === true ? 1 : 0,
+        message.role === 'assistant' && message.web_search_used === true
+          ? 1
+          : null,
+        this.serializeCitations(message),
       );
   }
 
@@ -1092,7 +1108,7 @@ export class SqliteDiscussionRepository
   }
 
   private toMessage(row: DiscussionMessageRow): PersistedDiscussionMessage {
-    return {
+    const baseMessage: PersistedDiscussionMessage = {
       id: row.id,
       discussion_id: row.discussion_id,
       role: row.role,
@@ -1101,5 +1117,103 @@ export class SqliteDiscussionRepository
       status: row.status,
       request_id: row.request_id,
     };
+
+    if (
+      (row.web_search !== 0 && row.web_search !== 1) ||
+      (row.web_search_used !== null && row.web_search_used !== 1)
+    ) {
+      throw new DiscussionMessageIntegrityError(row.id);
+    }
+
+    if (row.role === 'user') {
+      if (row.web_search_used !== null || row.citations !== null) {
+        throw new DiscussionMessageIntegrityError(row.id);
+      }
+
+      return row.web_search === 1
+        ? { ...baseMessage, web_search: true }
+        : baseMessage;
+    }
+
+    if (
+      row.web_search !== 0 ||
+      (row.web_search_used === null) !== (row.citations === null)
+    ) {
+      throw new DiscussionMessageIntegrityError(row.id);
+    }
+
+    if (row.web_search_used === null) {
+      return baseMessage;
+    }
+
+    return {
+      ...baseMessage,
+      web_search_used: true,
+      citations: this.parseCitations(row.citations, row.id),
+    };
+  }
+
+  private serializeCitations(
+    message: PersistedDiscussionMessage,
+  ): string | null {
+    if (message.citations !== undefined) {
+      return JSON.stringify(message.citations);
+    }
+
+    return message.role === 'assistant' && message.web_search_used === true
+      ? '[]'
+      : null;
+  }
+
+  private parseCitations(
+    serialized: unknown,
+    messageId: string,
+  ): MessageCitation[] {
+    if (
+      typeof serialized !== 'string' ||
+      Buffer.byteLength(serialized, 'utf8') > MAX_CITATIONS_SERIALIZED_BYTES
+    ) {
+      throw new DiscussionMessageIntegrityError(messageId);
+    }
+
+    try {
+      const values = JSON.parse(serialized) as unknown;
+
+      if (!Array.isArray(values)) {
+        throw new DiscussionMessageIntegrityError(messageId);
+      }
+
+      return values.map((value) => {
+        if (!this.isRecord(value)) {
+          throw new DiscussionMessageIntegrityError(messageId);
+        }
+
+        const { url, title, snippet } = value;
+        const hasOnlyKnownFields = Object.keys(value).every((key) =>
+          ['url', 'title', 'snippet'].includes(key),
+        );
+
+        if (
+          !hasOnlyKnownFields ||
+          !this.isNonEmptyString(url) ||
+          !this.isNonEmptyString(title) ||
+          (snippet !== undefined && typeof snippet !== 'string')
+        ) {
+          throw new DiscussionMessageIntegrityError(messageId);
+        }
+
+        return {
+          url,
+          title,
+          ...(snippet === undefined ? {} : { snippet }),
+        };
+      });
+    } catch (error) {
+      if (error instanceof DiscussionMessageIntegrityError) {
+        throw error;
+      }
+
+      throw new DiscussionMessageIntegrityError(messageId);
+    }
   }
 }

@@ -56,7 +56,10 @@ export type VersionedPersistedDiscussion = PersistedDiscussionBase &
 export type PersistedDiscussion =
   LegacyPersistedDiscussion | VersionedPersistedDiscussion;
 
-export type PersistedDiscussionMessage = DiscussionMessage;
+export type PersistedDiscussionMessage = DiscussionMessage & {
+  /** Internal per-turn permission. Never exposed on the discussion API. */
+  web_search?: boolean;
+};
 
 export interface DiscussionRepository {
   createWithFirstMessage(
@@ -199,5 +202,14 @@ export class DiscussionContextIntegrityError extends Error {
       `The persisted context for discussion "${discussionId}" is incomplete or corrupt.`,
     );
     this.name = 'DiscussionContextIntegrityError';
+  }
+}
+
+export class DiscussionMessageIntegrityError extends Error {
+  readonly code = 'DISCUSSION_MESSAGE_CORRUPT';
+
+  constructor(readonly messageId: string) {
+    super(`The persisted discussion message "${messageId}" is corrupt.`);
+    this.name = 'DiscussionMessageIntegrityError';
   }
 }
