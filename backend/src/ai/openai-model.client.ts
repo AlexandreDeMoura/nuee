@@ -1,4 +1,6 @@
 import OpenAI from 'openai';
+import type { ResponseOutputItem } from 'openai/resources/responses/responses';
+import type { MessageCitation } from '@nuee/shared-types';
 import type { AiConfig } from '../config/configuration';
 import {
   buildFocusedResponseInstructions,
@@ -24,6 +26,9 @@ interface OpenAiResponseRequest {
   model: string;
   instructions: string;
   input: OpenAiInputMessage[];
+  tools?: Array<{
+    type: 'web_search';
+  }>;
   text?: {
     format: {
       type: 'json_schema';
@@ -35,8 +40,25 @@ interface OpenAiResponseRequest {
   };
 }
 
+interface OpenAiOutputAnnotation {
+  type: string;
+  url?: unknown;
+  title?: unknown;
+}
+
+interface OpenAiOutputContent {
+  type: string;
+  annotations?: OpenAiOutputAnnotation[];
+}
+
+interface OpenAiOutputItem {
+  type: string;
+  content?: OpenAiOutputContent[];
+}
+
 interface OpenAiResponse {
   outputText: string;
+  output?: OpenAiOutputItem[];
   model: string;
   status?: string;
   inputTokens?: number;
@@ -56,6 +78,8 @@ export class ModelProviderError extends Error {
     this.name = 'ModelProviderError';
   }
 }
+
+const WEB_SEARCH_TOOL = { type: 'web_search' } as const;
 
 function frozenContextMessage(
   formattedContext: GenerateAnswerInput['formattedContext'],
@@ -79,6 +103,73 @@ function isTimeout(error: unknown): boolean {
   );
 }
 
+function mapResponseOutput(
+  output: readonly ResponseOutputItem[],
+): OpenAiOutputItem[] {
+  return output.map((item) => {
+    if (item.type !== 'message') {
+      return { type: item.type };
+    }
+
+    return {
+      type: item.type,
+      content: item.content.map((content) => {
+        if (content.type !== 'output_text') {
+          return { type: content.type };
+        }
+
+        return {
+          type: content.type,
+          annotations: content.annotations.map((annotation) =>
+            annotation.type === 'url_citation'
+              ? {
+                  type: annotation.type,
+                  url: annotation.url,
+                  title: annotation.title,
+                }
+              : { type: annotation.type },
+          ),
+        };
+      }),
+    };
+  });
+}
+
+function hasWebSearchCall(output: readonly OpenAiOutputItem[]): boolean {
+  return output.some((item) => item.type === 'web_search_call');
+}
+
+function mapCitations(output: readonly OpenAiOutputItem[]): MessageCitation[] {
+  const citations: MessageCitation[] = [];
+
+  for (const item of output) {
+    if (item.type !== 'message') {
+      continue;
+    }
+
+    for (const content of item.content ?? []) {
+      if (content.type !== 'output_text') {
+        continue;
+      }
+
+      for (const annotation of content.annotations ?? []) {
+        if (
+          annotation.type === 'url_citation' &&
+          typeof annotation.url === 'string' &&
+          typeof annotation.title === 'string'
+        ) {
+          citations.push({
+            url: annotation.url,
+            title: annotation.title,
+          });
+        }
+      }
+    }
+  }
+
+  return citations;
+}
+
 function createResponsesClient(config: AiConfig): OpenAiResponsesClient {
   const client = new OpenAI({
     apiKey: config.apiKey,
@@ -91,6 +182,7 @@ function createResponsesClient(config: AiConfig): OpenAiResponsesClient {
 
       return {
         outputText: response.output_text,
+        output: mapResponseOutput(response.output),
         model: response.model,
         status: response.status,
         inputTokens: response.usage?.input_tokens,
@@ -111,16 +203,20 @@ export class OpenAiModelClient implements ModelClient {
   }
 
   generateAnswer(input: GenerateAnswerInput): Promise<ModelGeneration> {
-    return this.generate({
-      model: this.config.model,
-      instructions: buildFocusedResponseInstructions(
-        this.config.focusedResponseWordBudget,
-      ),
-      input: [
-        frozenContextMessage(input.formattedContext),
-        ...transcriptMessages(input.messages),
-      ],
-    });
+    return this.generate(
+      {
+        model: this.config.model,
+        instructions: buildFocusedResponseInstructions(
+          this.config.focusedResponseWordBudget,
+        ),
+        input: [
+          frozenContextMessage(input.formattedContext),
+          ...transcriptMessages(input.messages),
+        ],
+        ...(input.webSearch ? { tools: [{ ...WEB_SEARCH_TOOL }] } : {}),
+      },
+      true,
+    );
   }
 
   generateTitle(input: GenerateTitleInput): Promise<ModelGeneration> {
@@ -166,6 +262,7 @@ export class OpenAiModelClient implements ModelClient {
 
   private async generate(
     request: OpenAiResponseRequest,
+    mapWebSearchMetadata = false,
   ): Promise<ModelGeneration> {
     let response: OpenAiResponse;
 
@@ -183,11 +280,28 @@ export class OpenAiModelClient implements ModelClient {
       throw new ModelProviderError('invalid_response');
     }
 
-    return {
+    const generation: ModelGeneration = {
       content,
       model: response.model,
       inputTokens: response.inputTokens,
       outputTokens: response.outputTokens,
     };
+
+    if (!mapWebSearchMetadata) {
+      return generation;
+    }
+
+    const output = response.output ?? [];
+    const citations = mapCitations(output);
+
+    if (hasWebSearchCall(output)) {
+      generation.webSearchUsed = true;
+    }
+
+    if (citations.length > 0) {
+      generation.citations = citations;
+    }
+
+    return generation;
   }
 }

@@ -73,6 +73,128 @@ describe('OpenAiModelClient', () => {
     expect(request).not.toHaveProperty('max_output_tokens');
   });
 
+  it('offers web search for an opted-in answer and maps its citations', async () => {
+    let request: Parameters<OpenAiResponsesClient['create']>[0] | undefined;
+    const client = new OpenAiModelClient(config, {
+      create(nextRequest) {
+        request = nextRequest;
+        return Promise.resolve({
+          outputText: 'A current answer with sources.',
+          output: [
+            { type: 'web_search_call' },
+            {
+              type: 'message',
+              content: [
+                {
+                  type: 'output_text',
+                  annotations: [
+                    {
+                      type: 'url_citation',
+                      url: 'https://example.com/first',
+                      title: 'First source',
+                    },
+                    {
+                      type: 'file_citation',
+                      url: 'https://example.com/ignored',
+                      title: 'Ignored annotation',
+                    },
+                    {
+                      type: 'url_citation',
+                      url: 'https://example.com/second',
+                      title: 'Second source',
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+          model: 'gpt-5.6-sol',
+          status: 'completed',
+        });
+      },
+    });
+
+    await expect(
+      client.generateAnswer({
+        formattedContext: 'FROZEN_DISCUSSION_CONTEXT_LEGACY',
+        messages: [{ role: 'user', content: 'What changed today?' }],
+        webSearch: true,
+      }),
+    ).resolves.toEqual({
+      content: 'A current answer with sources.',
+      model: 'gpt-5.6-sol',
+      webSearchUsed: true,
+      citations: [
+        {
+          url: 'https://example.com/first',
+          title: 'First source',
+        },
+        {
+          url: 'https://example.com/second',
+          title: 'Second source',
+        },
+      ],
+    });
+
+    expect(request?.tools).toEqual([{ type: 'web_search' }]);
+  });
+
+  it('treats web search as optional when the provider does not use it', async () => {
+    let request: Parameters<OpenAiResponsesClient['create']>[0] | undefined;
+    const client = new OpenAiModelClient(config, {
+      create(nextRequest) {
+        request = nextRequest;
+        return Promise.resolve({
+          outputText: 'No search was needed.',
+          output: [
+            {
+              type: 'message',
+              content: [{ type: 'output_text', annotations: [] }],
+            },
+          ],
+          model: 'gpt-5.6-sol',
+          status: 'completed',
+        });
+      },
+    });
+
+    await expect(
+      client.generateAnswer({
+        formattedContext: 'FROZEN_DISCUSSION_CONTEXT_LEGACY',
+        messages: [{ role: 'user', content: 'Summarize the frozen context.' }],
+        webSearch: true,
+      }),
+    ).resolves.toEqual({
+      content: 'No search was needed.',
+      model: 'gpt-5.6-sol',
+    });
+
+    expect(request?.tools).toEqual([{ type: 'web_search' }]);
+  });
+
+  it('reports a web search call even when it produces no citations', async () => {
+    const client = new OpenAiModelClient(config, {
+      create: jest.fn().mockResolvedValue({
+        outputText: 'A searched answer without attributed sources.',
+        output: [{ type: 'web_search_call' }],
+        model: 'gpt-5.6-sol',
+        status: 'completed',
+      }),
+    });
+
+    await expect(
+      client.generateAnswer({
+        formattedContext: 'FROZEN_DISCUSSION_CONTEXT_LEGACY',
+        messages: [{ role: 'user', content: 'What is current?' }],
+        webSearch: true,
+      }),
+    ).resolves.toEqual({
+      content: 'A searched answer without attributed sources.',
+      model: 'gpt-5.6-sol',
+      webSearchUsed: true,
+    });
+  });
+
   it('uses a dedicated concise-title instruction', async () => {
     let request: Parameters<OpenAiResponsesClient['create']>[0] | undefined;
     const client = new OpenAiModelClient(config, {
