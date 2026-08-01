@@ -32,20 +32,37 @@ providers. Tests bind the deterministic `ModelClient` fake; every non-test
 environment binds the OpenAI Responses API client and therefore requires
 `OPENAI_API_KEY`.
 
-| Variable                          | Default                    | Purpose                                                                              |
-| --------------------------------- | -------------------------- | ------------------------------------------------------------------------------------ |
-| `NODE_ENV`                        | `development`              | `development`, `test`, or `production`                                               |
-| `PORT`                            | `3000`                     | Backend HTTP port                                                                    |
-| `FRONTEND_URL`                    | `http://localhost:5173`    | Exact HTTP(S) origin allowed by CORS                                                 |
-| `PROJECT_DATABASE_PATH`           | `backend/data/nuee.sqlite` | SQLite file path; `:memory:` is supported by tests                                   |
-| `AI_PROVIDER`                     | `openai`                   | AI provider; OpenAI is the only supported value                                      |
-| `AI_MODEL`                        | `gpt-5.6-sol`              | OpenAI model ID sent to the Responses API                                            |
-| `OPENAI_API_KEY`                  | none                       | Required outside `NODE_ENV=test`                                                     |
-| `AI_FOCUSED_RESPONSE_WORD_BUDGET` | `200`                      | Soft prompt target for approximately one-minute answers; it does not truncate output |
-| `AI_MODEL_INPUT_TOKEN_LIMIT`      | `128000`                   | Total model context window used by the conservative input preflight                  |
-| `AI_RESERVED_OUTPUT_TOKENS`       | `4000`                     | Context-window capacity reserved for the next model response                         |
-| `AI_INPUT_SAFETY_MARGIN_TOKENS`   | `8000`                     | Additional capacity kept unused to absorb estimation and provider overhead           |
-| `AI_REQUEST_TIMEOUT_MS`           | `60000`                    | Per-attempt OpenAI SDK timeout                                                       |
+| Variable                              | Default                          | Purpose                                                                              |
+| ------------------------------------- | -------------------------------- | ------------------------------------------------------------------------------------ |
+| `NODE_ENV`                            | `development`                    | `development`, `test`, or `production`                                               |
+| `PORT`                                | `3000`                           | Backend HTTP port                                                                    |
+| `FRONTEND_URL`                        | `http://localhost:5173`          | Exact HTTP(S) origin allowed by CORS                                                 |
+| `PROJECT_DATABASE_PATH`               | `backend/data/nuee.sqlite`       | SQLite file path; `:memory:` is supported by tests                                   |
+| `AI_PROVIDER`                         | `openai`                         | AI provider; OpenAI is the only supported value                                      |
+| `AI_MODEL`                            | `gpt-5.6-sol`                    | OpenAI model ID sent to the Responses API                                            |
+| `OPENAI_API_KEY`                      | none                             | Required outside `NODE_ENV=test`                                                     |
+| `AI_FOCUSED_RESPONSE_WORD_BUDGET`     | `200`                            | Soft prompt target for approximately one-minute answers; it does not truncate output |
+| `AI_MODEL_INPUT_TOKEN_LIMIT`          | `128000`                         | Total model context window used by the conservative input preflight                  |
+| `AI_RESERVED_OUTPUT_TOKENS`           | `4000`                           | Context-window capacity reserved for the next model response                         |
+| `AI_INPUT_SAFETY_MARGIN_TOKENS`       | `8000`                           | Additional capacity kept unused to absorb estimation and provider overhead           |
+| `AI_REQUEST_TIMEOUT_MS`               | `60000`                          | Per-attempt OpenAI SDK timeout                                                       |
+| `DOCUMENT_PRIVATE_STORAGE_PATH`       | `backend/data/private-documents` | Private persistent root for original documents                                       |
+| `DOCUMENT_MAX_FILE_SIZE_BYTES`        | `10485760`                       | Maximum original size per upload                                                     |
+| `DOCUMENT_MAX_DOCUMENTS_PER_PROJECT`  | `25`                             | Maximum persisted documents per project                                              |
+| `DOCUMENT_MAX_PROJECT_STORAGE_BYTES`  | `104857600`                      | Maximum original-file bytes per project                                              |
+| `DOCUMENT_MAX_PDF_PAGES`              | `200`                            | PDF page limit; excess is rejected rather than truncated                             |
+| `DOCUMENT_MAX_EXTRACTED_TEXT_BYTES`   | `16777216`                       | Maximum normalized processed-text size                                               |
+| `DOCUMENT_PROCESSING_TIMEOUT_MS`      | `30000`                          | Deadline for one scan-and-extract attempt                                            |
+| `DOCUMENT_PROCESSING_LEASE_MS`        | `45000`                          | Durable lease duration; must exceed the processing timeout                           |
+| `DOCUMENT_PROCESSING_CONCURRENCY`     | `2`                              | Concurrent workers inside the single backend process                                 |
+| `DOCUMENT_PROCESSING_MAX_ATTEMPTS`    | `3`                              | Automatic attempts before a recoverable failed state                                 |
+| `DOCUMENT_MALWARE_SCANNER_HOST`       | `127.0.0.1`                      | Production ClamAV host                                                               |
+| `DOCUMENT_MALWARE_SCANNER_PORT`       | `3310`                           | Production ClamAV TCP port                                                           |
+| `DOCUMENT_MALWARE_SCANNER_TIMEOUT_MS` | `10000`                          | Deadline for one ClamAV scan                                                         |
+
+Production storage, ClamAV provisioning, lease recovery, cleanup, backup/restore, HTTPS, and the
+trusted single-user authentication boundary are specified in
+[DOCUMENT_OPERATIONS.md](DOCUMENT_OPERATIONS.md).
 
 ## Project setup
 

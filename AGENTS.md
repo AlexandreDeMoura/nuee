@@ -44,6 +44,10 @@ From the repo root: `npm run dev` (frontend + backend watch), `npm run build`, `
   single-visible modal, composer and message states, failed-turn retry, generated-title display,
   discussion list, Active display, reopening, and deletion. It renders frozen-context and
   knowledge-extraction integration points but does not own either upstream workflow.
+- `documents/` — project-scoped document-library client lifecycle: policy-backed preflight,
+  transfers, processing polling and retry, list and inspection states, and whole-document context
+  selection. It displays only processed text for ready documents and does not own original-file
+  rendering or frozen discussion snapshots.
 - `api/`, `analytics.ts`, `utils/` — cross-cutting. `ui/` — shared primitives, no feature behavior.
 - Ownership follows the behavior's responsibility, not the bubble domain type; flows crossing
   both keep orchestration in the lowest common owner behind a typed callback or hook result.
@@ -94,6 +98,10 @@ broker only if that model cannot meet concrete requirements.
   and discussion persistence. It owns the `last_activity_at` ordering/Active model: creation,
   explicit open, and new-message activity qualify; title generation, minimization, scrolling, and
   extraction do not.
+- `documents/` — project-scoped upload validation, private original-file storage, document
+  persistence, malware scanning, text extraction, processing leases/retry, inspection reads, and
+  the ready-document context-source capability. It owns live documents, not frozen discussion
+  copies or document-derived bubbles.
 - `ai/` — cross-cutting, provider-neutral model access. It owns the `ModelClient` port, provider
   adapter, and deterministic test implementation, but no discussion validation, persistence,
   retry, activity, title-trigger, or context-selection policy.
@@ -117,6 +125,23 @@ broker only if that model cannot meet concrete requirements.
 - Knowledge Extraction consumes discussion and message identifiers through an integration
   boundary. It does not belong in `DiscussionsService` or `ModelClient`, and deleting a discussion
   must not delete independently persisted bubbles created through extraction.
+
+### Document seams
+
+- Upload completion durably associates one SQLite record with one privately stored original under
+  a server-generated opaque key before processing begins. Submitted filenames never become paths,
+  and original-file download or rendering is not part of the MVP.
+- Document processing is the modular monolith's first durable in-process job boundary. SQLite
+  owns status, attempt, generation, and lease state; the in-process coordinator owns only bounded
+  execution. Expired leases are recoverable after restart, and generation-guarded writes prevent
+  stale completions from changing a newer result. Do not introduce a broker unless measured work
+  outgrows this single-instance model.
+- Malware scanning precedes extraction in production. Ready requires non-empty normalized text
+  whose processed-source hash matches the stored original; processing and failed records never
+  expose partial context text.
+- Discussion Context reads ready documents through a narrow project-scoped capability and copies
+  title and complete processed text into its own immutable snapshot. It must not accept client-
+  supplied document text or dereference a live document after discussion creation.
 
 ### Controllers, services, and persistence behavior
 
@@ -150,6 +175,10 @@ broker only if that model cannot meet concrete requirements.
 - SQLite stays until measured load, horizontal writes, multi-region, or hosting constraints
   require a server database. Production puts the file on persistent local storage with backup
   and restore procedures; add only the deployment artifact the selected host requires.
+- Private document originals share SQLite's durability boundary: place both configured paths on
+  persistent encrypted local storage and back up and restore them as one consistent set. The
+  deployment must use HTTPS at its ingress and provision the production malware scanner; see
+  `backend/DOCUMENT_OPERATIONS.md` for the runbook and retention/cleanup rules.
 - `DatabaseProvider` runs registered migrations once, in order, before repositories are
   constructed. `schema_migrations` is authoritative, `PRAGMA user_version` mirrors it, and the
   pending migration set is atomic; repositories do not execute schema DDL.
