@@ -161,7 +161,14 @@ function DiscussionExperienceModal({
   const rejectInFlightRef = useRef(false);
   const resolvedAnalyticsClient = analyticsClient ?? analytics;
   const handleDiscussionCreated = useCallback(
-    (discussion: { id: string; title: string }) => {
+    (discussion: {
+      id: string;
+      recoveredTurn?: {
+        requestId: string;
+        webSearch: boolean;
+      };
+      title: string;
+    }) => {
       contextSelection?.complete();
       controller.openDiscussion(discussion);
     },
@@ -531,7 +538,10 @@ function DiscussionExperienceModal({
             isSubmitting={lifecycle.isSubmitting}
             onChange={lifecycle.onComposerChange}
             onSubmit={submit}
+            onWebSearchChange={lifecycle.setWebSearchEnabled}
             value={lifecycle.composerValue}
+            webSearchEnabled={lifecycle.webSearchEnabled}
+            webSearchSupported={lifecycle.webSearchSupported}
           />
         )
       }

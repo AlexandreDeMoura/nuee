@@ -9,6 +9,7 @@ import {
   ApiError,
   createDiscussion,
   generateDiscussionTitle,
+  getAiCapabilities,
   getDiscussion,
   retryDiscussionMessage,
   sendDiscussionMessage,
@@ -33,11 +34,13 @@ import {
 } from './discussionCreationFailure';
 
 export type DiscussionCreateRequest = typeof createDiscussion;
+export type DiscussionCapabilitiesRequest = typeof getAiCapabilities;
 export type DiscussionGetRequest = typeof getDiscussion;
 export type DiscussionMessageRequest = typeof sendDiscussionMessage;
 export type DiscussionTitleRequest = typeof generateDiscussionTitle;
 
 export interface DiscussionLifecycleRequests {
+  capabilities?: DiscussionCapabilitiesRequest;
   create?: DiscussionCreateRequest;
   generateTitle?: DiscussionTitleRequest;
   get?: DiscussionGetRequest;
@@ -50,6 +53,7 @@ export interface PendingDiscussionTurn {
   discussionId: string | null;
   requestId: string;
   status: 'pending' | 'failed';
+  webSearch: boolean;
 }
 
 type DiscussionLoadStatus = 'draft' | 'loading' | 'ready' | 'error';
@@ -69,12 +73,19 @@ export interface DiscussionLifecycle {
     selection?: DiscussionContextSelectionInput,
     selectionRevision?: number,
   ) => void;
+  setWebSearchEnabled: (enabled: boolean) => void;
+  webSearchEnabled: boolean;
+  webSearchSupported: boolean;
 }
 
 interface UseDiscussionLifecycleOptions {
   analyticsClient?: AnalyticsClient;
   onDiscussionCreated: (discussion: {
     id: string;
+    recoveredTurn?: {
+      requestId: string;
+      webSearch: boolean;
+    };
     title: string;
   }) => void;
   onDiscussionChanged?: (discussion: DiscussionDetails) => void;
@@ -199,6 +210,7 @@ export function useDiscussionLifecycle({
   requests,
   visibleDiscussion,
 }: UseDiscussionLifecycleOptions): DiscussionLifecycle {
+  const capabilitiesRequest = requests?.capabilities ?? getAiCapabilities;
   const createRequest = requests?.create ?? createDiscussion;
   const generateTitleRequest =
     requests?.generateTitle ?? generateDiscussionTitle;
@@ -217,10 +229,13 @@ export function useDiscussionLifecycle({
   const [pendingTurn, setPendingTurn] =
     useState<PendingDiscussionTurn | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [webSearchEnabled, setWebSearchEnabledState] = useState(false);
+  const [webSearchSupported, setWebSearchSupported] = useState(false);
   const detailsRef = useRef(details);
   const submittingRef = useRef(false);
   const operationRef = useRef(0);
   const requestControllerRef = useRef<AbortController | null>(null);
+  const capabilitiesControllerRef = useRef<AbortController | null>(null);
   const titleControllerRef = useRef<AbortController | null>(null);
   const titleAttemptRef = useRef<string | null>(null);
   const creationAttemptRef = useRef<{
@@ -228,15 +243,56 @@ export function useDiscussionLifecycle({
     requestId: string;
     selectionFingerprint: string;
     selectionRevision: number | null;
+    webSearch: boolean;
   } | null>(null);
   const retainedAttemptRef = useRef<{
     content: string;
     requestId: string;
+    webSearch: boolean;
   } | null>(null);
   const persistedDiscussionId =
     visibleDiscussion.kind === 'persisted'
       ? visibleDiscussion.discussionId
       : null;
+  const recoveredTurn =
+    visibleDiscussion.kind === 'persisted'
+      ? visibleDiscussion.recoveredTurn
+      : undefined;
+
+  useEffect(() => {
+    const controller = new AbortController();
+    capabilitiesControllerRef.current = controller;
+
+    capabilitiesRequest(controller.signal)
+      .then((capabilities) => {
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        setWebSearchSupported(capabilities.web_search);
+
+        if (!capabilities.web_search) {
+          setWebSearchEnabledState(false);
+        }
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          setWebSearchSupported(false);
+          setWebSearchEnabledState(false);
+        }
+      });
+
+    return () => controller.abort();
+  }, [capabilitiesRequest]);
+
+  const setWebSearchEnabled = useCallback(
+    (enabled: boolean) => {
+      setWebSearchEnabledState(webSearchSupported && enabled);
+      setComposerError(null);
+      setCreationFailure(null);
+    },
+    [webSearchSupported],
+  );
 
   const updateDetails = useCallback((next: DiscussionDetails | null) => {
     detailsRef.current = next;
@@ -353,6 +409,25 @@ export function useDiscussionLifecycle({
         );
         updateDetails(next);
         onDiscussionChanged?.(next);
+        const recoveredMessage = recoveredTurn
+          ? next.messages.find(
+              (message) =>
+                message.role === 'user' &&
+                message.request_id === recoveredTurn.requestId &&
+                message.status === 'failed',
+            )
+          : undefined;
+
+        if (recoveredMessage && recoveredTurn) {
+          updatePendingTurn({
+            content: recoveredMessage.content,
+            discussionId: persistedDiscussionId,
+            requestId: recoveredTurn.requestId,
+            status: 'failed',
+            webSearch: recoveredTurn.webSearch,
+          });
+        }
+
         setLoadStatus('ready');
         setLoadError(null);
         generateTitleIfNeeded(next);
@@ -380,13 +455,16 @@ export function useDiscussionLifecycle({
     onDiscussionChanged,
     persistedDiscussionId,
     projectId,
+    recoveredTurn,
     updateDetails,
+    updatePendingTurn,
   ]);
 
   useEffect(
     () => () => {
       operationRef.current += 1;
       requestControllerRef.current?.abort();
+      capabilitiesControllerRef.current?.abort();
       titleControllerRef.current?.abort();
     },
     [],
@@ -446,6 +524,7 @@ export function useDiscussionLifecycle({
       content: string,
       requestedSelection: DiscussionContextSelectionInput,
       selectionRevision: number | undefined,
+      webSearch: boolean,
     ) => {
       const selection = normalizeSelection(requestedSelection);
       const fingerprint = selectionFingerprint(selection);
@@ -454,7 +533,8 @@ export function useDiscussionLifecycle({
       const requestId =
         retainedAttempt?.content === content &&
         retainedAttempt.selectionFingerprint === fingerprint &&
-        retainedAttempt.selectionRevision === normalizedSelectionRevision
+        retainedAttempt.selectionRevision === normalizedSelectionRevision &&
+        retainedAttempt.webSearch === webSearch
           ? retainedAttempt.requestId
           : createRequestId();
       const input: CreateDiscussionInput = {
@@ -462,12 +542,14 @@ export function useDiscussionLifecycle({
         first_prompt: content,
         idempotency_key: requestId,
         ...selection,
+        ...(webSearch ? { web_search: true } : {}),
       };
       creationAttemptRef.current = {
         content,
         requestId,
         selectionFingerprint: fingerprint,
         selectionRevision: normalizedSelectionRevision,
+        webSearch,
       };
       setCreationFailure(null);
       const startedAt = performance.now();
@@ -477,6 +559,7 @@ export function useDiscussionLifecycle({
         discussionId: null,
         requestId,
         status: 'pending',
+        webSearch,
       };
       updatePendingTurn(optimisticTurn);
 
@@ -585,10 +668,15 @@ export function useDiscussionLifecycle({
             discussionId: recovery.discussionId,
             requestId: recovery.requestId,
             status: 'failed',
+            webSearch,
           });
           setComposerValue('');
           onDiscussionCreated({
             id: recovery.discussionId,
+            recoveredTurn: {
+              requestId: recovery.requestId,
+              webSearch,
+            },
             title: TEMPORARY_DISCUSSION_TITLE,
           });
           return;
@@ -614,7 +702,7 @@ export function useDiscussionLifecycle({
   );
 
   const submitMessage = useCallback(
-    async (content: string) => {
+    async (content: string, webSearch: boolean) => {
       if (visibleDiscussion.kind !== 'persisted' || !detailsRef.current) {
         return;
       }
@@ -622,10 +710,11 @@ export function useDiscussionLifecycle({
       const discussionId = visibleDiscussion.discussionId;
       const retainedAttempt = retainedAttemptRef.current;
       const requestId =
-        retainedAttempt?.content === content
+        retainedAttempt?.content === content &&
+        retainedAttempt.webSearch === webSearch
           ? retainedAttempt.requestId
           : createRequestId();
-      retainedAttemptRef.current = { content, requestId };
+      retainedAttemptRef.current = { content, requestId, webSearch };
       const startedAt = performance.now();
       const { controller, operation } = beginRequest();
       updatePendingTurn({
@@ -633,13 +722,18 @@ export function useDiscussionLifecycle({
         discussionId,
         requestId,
         status: 'pending',
+        webSearch,
       });
 
       try {
         const response = await sendRequest(
           projectId,
           discussionId,
-          { content, idempotency_key: requestId },
+          {
+            content,
+            idempotency_key: requestId,
+            ...(webSearch ? { web_search: true } : {}),
+          },
           controller.signal,
         );
 
@@ -657,6 +751,7 @@ export function useDiscussionLifecycle({
         onDiscussionChanged?.(next);
         updatePendingTurn(null);
         setComposerValue('');
+        setWebSearchEnabledState(false);
         const responseAt = completedResponseAt(next, requestId);
 
         if (responseAt) {
@@ -695,6 +790,7 @@ export function useDiscussionLifecycle({
             discussionId,
             requestId,
             status: 'failed',
+            webSearch,
           });
           setComposerValue('');
           trackAnalytics(analyticsClient, 'discussion_response_failed', {
@@ -747,12 +843,23 @@ export function useDiscussionLifecycle({
       }
 
       if (visibleDiscussion.kind === 'draft') {
-        void submitDraft(content, selection, selectionRevision);
+        void submitDraft(
+          content,
+          selection,
+          selectionRevision,
+          webSearchEnabled,
+        );
       } else {
-        void submitMessage(content);
+        void submitMessage(content, webSearchEnabled);
       }
     },
-    [composerValue, submitDraft, submitMessage, visibleDiscussion],
+    [
+      composerValue,
+      submitDraft,
+      submitMessage,
+      visibleDiscussion,
+      webSearchEnabled,
+    ],
   );
 
   const retryFailedTurn = useCallback(
@@ -778,6 +885,7 @@ export function useDiscussionLifecycle({
             {
               content: turn.content,
               idempotency_key: turn.requestId,
+              ...(turn.webSearch ? { web_search: true } : {}),
             },
             controller.signal,
           );
@@ -794,6 +902,7 @@ export function useDiscussionLifecycle({
           updateDetails(next);
           onDiscussionChanged?.(next);
           updatePendingTurn(null);
+          setWebSearchEnabledState(false);
           const responseAt = completedResponseAt(next, turn.requestId);
 
           if (responseAt) {
@@ -863,7 +972,10 @@ export function useDiscussionLifecycle({
       onComposerChange,
       pendingTurn,
       retryFailedTurn,
+      setWebSearchEnabled,
       submit,
+      webSearchEnabled,
+      webSearchSupported,
     }),
     [
       composerError,
@@ -876,8 +988,11 @@ export function useDiscussionLifecycle({
       onComposerChange,
       pendingTurn,
       retryFailedTurn,
+      setWebSearchEnabled,
       submit,
       visibleDiscussion,
+      webSearchEnabled,
+      webSearchSupported,
     ],
   );
 }

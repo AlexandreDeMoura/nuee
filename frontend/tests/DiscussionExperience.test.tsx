@@ -195,7 +195,11 @@ function Harness({
         onExtractKnowledge={onExtractKnowledge}
         onInspectContext={onInspectContext}
         projectId={projectId}
-        requests={{ generateTitle: keepTemporaryTitle, ...requests }}
+        requests={{
+          capabilities: async () => ({ web_search: false }),
+          generateTitle: keepTemporaryTitle,
+          ...requests,
+        }}
       />
     </>
   );
@@ -1308,6 +1312,45 @@ describe('DiscussionExperience', () => {
     );
   });
 
+  it('shows search only when supported and sends the selected draft permission', async () => {
+    const create = vi.fn(async () => details());
+
+    render(
+      <Harness
+        requests={{
+          capabilities: async () => ({ web_search: true }),
+          create,
+          get: async () => details(),
+        }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+
+    const searchToggle = await screen.findByRole('button', {
+      name: 'Search the web',
+    });
+    expect(searchToggle.getAttribute('aria-pressed')).toBe('false');
+    fireEvent.click(searchToggle);
+    expect(searchToggle.getAttribute('aria-pressed')).toBe('true');
+    fireEvent.change(
+      screen.getByRole('textbox', { name: 'Discussion prompt' }),
+      { target: { value: 'What changed today?' } },
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Continue discussion' }),
+    );
+
+    await waitFor(() => expect(create).toHaveBeenCalledTimes(1));
+    expect(create).toHaveBeenCalledWith(
+      projectId,
+      expect.objectContaining({
+        first_prompt: 'What changed today?',
+        web_search: true,
+      }),
+      expect.any(AbortSignal),
+    );
+  });
+
   it('reuses the creation idempotency key after a recoverable request failure', async () => {
     const inputs: CreateDiscussionInput[] = [];
     const create = vi.fn(
@@ -1514,6 +1557,7 @@ describe('DiscussionExperience', () => {
     render(
       <Harness
         requests={{
+          capabilities: async () => ({ web_search: true }),
           get: async () => details(),
           retry,
           send,
@@ -1525,6 +1569,9 @@ describe('DiscussionExperience', () => {
     const composer = await screen.findByRole('textbox', {
       name: 'Discussion message',
     });
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Search the web' }),
+    );
     fireEvent.change(composer, {
       target: { value: 'What should happen next?' },
     });
@@ -1545,6 +1592,7 @@ describe('DiscussionExperience', () => {
       {
         content: 'What should happen next?',
         idempotency_key: submittedInput?.idempotency_key,
+        web_search: true,
       },
       expect.any(AbortSignal),
     );
@@ -1686,7 +1734,9 @@ describe('DiscussionExperience', () => {
         },
       ],
     });
-    const create = vi.fn(async () => {
+    const create = vi.fn<
+      NonNullable<DiscussionLifecycleRequests['create']>
+    >(async () => {
       throw new ApiError(503, {
         code: 'AI_GENERATION_FAILED',
         message: 'Generation failed.',
@@ -1695,14 +1745,25 @@ describe('DiscussionExperience', () => {
       });
     });
     const get = vi.fn(async () => failed);
+    const retry = vi.fn(
+      () => new Promise<DiscussionDetails>(() => undefined),
+    );
 
     render(
       <Harness
         analyticsClient={{ track }}
-        requests={{ create, get }}
+        requests={{
+          capabilities: async () => ({ web_search: true }),
+          create,
+          get,
+          retry,
+        }}
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Search the web' }),
+    );
     const prompt = screen.getByRole('textbox', {
       name: 'Discussion prompt',
     });
@@ -1735,6 +1796,19 @@ describe('DiscussionExperience', () => {
         latency_ms: expect.any(Number),
       }),
     );
+    expect(create.mock.calls[0]?.[1]).toEqual(
+      expect.objectContaining({ web_search: true }),
+    );
+
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Retry response' }),
+    );
+    await waitFor(() => expect(retry).toHaveBeenCalledTimes(1));
+    expect(retry.mock.calls[0]?.[2]).toEqual({
+      content: 'Preserve this question',
+      idempotency_key: 'request-recovery',
+      web_search: true,
+    });
   });
 
   it('records accepted creation and model outcomes without discussion content', async () => {

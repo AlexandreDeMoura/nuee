@@ -11,6 +11,16 @@ export interface DraftDiscussionTarget {
 export interface PersistedDiscussionTarget {
   discussionId: string;
   kind: 'persisted';
+  recoveredTurn?: {
+    requestId: string;
+    webSearch: boolean;
+  };
+  title: string;
+}
+
+interface OpenDiscussionTarget {
+  id: string;
+  recoveredTurn?: PersistedDiscussionTarget['recoveredTurn'];
   title: string;
 }
 
@@ -24,7 +34,7 @@ interface ProjectDiscussionVisibility {
 
 export interface DiscussionVisibilityController {
   minimize: () => void;
-  openDiscussion: (discussion: { id: string; title: string }) => void;
+  openDiscussion: (discussion: OpenDiscussionTarget) => void;
   openDraft: () => void;
   updateDraftPrompt: (prompt: string) => void;
   visibleDiscussion: VisibleDiscussion | null;
@@ -63,12 +73,13 @@ export function useDiscussionVisibility(
   }, [projectId]);
 
   const openDiscussion = useCallback(
-    ({ id, title }: { id: string; title: string }) => {
+    ({ id, recoveredTurn, title }: OpenDiscussionTarget) => {
       setVisibility({
         projectId,
         target: {
           discussionId: id,
           kind: 'persisted',
+          ...(recoveredTurn ? { recoveredTurn } : {}),
           title,
         },
       });

@@ -1,3 +1,4 @@
+export * from './ai';
 export * from './bubbles';
 export { ApiError } from './client';
 export * from './discussions';

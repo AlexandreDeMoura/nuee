@@ -27,6 +27,7 @@ function unansweredTurn(
         discussionId: message.discussion_id,
         requestId: message.request_id,
         status: message.status,
+        webSearch: false,
       }
     : null;
 }
