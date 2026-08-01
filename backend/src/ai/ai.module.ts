@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { aiConfig, appConfig } from '../config/configuration';
+import { AI_CAPABILITIES, createAiCapabilities } from './ai-capabilities';
 import { FakeModelClient } from './fake-model.client';
 import {
   CanonicalFrozenContextFormatter,
@@ -20,6 +21,11 @@ import { OpenAiModelClient } from './openai-model.client';
 
 @Module({
   providers: [
+    {
+      provide: AI_CAPABILITIES,
+      inject: [aiConfig.KEY],
+      useFactory: (ai: ConfigType<typeof aiConfig>) => createAiCapabilities(ai),
+    },
     {
       provide: FROZEN_CONTEXT_FORMATTER,
       useClass: CanonicalFrozenContextFormatter,
@@ -48,6 +54,11 @@ import { OpenAiModelClient } from './openai-model.client';
           : new OpenAiModelClient(ai),
     },
   ],
-  exports: [FROZEN_CONTEXT_FORMATTER, MODEL_INPUT_BUDGET, MODEL_CLIENT],
+  exports: [
+    AI_CAPABILITIES,
+    FROZEN_CONTEXT_FORMATTER,
+    MODEL_INPUT_BUDGET,
+    MODEL_CLIENT,
+  ],
 })
 export class AiModule {}

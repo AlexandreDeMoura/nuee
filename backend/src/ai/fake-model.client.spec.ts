@@ -10,6 +10,7 @@ import {
   FAKE_MODEL_ID,
   FAKE_STRUCTURED_PROPOSAL,
   FAKE_TITLE_MAX_LENGTH,
+  FAKE_WEB_SEARCH_CITATIONS,
   FakeModelClient,
 } from './fake-model.client';
 import { MODEL_CLIENT, type ModelClient } from './model-client';
@@ -37,6 +38,33 @@ describe('FakeModelClient', () => {
     });
     await expect(client.generateAnswer(input)).resolves.toEqual({
       content: 'Deterministic answer: What changed?',
+      model: FAKE_MODEL_ID,
+    });
+  });
+
+  it('emits stable neutral citations only when web search is requested', async () => {
+    const messages = [{ role: 'user' as const, content: 'What is current?' }];
+
+    await expect(
+      client.generateAnswer({
+        formattedContext: 'FROZEN_DISCUSSION_CONTEXT_LEGACY',
+        messages,
+        webSearch: true,
+      }),
+    ).resolves.toEqual({
+      content: 'Deterministic answer: What is current?',
+      model: FAKE_MODEL_ID,
+      webSearchUsed: true,
+      citations: FAKE_WEB_SEARCH_CITATIONS,
+    });
+    await expect(
+      client.generateAnswer({
+        formattedContext: 'FROZEN_DISCUSSION_CONTEXT_LEGACY',
+        messages,
+        webSearch: false,
+      }),
+    ).resolves.toEqual({
+      content: 'Deterministic answer: What is current?',
       model: FAKE_MODEL_ID,
     });
   });

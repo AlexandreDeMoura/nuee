@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import type { MessageCitation } from '@nuee/shared-types';
 import type {
   GenerateAnswerInput,
   GenerateTitleInput,
@@ -11,6 +12,13 @@ import { GENERATED_TITLE_MAX_LENGTH } from './model-client';
 
 export const FAKE_MODEL_ID = 'nuee-deterministic-fake';
 export const FAKE_TITLE_MAX_LENGTH = GENERATED_TITLE_MAX_LENGTH;
+export const FAKE_WEB_SEARCH_CITATIONS: readonly MessageCitation[] = [
+  {
+    url: 'https://example.com/nuee-web-search',
+    title: 'Deterministic web search source',
+    snippet: 'Stable source metadata for web-search tests.',
+  },
+];
 export const FAKE_STRUCTURED_PROPOSAL = {
   title: 'Deterministic knowledge proposal',
   summary: 'A grounded proposal synthesized from the selected sources.',
@@ -50,10 +58,19 @@ export class FakeModelClient implements ModelClient {
       ? `Deterministic answer: ${prompt}`
       : 'Deterministic answer: No user question was provided.';
 
-    return Promise.resolve({
+    const generation: ModelGeneration = {
       content,
       model: FAKE_MODEL_ID,
-    });
+    };
+
+    if (input.webSearch) {
+      generation.webSearchUsed = true;
+      generation.citations = FAKE_WEB_SEARCH_CITATIONS.map((citation) => ({
+        ...citation,
+      }));
+    }
+
+    return Promise.resolve(generation);
   }
 
   generateTitle(input: GenerateTitleInput): Promise<ModelGeneration> {

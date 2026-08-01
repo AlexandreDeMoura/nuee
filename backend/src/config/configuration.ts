@@ -18,6 +18,7 @@ export interface AiConfig {
   provider: AiProvider;
   model: string;
   apiKey: string;
+  webSearchEnabled: boolean;
   focusedResponseWordBudget: number;
   modelInputTokenLimit: number;
   reservedOutputTokens: number;
@@ -41,6 +42,7 @@ export interface DocumentsConfig extends DocumentUploadPolicy {
 const DEFAULT_PORT = 3000;
 const DEFAULT_FRONTEND_ORIGIN = 'http://localhost:5173';
 const DEFAULT_AI_MODEL = 'gpt-5.6-sol';
+const DEFAULT_AI_WEB_SEARCH_ENABLED = false;
 const DEFAULT_FOCUSED_RESPONSE_WORD_BUDGET = 200;
 const DEFAULT_MODEL_INPUT_TOKEN_LIMIT = 128_000;
 const DEFAULT_RESERVED_OUTPUT_TOKENS = 4_000;
@@ -133,6 +135,28 @@ function integerValue(
   return value;
 }
 
+function booleanValue(
+  source: EnvironmentSource,
+  key: string,
+  fallback: boolean,
+): boolean {
+  const rawValue = source[key];
+
+  if (rawValue === undefined || rawValue === null || rawValue === '') {
+    return fallback;
+  }
+
+  if (rawValue === true || rawValue === 'true') {
+    return true;
+  }
+
+  if (rawValue === false || rawValue === 'false') {
+    return false;
+  }
+
+  throw new Error(`${key} must be either true or false.`);
+}
+
 function frontendOrigin(source: EnvironmentSource): string {
   const value =
     optionalString(source, 'FRONTEND_URL') ?? DEFAULT_FRONTEND_ORIGIN;
@@ -196,6 +220,11 @@ export function createAiConfig(source: EnvironmentSource): AiConfig {
     provider,
     model: optionalString(source, 'AI_MODEL') ?? DEFAULT_AI_MODEL,
     apiKey: apiKey ?? '',
+    webSearchEnabled: booleanValue(
+      source,
+      'AI_WEB_SEARCH_ENABLED',
+      DEFAULT_AI_WEB_SEARCH_ENABLED,
+    ),
     focusedResponseWordBudget: integerValue(
       source,
       'AI_FOCUSED_RESPONSE_WORD_BUDGET',

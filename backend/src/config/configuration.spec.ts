@@ -17,6 +17,7 @@ describe('configuration', () => {
       provider: 'openai',
       model: 'gpt-5.6-sol',
       apiKey: '',
+      webSearchEnabled: false,
       focusedResponseWordBudget: 200,
       modelInputTokenLimit: 128_000,
       reservedOutputTokens: 4_000,
@@ -67,6 +68,7 @@ describe('configuration', () => {
       AI_PROVIDER: 'openai',
       AI_MODEL: 'gpt-5.6-terra',
       OPENAI_API_KEY: 'test-secret',
+      AI_WEB_SEARCH_ENABLED: 'true',
       AI_FOCUSED_RESPONSE_WORD_BUDGET: '240',
       AI_MODEL_INPUT_TOKEN_LIMIT: '200000',
       AI_RESERVED_OUTPUT_TOKENS: '6000',
@@ -97,6 +99,7 @@ describe('configuration', () => {
       provider: 'openai',
       model: 'gpt-5.6-terra',
       apiKey: 'test-secret',
+      webSearchEnabled: true,
       focusedResponseWordBudget: 240,
       modelInputTokenLimit: 200_000,
       reservedOutputTokens: 6_000,
@@ -130,6 +133,10 @@ describe('configuration', () => {
   it.each([
     [{ NODE_ENV: 'staging' }, 'NODE_ENV must be one of'],
     [{ NODE_ENV: 'test', AI_PROVIDER: 'other' }, 'AI_PROVIDER must be one of'],
+    [
+      { NODE_ENV: 'test', AI_WEB_SEARCH_ENABLED: 'yes' },
+      'AI_WEB_SEARCH_ENABLED must be either true or false.',
+    ],
     [{ NODE_ENV: 'test', PORT: '0' }, 'PORT must be an integer'],
     [
       { NODE_ENV: 'test', FRONTEND_URL: 'https://nuee.example/path' },

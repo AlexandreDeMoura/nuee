@@ -10,6 +10,7 @@ const config: AiConfig = {
   provider: 'openai',
   model: 'gpt-5.6-sol',
   apiKey: 'test-key',
+  webSearchEnabled: false,
   focusedResponseWordBudget: 200,
   modelInputTokenLimit: 128_000,
   reservedOutputTokens: 4_000,

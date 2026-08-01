@@ -1,4 +1,4 @@
-import type { DiscussionRole } from '@nuee/shared-types';
+import type { DiscussionRole, MessageCitation } from '@nuee/shared-types';
 
 export interface ModelMessage {
   role: DiscussionRole;
@@ -8,6 +8,7 @@ export interface ModelMessage {
 export interface GenerateAnswerInput {
   formattedContext: string;
   messages: readonly ModelMessage[];
+  webSearch?: boolean;
 }
 
 export interface GenerateTitleInput {
@@ -31,6 +32,8 @@ export interface ModelGeneration {
   model: string;
   inputTokens?: number;
   outputTokens?: number;
+  webSearchUsed?: boolean;
+  citations?: MessageCitation[];
 }
 
 export interface StructuredModelGeneration {

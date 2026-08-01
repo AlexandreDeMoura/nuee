@@ -41,6 +41,7 @@ environment binds the OpenAI Responses API client and therefore requires
 | `AI_PROVIDER`                         | `openai`                         | AI provider; OpenAI is the only supported value                                      |
 | `AI_MODEL`                            | `gpt-5.6-sol`                    | OpenAI model ID sent to the Responses API                                            |
 | `OPENAI_API_KEY`                      | none                             | Required outside `NODE_ENV=test`                                                     |
+| `AI_WEB_SEARCH_ENABLED`               | `false`                          | Enables the provider-backed web-search capability when set to `true`                 |
 | `AI_FOCUSED_RESPONSE_WORD_BUDGET`     | `200`                            | Soft prompt target for approximately one-minute answers; it does not truncate output |
 | `AI_MODEL_INPUT_TOKEN_LIMIT`          | `128000`                         | Total model context window used by the conservative input preflight                  |
 | `AI_RESERVED_OUTPUT_TOKENS`           | `4000`                           | Context-window capacity reserved for the next model response                         |
