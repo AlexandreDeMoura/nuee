@@ -4,6 +4,7 @@ import type {
   DiscussionMessage,
   FrozenContextItem,
   FrozenContextV1,
+  MessageCitation,
 } from '@nuee/shared-types';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -187,7 +188,21 @@ function isDiscussionMessage(
       value.status === 'completed' ||
       value.status === 'failed') &&
     (value.request_id === null || isNonEmptyString(value.request_id)) &&
-    (value.role === 'user' || value.status === 'completed')
+    (value.role === 'user' || value.status === 'completed') &&
+    (value.web_search_used === undefined ||
+      typeof value.web_search_used === 'boolean') &&
+    (value.citations === undefined ||
+      (Array.isArray(value.citations) &&
+        value.citations.every(isMessageCitation)))
+  );
+}
+
+function isMessageCitation(value: unknown): value is MessageCitation {
+  return (
+    isRecord(value) &&
+    typeof value.url === 'string' &&
+    typeof value.title === 'string' &&
+    (value.snippet === undefined || typeof value.snippet === 'string')
   );
 }
 

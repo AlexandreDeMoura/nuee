@@ -82,6 +82,9 @@ export interface AnalyticsEventProperties {
     request_id: string;
     occurred_at: string;
     latency_ms: number;
+    web_search_requested: boolean;
+    web_search_used: boolean;
+    citation_count: number;
   };
   discussion_response_failed: {
     project_id: string;
@@ -89,6 +92,9 @@ export interface AnalyticsEventProperties {
     request_id: string;
     occurred_at: string;
     latency_ms: number;
+    web_search_requested: boolean;
+    web_search_used: false;
+    citation_count: 0;
   };
   discussion_title_generated: {
     project_id: string;

@@ -163,10 +163,10 @@ function firstUserMessage(discussion: DiscussionDetails) {
   return discussion.messages.find((message) => message.role === 'user');
 }
 
-function completedResponseAt(
+function completedResponse(
   discussion: DiscussionDetails,
   requestId: string,
-): string | null {
+) {
   const userMessageIndex = discussion.messages.findIndex(
     (message) =>
       message.role === 'user' &&
@@ -184,8 +184,21 @@ function completedResponseAt(
       .find(
         (message) =>
           message.role === 'assistant' && message.status === 'completed',
-      )?.created_at ?? null
+      ) ?? null
   );
+}
+
+function responseSearchAnalytics(
+  response: NonNullable<ReturnType<typeof completedResponse>>,
+  webSearchRequested: boolean,
+) {
+  return {
+    citation_count: Array.isArray(response.citations)
+      ? response.citations.length
+      : 0,
+    web_search_requested: webSearchRequested,
+    web_search_used: response.web_search_used === true,
+  };
 }
 
 function hasCompletedExchange(discussion: DiscussionDetails): boolean {
@@ -600,9 +613,12 @@ export function useDiscussionLifecycle({
             },
           );
 
-          const responseAt = completedResponseAt(next, firstMessage.request_id);
+          const assistantResponse = completedResponse(
+            next,
+            firstMessage.request_id,
+          );
 
-          if (responseAt) {
+          if (assistantResponse) {
             trackAnalytics(
               analyticsClient,
               'discussion_response_completed',
@@ -610,8 +626,9 @@ export function useDiscussionLifecycle({
                 project_id: projectId,
                 discussion_id: next.id,
                 request_id: firstMessage.request_id,
-                occurred_at: responseAt,
+                occurred_at: assistantResponse.created_at,
                 latency_ms: elapsedMilliseconds(startedAt),
+                ...responseSearchAnalytics(assistantResponse, webSearch),
               },
             );
           }
@@ -661,6 +678,9 @@ export function useDiscussionLifecycle({
               request_id: recovery.requestId,
               occurred_at: failureOccurredAt,
               latency_ms: elapsedMilliseconds(startedAt),
+              web_search_requested: webSearch,
+              web_search_used: false,
+              citation_count: 0,
             },
           );
           updatePendingTurn({
@@ -752,9 +772,9 @@ export function useDiscussionLifecycle({
         updatePendingTurn(null);
         setComposerValue('');
         setWebSearchEnabledState(false);
-        const responseAt = completedResponseAt(next, requestId);
+        const assistantResponse = completedResponse(next, requestId);
 
-        if (responseAt) {
+        if (assistantResponse) {
           trackAnalytics(
             analyticsClient,
             'discussion_response_completed',
@@ -762,8 +782,9 @@ export function useDiscussionLifecycle({
               project_id: projectId,
               discussion_id: discussionId,
               request_id: requestId,
-              occurred_at: responseAt,
+              occurred_at: assistantResponse.created_at,
               latency_ms: elapsedMilliseconds(startedAt),
+              ...responseSearchAnalytics(assistantResponse, webSearch),
             },
           );
         }
@@ -799,6 +820,9 @@ export function useDiscussionLifecycle({
             request_id: requestId,
             occurred_at: occurredAt(),
             latency_ms: elapsedMilliseconds(startedAt),
+            web_search_requested: webSearch,
+            web_search_used: false,
+            citation_count: 0,
           });
           return;
         }
@@ -903,9 +927,9 @@ export function useDiscussionLifecycle({
           onDiscussionChanged?.(next);
           updatePendingTurn(null);
           setWebSearchEnabledState(false);
-          const responseAt = completedResponseAt(next, turn.requestId);
+          const assistantResponse = completedResponse(next, turn.requestId);
 
-          if (responseAt) {
+          if (assistantResponse) {
             trackAnalytics(
               analyticsClient,
               'discussion_response_completed',
@@ -913,8 +937,12 @@ export function useDiscussionLifecycle({
                 project_id: projectId,
                 discussion_id: visibleDiscussion.discussionId,
                 request_id: turn.requestId,
-                occurred_at: responseAt,
+                occurred_at: assistantResponse.created_at,
                 latency_ms: elapsedMilliseconds(startedAt),
+                ...responseSearchAnalytics(
+                  assistantResponse,
+                  turn.webSearch,
+                ),
               },
             );
           }
@@ -937,6 +965,9 @@ export function useDiscussionLifecycle({
             request_id: turn.requestId,
             occurred_at: occurredAt(),
             latency_ms: elapsedMilliseconds(startedAt),
+            web_search_requested: turn.webSearch,
+            web_search_used: false,
+            citation_count: 0,
           });
         }
       };

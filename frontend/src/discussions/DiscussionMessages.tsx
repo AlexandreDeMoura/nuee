@@ -5,6 +5,7 @@ import {
   type DiscussionKnowledgeActionHandler,
 } from './DiscussionKnowledgeAction';
 import { RichResponse } from './RichResponse';
+import { DiscussionMessageSources } from './DiscussionMessageSources';
 import type { PendingDiscussionTurn } from './useDiscussionLifecycle';
 
 interface DiscussionMessagesProps {
@@ -109,6 +110,9 @@ function Message({
       ) : (
         <>
           <RichResponse content={message.content} />
+          {message.web_search_used === true && (
+            <DiscussionMessageSources citations={message.citations} />
+          )}
           <div className="mt-3 border-t border-[#e8ecf1] pt-2.5">
             <DiscussionKnowledgeAction
               onExtract={onExtractKnowledge}
