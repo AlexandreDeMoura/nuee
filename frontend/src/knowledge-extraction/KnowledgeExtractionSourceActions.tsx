@@ -1,27 +1,19 @@
 import { LoaderCircle, Sparkles } from 'lucide-react';
-import type { DiscussionDetails } from '../api';
 import { focusRing } from '../ui/focusRing';
 import { hasKnowledgeExtractionSources } from './knowledgeExtractionStateMachine';
-import { eligibleKnowledgeExtractionMessages } from './knowledgeExtractionSources';
 import type { KnowledgeExtractionController } from './useKnowledgeExtraction';
 
 export interface KnowledgeExtractionSourceActionsProps {
   controller: KnowledgeExtractionController;
-  discussion: DiscussionDetails;
   onCancel: () => void;
 }
 
 export function KnowledgeExtractionSourceActions({
   controller,
-  discussion,
   onCancel,
 }: KnowledgeExtractionSourceActionsProps) {
-  const messages = eligibleKnowledgeExtractionMessages(discussion);
   const selectedMessageCount =
-    controller.state.selection.messageSelection.kind ===
-    'whole_discussion'
-      ? messages.length
-      : controller.state.selection.messageSelection.message_ids.length;
+    controller.state.selection.messageIds.length;
   const selectedContextCount =
     controller.state.selection.frozenContextItemIds.length;
   const selectedCount = selectedMessageCount + selectedContextCount;
@@ -55,13 +47,8 @@ export function KnowledgeExtractionSourceActions({
               }.`
             : selectedCount === 0
             ? 'Select at least one eligible source.'
-            : `${
-                controller.state.selection.messageSelection.kind ===
-                'whole_discussion'
-                  ? `Complete discussion (${messages.length} messages)`
-                  : `${selectedMessageCount} ${
-                      selectedMessageCount === 1 ? 'message' : 'messages'
-                    }`
+            : `${selectedMessageCount} ${
+                selectedMessageCount === 1 ? 'message' : 'messages'
               }${
                 selectedContextCount > 0
                   ? ` and ${selectedContextCount} frozen ${

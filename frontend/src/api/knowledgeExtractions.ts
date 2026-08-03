@@ -1,7 +1,7 @@
 import type {
   Bubble,
   CreateKnowledgeExtractionInput,
-  KnowledgeExtractionMessageSelection,
+  KnowledgeExtractionDetailLevel,
   KnowledgeExtractionProposal,
   KnowledgeExtractionProposalResponse,
   KnowledgeExtractionResolutionResponse,
@@ -15,7 +15,7 @@ import { requestJson } from './client';
 
 export type {
   CreateKnowledgeExtractionInput,
-  KnowledgeExtractionMessageSelection,
+  KnowledgeExtractionDetailLevel,
   KnowledgeExtractionProposal,
   KnowledgeExtractionProposalResponse,
   KnowledgeExtractionResolutionResponse,
@@ -89,8 +89,6 @@ function isSourceReference(
   }
 
   return (
-    (value.message_selection_kind === 'selected' ||
-      value.message_selection_kind === 'whole_discussion') &&
     isIdentifierList(value.message_ids) &&
     isIdentifierList(value.frozen_context_item_ids) &&
     value.message_ids.length + value.frozen_context_item_ids.length > 0
@@ -101,10 +99,6 @@ function sourceMatchesInput(
   source: KnowledgeExtractionSourceReference,
   input: CreateKnowledgeExtractionInput,
 ): boolean {
-  if (source.message_selection_kind !== input.message_selection.kind) {
-    return false;
-  }
-
   if (
     !haveSameIdentifiers(
       source.frozen_context_item_ids,
@@ -114,13 +108,7 @@ function sourceMatchesInput(
     return false;
   }
 
-  return (
-    input.message_selection.kind === 'whole_discussion' ||
-    haveSameIdentifiers(
-      source.message_ids,
-      input.message_selection.message_ids,
-    )
-  );
+  return haveSameIdentifiers(source.message_ids, input.message_ids);
 }
 
 export function isKnowledgeExtractionProposalResponse(

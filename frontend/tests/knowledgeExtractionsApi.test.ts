@@ -32,12 +32,11 @@ function createRequestFake(responses: unknown[]) {
 }
 
 const input: CreateKnowledgeExtractionInput = {
+  detail_level: 'detailed',
   frozen_context_item_ids: ['context/1'],
   idempotency_key: 'attempt/1',
-  message_selection: {
-    kind: 'selected',
-    message_ids: ['message/2', 'message/1'],
-  },
+  instructions: 'Emphasize the operational risk.',
+  message_ids: ['message/2', 'message/1'],
 };
 
 const proposalResponse: KnowledgeExtractionProposalResponse = {
@@ -54,7 +53,6 @@ const proposalResponse: KnowledgeExtractionProposalResponse = {
   source: {
     frozen_context_item_ids: ['context/1'],
     message_ids: ['message/1', 'message/2'],
-    message_selection_kind: 'selected',
   },
   status: 'ready',
 };

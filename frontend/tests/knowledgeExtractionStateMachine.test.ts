@@ -80,9 +80,11 @@ describe('knowledge extraction state machine', () => {
     let state = reviewingState();
 
     expect(state.status).toBe('reviewing');
-    expect(state.selection.messageSelection).toEqual({
-      kind: 'selected',
-      message_ids: ['message-1'],
+    expect(state.selection).toEqual({
+      detailLevel: 'standard',
+      frozenContextItemIds: [],
+      instructions: '',
+      messageIds: ['message-1'],
     });
     expect(state.proposal).toEqual(proposal);
 
@@ -105,9 +107,11 @@ describe('knowledge extraction state machine', () => {
     });
     expect(state.status).toBe('resolved');
     expect(state.resolution?.resolution.kind).toBe('new_bubble');
-    expect(state.selection.messageSelection).toEqual({
-      kind: 'selected',
-      message_ids: [],
+    expect(state.selection).toEqual({
+      detailLevel: 'standard',
+      frozenContextItemIds: [],
+      instructions: '',
+      messageIds: [],
     });
     expect(state.attemptId).toBeNull();
     expect(state.extractionId).toBeNull();
@@ -253,11 +257,10 @@ describe('knowledge extraction state machine', () => {
 
     const changed = knowledgeExtractionReducer(invalid, {
       selection: {
+        detailLevel: 'standard',
         frozenContextItemIds: ['context-1'],
-        messageSelection: {
-          kind: 'selected',
-          message_ids: [],
-        },
+        instructions: '',
+        messageIds: [],
       },
       type: 'selection_changed',
     });
@@ -269,18 +272,16 @@ describe('knowledge extraction state machine', () => {
 
   it('keeps fingerprints canonical while preserving local selection order', () => {
     const first = {
+      detailLevel: 'standard' as const,
       frozenContextItemIds: ['context-2', 'context-1'],
-      messageSelection: {
-        kind: 'selected' as const,
-        message_ids: ['message-2', 'message-1'],
-      },
+      instructions: '  Preserve   uncertainty. ',
+      messageIds: ['message-2', 'message-1'],
     };
     const second = {
+      detailLevel: 'standard' as const,
       frozenContextItemIds: ['context-1', 'context-2'],
-      messageSelection: {
-        kind: 'selected' as const,
-        message_ids: ['message-1', 'message-2'],
-      },
+      instructions: 'Preserve uncertainty.',
+      messageIds: ['message-1', 'message-2'],
     };
 
     expect(knowledgeExtractionSelectionFingerprint(first)).toBe(
@@ -289,10 +290,19 @@ describe('knowledge extraction state machine', () => {
     expect(hasKnowledgeExtractionSources(first)).toBe(true);
     expect(
       hasKnowledgeExtractionSources({
+        detailLevel: 'standard',
         frozenContextItemIds: [],
-        messageSelection: { kind: 'whole_discussion' },
+        instructions: '',
+        messageIds: [],
       }),
-    ).toBe(true);
+    ).toBe(false);
+
+    expect(
+      knowledgeExtractionSelectionFingerprint({
+        ...second,
+        detailLevel: 'detailed',
+      }),
+    ).not.toBe(knowledgeExtractionSelectionFingerprint(second));
   });
 
   it('ignores invalid transitions and cross-project update targets', () => {

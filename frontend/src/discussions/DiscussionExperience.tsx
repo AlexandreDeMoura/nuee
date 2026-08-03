@@ -521,7 +521,6 @@ function DiscussionExperienceModal({
         ) : isExtractionFlowActive && lifecycle.details ? (
           <KnowledgeExtractionSourceActions
             controller={extraction}
-            discussion={lifecycle.details}
             onCancel={() => {
               void cancelExtraction();
             }}

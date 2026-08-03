@@ -1,5 +1,5 @@
 import type {
-  KnowledgeExtractionMessageSelection,
+  KnowledgeExtractionDetailLevel,
   KnowledgeExtractionProposal,
   KnowledgeExtractionResolutionResponse,
   KnowledgeExtractionTargetPreview,
@@ -24,8 +24,10 @@ export interface KnowledgeExtractionBinding {
 }
 
 export interface KnowledgeExtractionSelection {
+  detailLevel: KnowledgeExtractionDetailLevel;
   frozenContextItemIds: string[];
-  messageSelection: KnowledgeExtractionMessageSelection;
+  instructions: string;
+  messageIds: string[];
 }
 
 export type KnowledgeExtractionSourceIssueReason =
@@ -179,11 +181,10 @@ export type KnowledgeExtractionEvent =
 
 function emptySelection(): KnowledgeExtractionSelection {
   return {
+    detailLevel: 'standard',
     frozenContextItemIds: [],
-    messageSelection: {
-      kind: 'selected',
-      message_ids: [],
-    },
+    instructions: '',
+    messageIds: [],
   };
 }
 
@@ -209,18 +210,12 @@ export function normalizeKnowledgeExtractionSelection(
   selection: KnowledgeExtractionSelection,
 ): KnowledgeExtractionSelection {
   return {
+    detailLevel: selection.detailLevel,
     frozenContextItemIds: normalizeIdentifiers(
       selection.frozenContextItemIds,
     ),
-    messageSelection:
-      selection.messageSelection.kind === 'whole_discussion'
-        ? { kind: 'whole_discussion' }
-        : {
-            kind: 'selected',
-            message_ids: normalizeIdentifiers(
-              selection.messageSelection.message_ids,
-            ),
-          },
+    instructions: selection.instructions,
+    messageIds: normalizeIdentifiers(selection.messageIds),
   };
 }
 
@@ -230,16 +225,11 @@ export function knowledgeExtractionSelectionFingerprint(
   const normalized = normalizeKnowledgeExtractionSelection(selection);
 
   return JSON.stringify({
+    detail_level: normalized.detailLevel,
     frozen_context_item_ids: [...normalized.frozenContextItemIds].sort(),
-    message_selection:
-      normalized.messageSelection.kind === 'whole_discussion'
-        ? { kind: 'whole_discussion' }
-        : {
-            kind: 'selected',
-            message_ids: [
-              ...normalized.messageSelection.message_ids,
-            ].sort(),
-          },
+    instructions:
+      normalized.instructions.trim().replace(/\s+/g, ' ') || null,
+    message_ids: [...normalized.messageIds].sort(),
   });
 }
 
@@ -247,8 +237,7 @@ export function hasKnowledgeExtractionSources(
   selection: KnowledgeExtractionSelection,
 ): boolean {
   return (
-    selection.messageSelection.kind === 'whole_discussion' ||
-    selection.messageSelection.message_ids.length > 0 ||
+    selection.messageIds.length > 0 ||
     selection.frozenContextItemIds.length > 0
   );
 }
@@ -281,12 +270,11 @@ function selectingState(
 ): KnowledgeExtractionState {
   const normalizedMessageId = initialMessageId?.trim() ?? '';
   const selection = normalizeKnowledgeExtractionSelection({
+    detailLevel: 'standard',
     frozenContextItemIds: [],
-    messageSelection: {
-      kind: 'selected',
-      message_ids:
-        normalizedMessageId.length > 0 ? [normalizedMessageId] : [],
-    },
+    instructions: '',
+    messageIds:
+      normalizedMessageId.length > 0 ? [normalizedMessageId] : [],
   });
 
   return {

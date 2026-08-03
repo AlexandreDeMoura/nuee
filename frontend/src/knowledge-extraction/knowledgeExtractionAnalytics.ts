@@ -48,13 +48,9 @@ export function knowledgeExtractionGenerationMetrics(
   const eligibleMessages = discussion
     ? eligibleKnowledgeExtractionMessages(discussion)
     : [];
-  const selectedMessageIds =
-    selection.messageSelection.kind === 'selected'
-      ? new Set(selection.messageSelection.message_ids)
-      : null;
+  const selectedMessageIds = new Set(selection.messageIds);
   const selectedMessages = eligibleMessages.filter(
-    (message) =>
-      selectedMessageIds === null || selectedMessageIds.has(message.id),
+    (message) => selectedMessageIds.has(message.id),
   );
   const selectedContextIds = new Set(
     selection.frozenContextItemIds,
@@ -89,10 +85,10 @@ export function knowledgeExtractionGenerationMetrics(
   });
 
   return {
-    message_selection_mode: selection.messageSelection.kind,
+    message_selection_mode: 'selected',
     selected_message_count:
       discussion === undefined || discussion === null
-        ? selectedMessageIds?.size ?? 0
+        ? selectedMessageIds.size
         : selectedMessages.length,
     frozen_project_description_count:
       frozenContextCounts.project_description,

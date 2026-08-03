@@ -77,9 +77,7 @@ export function KnowledgeExtractionSourceSelection({
     }
 
     const selectedMessageId =
-      controller.state.selection.messageSelection.kind === 'selected'
-        ? controller.state.selection.messageSelection.message_ids[0]
-        : undefined;
+      controller.state.selection.messageIds[0];
     const selectedContextId =
       controller.state.selection.frozenContextItemIds[0];
     const initialTarget = selectedMessageId
@@ -112,7 +110,7 @@ export function KnowledgeExtractionSourceSelection({
   }, [
     contextItems,
     controller.state.selection.frozenContextItemIds,
-    controller.state.selection.messageSelection,
+    controller.state.selection.messageIds,
     controller.state.status,
     messages.length,
   ]);
@@ -225,7 +223,7 @@ export function KnowledgeExtractionSourceSelection({
           buttonRef={wholeDiscussionRef}
           controller={controller}
           disabled={controlsDisabled}
-          messageCount={messages.length}
+          messageIds={messages.map((message) => message.id)}
         />
       </div>
 

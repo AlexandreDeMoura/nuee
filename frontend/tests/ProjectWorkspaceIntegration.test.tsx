@@ -170,7 +170,6 @@ function extractionProposalResponse(): KnowledgeExtractionProposalResponse {
     source: {
       frozen_context_item_ids: [],
       message_ids: ['message-assistant-1'],
-      message_selection_kind: 'selected',
     },
     status: 'ready',
   };

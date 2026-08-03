@@ -120,7 +120,6 @@ function proposalResponse(): KnowledgeExtractionProposalResponse {
     status: 'ready',
     proposal: { ...generatedProposal },
     source: {
-      message_selection_kind: 'selected',
       message_ids: ['message-assistant-1'],
       frozen_context_item_ids: [],
     },
@@ -320,12 +319,10 @@ describe('DiscussionExperience', () => {
       projectId,
       'discussion-1',
       {
+        detail_level: 'standard',
         frozen_context_item_ids: ['context-project-1'],
         idempotency_key: 'extraction-attempt-1',
-        message_selection: {
-          kind: 'selected',
-          message_ids: ['message-user-1', 'message-assistant-2'],
-        },
+        message_ids: ['message-user-1', 'message-assistant-2'],
       },
       expect.any(AbortSignal),
     );
@@ -386,7 +383,7 @@ describe('DiscussionExperience', () => {
     });
   });
 
-  it('submits whole-discussion scope without expanding it into client message identifiers', async () => {
+  it('submits complete-discussion selection as explicit message identifiers', async () => {
     const create = vi.fn<
       NonNullable<KnowledgeExtractionRequests['create']>
     >(
@@ -413,9 +410,7 @@ describe('DiscussionExperience', () => {
     fireEvent.click(wholeDiscussion);
     expect(wholeDiscussion.getAttribute('aria-pressed')).toBe('true');
     expect(
-      screen.getByText(
-        'Complete discussion (2 messages) selected.',
-      ),
+      screen.getByText('2 messages selected.'),
     ).toBeTruthy();
 
     fireEvent.click(
@@ -426,9 +421,10 @@ describe('DiscussionExperience', () => {
       projectId,
       'discussion-1',
       {
+        detail_level: 'standard',
         frozen_context_item_ids: [],
         idempotency_key: 'whole-discussion-attempt',
-        message_selection: { kind: 'whole_discussion' },
+        message_ids: ['message-user-1', 'message-assistant-1'],
       },
       expect.any(AbortSignal),
     );

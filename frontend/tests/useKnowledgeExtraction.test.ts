@@ -50,7 +50,6 @@ function proposalResponse(
     source: {
       frozen_context_item_ids: ['context-1'],
       message_ids: ['message-1'],
-      message_selection_kind: 'selected',
     },
     status: 'ready',
     ...overrides,
@@ -304,6 +303,8 @@ describe('useKnowledgeExtraction', () => {
     act(() => {
       result.current.start('message-1');
       result.current.toggleFrozenContextItem('context-1');
+      result.current.setInstructions('  Preserve the caveat.  ');
+      result.current.setDetailLevel('detailed');
     });
 
     await act(async () => {
@@ -318,11 +319,10 @@ describe('useKnowledgeExtraction', () => {
       }),
     );
     expect(result.current.state.selection).toEqual({
+      detailLevel: 'detailed',
       frozenContextItemIds: ['context-1'],
-      messageSelection: {
-        kind: 'selected',
-        message_ids: ['message-1'],
-      },
+      instructions: '  Preserve the caveat.  ',
+      messageIds: ['message-1'],
     });
     expect(result.current.state.attemptId).toBe(
       'stable-attempt-key',
@@ -342,6 +342,13 @@ describe('useKnowledgeExtraction', () => {
       | CreateKnowledgeExtractionInput
       | undefined;
     expect(firstInput?.idempotency_key).toBe('stable-attempt-key');
+    expect(firstInput).toEqual({
+      detail_level: 'detailed',
+      frozen_context_item_ids: ['context-1'],
+      idempotency_key: 'stable-attempt-key',
+      instructions: 'Preserve the caveat.',
+      message_ids: ['message-1'],
+    });
     expect(secondInput).toEqual(firstInput);
 
     act(() =>
@@ -435,6 +442,69 @@ describe('useKnowledgeExtraction', () => {
     expect(result.current.state.status).toBe('selecting');
     expect(result.current.state.failure).toBeNull();
     expect(result.current.state.attemptId).toBeNull();
+  });
+
+  it('keeps whitespace-equivalent intent on the same attempt and invalidates changed intent', async () => {
+    const createAttemptId = vi
+      .fn()
+      .mockReturnValueOnce('attempt-1')
+      .mockReturnValueOnce('attempt-2');
+    const create = vi.fn().mockRejectedValue(
+      new ApiError(503, {
+        code: 'KNOWLEDGE_EXTRACTION_GENERATION_FAILED',
+        message: 'Generation failed.',
+      }),
+    );
+    const { result } = renderHook(() =>
+      useKnowledgeExtraction({
+        createAttemptId,
+        discussionId: 'discussion-1',
+        projectId: 'project-1',
+        requests: { create },
+      }),
+    );
+
+    act(() => {
+      result.current.start('message-1');
+      result.current.setInstructions('Focus on risk.');
+    });
+    await act(async () => {
+      await result.current.generateProposal();
+    });
+    expect(result.current.state.attemptId).toBe('attempt-1');
+
+    act(() =>
+      result.current.setInstructions('  Focus   on risk.  '),
+    );
+    expect(result.current.state.attemptId).toBe('attempt-1');
+
+    act(() => {
+      result.current.setInstructions('Focus on cost.');
+      result.current.setDetailLevel('tight');
+    });
+    expect(result.current.state.attemptId).toBeNull();
+
+    await act(async () => {
+      await result.current.generateProposal();
+    });
+
+    expect(createAttemptId).toHaveBeenCalledTimes(2);
+    expect(create.mock.calls.map((call) => call[2])).toEqual([
+      {
+        detail_level: 'standard',
+        frozen_context_item_ids: [],
+        idempotency_key: 'attempt-1',
+        instructions: 'Focus on risk.',
+        message_ids: ['message-1'],
+      },
+      {
+        detail_level: 'tight',
+        frozen_context_item_ids: [],
+        idempotency_key: 'attempt-2',
+        instructions: 'Focus on cost.',
+        message_ids: ['message-1'],
+      },
+    ]);
   });
 
   it('aborts generation and ignores its stale response after discard', async () => {

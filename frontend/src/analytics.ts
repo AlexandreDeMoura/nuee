@@ -145,7 +145,7 @@ export interface AnalyticsEventProperties {
   knowledge_extraction_generation_finished: {
     project_id: string;
     discussion_id: string;
-    message_selection_mode: 'selected' | 'whole_discussion';
+    message_selection_mode: 'selected';
     selected_message_count: number;
     frozen_project_description_count: number;
     frozen_bubble_count: number;

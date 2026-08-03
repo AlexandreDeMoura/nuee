@@ -75,16 +75,19 @@ export function WholeDiscussionSource({
   buttonRef,
   controller,
   disabled,
-  messageCount,
+  messageIds,
 }: {
   buttonRef: RefObject<HTMLButtonElement | null>;
   controller: KnowledgeExtractionController;
   disabled: boolean;
-  messageCount: number;
+  messageIds: readonly string[];
 }) {
   const selected =
-    controller.state.selection.messageSelection.kind ===
-    'whole_discussion';
+    messageIds.length > 0 &&
+    controller.state.selection.messageIds.length === messageIds.length &&
+    messageIds.every((messageId) =>
+      controller.state.selection.messageIds.includes(messageId),
+    );
 
   return (
     <button
@@ -96,8 +99,10 @@ export function WholeDiscussionSource({
       type="button"
       aria-label="Select complete discussion for extraction"
       aria-pressed={selected}
-      disabled={disabled || messageCount === 0}
-      onClick={() => controller.setWholeDiscussion(!selected)}
+      disabled={disabled || messageIds.length === 0}
+      onClick={() =>
+        controller.setMessageIds(selected ? [] : messageIds)
+      }
       ref={buttonRef}
     >
       <SelectionIndicator selected={selected} />
@@ -108,8 +113,8 @@ export function WholeDiscussionSource({
         <span className="mt-1 block text-[11px] leading-[1.5] text-[#718096]">
           Includes all persisted user and AI messages available when you
           generate the proposal
-          {messageCount > 0
-            ? ` — currently ${messageCount}.`
+          {messageIds.length > 0
+            ? ` — currently ${messageIds.length}.`
             : '.'}
         </span>
       </span>
@@ -133,10 +138,7 @@ export function MessageSource({
   setSourceRef: (element: HTMLButtonElement | null) => void;
 }) {
   const selected =
-    controller.state.selection.messageSelection.kind === 'selected' &&
-    controller.state.selection.messageSelection.message_ids.includes(
-      message.id,
-    );
+    controller.state.selection.messageIds.includes(message.id);
   const isUser = message.role === 'user';
 
   return (

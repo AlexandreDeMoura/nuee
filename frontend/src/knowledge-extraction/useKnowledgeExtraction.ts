@@ -8,6 +8,7 @@ import type {
   Bubble,
   CreateKnowledgeExtractionInput,
   DiscussionDetails,
+  KnowledgeExtractionDetailLevel,
   KnowledgeExtractionProposal,
   KnowledgeExtractionProposalResponse,
   KnowledgeExtractionResolutionResponse,
@@ -81,7 +82,9 @@ export interface KnowledgeExtractionController {
   reject: () => Promise<KnowledgeExtractionResolutionResponse | null>;
   reset: () => void;
   selectUpdateTarget: (bubble: Bubble) => void;
-  setWholeDiscussion: (selected: boolean) => void;
+  setDetailLevel: (detailLevel: KnowledgeExtractionDetailLevel) => void;
+  setInstructions: (instructions: string) => void;
+  setMessageIds: (messageIds: readonly string[]) => void;
   start: (initialMessageId?: string) => boolean;
   state: KnowledgeExtractionState;
   toggleFrozenContextItem: (contextItemId: string) => void;
@@ -246,27 +249,15 @@ function selectionInput(
   state: KnowledgeExtractionState,
 ): Omit<CreateKnowledgeExtractionInput, 'idempotency_key'> {
   return {
+    detail_level: state.selection.detailLevel,
     frozen_context_item_ids: [
       ...state.selection.frozenContextItemIds,
     ],
-    message_selection:
-      state.selection.messageSelection.kind === 'whole_discussion'
-        ? { kind: 'whole_discussion' }
-        : {
-            kind: 'selected',
-            message_ids: [
-              ...state.selection.messageSelection.message_ids,
-            ],
-          },
+    ...(state.selection.instructions.trim().length > 0
+      ? { instructions: state.selection.instructions.trim() }
+      : {}),
+    message_ids: [...state.selection.messageIds],
   };
-}
-
-function selectedIdentifiers(
-  selection: KnowledgeExtractionSelection,
-): string[] {
-  return selection.messageSelection.kind === 'selected'
-    ? selection.messageSelection.message_ids
-    : [];
 }
 
 function isUnresolvedServerAttempt(
@@ -454,30 +445,45 @@ export function useKnowledgeExtraction({
       }
 
       updateSelection((current) => {
-        const currentIds = selectedIdentifiers(current);
+        const currentIds = current.messageIds;
         const nextIds = currentIds.includes(normalizedId)
           ? currentIds.filter((identifier) => identifier !== normalizedId)
           : [...currentIds, normalizedId];
 
         return {
           ...current,
-          messageSelection: {
-            kind: 'selected',
-            message_ids: nextIds,
-          },
+          messageIds: nextIds,
         };
       });
     },
     [updateSelection],
   );
 
-  const setWholeDiscussion = useCallback(
-    (selected: boolean) => {
+  const setMessageIds = useCallback(
+    (messageIds: readonly string[]) => {
       updateSelection((current) => ({
         ...current,
-        messageSelection: selected
-          ? { kind: 'whole_discussion' }
-          : { kind: 'selected', message_ids: [] },
+        messageIds: [...messageIds],
+      }));
+    },
+    [updateSelection],
+  );
+
+  const setInstructions = useCallback(
+    (instructions: string) => {
+      updateSelection((current) => ({
+        ...current,
+        instructions,
+      }));
+    },
+    [updateSelection],
+  );
+
+  const setDetailLevel = useCallback(
+    (detailLevel: KnowledgeExtractionDetailLevel) => {
+      updateSelection((current) => ({
+        ...current,
+        detailLevel,
       }));
     },
     [updateSelection],
@@ -932,7 +938,9 @@ export function useKnowledgeExtraction({
     reject,
     reset,
     selectUpdateTarget,
-    setWholeDiscussion,
+    setDetailLevel,
+    setInstructions,
+    setMessageIds,
     start,
     state,
     toggleFrozenContextItem,
