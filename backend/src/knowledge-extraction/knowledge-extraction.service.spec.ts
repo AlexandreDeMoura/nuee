@@ -9,7 +9,10 @@ import {
 import type { FrozenContextItem } from '@nuee/shared-types';
 import { FakeModelClient } from '../ai/fake-model.client';
 import { ConservativeInputTokenEstimator } from '../ai/input-token-estimator';
-import type { ModelClient } from '../ai/model-client';
+import type {
+  GenerateStructuredOutputInput,
+  ModelClient,
+} from '../ai/model-client';
 import { ConfiguredModelInputBudget } from '../ai/model-input-budget';
 import type {
   ModelInputBudget,
@@ -883,6 +886,12 @@ describe('Knowledge extraction generation and resolution services', () => {
       instructions: 'Emphasize\n delivery   risk.',
       detail_level: 'detailed',
     });
+    expect(generate.mock.calls[0][0].instructions).toContain(
+      'target two or three concise paragraphs',
+    );
+    expect(generate.mock.calls[0][0].messages[0].content).toContain(
+      JSON.stringify({ instructions: 'Emphasize\n delivery   risk.' }),
+    );
 
     await expect(
       service.generateProposal(project.id, source.record.id, {
@@ -1132,9 +1141,16 @@ describe('Knowledge extraction generation and resolution services', () => {
       reservedOutputTokens: 50,
       safetyMarginTokens: 50,
     };
+    let evaluatedInput: GenerateStructuredOutputInput | undefined;
+    const evaluateStructuredOutput = jest.fn(
+      (input: GenerateStructuredOutputInput): ModelInputBudgetResult => {
+        evaluatedInput = input;
+        return budgetResult;
+      },
+    );
     modelInputBudget = {
       evaluateAnswer: jest.fn(),
-      evaluateStructuredOutput: jest.fn().mockReturnValue(budgetResult),
+      evaluateStructuredOutput,
     };
     const generate = jest.spyOn(modelClient, 'generateStructuredOutput');
     service = new KnowledgeExtractionService(
@@ -1151,15 +1167,22 @@ describe('Knowledge extraction generation and resolution services', () => {
         detail_level: 'standard',
         message_ids: [source.firstAssistant.id],
         frozen_context_item_ids: [],
+        instructions: 'Prioritize launch risk.',
       }),
     ).rejects.toMatchObject({
       constructor: PayloadTooLargeException,
       response: {
         code: 'KNOWLEDGE_EXTRACTION_SOURCE_TOO_LARGE',
+        message:
+          'The selected extraction sources and instructions exceed the supported model input budget. Shorten the instructions or select fewer sources and try again.',
         estimated_input_tokens: 1_001,
         available_input_tokens: 1_000,
       },
     });
+    expect(evaluateStructuredOutput).toHaveBeenCalledTimes(1);
+    expect(evaluatedInput?.messages[0].content).toContain(
+      JSON.stringify({ instructions: 'Prioritize launch risk.' }),
+    );
     expect(generate).not.toHaveBeenCalled();
     expect(
       databaseProvider.connection

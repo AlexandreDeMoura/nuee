@@ -94,7 +94,7 @@ export class KnowledgeExtractionService {
       normalized,
       requestFingerprint,
     );
-    const modelInput = this.prepareModelInput(attempt.source_snapshot);
+    const modelInput = this.prepareModelInput(attempt);
     let persisted: KnowledgeExtractionAttempt;
 
     try {
@@ -268,7 +268,7 @@ export class KnowledgeExtractionService {
       return inFlight;
     }
 
-    const modelInput = this.prepareModelInput(attempt.source_snapshot);
+    const modelInput = this.prepareModelInput(attempt);
     let retry: KnowledgeExtractionAttempt | undefined;
 
     try {
@@ -380,16 +380,22 @@ export class KnowledgeExtractionService {
   }
 
   private prepareModelInput(
-    snapshot: KnowledgeExtractionSourceSnapshotV1,
+    attempt: Pick<
+      KnowledgeExtractionAttempt,
+      'source_snapshot' | 'instructions' | 'detail_level'
+    >,
   ): ReturnType<typeof buildKnowledgeExtractionModelInput> {
-    const input = buildKnowledgeExtractionModelInput(snapshot);
+    const input = buildKnowledgeExtractionModelInput(attempt.source_snapshot, {
+      instructions: attempt.instructions,
+      detailLevel: attempt.detail_level,
+    });
     const budget = this.modelInputBudget.evaluateStructuredOutput(input);
 
     if (!budget.fits) {
       throw new PayloadTooLargeException({
         code: 'KNOWLEDGE_EXTRACTION_SOURCE_TOO_LARGE',
         message:
-          'The selected extraction sources exceed the supported model input budget. Select fewer messages or frozen context items and try again.',
+          'The selected extraction sources and instructions exceed the supported model input budget. Shorten the instructions or select fewer sources and try again.',
         estimated_input_tokens: budget.estimatedInputTokens,
         available_input_tokens: budget.availableInputTokens,
         input_token_limit: budget.inputTokenLimit,
