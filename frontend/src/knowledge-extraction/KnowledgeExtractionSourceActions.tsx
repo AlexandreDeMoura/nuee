@@ -1,11 +1,9 @@
 import { LoaderCircle, Sparkles } from 'lucide-react';
 import type { DiscussionDetails } from '../api';
+import { focusRing } from '../ui/focusRing';
 import { hasKnowledgeExtractionSources } from './knowledgeExtractionStateMachine';
 import { eligibleKnowledgeExtractionMessages } from './knowledgeExtractionSources';
 import type { KnowledgeExtractionController } from './useKnowledgeExtraction';
-
-const focusRing =
-  'focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/30';
 
 export interface KnowledgeExtractionSourceActionsProps {
   controller: KnowledgeExtractionController;

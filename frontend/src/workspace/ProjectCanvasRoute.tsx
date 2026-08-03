@@ -23,6 +23,7 @@ import type {
   BubbleLinkDeleteRequest,
   BubbleUpdateRequest,
 } from '../bubbles/BubbleInspector';
+import { focusRing } from '../ui/focusRing';
 import { navigate } from '../utils/routing';
 import {
   ProjectWorkspace,
@@ -62,8 +63,6 @@ type ProjectLoadState =
   | { status: 'failed' }
   | { status: 'missing' };
 
-const focusRing =
-  '[-webkit-tap-highlight-color:transparent] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/30';
 const buttonClasses =
   `inline-flex min-h-9 cursor-pointer items-center justify-center gap-[7px] rounded-[9px] border border-[#cdd8ea] bg-[#f6f8fc] px-3.5 py-2 text-[12.5px] font-semibold text-[#33538f] no-underline hover:border-[#aebed8] hover:bg-[#eef2fa] ${focusRing}`;
 

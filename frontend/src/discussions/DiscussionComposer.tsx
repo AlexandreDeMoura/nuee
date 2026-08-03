@@ -4,9 +4,7 @@ import {
   type KeyboardEvent,
 } from 'react';
 import { ArrowUp, Globe2 } from 'lucide-react';
-
-const focusRing =
-  '[-webkit-tap-highlight-color:transparent] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/30';
+import { focusRing } from '../ui/focusRing';
 
 export interface DiscussionComposerProps {
   disabled?: boolean;

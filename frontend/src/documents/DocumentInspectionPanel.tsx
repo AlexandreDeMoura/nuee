@@ -14,15 +14,13 @@ import {
   type DocumentDetail,
   type DocumentSummary,
 } from '../api';
+import { focusRing } from '../ui/focusRing';
 import {
   documentProcessingFailureMessage,
   documentStatusLabels,
   formatDocumentSize,
   formatDocumentUploadTime,
 } from './documentPresentation';
-
-const focusRing =
-  '[-webkit-tap-highlight-color:transparent] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/30';
 
 export type DocumentDetailRequest = typeof getDocument;
 

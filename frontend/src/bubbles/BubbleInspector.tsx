@@ -12,6 +12,7 @@ import {
   RotateCcw,
   Trash2,
 } from 'lucide-react';
+import { focusRing } from '../ui/focusRing';
 import { useBubbleInspector } from './useBubbleInspector';
 import type {
   BubbleInspectorProps,
@@ -28,8 +29,6 @@ export type {
   BubbleUpdateRequest,
 } from './bubbleInspectorTypes';
 
-const focusRing =
-  '[-webkit-tap-highlight-color:transparent] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/30';
 const fieldClasses =
   `w-full rounded-[9px] border bg-[#fafbfc] px-3 py-2.5 text-[12.5px] leading-[1.55] text-[#3a4453] placeholder:text-[#b6c0cc] ${focusRing}`;
 

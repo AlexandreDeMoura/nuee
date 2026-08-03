@@ -8,11 +8,9 @@ import {
 } from 'lucide-react';
 import type { DiscussionSummary } from '../api';
 import { formatUpdatedAt } from '../utils/date';
+import { focusRing } from '../ui/focusRing';
 import type { ProjectDiscussions } from './useProjectDiscussions';
 import { isTemporaryDiscussionTitle } from './discussionModel';
-
-const focusRing =
-  '[-webkit-tap-highlight-color:transparent] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/30';
 
 export interface DiscussionsPanelProps {
   discussions: DiscussionSummary[];

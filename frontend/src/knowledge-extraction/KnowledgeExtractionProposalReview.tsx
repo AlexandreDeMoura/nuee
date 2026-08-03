@@ -9,10 +9,9 @@ import {
   X,
 } from 'lucide-react';
 import type { KnowledgeExtractionProposal } from '../api';
+import { focusRing } from '../ui/focusRing';
 import type { KnowledgeExtractionController } from './useKnowledgeExtraction';
 
-const focusRing =
-  '[-webkit-tap-highlight-color:transparent] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/30';
 const fieldClasses =
   `w-full rounded-[10px] border bg-white px-3 py-2.5 text-[13px] leading-[1.55] text-[#273446] placeholder:text-[#aab4c1] disabled:cursor-not-allowed disabled:bg-[#f7f9fb] ${focusRing}`;
 

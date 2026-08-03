@@ -1,4 +1,5 @@
 import { Sparkles } from 'lucide-react';
+import { focusRing } from '../ui/focusRing';
 
 export interface DiscussionKnowledgeSource {
   discussionId: string;
@@ -17,9 +18,6 @@ interface DiscussionKnowledgeActionProps {
   source: DiscussionKnowledgeSource;
   variant: 'header' | 'message';
 }
-
-const focusRing =
-  'focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/25';
 
 export function DiscussionKnowledgeAction({
   disabled = false,

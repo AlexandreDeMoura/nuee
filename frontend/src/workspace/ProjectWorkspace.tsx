@@ -32,6 +32,7 @@ import {
   type AnalyticsClient,
   type AnalyticsEventProperties,
 } from '../analytics';
+import { focusRing } from '../ui/focusRing';
 import {
   CanvasSurface,
   type BubbleListRequest,
@@ -192,9 +193,6 @@ interface PanelDefinition {
   label: string;
   icon: LucideIcon;
 }
-
-const focusRing =
-  '[-webkit-tap-highlight-color:transparent] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/30';
 
 const panelDefinitions: PanelDefinition[] = [
   { view: 'discussions', label: 'Discussions', icon: MessageSquare },

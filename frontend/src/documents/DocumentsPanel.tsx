@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import type { DocumentSummary } from '../api';
 import { analytics, type AnalyticsClient } from '../analytics';
+import { focusRing } from '../ui/focusRing';
 import { DocumentInspectionPanel, type DocumentDetailRequest } from './DocumentInspectionPanel';
 import { documentSizeBand, trackDocumentAnalytics } from './documentAnalytics';
 import {
@@ -32,9 +33,6 @@ import type {
   DocumentLibraryController,
   DocumentTransferRow,
 } from './useDocumentLibrary';
-
-const focusRing =
-  '[-webkit-tap-highlight-color:transparent] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/30';
 
 interface InspectionSelection {
   documentId: string;

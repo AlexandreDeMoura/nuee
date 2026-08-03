@@ -8,14 +8,13 @@ import {
   Trash2,
 } from 'lucide-react';
 import type { DiscussionContextSelectionInput } from '../api';
+import { focusRing } from '../ui/focusRing';
 import { discussionCreationSourceIssueMessage } from './discussionCreationFailure';
 import type {
   DiscussionContextSelectionController,
   PendingDiscussionContextSource,
 } from './useDiscussionContextSelection';
 
-const focusRing =
-  '[-webkit-tap-highlight-color:transparent] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/30';
 const secondaryButton =
   `inline-flex min-h-9 cursor-pointer items-center justify-center gap-2 rounded-[9px] border border-[#cdd8ea] bg-white px-3.5 py-2 text-xs font-semibold text-[#3f63a8] hover:border-[#aebed8] hover:bg-[#f6f8fc] ${focusRing}`;
 const primaryButton =

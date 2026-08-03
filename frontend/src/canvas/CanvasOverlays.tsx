@@ -10,10 +10,8 @@ import {
   Plus,
   RotateCcw,
 } from 'lucide-react';
+import { focusRing } from '../ui/focusRing';
 import { MAX_ZOOM, MIN_ZOOM } from './canvasModel';
-
-const focusRing =
-  '[-webkit-tap-highlight-color:transparent] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/30';
 
 export function CanvasLoadingState() {
   return (

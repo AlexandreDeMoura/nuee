@@ -6,11 +6,9 @@ import {
   type ReactNode,
 } from 'react';
 import { ArrowUp, MessageSquare, Minus, Trash2 } from 'lucide-react';
+import { focusRing } from '../ui/focusRing';
 import { isTemporaryDiscussionTitle } from './discussionModel';
 import type { VisibleDiscussion } from './useDiscussionVisibility';
-
-const focusRing =
-  '[-webkit-tap-highlight-color:transparent] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/30';
 
 const focusableSelector = [
   'a[href]',

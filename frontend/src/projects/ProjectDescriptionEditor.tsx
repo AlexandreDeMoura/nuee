@@ -6,6 +6,7 @@ import {
   type UpdateProjectDescriptionInput,
 } from '../api';
 import { analytics, trackAnalytics, type AnalyticsClient } from '../analytics';
+import { focusRing } from '../ui/focusRing';
 
 const DESCRIPTION_LIMIT = 280;
 const DEFAULT_SAVE_DELAY_MS = 600;
@@ -26,9 +27,6 @@ export interface ProjectDescriptionEditorProps {
   saveDelayMs?: number;
   analyticsClient?: AnalyticsClient;
 }
-
-const focusRing =
-  '[-webkit-tap-highlight-color:transparent] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/30';
 
 const statusPresentation: Record<
   ProjectDescriptionSaveStatus,

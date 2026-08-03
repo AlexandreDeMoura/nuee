@@ -3,12 +3,11 @@ import { ChevronRight, CircleAlert, CircleDot, Plus, RotateCcw } from 'lucide-re
 import { getProjects, type Project } from './api';
 import { analytics, type AnalyticsClient } from './analytics';
 import { CreateProjectDialog } from './projects/CreateProjectDialog';
+import { focusRing } from './ui/focusRing';
 import { formatUpdatedAt } from './utils/date';
 import { navigate, navigateTo, resolveRoute } from './utils/routing';
 import { ProjectCanvasRoute } from './workspace/ProjectCanvasRoute';
 
-const focusRing =
-  '[-webkit-tap-highlight-color:transparent] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/30';
 const pageClasses =
   "min-h-screen min-w-80 bg-[#f4f6f9] text-[#1e2733] [font-family:'IBM_Plex_Sans',system-ui,sans-serif] [font-synthesis:none] [text-rendering:optimizeLegibility]";
 const headerClasses =
