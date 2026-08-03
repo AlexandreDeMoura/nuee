@@ -261,6 +261,7 @@ describe('useKnowledgeExtraction', () => {
     );
 
     const serializedEvents = JSON.stringify(track.mock.calls);
+    const resolvedBubble = newBubbleResolution().resolution;
 
     for (const forbiddenContent of [
       'Private frozen strategy body.',
@@ -272,8 +273,8 @@ describe('useKnowledgeExtraction', () => {
       proposalResponse().proposal.title,
       proposalResponse().proposal.summary,
       proposalResponse().proposal.content,
-      newBubbleResolution().resolution.kind === 'new_bubble'
-        ? newBubbleResolution().resolution.bubble.title
+      resolvedBubble.kind === 'new_bubble'
+        ? resolvedBubble.bubble.title
         : '',
     ]) {
       expect(serializedEvents).not.toContain(forbiddenContent);

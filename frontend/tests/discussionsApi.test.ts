@@ -111,7 +111,7 @@ describe('discussions API', () => {
   });
 
   it('preserves confirmed source order and validates the expected package count', async () => {
-    const mixedDetails: DiscussionDetails = {
+    const mixedDetails = {
       ...details,
       frozen_context: {
         version: 1,
@@ -146,7 +146,7 @@ describe('discussions API', () => {
           },
         ],
       },
-    };
+    } satisfies DiscussionDetails;
     const { request, requests } = createRequestFake([mixedDetails]);
     const api = createDiscussionsApi(request);
     const input: CreateDiscussionInput = {

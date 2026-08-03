@@ -80,7 +80,10 @@ describe('documents API', () => {
     const summary = documentSummary();
     const detail: DocumentDetail = {
       ...summary,
+      can_retry: false,
       extracted_text: null,
+      processing_error_code: null,
+      processing_status: 'processing',
     };
     const retried = documentSummary({
       updated_at: '2026-07-31T08:01:00.000Z',

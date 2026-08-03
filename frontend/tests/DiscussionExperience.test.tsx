@@ -10,6 +10,7 @@ import {
 } from '@testing-library/react';
 import {
   ApiError,
+  isFrozenContextV1,
   type CreateDiscussionInput,
   type DiscussionDetails,
   type FrozenContext,
@@ -692,6 +693,12 @@ describe('DiscussionExperience', () => {
 
   it('reviews and edits plain-text proposal fields without changing discussion sources', async () => {
     const persistedDetails = details();
+    const persistedFrozenContext = persistedDetails.frozen_context;
+
+    if (!isFrozenContextV1(persistedFrozenContext, projectId)) {
+      throw new Error('Expected the fixture to contain versioned context.');
+    }
+
     const create = vi.fn(async () => proposalResponse());
 
     render(
@@ -765,7 +772,7 @@ describe('DiscussionExperience', () => {
       'Licensing is the longest lead-time constraint.',
     );
     expect(
-      persistedDetails.frozen_context.items[0].frozen_content,
+      persistedFrozenContext.items[0].frozen_content,
     ).toBe(projectDescription);
 
     fireEvent.change(title, { target: { value: '   ' } });
@@ -1745,7 +1752,9 @@ describe('DiscussionExperience', () => {
       });
     });
     const get = vi.fn(async () => failed);
-    const retry = vi.fn(
+    const retry = vi.fn<
+      NonNullable<DiscussionLifecycleRequests['retry']>
+    >(
       () => new Promise<DiscussionDetails>(() => undefined),
     );
 

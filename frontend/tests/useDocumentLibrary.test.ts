@@ -5,7 +5,10 @@ import type {
   DocumentUploadPolicy,
 } from '@nuee/shared-types';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { useDocumentLibrary } from '../src/documents';
+import {
+  useDocumentLibrary,
+  type DocumentListRequest,
+} from '../src/documents';
 
 function deferred<T>() {
   let resolve: (value: T) => void = () => undefined;
@@ -84,7 +87,7 @@ describe('useDocumentLibrary', () => {
   it('aborts obsolete loads and ignores stale records after project changes', async () => {
     const first = deferred<DocumentSummary[]>();
     const second = deferred<DocumentSummary[]>();
-    const list = vi.fn((projectId: string) =>
+    const list = vi.fn<DocumentListRequest>((projectId) =>
       projectId === 'project-1' ? first.promise : second.promise,
     );
     const policyRequest = vi.fn(async () => policy);
