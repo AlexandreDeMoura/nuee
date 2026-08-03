@@ -784,31 +784,8 @@ export function ProjectWorkspace({
             !isBubbleRemoved(link.bubble_a_id) &&
             !isBubbleRemoved(link.bubble_b_id),
         );
-        const seenPairs = new Set<string>();
-        const validLinks = currentLinks.filter((link) => {
-          const pair = `${link.bubble_a_id}\0${link.bubble_b_id}`;
-          const isValid =
-            link.project_id === currentProject.id &&
-            typeof link.id === 'string' &&
-            link.id.length > 0 &&
-            typeof link.bubble_a_id === 'string' &&
-            typeof link.bubble_b_id === 'string' &&
-            link.bubble_a_id < link.bubble_b_id &&
-            typeof link.created_at === 'string' &&
-            !seenPairs.has(pair);
 
-          if (isValid) {
-            seenPairs.add(pair);
-          }
-
-          return isValid;
-        });
-
-        if (validLinks.length !== currentLinks.length) {
-          throw new Error('The bubble link response contained invalid records.');
-        }
-
-        setBubbleLinkLoadState({ status: 'ready', links: validLinks });
+        setBubbleLinkLoadState({ status: 'ready', links: currentLinks });
       })
       .catch((error: unknown) => {
         if (

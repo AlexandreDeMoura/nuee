@@ -34,6 +34,22 @@ export type UpdateBubblePositionInput = RepositionBubbleInput;
 export type BatchUpdateBubblePositionsInput = BatchRepositionBubblesInput;
 export type UpdateBubbleInput = Required<SharedUpdateBubbleInput>;
 export type BubblePlacementInput = PlaceBubbleInput;
+export type BubblesRequest = typeof requestJson;
+
+const INVALID_BUBBLE_MESSAGE =
+  'The bubble response contained invalid data.';
+const INVALID_BUBBLES_MESSAGE =
+  'The bubble list response contained invalid data.';
+const INVALID_PLACEMENT_MESSAGE =
+  'The bubble placement response contained invalid data.';
+const INVALID_LINK_MESSAGE =
+  'The bubble link response contained invalid data.';
+const INVALID_LINKS_MESSAGE =
+  'The bubble link list response contained invalid data.';
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
 
 function isNonEmptyIdentifier(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
@@ -63,8 +79,9 @@ function isIsoTimestamp(value: unknown): value is string {
 export function isBubbleResponse(
   value: unknown,
   projectId: string,
+  bubbleId?: string,
 ): value is Bubble {
-  if (typeof value !== 'object' || value === null) {
+  if (!isRecord(value)) {
     return false;
   }
 
@@ -73,6 +90,7 @@ export function isBubbleResponse(
   const sourceContextItemIds = bubble.source_context_item_ids;
   const hasCommonFields =
     isNonEmptyIdentifier(bubble.id) &&
+    (bubbleId === undefined || bubble.id === bubbleId) &&
     bubble.project_id === projectId &&
     isNonEmptyIdentifier(bubble.title) &&
     (bubble.summary === null || typeof bubble.summary === 'string') &&
@@ -110,135 +128,310 @@ export function isBubbleResponse(
   );
 }
 
-export function getProjectBubbles(
+export function assertBubbleResponse(
+  value: unknown,
   projectId: string,
-  signal?: AbortSignal,
-): Promise<Bubble[]> {
-  return requestJson<Bubble[]>(
-    `/projects/${encodeURIComponent(projectId)}/bubbles`,
-    { signal },
+  bubbleId?: string,
+): Bubble {
+  if (!isBubbleResponse(value, projectId, bubbleId)) {
+    throw new Error(INVALID_BUBBLE_MESSAGE);
+  }
+
+  return value;
+}
+
+export function isBubbleListResponse(
+  value: unknown,
+  projectId: string,
+): value is Bubble[] {
+  return (
+    Array.isArray(value) &&
+    value.every((bubble) => isBubbleResponse(bubble, projectId)) &&
+    new Set(value.map((bubble) => bubble.id)).size === value.length
   );
 }
 
-export function getBubblePlacement(
+export function assertBubbleListResponse(
+  value: unknown,
   projectId: string,
-  input: BubblePlacementInput,
-): Promise<BubblePlacement> {
-  return requestJson<BubblePlacement>(
-    `/projects/${encodeURIComponent(projectId)}/bubbles/placement`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(input),
-    },
+): Bubble[] {
+  if (!isBubbleListResponse(value, projectId)) {
+    throw new Error(INVALID_BUBBLES_MESSAGE);
+  }
+
+  return value;
+}
+
+export function isBubblePlacementResponse(
+  value: unknown,
+): value is BubblePlacement {
+  return (
+    isRecord(value) &&
+    typeof value.position_x === 'number' &&
+    Number.isFinite(value.position_x) &&
+    typeof value.position_y === 'number' &&
+    Number.isFinite(value.position_y)
   );
 }
 
-export function createBubble(
-  projectId: string,
-  input: CreateBubbleInput,
-): Promise<Bubble> {
-  return requestJson<Bubble>(
-    `/projects/${encodeURIComponent(projectId)}/bubbles`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(input),
-    },
-  );
+export function assertBubblePlacementResponse(
+  value: unknown,
+): BubblePlacement {
+  if (!isBubblePlacementResponse(value)) {
+    throw new Error(INVALID_PLACEMENT_MESSAGE);
+  }
+
+  return value;
 }
 
-export function updateBubblePosition(
-  projectId: string,
-  bubbleId: string,
-  input: UpdateBubblePositionInput,
-): Promise<Bubble> {
-  return requestJson<Bubble>(
-    `/projects/${encodeURIComponent(projectId)}/bubbles/${encodeURIComponent(bubbleId)}/position`,
-    {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(input),
-    },
-  );
-}
-
-export function updateBubblePositions(
-  projectId: string,
-  input: BatchUpdateBubblePositionsInput,
-): Promise<Bubble[]> {
-  return requestJson<Bubble[]>(
-    `/projects/${encodeURIComponent(projectId)}/bubbles/positions`,
-    {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(input),
-    },
-  );
-}
-
-export function updateBubble(
-  projectId: string,
-  bubbleId: string,
-  input: UpdateBubbleInput,
-  signal?: AbortSignal,
-): Promise<Bubble> {
-  return requestJson<Bubble>(
-    `/projects/${encodeURIComponent(projectId)}/bubbles/${encodeURIComponent(bubbleId)}`,
-    {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(input),
-      signal,
-    },
-  );
-}
-
-export function deleteBubble(
-  projectId: string,
-  bubbleId: string,
-  signal?: AbortSignal,
-): Promise<void> {
-  return requestJson<void>(
-    `/projects/${encodeURIComponent(projectId)}/bubbles/${encodeURIComponent(bubbleId)}`,
-    {
-      method: 'DELETE',
-      signal,
-    },
-  );
-}
-
-export function getBubbleLinks(
-  projectId: string,
-  signal?: AbortSignal,
-): Promise<BubbleLink[]> {
-  return requestJson<BubbleLink[]>(
-    `/projects/${encodeURIComponent(projectId)}/bubble-links`,
-    { signal },
-  );
-}
-
-export function createBubbleLink(
-  projectId: string,
-  input: CreateBubbleLinkInput,
-): Promise<BubbleLink> {
-  return requestJson<BubbleLink>(
-    `/projects/${encodeURIComponent(projectId)}/bubble-links`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(input),
-    },
-  );
-}
-
-export function deleteBubbleLink(
-  projectId: string,
+function orderedLinkPair(
   firstBubbleId: string,
   secondBubbleId: string,
-): Promise<void> {
-  return requestJson<void>(
-    `/projects/${encodeURIComponent(projectId)}/bubble-links/${encodeURIComponent(firstBubbleId)}/${encodeURIComponent(secondBubbleId)}`,
-    { method: 'DELETE' },
+): readonly [string, string] {
+  return firstBubbleId < secondBubbleId
+    ? [firstBubbleId, secondBubbleId]
+    : [secondBubbleId, firstBubbleId];
+}
+
+function bubbleLinkPairKey(link: BubbleLink): string {
+  return JSON.stringify([link.bubble_a_id, link.bubble_b_id]);
+}
+
+export function isBubbleLinkResponse(
+  value: unknown,
+  projectId: string,
+  expectedBubbleIds?: readonly [string, string],
+): value is BubbleLink {
+  if (!isRecord(value)) {
+    return false;
+  }
+
+  const hasValidFields =
+    isNonEmptyIdentifier(value.id) &&
+    value.project_id === projectId &&
+    isNonEmptyIdentifier(value.bubble_a_id) &&
+    isNonEmptyIdentifier(value.bubble_b_id) &&
+    value.bubble_a_id < value.bubble_b_id &&
+    isIsoTimestamp(value.created_at);
+
+  if (!hasValidFields || expectedBubbleIds === undefined) {
+    return hasValidFields;
+  }
+
+  const expectedPair = orderedLinkPair(...expectedBubbleIds);
+
+  return (
+    value.bubble_a_id === expectedPair[0] &&
+    value.bubble_b_id === expectedPair[1]
   );
 }
+
+export function assertBubbleLinkResponse(
+  value: unknown,
+  projectId: string,
+  expectedBubbleIds?: readonly [string, string],
+): BubbleLink {
+  if (!isBubbleLinkResponse(value, projectId, expectedBubbleIds)) {
+    throw new Error(INVALID_LINK_MESSAGE);
+  }
+
+  return value;
+}
+
+export function isBubbleLinkListResponse(
+  value: unknown,
+  projectId: string,
+): value is BubbleLink[] {
+  if (
+    !Array.isArray(value) ||
+    !value.every((link) => isBubbleLinkResponse(link, projectId))
+  ) {
+    return false;
+  }
+
+  return (
+    new Set(value.map((link) => link.id)).size === value.length &&
+    new Set(value.map(bubbleLinkPairKey)).size === value.length
+  );
+}
+
+export function assertBubbleLinkListResponse(
+  value: unknown,
+  projectId: string,
+): BubbleLink[] {
+  if (!isBubbleLinkListResponse(value, projectId)) {
+    throw new Error(INVALID_LINKS_MESSAGE);
+  }
+
+  return value;
+}
+
+export function createBubblesApi(request: BubblesRequest = requestJson) {
+  function getProjectBubbles(
+    projectId: string,
+    signal?: AbortSignal,
+  ): Promise<Bubble[]> {
+    return request<unknown>(
+      `/projects/${encodeURIComponent(projectId)}/bubbles`,
+      { signal },
+    ).then((response) => assertBubbleListResponse(response, projectId));
+  }
+
+  function getBubblePlacement(
+    projectId: string,
+    input: BubblePlacementInput,
+  ): Promise<BubblePlacement> {
+    return request<unknown>(
+      `/projects/${encodeURIComponent(projectId)}/bubbles/placement`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      },
+    ).then(assertBubblePlacementResponse);
+  }
+
+  function createBubble(
+    projectId: string,
+    input: CreateBubbleInput,
+  ): Promise<Bubble> {
+    return request<unknown>(
+      `/projects/${encodeURIComponent(projectId)}/bubbles`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      },
+    ).then((response) => assertBubbleResponse(response, projectId));
+  }
+
+  function updateBubblePosition(
+    projectId: string,
+    bubbleId: string,
+    input: UpdateBubblePositionInput,
+  ): Promise<Bubble> {
+    return request<unknown>(
+      `/projects/${encodeURIComponent(projectId)}/bubbles/${encodeURIComponent(bubbleId)}/position`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      },
+    ).then((response) =>
+      assertBubbleResponse(response, projectId, bubbleId),
+    );
+  }
+
+  function updateBubblePositions(
+    projectId: string,
+    input: BatchUpdateBubblePositionsInput,
+  ): Promise<Bubble[]> {
+    return request<unknown>(
+      `/projects/${encodeURIComponent(projectId)}/bubbles/positions`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      },
+    ).then((response) => assertBubbleListResponse(response, projectId));
+  }
+
+  function updateBubble(
+    projectId: string,
+    bubbleId: string,
+    input: UpdateBubbleInput,
+    signal?: AbortSignal,
+  ): Promise<Bubble> {
+    return request<unknown>(
+      `/projects/${encodeURIComponent(projectId)}/bubbles/${encodeURIComponent(bubbleId)}`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+        signal,
+      },
+    ).then((response) =>
+      assertBubbleResponse(response, projectId, bubbleId),
+    );
+  }
+
+  function deleteBubble(
+    projectId: string,
+    bubbleId: string,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    return request<void>(
+      `/projects/${encodeURIComponent(projectId)}/bubbles/${encodeURIComponent(bubbleId)}`,
+      {
+        method: 'DELETE',
+        signal,
+      },
+    );
+  }
+
+  function getBubbleLinks(
+    projectId: string,
+    signal?: AbortSignal,
+  ): Promise<BubbleLink[]> {
+    return request<unknown>(
+      `/projects/${encodeURIComponent(projectId)}/bubble-links`,
+      { signal },
+    ).then((response) => assertBubbleLinkListResponse(response, projectId));
+  }
+
+  function createBubbleLink(
+    projectId: string,
+    input: CreateBubbleLinkInput,
+  ): Promise<BubbleLink> {
+    return request<unknown>(
+      `/projects/${encodeURIComponent(projectId)}/bubble-links`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      },
+    ).then((response) =>
+      assertBubbleLinkResponse(response, projectId, [
+        input.bubble_a_id,
+        input.bubble_b_id,
+      ]),
+    );
+  }
+
+  function deleteBubbleLink(
+    projectId: string,
+    firstBubbleId: string,
+    secondBubbleId: string,
+  ): Promise<void> {
+    return request<void>(
+      `/projects/${encodeURIComponent(projectId)}/bubble-links/${encodeURIComponent(firstBubbleId)}/${encodeURIComponent(secondBubbleId)}`,
+      { method: 'DELETE' },
+    );
+  }
+
+  return {
+    createBubble,
+    createBubbleLink,
+    deleteBubble,
+    deleteBubbleLink,
+    getBubbleLinks,
+    getBubblePlacement,
+    getProjectBubbles,
+    updateBubble,
+    updateBubblePosition,
+    updateBubblePositions,
+  };
+}
+
+export const {
+  createBubble,
+  createBubbleLink,
+  deleteBubble,
+  deleteBubbleLink,
+  getBubbleLinks,
+  getBubblePlacement,
+  getProjectBubbles,
+  updateBubble,
+  updateBubblePosition,
+  updateBubblePositions,
+} = createBubblesApi();
