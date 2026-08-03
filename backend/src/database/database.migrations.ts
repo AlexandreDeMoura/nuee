@@ -8,6 +8,7 @@ import { PERSIST_DISCUSSION_CONTEXT_ITEMS_MIGRATION } from '../discussions/migra
 import { PERSIST_DISCUSSION_SEARCH_ATTRIBUTION_MIGRATION } from '../discussions/migrations/010-persist-discussion-search-attribution';
 import { CREATE_DOCUMENTS_MIGRATION } from '../documents/migrations/009-create-documents';
 import { CREATE_KNOWLEDGE_EXTRACTION_ATTEMPTS_MIGRATION } from '../knowledge-extraction/migrations/008-create-knowledge-extraction-attempts';
+import { PERSIST_EXTRACTION_INTENT_MIGRATION } from '../knowledge-extraction/migrations/011-persist-extraction-intent';
 import { CREATE_PROJECTS_MIGRATION } from '../projects/migrations/001-create-projects';
 
 export interface DatabaseMigration {
@@ -71,6 +72,11 @@ export const DATABASE_MIGRATIONS: readonly DatabaseMigration[] = [
     version: 10,
     name: 'persist-discussion-search-attribution',
     sql: PERSIST_DISCUSSION_SEARCH_ATTRIBUTION_MIGRATION,
+  },
+  {
+    version: 11,
+    name: 'persist-extraction-intent',
+    sql: PERSIST_EXTRACTION_INTENT_MIGRATION,
   },
 ];
 

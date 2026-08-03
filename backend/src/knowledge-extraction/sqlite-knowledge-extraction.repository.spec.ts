@@ -83,6 +83,8 @@ describe('SqliteKnowledgeExtractionRepository', () => {
       discussion_id: discussionId,
       idempotency_key: 'extract-once',
       request_fingerprint: 'a'.repeat(64),
+      instructions: 'Focus on the durable constraint.',
+      detail_level: 'standard',
       source_snapshot: {
         version: 1,
         project_id: projectId,
@@ -177,6 +179,17 @@ describe('SqliteKnowledgeExtractionRepository', () => {
           `
             UPDATE knowledge_extraction_attempts
             SET source_snapshot = source_snapshot
+            WHERE id = ?
+          `,
+        )
+        .run(record.id),
+    ).toThrow(/knowledge extraction source snapshot is immutable/);
+    expect(() =>
+      databaseProvider.connection
+        .prepare(
+          `
+            UPDATE knowledge_extraction_attempts
+            SET detail_level = 'tight'
             WHERE id = ?
           `,
         )

@@ -10,6 +10,7 @@ import {
 } from '@nestjs/common';
 import { createHash, randomUUID } from 'node:crypto';
 import type {
+  KnowledgeExtractionDetailLevel,
   KnowledgeExtractionProposal,
   KnowledgeExtractionProposalResponse,
 } from '@nuee/shared-types';
@@ -30,6 +31,7 @@ import {
   KNOWLEDGE_PROPOSAL_TITLE_MAX_LENGTH,
 } from './knowledge-extraction.prompt';
 import {
+  KNOWLEDGE_EXTRACTION_INSTRUCTIONS_MAX_LENGTH,
   KNOWLEDGE_EXTRACTION_REPOSITORY,
   type KnowledgeExtractionAttempt,
   type KnowledgeExtractionRepository,
@@ -45,6 +47,8 @@ interface NormalizedSnapshotInput {
   idempotency_key: string;
   message_ids: string[];
   frozen_context_item_ids: string[];
+  instructions: string | null;
+  detail_level: KnowledgeExtractionDetailLevel;
 }
 
 @Injectable()
@@ -216,6 +220,8 @@ export class KnowledgeExtractionService {
       idempotency_key: normalized.idempotency_key,
       request_fingerprint: requestFingerprint,
       source_snapshot: sourceSnapshot,
+      instructions: normalized.instructions,
+      detail_level: normalized.detail_level,
       proposal: null,
       status: 'generating',
       resolution_fingerprint: null,
@@ -238,7 +244,7 @@ export class KnowledgeExtractionService {
       throw new ConflictException({
         code: 'KNOWLEDGE_EXTRACTION_IDEMPOTENCY_CONFLICT',
         message:
-          'The idempotency key has already been used with a different source selection.',
+          'The idempotency key has already been used with a different extraction request.',
       });
     }
 
@@ -509,7 +515,13 @@ export class KnowledgeExtractionService {
 
     this.rejectUnknownFields(
       input,
-      ['idempotency_key', 'message_ids', 'frozen_context_item_ids'],
+      [
+        'idempotency_key',
+        'message_ids',
+        'frozen_context_item_ids',
+        'instructions',
+        'detail_level',
+      ],
       fieldErrors,
     );
     const idempotencyKey = this.idempotencyKey(
@@ -526,6 +538,8 @@ export class KnowledgeExtractionService {
       'frozen_context_item_ids',
       fieldErrors,
     );
+    const instructions = this.instructions(input.instructions, fieldErrors);
+    const detailLevel = this.detailLevel(input.detail_level, fieldErrors);
 
     if (
       messageIds &&
@@ -549,7 +563,12 @@ export class KnowledgeExtractionService {
       throw this.validationFailed(fieldErrors);
     }
 
-    if (!idempotencyKey || !messageIds || !frozenContextItemIds) {
+    if (
+      !idempotencyKey ||
+      !messageIds ||
+      !frozenContextItemIds ||
+      !detailLevel
+    ) {
       throw new Error(
         'Validated knowledge extraction input is unexpectedly missing.',
       );
@@ -559,7 +578,49 @@ export class KnowledgeExtractionService {
       idempotency_key: idempotencyKey,
       message_ids: messageIds,
       frozen_context_item_ids: frozenContextItemIds,
+      instructions,
+      detail_level: detailLevel,
     };
+  }
+
+  private instructions(
+    value: unknown,
+    fieldErrors: Record<string, string>,
+  ): string | null {
+    if (value === undefined) {
+      return null;
+    }
+
+    if (typeof value !== 'string') {
+      fieldErrors.instructions = 'Instructions must be a string.';
+      return null;
+    }
+
+    const normalized = value.trim();
+
+    if (normalized.length === 0) {
+      return null;
+    }
+
+    if (normalized.length > KNOWLEDGE_EXTRACTION_INSTRUCTIONS_MAX_LENGTH) {
+      fieldErrors.instructions = `Instructions must be ${KNOWLEDGE_EXTRACTION_INSTRUCTIONS_MAX_LENGTH} characters or fewer.`;
+      return null;
+    }
+
+    return normalized;
+  }
+
+  private detailLevel(
+    value: unknown,
+    fieldErrors: Record<string, string>,
+  ): KnowledgeExtractionDetailLevel | undefined {
+    if (value !== 'tight' && value !== 'standard' && value !== 'detailed') {
+      fieldErrors.detail_level =
+        'Detail level must be one of: tight, standard, detailed.';
+      return undefined;
+    }
+
+    return value;
   }
 
   private idempotencyKey(
@@ -627,6 +688,8 @@ export class KnowledgeExtractionService {
     const canonicalSelection = {
       message_ids: [...input.message_ids].sort(),
       frozen_context_item_ids: [...input.frozen_context_item_ids].sort(),
+      instructions: input.instructions?.replace(/\s+/g, ' ') ?? null,
+      detail_level: input.detail_level,
     };
 
     return createHash('sha256')

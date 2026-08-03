@@ -1,6 +1,9 @@
 import type { DatabaseSync } from 'node:sqlite';
 import { Injectable } from '@nestjs/common';
-import type { KnowledgeExtractionProposal } from '@nuee/shared-types';
+import type {
+  KnowledgeExtractionDetailLevel,
+  KnowledgeExtractionProposal,
+} from '@nuee/shared-types';
 import { DatabaseProvider } from '../database/database.provider';
 import {
   KNOWLEDGE_PROPOSAL_CONTENT_MAX_LENGTH,
@@ -8,6 +11,7 @@ import {
   KNOWLEDGE_PROPOSAL_TITLE_MAX_LENGTH,
 } from './knowledge-extraction.prompt';
 import {
+  KNOWLEDGE_EXTRACTION_INSTRUCTIONS_MAX_LENGTH,
   KnowledgeExtractionIntegrityError,
   type KnowledgeExtractionAttempt,
   type KnowledgeExtractionAttemptStatus,
@@ -25,6 +29,8 @@ interface KnowledgeExtractionAttemptRow {
   idempotency_key: unknown;
   request_fingerprint: unknown;
   source_snapshot: unknown;
+  instructions: unknown;
+  detail_level: unknown;
   proposal: unknown;
   status: unknown;
   resolution_fingerprint: unknown;
@@ -64,6 +70,8 @@ export class SqliteKnowledgeExtractionRepository implements KnowledgeExtractionR
             idempotency_key,
             request_fingerprint,
             source_snapshot,
+            instructions,
+            detail_level,
             proposal,
             status,
             resolution_fingerprint,
@@ -73,7 +81,7 @@ export class SqliteKnowledgeExtractionRepository implements KnowledgeExtractionR
             created_at,
             updated_at,
             expires_at
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `,
       )
       .run(
@@ -83,6 +91,8 @@ export class SqliteKnowledgeExtractionRepository implements KnowledgeExtractionR
         validated.idempotency_key,
         validated.request_fingerprint,
         sourceSnapshot,
+        validated.instructions,
+        validated.detail_level,
         proposal,
         validated.status,
         validated.resolution_fingerprint,
@@ -348,6 +358,8 @@ export class SqliteKnowledgeExtractionRepository implements KnowledgeExtractionR
       !this.isNonEmptyString(row.idempotency_key) ||
       row.idempotency_key.length > 200 ||
       !this.isFingerprint(row.request_fingerprint) ||
+      !this.isNullableInstructions(row.instructions) ||
+      !this.isDetailLevel(row.detail_level) ||
       !Number.isInteger(row.retry_count) ||
       (row.retry_count as number) < 0 ||
       !this.isIsoTimestamp(row.created_at) ||
@@ -393,6 +405,8 @@ export class SqliteKnowledgeExtractionRepository implements KnowledgeExtractionR
       idempotency_key: row.idempotency_key,
       request_fingerprint: row.request_fingerprint,
       source_snapshot: sourceSnapshot,
+      instructions: row.instructions,
+      detail_level: row.detail_level,
       proposal,
       status,
       resolution_fingerprint: row.resolution_fingerprint,
@@ -403,6 +417,22 @@ export class SqliteKnowledgeExtractionRepository implements KnowledgeExtractionR
       updated_at: row.updated_at,
       expires_at: row.expires_at,
     };
+  }
+
+  private isNullableInstructions(value: unknown): value is string | null {
+    return (
+      value === null ||
+      (typeof value === 'string' &&
+        value.length > 0 &&
+        value.length <= KNOWLEDGE_EXTRACTION_INSTRUCTIONS_MAX_LENGTH &&
+        value === value.trim())
+    );
+  }
+
+  private isDetailLevel(
+    value: unknown,
+  ): value is KnowledgeExtractionDetailLevel {
+    return value === 'tight' || value === 'standard' || value === 'detailed';
   }
 
   private parseSourceSnapshot(

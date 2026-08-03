@@ -1,13 +1,18 @@
 import type {
   DiscussionContextSourceKind,
   DiscussionRole,
+  KnowledgeExtractionDetailLevel,
   KnowledgeExtractionProposal,
 } from '@nuee/shared-types';
+
+export const KNOWLEDGE_EXTRACTION_INSTRUCTIONS_MAX_LENGTH = 2_000;
 
 export interface CreateKnowledgeExtractionSnapshotInput {
   idempotency_key: string;
   message_ids: string[];
   frozen_context_item_ids: string[];
+  instructions: string | null;
+  detail_level: KnowledgeExtractionDetailLevel;
 }
 
 export interface KnowledgeExtractionMessageSnapshot {
@@ -54,6 +59,8 @@ export interface KnowledgeExtractionAttempt {
   idempotency_key: string;
   request_fingerprint: string;
   source_snapshot: KnowledgeExtractionSourceSnapshotV1;
+  instructions: string | null;
+  detail_level: KnowledgeExtractionDetailLevel;
   proposal: KnowledgeExtractionProposal | null;
   status: KnowledgeExtractionAttemptStatus;
   resolution_fingerprint: string | null;

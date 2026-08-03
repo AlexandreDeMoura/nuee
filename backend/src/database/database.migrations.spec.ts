@@ -46,9 +46,13 @@ describe('runDatabaseMigrations', () => {
           version: 10,
           name: 'persist-discussion-search-attribution',
         },
+        {
+          version: 11,
+          name: 'persist-extraction-intent',
+        },
       ]);
       expect(database.prepare('PRAGMA user_version;').get()).toEqual({
-        user_version: 10,
+        user_version: 11,
       });
     } finally {
       database.close();
@@ -146,6 +150,143 @@ describe('runDatabaseMigrations', () => {
         web_search_used: null,
         citations: null,
       });
+    } finally {
+      database.close();
+    }
+  });
+
+  it('upgrades existing extraction attempts with immutable default intent', () => {
+    const database = new DatabaseSync(':memory:');
+
+    try {
+      database.exec('PRAGMA foreign_keys = ON;');
+      runDatabaseMigrations(database, DATABASE_MIGRATIONS.slice(0, 10));
+      database
+        .prepare(
+          `
+            INSERT INTO projects (
+              id,
+              title,
+              description,
+              created_at,
+              updated_at
+            ) VALUES (?, ?, ?, ?, ?)
+          `,
+        )
+        .run(
+          'project-extraction-upgrade',
+          'Existing project',
+          'Existing project description',
+          '2026-07-31T08:00:00.000Z',
+          '2026-07-31T08:00:00.000Z',
+        );
+      database
+        .prepare(
+          `
+            INSERT INTO discussions (
+              id,
+              project_id,
+              title,
+              frozen_context,
+              created_at,
+              updated_at,
+              last_activity_at,
+              deleted_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          `,
+        )
+        .run(
+          'discussion-extraction-upgrade',
+          'project-extraction-upgrade',
+          'Existing discussion',
+          '{}',
+          '2026-07-31T09:00:00.000Z',
+          '2026-07-31T09:00:00.000Z',
+          '2026-07-31T09:00:00.000Z',
+          null,
+        );
+      database
+        .prepare(
+          `
+            INSERT INTO knowledge_extraction_attempts (
+              id,
+              project_id,
+              discussion_id,
+              idempotency_key,
+              request_fingerprint,
+              source_snapshot,
+              proposal,
+              status,
+              resolution_fingerprint,
+              resolution_kind,
+              resulting_bubble_id,
+              retry_count,
+              created_at,
+              updated_at,
+              expires_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `,
+        )
+        .run(
+          'extraction-upgrade',
+          'project-extraction-upgrade',
+          'discussion-extraction-upgrade',
+          'existing-extraction',
+          'a'.repeat(64),
+          JSON.stringify({
+            version: 1,
+            project_id: 'project-extraction-upgrade',
+            discussion_id: 'discussion-extraction-upgrade',
+            discussion_title: 'Existing discussion',
+            requested_at: '2026-07-31T10:00:00.000Z',
+            message_selection_kind: 'selected',
+            messages: [
+              {
+                source_kind: 'message',
+                source_id: 'message-existing',
+                role: 'assistant',
+                content: 'Existing frozen source.',
+                created_at: '2026-07-31T09:00:01.000Z',
+                discussion_order: 0,
+              },
+            ],
+            frozen_context_items: [],
+          }),
+          null,
+          'failed',
+          null,
+          null,
+          null,
+          0,
+          '2026-07-31T10:00:00.000Z',
+          '2026-07-31T10:01:00.000Z',
+          '2026-08-01T10:00:00.000Z',
+        );
+
+      runDatabaseMigrations(database);
+
+      expect(
+        database
+          .prepare(
+            `
+              SELECT instructions, detail_level
+              FROM knowledge_extraction_attempts
+              WHERE id = ?
+            `,
+          )
+          .get('extraction-upgrade'),
+      ).toEqual({ instructions: null, detail_level: 'standard' });
+      expect(() =>
+        database
+          .prepare(
+            `
+              UPDATE knowledge_extraction_attempts
+              SET instructions = 'Change the original request.'
+              WHERE id = ?
+            `,
+          )
+          .run('extraction-upgrade'),
+      ).toThrow(/knowledge extraction source snapshot is immutable/);
     } finally {
       database.close();
     }
