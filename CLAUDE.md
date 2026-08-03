@@ -42,8 +42,9 @@ From the repo root: `npm run dev` (frontend + backend watch), `npm run build`, `
   lives here because it edits bubble content and relationships.
 - `discussions/` — focused-discussion presentation and client lifecycle: the write-first draft,
   single-visible modal, composer and message states, failed-turn retry, generated-title display,
-  discussion list, Active display, reopening, and deletion. It renders frozen-context and
-  knowledge-extraction integration points but does not own either upstream workflow.
+  discussion list, Active display, reopening, deletion, per-turn web-search opt-in, and persisted
+  source attribution. It renders frozen-context and knowledge-extraction integration points but
+  does not own either upstream workflow.
 - `documents/` — project-scoped document-library client lifecycle: policy-backed preflight,
   transfers, processing polling and retry, list and inspection states, and whole-document context
   selection. It displays only processed text for ready documents and does not own original-file
@@ -103,8 +104,10 @@ broker only if that model cannot meet concrete requirements.
   the ready-document context-source capability. It owns live documents, not frozen discussion
   copies or document-derived bubbles.
 - `ai/` — cross-cutting, provider-neutral model access. It owns the `ModelClient` port, provider
-  adapter, and deterministic test implementation, but no discussion validation, persistence,
-  retry, activity, title-trigger, or context-selection policy.
+  adapters, deterministic test implementation, capability discovery, and neutral tool-request and
+  citation-result contracts, but no discussion validation, persistence, retry, activity,
+  title-trigger, or context-selection policy. Provider tool names, versions, and response
+  annotations stay inside their adapter; only answer generation may receive optional tools.
 - Controllers, services, repository ports/implementations, migrations, types, and unit tests
   stay in the owning feature; no repository-wide `controllers/`, `services/`, or `interfaces/`
   folders.
@@ -122,6 +125,11 @@ broker only if that model cannot meet concrete requirements.
 - `FrozenContext` is an opaque serialized contract assembled by Discussion Context. The
   discussions feature may enforce transport-size and JSON-object guards, but must persist and
   forward the accepted package without interpreting source semantics or dereferencing live data.
+- Web search is per-turn discussion state, not frozen context. Discussions gates the opt-in against
+  the neutral AI capability, persists it on the user turn for retry, and immutably persists the
+  neutral used-search indicator and citations on the completed assistant message. Search never
+  causes a live project-source read, and title generation and structured-output workflows never
+  inherit the search tool.
 - Knowledge Extraction consumes discussion and message identifiers through an integration
   boundary. It does not belong in `DiscussionsService` or `ModelClient`, and deleting a discussion
   must not delete independently persisted bubbles created through extraction.
