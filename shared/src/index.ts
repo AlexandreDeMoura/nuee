@@ -321,19 +321,14 @@ export interface SendMessageInput {
   web_search?: boolean;
 }
 
-export type KnowledgeExtractionMessageSelection =
-  | {
-      kind: 'selected';
-      message_ids: string[];
-    }
-  | {
-      kind: 'whole_discussion';
-    };
+export type KnowledgeExtractionDetailLevel = 'tight' | 'standard' | 'detailed';
 
 export interface CreateKnowledgeExtractionInput {
   idempotency_key: string;
-  message_selection: KnowledgeExtractionMessageSelection;
+  message_ids: string[];
   frozen_context_item_ids: string[];
+  instructions?: string;
+  detail_level: KnowledgeExtractionDetailLevel;
 }
 
 export interface KnowledgeExtractionProposal {
@@ -343,7 +338,6 @@ export interface KnowledgeExtractionProposal {
 }
 
 export interface KnowledgeExtractionSourceReference {
-  message_selection_kind: KnowledgeExtractionMessageSelection['kind'];
   message_ids: string[];
   frozen_context_item_ids: string[];
 }
