@@ -43,6 +43,19 @@ export interface StructuredModelGeneration {
   outputTokens?: number;
 }
 
+export type ModelGenerationErrorReason =
+  'provider' | 'timeout' | 'invalid_response';
+
+export class ModelGenerationError extends Error {
+  constructor(
+    readonly reason: ModelGenerationErrorReason,
+    options?: ErrorOptions,
+  ) {
+    super('The model provider could not generate a valid response.', options);
+    this.name = 'ModelGenerationError';
+  }
+}
+
 export interface ModelClient {
   generateAnswer(input: GenerateAnswerInput): Promise<ModelGeneration>;
   generateTitle(input: GenerateTitleInput): Promise<ModelGeneration>;

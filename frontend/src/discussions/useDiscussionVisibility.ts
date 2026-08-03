@@ -1,5 +1,8 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
-import { TEMPORARY_DISCUSSION_TITLE } from './discussionModel';
+import {
+  TEMPORARY_DISCUSSION_TITLE,
+  type RecoveredDiscussionTurn,
+} from './discussionModel';
 
 export interface DraftDiscussionTarget {
   key: number;
@@ -11,10 +14,7 @@ export interface DraftDiscussionTarget {
 export interface PersistedDiscussionTarget {
   discussionId: string;
   kind: 'persisted';
-  recoveredTurn?: {
-    requestId: string;
-    webSearch: boolean;
-  };
+  recoveredTurn?: RecoveredDiscussionTurn;
   title: string;
 }
 

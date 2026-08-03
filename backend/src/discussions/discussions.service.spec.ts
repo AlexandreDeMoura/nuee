@@ -15,6 +15,7 @@ import type {
   ModelClient,
   ModelGeneration,
 } from '../ai/model-client';
+import { ModelGenerationError } from '../ai/model-client';
 import { ConfiguredModelInputBudget } from '../ai/model-input-budget';
 import { BubblesService } from '../bubbles/bubbles.service';
 import { SqliteBubbleRepository } from '../bubbles/sqlite-bubble.repository';
@@ -1306,6 +1307,40 @@ describe('DiscussionsService', () => {
       status: 'failed',
     });
     expect(summary.is_active).toBe(true);
+  });
+
+  it('returns a timeout-specific recovery error when answer generation times out', async () => {
+    enableWebSearch();
+    const project = createProject();
+    modelClient.answerFailure = new ModelGenerationError('timeout');
+
+    try {
+      await createDiscussion(project.id, 'Search for current information', {
+        idempotencyKey: 'timed-out-search',
+        webSearch: true,
+      });
+      throw new Error('Expected answer generation to time out.');
+    } catch (error) {
+      expect(error).toBeInstanceOf(ServiceUnavailableException);
+      const response = (
+        error as ServiceUnavailableException
+      ).getResponse() as Record<string, unknown>;
+      expect(response).toMatchObject({
+        code: 'AI_GENERATION_TIMEOUT',
+        message:
+          'The response took too long to generate. Retry the unanswered message.',
+      });
+      expect(typeof response.discussion_id).toBe('string');
+      expect(typeof response.request_id).toBe('string');
+    }
+
+    const [summary] = service.list(project.id);
+    expect(service.get(project.id, summary.id).messages).toEqual([
+      expect.objectContaining({
+        role: 'user',
+        status: 'failed',
+      }),
+    ]);
   });
 
   it('rejects idempotency-key reuse with different content', async () => {

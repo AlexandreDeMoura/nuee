@@ -33,6 +33,7 @@ import {
   type DiscussionLifecycleRequests,
 } from './useDiscussionLifecycle';
 import type { DiscussionVisibilityController } from './useDiscussionVisibility';
+import type { RecoveredDiscussionTurn } from './discussionModel';
 import type { DiscussionDeleteTarget } from './DiscussionDeleteDialog';
 import {
   analytics,
@@ -163,10 +164,7 @@ function DiscussionExperienceModal({
   const handleDiscussionCreated = useCallback(
     (discussion: {
       id: string;
-      recoveredTurn?: {
-        requestId: string;
-        webSearch: boolean;
-      };
+      recoveredTurn?: RecoveredDiscussionTurn;
       title: string;
     }) => {
       contextSelection?.complete();

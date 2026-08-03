@@ -25,8 +25,11 @@ import {
 import type { VisibleDiscussion } from './useDiscussionVisibility';
 import {
   assertDiscussionDetails,
+  isDiscussionGenerationFailureCode,
   isTemporaryDiscussionTitle,
   TEMPORARY_DISCUSSION_TITLE,
+  type DiscussionGenerationFailureCode,
+  type RecoveredDiscussionTurn,
 } from './discussionModel';
 import {
   normalizeDiscussionCreationFailure,
@@ -51,6 +54,7 @@ export interface DiscussionLifecycleRequests {
 export interface PendingDiscussionTurn {
   content: string;
   discussionId: string | null;
+  failureCode?: DiscussionGenerationFailureCode;
   requestId: string;
   status: 'pending' | 'failed';
   webSearch: boolean;
@@ -82,10 +86,7 @@ interface UseDiscussionLifecycleOptions {
   analyticsClient?: AnalyticsClient;
   onDiscussionCreated: (discussion: {
     id: string;
-    recoveredTurn?: {
-      requestId: string;
-      webSearch: boolean;
-    };
+    recoveredTurn?: RecoveredDiscussionTurn;
     title: string;
   }) => void;
   onDiscussionChanged?: (discussion: DiscussionDetails) => void;
@@ -107,9 +108,13 @@ function isAbort(error: unknown): boolean {
 
 function recoveryIdentifiers(error: unknown): {
   discussionId: string;
+  failureCode: DiscussionGenerationFailureCode;
   requestId: string;
 } | null {
-  if (!(error instanceof ApiError) || error.code !== 'AI_GENERATION_FAILED') {
+  if (
+    !(error instanceof ApiError) ||
+    !isDiscussionGenerationFailureCode(error.code)
+  ) {
     return null;
   }
 
@@ -120,7 +125,16 @@ function recoveryIdentifiers(error: unknown): {
     discussionId.length > 0 &&
     typeof requestId === 'string' &&
     requestId.length > 0
-    ? { discussionId, requestId }
+    ? { discussionId, failureCode: error.code, requestId }
+    : null;
+}
+
+function generationFailureCode(
+  error: unknown,
+): DiscussionGenerationFailureCode | null {
+  return error instanceof ApiError &&
+    isDiscussionGenerationFailureCode(error.code)
+    ? error.code
     : null;
 }
 
@@ -435,6 +449,7 @@ export function useDiscussionLifecycle({
           updatePendingTurn({
             content: recoveredMessage.content,
             discussionId: persistedDiscussionId,
+            failureCode: recoveredTurn.failureCode,
             requestId: recoveredTurn.requestId,
             status: 'failed',
             webSearch: recoveredTurn.webSearch,
@@ -686,6 +701,7 @@ export function useDiscussionLifecycle({
           updatePendingTurn({
             content,
             discussionId: recovery.discussionId,
+            failureCode: recovery.failureCode,
             requestId: recovery.requestId,
             status: 'failed',
             webSearch,
@@ -694,6 +710,7 @@ export function useDiscussionLifecycle({
           onDiscussionCreated({
             id: recovery.discussionId,
             recoveredTurn: {
+              failureCode: recovery.failureCode,
               requestId: recovery.requestId,
               webSearch,
             },
@@ -801,14 +818,14 @@ export function useDiscussionLifecycle({
 
         finishRequest(operation);
 
-        if (
-          error instanceof ApiError &&
-          error.code === 'AI_GENERATION_FAILED'
-        ) {
+        const failureCode = generationFailureCode(error);
+
+        if (failureCode) {
           retainedAttemptRef.current = null;
           updatePendingTurn({
             content,
             discussionId,
+            failureCode,
             requestId,
             status: 'failed',
             webSearch,
@@ -958,7 +975,11 @@ export function useDiscussionLifecycle({
           }
 
           finishRequest(operation);
-          updatePendingTurn({ ...turn, status: 'failed' });
+          updatePendingTurn({
+            ...turn,
+            failureCode: generationFailureCode(error) ?? turn.failureCode,
+            status: 'failed',
+          });
           trackAnalytics(analyticsClient, 'discussion_response_failed', {
             project_id: projectId,
             discussion_id: visibleDiscussion.discussionId,

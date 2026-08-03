@@ -24,6 +24,7 @@ export interface AiConfig {
   reservedOutputTokens: number;
   inputSafetyMarginTokens: number;
   requestTimeoutMs: number;
+  webSearchRequestTimeoutMs: number;
 }
 
 export interface DocumentsConfig extends DocumentUploadPolicy {
@@ -48,6 +49,7 @@ const DEFAULT_MODEL_INPUT_TOKEN_LIMIT = 128_000;
 const DEFAULT_RESERVED_OUTPUT_TOKENS = 4_000;
 const DEFAULT_INPUT_SAFETY_MARGIN_TOKENS = 8_000;
 const DEFAULT_AI_REQUEST_TIMEOUT_MS = 60_000;
+const DEFAULT_AI_WEB_SEARCH_REQUEST_TIMEOUT_MS = 300_000;
 const DEFAULT_MAX_DOCUMENT_FILE_SIZE_BYTES = 10 * 1024 * 1024;
 const DEFAULT_MAX_DOCUMENTS_PER_PROJECT = 25;
 const DEFAULT_MAX_DOCUMENT_PROJECT_STORAGE_BYTES = 100 * 1024 * 1024;
@@ -257,6 +259,13 @@ export function createAiConfig(source: EnvironmentSource): AiConfig {
       source,
       'AI_REQUEST_TIMEOUT_MS',
       DEFAULT_AI_REQUEST_TIMEOUT_MS,
+      1_000,
+      600_000,
+    ),
+    webSearchRequestTimeoutMs: integerValue(
+      source,
+      'AI_WEB_SEARCH_REQUEST_TIMEOUT_MS',
+      DEFAULT_AI_WEB_SEARCH_REQUEST_TIMEOUT_MS,
       1_000,
       600_000,
     ),

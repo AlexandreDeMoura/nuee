@@ -6,6 +6,7 @@ import {
   buildFocusedResponseInstructions,
   TITLE_INSTRUCTIONS,
 } from './answer-instructions';
+import { ModelGenerationError } from './model-client';
 import type {
   GenerateAnswerInput,
   GenerateStructuredOutputInput,
@@ -16,6 +17,7 @@ import type {
   StructuredModelGeneration,
 } from './model-client';
 export { buildFocusedResponseInstructions } from './answer-instructions';
+export { ModelGenerationError as ModelProviderError } from './model-client';
 
 interface OpenAiInputMessage {
   role: 'developer' | 'user' | 'assistant';
@@ -66,17 +68,10 @@ interface OpenAiResponse {
 }
 
 export interface OpenAiResponsesClient {
-  create(request: OpenAiResponseRequest): Promise<OpenAiResponse>;
-}
-
-export class ModelProviderError extends Error {
-  constructor(
-    readonly reason: 'provider' | 'timeout' | 'invalid_response',
-    options?: ErrorOptions,
-  ) {
-    super('The model provider could not generate a valid response.', options);
-    this.name = 'ModelProviderError';
-  }
+  create(
+    request: OpenAiResponseRequest,
+    options: { maxRetries: 0; timeout: number },
+  ): Promise<OpenAiResponse>;
 }
 
 const WEB_SEARCH_TOOL = { type: 'web_search' } as const;
@@ -173,12 +168,13 @@ function mapCitations(output: readonly OpenAiOutputItem[]): MessageCitation[] {
 function createResponsesClient(config: AiConfig): OpenAiResponsesClient {
   const client = new OpenAI({
     apiKey: config.apiKey,
+    maxRetries: 0,
     timeout: config.requestTimeoutMs,
   });
 
   return {
-    async create(request): Promise<OpenAiResponse> {
-      const response = await client.responses.create(request);
+    async create(request, options): Promise<OpenAiResponse> {
+      const response = await client.responses.create(request, options);
 
       return {
         outputText: response.output_text,
@@ -216,6 +212,9 @@ export class OpenAiModelClient implements ModelClient {
         ...(input.webSearch ? { tools: [{ ...WEB_SEARCH_TOOL }] } : {}),
       },
       true,
+      input.webSearch
+        ? this.config.webSearchRequestTimeoutMs
+        : this.config.requestTimeoutMs,
     );
   }
 
@@ -249,7 +248,7 @@ export class OpenAiModelClient implements ModelClient {
     try {
       output = JSON.parse(generation.content) as unknown;
     } catch (error) {
-      throw new ModelProviderError('invalid_response', { cause: error });
+      throw new ModelGenerationError('invalid_response', { cause: error });
     }
 
     return {
@@ -263,21 +262,26 @@ export class OpenAiModelClient implements ModelClient {
   private async generate(
     request: OpenAiResponseRequest,
     mapWebSearchMetadata = false,
+    timeoutMs = this.config.requestTimeoutMs,
   ): Promise<ModelGeneration> {
     let response: OpenAiResponse;
 
     try {
-      response = await this.responsesClient.create(request);
-    } catch (error) {
-      throw new ModelProviderError(isTimeout(error) ? 'timeout' : 'provider', {
-        cause: error,
+      response = await this.responsesClient.create(request, {
+        maxRetries: 0,
+        timeout: timeoutMs,
       });
+    } catch (error) {
+      throw new ModelGenerationError(
+        isTimeout(error) ? 'timeout' : 'provider',
+        { cause: error },
+      );
     }
 
     const content = response.outputText.trim();
 
     if (response.status !== 'completed' || !content) {
-      throw new ModelProviderError('invalid_response');
+      throw new ModelGenerationError('invalid_response');
     }
 
     const generation: ModelGeneration = {

@@ -2,6 +2,7 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DiscussionDetails, DiscussionMessage } from '../api';
 import { DiscussionMessages } from './DiscussionMessages';
+import type { PendingDiscussionTurn } from './useDiscussionLifecycle';
 
 afterEach(cleanup);
 
@@ -37,6 +38,25 @@ function renderAssistant(message: Partial<DiscussionMessage>) {
       loadStatus="ready"
       onRetry={vi.fn()}
       pendingTurn={null}
+    />,
+  );
+}
+
+function renderFailedTurn(turn: Partial<PendingDiscussionTurn> = {}) {
+  render(
+    <DiscussionMessages
+      details={null}
+      loadError={null}
+      loadStatus="ready"
+      onRetry={vi.fn()}
+      pendingTurn={{
+        content: 'What changed today?',
+        discussionId: 'discussion-a',
+        requestId: 'request-a',
+        status: 'failed',
+        webSearch: true,
+        ...turn,
+      }}
     />,
   );
 }
@@ -97,5 +117,32 @@ describe('DiscussionMessages web sources', () => {
     renderAssistant({});
 
     expect(screen.queryByLabelText('Web search sources')).toBeNull();
+  });
+});
+
+describe('DiscussionMessages generation failures', () => {
+  it('explains a web-search timeout while preserving the retry action', () => {
+    renderFailedTurn({ failureCode: 'AI_GENERATION_TIMEOUT' });
+
+    expect(screen.getByText('Response timed out')).not.toBeNull();
+    expect(
+      screen.getByText(
+        'Web search took longer than five minutes. Your message was saved and you can retry the response.',
+      ),
+    ).not.toBeNull();
+    expect(
+      screen.getByRole('button', { name: 'Retry response' }),
+    ).not.toBeNull();
+  });
+
+  it('keeps the generic message for other generation failures', () => {
+    renderFailedTurn({ failureCode: 'AI_GENERATION_FAILED' });
+
+    expect(screen.getByText('Response failed')).not.toBeNull();
+    expect(
+      screen.getByText(
+        'Your message was saved. Retry this response without adding another copy of the message.',
+      ),
+    ).not.toBeNull();
   });
 });

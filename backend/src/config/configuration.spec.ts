@@ -23,6 +23,7 @@ describe('configuration', () => {
       reservedOutputTokens: 4_000,
       inputSafetyMarginTokens: 8_000,
       requestTimeoutMs: 60_000,
+      webSearchRequestTimeoutMs: 300_000,
     });
     expect(createDocumentsConfig({ NODE_ENV: 'test' })).toEqual({
       privateStoragePath: undefined,
@@ -74,6 +75,7 @@ describe('configuration', () => {
       AI_RESERVED_OUTPUT_TOKENS: '6000',
       AI_INPUT_SAFETY_MARGIN_TOKENS: '10000',
       AI_REQUEST_TIMEOUT_MS: '90000',
+      AI_WEB_SEARCH_REQUEST_TIMEOUT_MS: '360000',
       DOCUMENT_PRIVATE_STORAGE_PATH: '/data/documents',
       DOCUMENT_MAX_FILE_SIZE_BYTES: '20971520',
       DOCUMENT_MAX_DOCUMENTS_PER_PROJECT: '40',
@@ -105,6 +107,7 @@ describe('configuration', () => {
       reservedOutputTokens: 6_000,
       inputSafetyMarginTokens: 10_000,
       requestTimeoutMs: 90_000,
+      webSearchRequestTimeoutMs: 360_000,
     });
     expect(createDocumentsConfig(source)).toMatchObject({
       privateStoragePath: '/data/documents',
@@ -162,6 +165,10 @@ describe('configuration', () => {
     [
       { NODE_ENV: 'test', AI_REQUEST_TIMEOUT_MS: '999' },
       'AI_REQUEST_TIMEOUT_MS must be an integer',
+    ],
+    [
+      { NODE_ENV: 'test', AI_WEB_SEARCH_REQUEST_TIMEOUT_MS: '999' },
+      'AI_WEB_SEARCH_REQUEST_TIMEOUT_MS must be an integer',
     ],
     [
       { NODE_ENV: 'test', DOCUMENT_MAX_FILE_SIZE_BYTES: '0' },

@@ -16,14 +16,17 @@ const config: AiConfig = {
   reservedOutputTokens: 4_000,
   inputSafetyMarginTokens: 8_000,
   requestTimeoutMs: 60_000,
+  webSearchRequestTimeoutMs: 300_000,
 };
 
 describe('OpenAiModelClient', () => {
   it('uses the Responses API with frozen context and complete history', async () => {
     let request: Parameters<OpenAiResponsesClient['create']>[0] | undefined;
+    let options: Parameters<OpenAiResponsesClient['create']>[1] | undefined;
     const client = new OpenAiModelClient(config, {
-      create(nextRequest) {
+      create(nextRequest, nextOptions) {
         request = nextRequest;
+        options = nextOptions;
         return Promise.resolve({
           outputText: '  A focused answer.  ',
           model: 'gpt-5.6-sol-2026-07-01',
@@ -71,13 +74,16 @@ describe('OpenAiModelClient', () => {
     });
     expect(request.input[0].content).toBe(formattedContext);
     expect(request).not.toHaveProperty('max_output_tokens');
+    expect(options).toEqual({ maxRetries: 0, timeout: 60_000 });
   });
 
   it('offers web search for an opted-in answer and maps its citations', async () => {
     let request: Parameters<OpenAiResponsesClient['create']>[0] | undefined;
+    let options: Parameters<OpenAiResponsesClient['create']>[1] | undefined;
     const client = new OpenAiModelClient(config, {
-      create(nextRequest) {
+      create(nextRequest, nextOptions) {
         request = nextRequest;
+        options = nextOptions;
         return Promise.resolve({
           outputText: 'A current answer with sources.',
           output: [
@@ -137,6 +143,7 @@ describe('OpenAiModelClient', () => {
     });
 
     expect(request?.tools).toEqual([{ type: 'web_search' }]);
+    expect(options).toEqual({ maxRetries: 0, timeout: 300_000 });
   });
 
   it('treats web search as optional when the provider does not use it', async () => {

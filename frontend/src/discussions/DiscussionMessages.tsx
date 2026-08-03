@@ -56,6 +56,14 @@ function ResponseStatus({
     );
   }
 
+  const timedOut = turn.failureCode === 'AI_GENERATION_TIMEOUT';
+  const failureTitle = timedOut ? 'Response timed out' : 'Response failed';
+  const failureMessage = timedOut
+    ? turn.webSearch
+      ? 'Web search took longer than five minutes. Your message was saved and you can retry the response.'
+      : 'The response took too long to generate. Your message was saved and you can retry it.'
+    : 'Your message was saved. Retry this response without adding another copy of the message.';
+
   return (
     <div
       className="rounded-xl border border-[#efd5d2] bg-[#fff8f7] px-3.5 py-3 text-[#8f3f3a]"
@@ -69,10 +77,9 @@ function ResponseStatus({
           aria-hidden="true"
         />
         <div>
-          <p className="text-[12px] font-semibold">Response failed</p>
+          <p className="text-[12px] font-semibold">{failureTitle}</p>
           <p className="mt-0.5 text-[11.5px] leading-[1.45] text-[#a25a55]">
-            Your message was saved. Retry this response without adding another
-            copy of the message.
+            {failureMessage}
           </p>
           <button
             className="mt-2 cursor-pointer rounded-[7px] border border-[#e4bdb9] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#8f3f3a] hover:bg-[#fff2f0] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#a64540]/25"

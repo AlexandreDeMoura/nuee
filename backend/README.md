@@ -46,7 +46,8 @@ environment binds the OpenAI Responses API client and therefore requires
 | `AI_MODEL_INPUT_TOKEN_LIMIT`          | `128000`                         | Total model context window used by the conservative input preflight                  |
 | `AI_RESERVED_OUTPUT_TOKENS`           | `4000`                           | Context-window capacity reserved for the next model response                         |
 | `AI_INPUT_SAFETY_MARGIN_TOKENS`       | `8000`                           | Additional capacity kept unused to absorb estimation and provider overhead           |
-| `AI_REQUEST_TIMEOUT_MS`               | `60000`                          | Per-attempt OpenAI SDK timeout                                                       |
+| `AI_REQUEST_TIMEOUT_MS`               | `60000`                          | Default OpenAI SDK timeout for model work without web search                         |
+| `AI_WEB_SEARCH_REQUEST_TIMEOUT_MS`    | `300000`                         | OpenAI SDK timeout for a discussion answer with web search enabled                   |
 | `DOCUMENT_PRIVATE_STORAGE_PATH`       | `backend/data/private-documents` | Private persistent root for original documents                                       |
 | `DOCUMENT_MAX_FILE_SIZE_BYTES`        | `10485760`                       | Maximum original size per upload                                                     |
 | `DOCUMENT_MAX_DOCUMENTS_PER_PROJECT`  | `25`                             | Maximum persisted documents per project                                              |
@@ -60,6 +61,9 @@ environment binds the OpenAI Responses API client and therefore requires
 | `DOCUMENT_MALWARE_SCANNER_HOST`       | `127.0.0.1`                      | Production ClamAV host                                                               |
 | `DOCUMENT_MALWARE_SCANNER_PORT`       | `3310`                           | Production ClamAV TCP port                                                           |
 | `DOCUMENT_MALWARE_SCANNER_TIMEOUT_MS` | `10000`                          | Deadline for one ClamAV scan                                                         |
+
+The OpenAI adapter disables automatic SDK retries so a timed-out generation is not silently
+submitted again. Discussion turns remain saved and explicitly retryable through the API and UI.
 
 Production storage, ClamAV provisioning, lease recovery, cleanup, backup/restore, HTTPS, and the
 trusted single-user authentication boundary are specified in

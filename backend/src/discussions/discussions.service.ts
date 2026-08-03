@@ -25,7 +25,11 @@ import {
   FROZEN_CONTEXT_FORMATTER,
   type FrozenContextFormatter,
 } from '../ai/frozen-context.formatter';
-import { GENERATED_TITLE_MAX_LENGTH, MODEL_CLIENT } from '../ai/model-client';
+import {
+  GENERATED_TITLE_MAX_LENGTH,
+  MODEL_CLIENT,
+  ModelGenerationError,
+} from '../ai/model-client';
 import type {
   GenerateAnswerInput,
   ModelClient,
@@ -549,7 +553,7 @@ export class DiscussionsService {
       if (!completed) {
         return;
       }
-    } catch {
+    } catch (error) {
       const failedAt = this.nextTimestamp(
         this.latestTimestamp(discussion.updated_at, userMessage.created_at),
       );
@@ -561,10 +565,14 @@ export class DiscussionsService {
         failedAt,
       );
 
+      const timedOut =
+        error instanceof ModelGenerationError && error.reason === 'timeout';
+
       throw new ServiceUnavailableException({
-        code: 'AI_GENERATION_FAILED',
-        message:
-          'The response could not be generated. Retry the unanswered message.',
+        code: timedOut ? 'AI_GENERATION_TIMEOUT' : 'AI_GENERATION_FAILED',
+        message: timedOut
+          ? 'The response took too long to generate. Retry the unanswered message.'
+          : 'The response could not be generated. Retry the unanswered message.',
         discussion_id: discussion.id,
         request_id: userMessage.request_id,
       });
