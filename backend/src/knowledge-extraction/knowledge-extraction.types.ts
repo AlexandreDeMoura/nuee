@@ -1,15 +1,12 @@
 import type {
   DiscussionContextSourceKind,
   DiscussionRole,
-  KnowledgeExtractionMessageSelection,
   KnowledgeExtractionProposal,
 } from '@nuee/shared-types';
 
-export type { KnowledgeExtractionMessageSelection } from '@nuee/shared-types';
-
 export interface CreateKnowledgeExtractionSnapshotInput {
   idempotency_key: string;
-  message_selection: KnowledgeExtractionMessageSelection;
+  message_ids: string[];
   frozen_context_item_ids: string[];
 }
 
@@ -38,7 +35,8 @@ export interface KnowledgeExtractionSourceSnapshotV1 {
   discussion_id: string;
   discussion_title: string;
   requested_at: string;
-  message_selection_kind: KnowledgeExtractionMessageSelection['kind'];
+  /** Legacy snapshots may retain the removed whole-discussion marker. */
+  message_selection_kind: 'selected' | 'whole_discussion';
   messages: KnowledgeExtractionMessageSnapshot[];
   frozen_context_items: KnowledgeExtractionFrozenContextSnapshot[];
 }

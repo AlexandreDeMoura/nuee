@@ -124,17 +124,8 @@ export interface DiscussionMessageRepository {
   ): PersistedDiscussionMessage | undefined;
 }
 
-export type DiscussionExtractionMessageSelection =
-  | {
-      kind: 'selected';
-      message_ids: string[];
-    }
-  | {
-      kind: 'whole_discussion';
-    };
-
 export interface DiscussionExtractionSourceSelection {
-  message_selection: DiscussionExtractionMessageSelection;
+  message_ids: string[];
   frozen_context_item_ids: string[];
 }
 

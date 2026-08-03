@@ -32,7 +32,6 @@ import {
 import {
   KNOWLEDGE_EXTRACTION_REPOSITORY,
   type KnowledgeExtractionAttempt,
-  type KnowledgeExtractionMessageSelection,
   type KnowledgeExtractionRepository,
   type KnowledgeExtractionSourceSnapshotV1,
 } from './knowledge-extraction.types';
@@ -44,7 +43,7 @@ const ATTEMPT_RETENTION_MILLISECONDS = 24 * 60 * 60 * 1_000;
 
 interface NormalizedSnapshotInput {
   idempotency_key: string;
-  message_selection: KnowledgeExtractionMessageSelection;
+  message_ids: string[];
   frozen_context_item_ids: string[];
 }
 
@@ -145,7 +144,7 @@ export class KnowledgeExtractionService {
       projectId,
       discussionId,
       {
-        message_selection: normalized.message_selection,
+        message_ids: normalized.message_ids,
         frozen_context_item_ids: normalized.frozen_context_item_ids,
       },
     );
@@ -171,14 +170,14 @@ export class KnowledgeExtractionService {
 
     if (sourceCount === 0) {
       throw this.validationFailed({
-        message_selection:
+        message_ids:
           'Select at least one completed message or frozen context item.',
       });
     }
 
     if (sourceCount > MAX_SOURCE_COUNT) {
       throw this.validationFailed({
-        message_selection: `Select no more than ${MAX_SOURCE_COUNT} sources in one extraction.`,
+        message_ids: `Select no more than ${MAX_SOURCE_COUNT} sources in one extraction.`,
       });
     }
 
@@ -188,7 +187,7 @@ export class KnowledgeExtractionService {
       discussion_id: discussionId,
       discussion_title: sourceResult.discussion_title,
       requested_at: requestedAt,
-      message_selection_kind: normalized.message_selection.kind,
+      message_selection_kind: 'selected',
       messages: sourceResult.messages.map((message, discussionOrder) => ({
         source_kind: 'message',
         source_id: message.id,
@@ -454,7 +453,6 @@ export class KnowledgeExtractionService {
       status: 'ready',
       proposal: attempt.proposal,
       source: {
-        message_selection_kind: attempt.source_snapshot.message_selection_kind,
         message_ids: attempt.source_snapshot.messages.map(
           ({ source_id }) => source_id,
         ),
@@ -511,15 +509,16 @@ export class KnowledgeExtractionService {
 
     this.rejectUnknownFields(
       input,
-      ['idempotency_key', 'message_selection', 'frozen_context_item_ids'],
+      ['idempotency_key', 'message_ids', 'frozen_context_item_ids'],
       fieldErrors,
     );
     const idempotencyKey = this.idempotencyKey(
       input.idempotency_key,
       fieldErrors,
     );
-    const messageSelection = this.messageSelection(
-      input.message_selection,
+    const messageIds = this.identifierArray(
+      input.message_ids,
+      'message_ids',
       fieldErrors,
     );
     const frozenContextItemIds = this.identifierArray(
@@ -529,21 +528,20 @@ export class KnowledgeExtractionService {
     );
 
     if (
-      messageSelection?.kind === 'selected' &&
+      messageIds &&
       frozenContextItemIds &&
-      messageSelection.message_ids.length + frozenContextItemIds.length >
-        MAX_SOURCE_COUNT
+      messageIds.length + frozenContextItemIds.length > MAX_SOURCE_COUNT
     ) {
-      fieldErrors.message_selection = `Select no more than ${MAX_SOURCE_COUNT} sources in one extraction.`;
+      fieldErrors.message_ids = `Select no more than ${MAX_SOURCE_COUNT} sources in one extraction.`;
     }
 
     if (
-      messageSelection?.kind === 'selected' &&
+      messageIds &&
       frozenContextItemIds &&
-      messageSelection.message_ids.length === 0 &&
+      messageIds.length === 0 &&
       frozenContextItemIds.length === 0
     ) {
-      fieldErrors.message_selection =
+      fieldErrors.message_ids =
         'Select at least one completed message or frozen context item.';
     }
 
@@ -551,7 +549,7 @@ export class KnowledgeExtractionService {
       throw this.validationFailed(fieldErrors);
     }
 
-    if (!idempotencyKey || !messageSelection || !frozenContextItemIds) {
+    if (!idempotencyKey || !messageIds || !frozenContextItemIds) {
       throw new Error(
         'Validated knowledge extraction input is unexpectedly missing.',
       );
@@ -559,7 +557,7 @@ export class KnowledgeExtractionService {
 
     return {
       idempotency_key: idempotencyKey,
-      message_selection: messageSelection,
+      message_ids: messageIds,
       frozen_context_item_ids: frozenContextItemIds,
     };
   }
@@ -581,48 +579,6 @@ export class KnowledgeExtractionService {
     }
 
     return normalized;
-  }
-
-  private messageSelection(
-    value: unknown,
-    fieldErrors: Record<string, string>,
-  ): KnowledgeExtractionMessageSelection | undefined {
-    if (!this.isRecord(value)) {
-      fieldErrors.message_selection = 'Message selection must be an object.';
-      return undefined;
-    }
-
-    if (value.kind === 'selected') {
-      this.rejectUnknownFields(
-        value,
-        ['kind', 'message_ids'],
-        fieldErrors,
-        'message_selection.',
-      );
-      const messageIds = this.identifierArray(
-        value.message_ids,
-        'message_selection.message_ids',
-        fieldErrors,
-      );
-
-      return messageIds
-        ? { kind: 'selected', message_ids: messageIds }
-        : undefined;
-    }
-
-    if (value.kind === 'whole_discussion') {
-      this.rejectUnknownFields(
-        value,
-        ['kind'],
-        fieldErrors,
-        'message_selection.',
-      );
-      return { kind: 'whole_discussion' };
-    }
-
-    fieldErrors['message_selection.kind'] =
-      'Message selection kind must be "selected" or "whole_discussion".';
-    return undefined;
   }
 
   private identifierArray(
@@ -669,13 +625,7 @@ export class KnowledgeExtractionService {
 
   private requestFingerprint(input: NormalizedSnapshotInput): string {
     const canonicalSelection = {
-      message_selection:
-        input.message_selection.kind === 'selected'
-          ? {
-              kind: 'selected',
-              message_ids: [...input.message_selection.message_ids].sort(),
-            }
-          : { kind: 'whole_discussion' },
+      message_ids: [...input.message_ids].sort(),
       frozen_context_item_ids: [...input.frozen_context_item_ids].sort(),
     };
 

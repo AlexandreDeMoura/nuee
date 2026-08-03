@@ -246,19 +246,17 @@ describe('Knowledge extraction generation and resolution services', () => {
     discussionId: string,
     {
       idempotencyKey,
-      messageSelection,
+      messageIds,
       contextItemIds = [],
     }: {
       idempotencyKey: string;
-      messageSelection:
-        | { kind: 'selected'; message_ids: string[] }
-        | { kind: 'whole_discussion' };
+      messageIds: string[];
       contextItemIds?: string[];
     },
   ) {
     return service.createSourceSnapshot(projectId, discussionId, {
       idempotency_key: idempotencyKey,
-      message_selection: messageSelection,
+      message_ids: messageIds,
       frozen_context_item_ids: contextItemIds,
     });
   }
@@ -310,21 +308,15 @@ describe('Knowledge extraction generation and resolution services', () => {
 
     const single = createSnapshot(project.id, source.record.id, {
       idempotencyKey: 'extract-single',
-      messageSelection: {
-        kind: 'selected',
-        message_ids: [source.firstAssistant.id],
-      },
+      messageIds: [source.firstAssistant.id],
     });
     const mixed = createSnapshot(project.id, source.record.id, {
       idempotencyKey: 'extract-mixed',
-      messageSelection: {
-        kind: 'selected',
-        message_ids: [
-          third.assistant.id,
-          source.firstAssistant.id,
-          source.firstUser.id,
-        ],
-      },
+      messageIds: [
+        third.assistant.id,
+        source.firstAssistant.id,
+        source.firstUser.id,
+      ],
       contextItemIds: ['context-source-bubble'],
     });
 
@@ -335,6 +327,7 @@ describe('Knowledge extraction generation and resolution services', () => {
         discussion_order: 0,
       }),
     ]);
+    expect(single.source_snapshot.message_selection_kind).toBe('selected');
     expect(
       mixed.source_snapshot.messages.map(
         ({ source_id, role, discussion_order }) => ({
@@ -370,9 +363,9 @@ describe('Knowledge extraction generation and resolution services', () => {
     ]);
   });
 
-  it('resolves whole discussion at submission and never changes the stored snapshot', () => {
-    const project = createProject('Whole discussion');
-    const source = createDiscussion(project.id, 'discussion-whole');
+  it('snapshots exactly the explicit message identifiers submitted', () => {
+    const project = createProject('Explicit sources');
+    const source = createDiscussion(project.id, 'discussion-explicit');
     const second = appendCompletedTurn(
       project.id,
       source.record.id,
@@ -388,8 +381,13 @@ describe('Knowledge extraction generation and resolution services', () => {
       source.record.id,
     );
     const firstAttempt = createSnapshot(project.id, source.record.id, {
-      idempotencyKey: 'extract-whole-first',
-      messageSelection: { kind: 'whole_discussion' },
+      idempotencyKey: 'extract-explicit-first',
+      messageIds: [
+        source.firstUser.id,
+        source.firstAssistant.id,
+        second.user.id,
+        second.assistant.id,
+      ],
     });
 
     expect(
@@ -411,8 +409,15 @@ describe('Knowledge extraction generation and resolution services', () => {
       firstAttempt.id,
     );
     const secondAttempt = createSnapshot(project.id, source.record.id, {
-      idempotencyKey: 'extract-whole-second',
-      messageSelection: { kind: 'whole_discussion' },
+      idempotencyKey: 'extract-explicit-second',
+      messageIds: [
+        source.firstUser.id,
+        source.firstAssistant.id,
+        second.user.id,
+        second.assistant.id,
+        third.user.id,
+        third.assistant.id,
+      ],
     });
 
     expect(
@@ -444,7 +449,7 @@ describe('Knowledge extraction generation and resolution services', () => {
     });
     const attempt = createSnapshot(project.id, source.record.id, {
       idempotencyKey: 'extract-frozen-context',
-      messageSelection: { kind: 'selected', message_ids: [] },
+      messageIds: [],
       contextItemIds: [source.contextItems[0].id],
     });
 
@@ -485,15 +490,12 @@ describe('Knowledge extraction generation and resolution services', () => {
     expect(() =>
       createSnapshot(project.id, source.record.id, {
         idempotencyKey: 'extract-invalid-sources',
-        messageSelection: {
-          kind: 'selected',
-          message_ids: [
-            'message-missing',
-            sameProjectOtherDiscussion.firstAssistant.id,
-            crossProjectDiscussion.firstAssistant.id,
-            pending.id,
-          ],
-        },
+        messageIds: [
+          'message-missing',
+          sameProjectOtherDiscussion.firstAssistant.id,
+          crossProjectDiscussion.firstAssistant.id,
+          pending.id,
+        ],
         contextItemIds: [
           'context-missing',
           sameProjectOtherDiscussion.contextItems[0].id,
@@ -505,15 +507,12 @@ describe('Knowledge extraction generation and resolution services', () => {
     try {
       createSnapshot(project.id, source.record.id, {
         idempotencyKey: 'extract-invalid-sources-again',
-        messageSelection: {
-          kind: 'selected',
-          message_ids: [
-            'message-missing',
-            sameProjectOtherDiscussion.firstAssistant.id,
-            crossProjectDiscussion.firstAssistant.id,
-            pending.id,
-          ],
-        },
+        messageIds: [
+          'message-missing',
+          sameProjectOtherDiscussion.firstAssistant.id,
+          crossProjectDiscussion.firstAssistant.id,
+          pending.id,
+        ],
         contextItemIds: [
           'context-missing',
           sameProjectOtherDiscussion.contextItems[0].id,
@@ -572,7 +571,7 @@ describe('Knowledge extraction generation and resolution services', () => {
     ).toEqual({ count: 0 });
   });
 
-  it('whole-discussion selection excludes pending and failed turns', () => {
+  it('does not expand explicit identifiers to pending or failed turns', () => {
     const project = createProject('Eligibility');
     const source = createDiscussion(project.id, 'discussion-eligibility');
     const pending = appendPendingTurn(
@@ -584,7 +583,7 @@ describe('Knowledge extraction generation and resolution services', () => {
 
     const whilePending = createSnapshot(project.id, source.record.id, {
       idempotencyKey: 'extract-with-pending',
-      messageSelection: { kind: 'whole_discussion' },
+      messageIds: [source.firstUser.id, source.firstAssistant.id],
     });
     discussions.updateMessageStatus(
       project.id,
@@ -595,7 +594,7 @@ describe('Knowledge extraction generation and resolution services', () => {
     );
     const afterFailure = createSnapshot(project.id, source.record.id, {
       idempotencyKey: 'extract-after-failure',
-      messageSelection: { kind: 'whole_discussion' },
+      messageIds: [source.firstUser.id, source.firstAssistant.id],
     });
 
     expect(
@@ -611,51 +610,42 @@ describe('Knowledge extraction generation and resolution services', () => {
       name: 'unknown top-level field',
       input: {
         idempotency_key: 'extract-validation',
-        message_selection: { kind: 'whole_discussion' },
+        message_ids: ['message-valid-shape'],
         frozen_context_item_ids: [],
         copied_source_text: 'Never trust this.',
       },
       fieldErrors: { copied_source_text: 'Unknown field.' },
     },
     {
-      name: 'unknown nested field',
+      name: 'removed whole-discussion selection',
       input: {
         idempotency_key: 'extract-validation',
-        message_selection: {
-          kind: 'whole_discussion',
-          message_ids: ['not-allowed'],
-        },
+        message_selection: { kind: 'whole_discussion' },
+        message_ids: ['message-valid-shape'],
         frozen_context_item_ids: [],
       },
-      fieldErrors: { 'message_selection.message_ids': 'Unknown field.' },
+      fieldErrors: { message_selection: 'Unknown field.' },
     },
     {
       name: 'duplicate identifiers',
       input: {
         idempotency_key: 'extract-validation',
-        message_selection: {
-          kind: 'selected',
-          message_ids: ['message-a', ' message-a '],
-        },
+        message_ids: ['message-a', ' message-a '],
         frozen_context_item_ids: [],
       },
       fieldErrors: {
-        'message_selection.message_ids':
-          'Source identifiers must not contain duplicates.',
+        message_ids: 'Source identifiers must not contain duplicates.',
       },
     },
     {
       name: 'empty source selection',
       input: {
         idempotency_key: 'extract-validation',
-        message_selection: {
-          kind: 'selected',
-          message_ids: [],
-        },
+        message_ids: [],
         frozen_context_item_ids: [],
       },
       fieldErrors: {
-        message_selection:
+        message_ids:
           'Select at least one completed message or frozen context item.',
       },
     },
@@ -663,17 +653,14 @@ describe('Knowledge extraction generation and resolution services', () => {
       name: 'selection over the limit',
       input: {
         idempotency_key: 'extract-validation',
-        message_selection: {
-          kind: 'selected',
-          message_ids: Array.from(
-            { length: 101 },
-            (_, index) => `message-${index}`,
-          ),
-        },
+        message_ids: Array.from(
+          { length: 101 },
+          (_, index) => `message-${index}`,
+        ),
         frozen_context_item_ids: [],
       },
       fieldErrors: {
-        'message_selection.message_ids': 'Select no more than 100 sources.',
+        message_ids: 'Select no more than 100 sources.',
       },
     },
   ])(
@@ -705,7 +692,7 @@ describe('Knowledge extraction generation and resolution services', () => {
     },
   );
 
-  it('rejects a whole discussion with no completed source', () => {
+  it('rejects an empty explicit source selection', () => {
     const project = createProject('No eligible source');
     const source = createDiscussion(project.id, 'discussion-pending-only', {
       completeFirstTurn: false,
@@ -713,8 +700,8 @@ describe('Knowledge extraction generation and resolution services', () => {
 
     expect(() =>
       createSnapshot(project.id, source.record.id, {
-        idempotencyKey: 'extract-empty-whole',
-        messageSelection: { kind: 'whole_discussion' },
+        idempotencyKey: 'extract-empty-explicit',
+        messageIds: [],
       }),
     ).toThrow(BadRequestException);
     expect(
@@ -734,10 +721,7 @@ describe('Knowledge extraction generation and resolution services', () => {
     expect(() =>
       createSnapshot(project.id, source.record.id, {
         idempotencyKey: 'extract-persistence-failure',
-        messageSelection: {
-          kind: 'selected',
-          message_ids: [source.firstAssistant.id],
-        },
+        messageIds: [source.firstAssistant.id],
       }),
     ).toThrow(ServiceUnavailableException);
   });
@@ -748,10 +732,7 @@ describe('Knowledge extraction generation and resolution services', () => {
     const generate = jest.spyOn(modelClient, 'generateStructuredOutput');
     const input = {
       idempotency_key: 'extract-proposal',
-      message_selection: {
-        kind: 'selected' as const,
-        message_ids: [source.firstAssistant.id],
-      },
+      message_ids: [source.firstAssistant.id],
       frozen_context_item_ids: [source.contextItems[0].id],
     };
 
@@ -784,7 +765,6 @@ describe('Knowledge extraction generation and resolution services', () => {
           'This deterministic proposal represents one reusable knowledge unit grounded in the selected discussion sources.',
       },
       source: {
-        message_selection_kind: 'selected',
         message_ids: [source.firstAssistant.id],
         frozen_context_item_ids: [source.contextItems[0].id],
       },
@@ -844,10 +824,7 @@ describe('Knowledge extraction generation and resolution services', () => {
       await expect(
         service.generateProposal(project.id, source.record.id, {
           idempotency_key: idempotencyKey,
-          message_selection: {
-            kind: 'selected',
-            message_ids: [source.firstAssistant.id],
-          },
+          message_ids: [source.firstAssistant.id],
           frozen_context_item_ids: [],
         }),
       ).rejects.toMatchObject({
@@ -897,7 +874,7 @@ describe('Knowledge extraction generation and resolution services', () => {
     useModel(generate);
     const input = {
       idempotency_key: 'extract-provider-retry',
-      message_selection: { kind: 'whole_discussion' as const },
+      message_ids: [source.firstUser.id, source.firstAssistant.id],
       frozen_context_item_ids: [],
     };
 
@@ -952,10 +929,7 @@ describe('Knowledge extraction generation and resolution services', () => {
     useModel(generate);
     const input = {
       idempotency_key: 'extract-concurrent',
-      message_selection: {
-        kind: 'selected' as const,
-        message_ids: [source.firstAssistant.id],
-      },
+      message_ids: [source.firstAssistant.id],
       frozen_context_item_ids: [],
     };
 
@@ -1000,20 +974,14 @@ describe('Knowledge extraction generation and resolution services', () => {
 
     await service.generateProposal(project.id, source.record.id, {
       idempotency_key: 'extract-conflict',
-      message_selection: {
-        kind: 'selected',
-        message_ids: [source.firstAssistant.id],
-      },
+      message_ids: [source.firstAssistant.id],
       frozen_context_item_ids: [],
     });
 
     await expect(
       service.generateProposal(project.id, source.record.id, {
         idempotency_key: 'extract-conflict',
-        message_selection: {
-          kind: 'selected',
-          message_ids: [second.assistant.id],
-        },
+        message_ids: [second.assistant.id],
         frozen_context_item_ids: [],
       }),
     ).rejects.toMatchObject({
@@ -1054,10 +1022,7 @@ describe('Knowledge extraction generation and resolution services', () => {
     await expect(
       service.generateProposal(project.id, source.record.id, {
         idempotency_key: 'extract-oversized',
-        message_selection: {
-          kind: 'selected',
-          message_ids: [source.firstAssistant.id],
-        },
+        message_ids: [source.firstAssistant.id],
         frozen_context_item_ids: [],
       }),
     ).rejects.toMatchObject({
@@ -1098,10 +1063,7 @@ describe('Knowledge extraction generation and resolution services', () => {
       source.record.id,
       {
         idempotency_key: 'resolve-as-new-bubble',
-        message_selection: {
-          kind: 'selected',
-          message_ids: [source.firstAssistant.id],
-        },
+        message_ids: [source.firstAssistant.id],
         frozen_context_item_ids: [source.contextItems[0].id],
       },
     );
@@ -1191,10 +1153,7 @@ describe('Knowledge extraction generation and resolution services', () => {
       source.record.id,
       {
         idempotency_key: 'resolve-with-failed-persistence',
-        message_selection: {
-          kind: 'selected',
-          message_ids: [source.firstAssistant.id],
-        },
+        message_ids: [source.firstAssistant.id],
         frozen_context_item_ids: [],
       },
     );
@@ -1264,10 +1223,7 @@ describe('Knowledge extraction generation and resolution services', () => {
       source.record.id,
       {
         idempotency_key: 'resolve-as-bubble-update',
-        message_selection: {
-          kind: 'selected',
-          message_ids: [source.firstAssistant.id],
-        },
+        message_ids: [source.firstAssistant.id],
         frozen_context_item_ids: ['context-update-target'],
       },
     );
@@ -1377,10 +1333,7 @@ describe('Knowledge extraction generation and resolution services', () => {
       source.record.id,
       {
         idempotency_key: 'resolve-after-target-conflict',
-        message_selection: {
-          kind: 'selected',
-          message_ids: [source.firstAssistant.id],
-        },
+        message_ids: [source.firstAssistant.id],
         frozen_context_item_ids: [],
       },
     );
@@ -1490,10 +1443,7 @@ describe('Knowledge extraction generation and resolution services', () => {
         source.record.id,
         {
           idempotency_key: `resolve-${suffix}-target`,
-          message_selection: {
-            kind: 'selected',
-            message_ids: [source.firstAssistant.id],
-          },
+          message_ids: [source.firstAssistant.id],
           frozen_context_item_ids: [],
         },
       );
@@ -1552,10 +1502,7 @@ describe('Knowledge extraction generation and resolution services', () => {
       source.record.id,
       {
         idempotency_key: 'resolve-update-with-failed-persistence',
-        message_selection: {
-          kind: 'selected',
-          message_ids: [source.firstAssistant.id],
-        },
+        message_ids: [source.firstAssistant.id],
         frozen_context_item_ids: [],
       },
     );
@@ -1601,10 +1548,7 @@ describe('Knowledge extraction generation and resolution services', () => {
       source.record.id,
       {
         idempotency_key: 'reject-proposal',
-        message_selection: {
-          kind: 'selected',
-          message_ids: [source.firstAssistant.id],
-        },
+        message_ids: [source.firstAssistant.id],
         frozen_context_item_ids: [],
       },
     );
@@ -1644,10 +1588,7 @@ describe('Knowledge extraction generation and resolution services', () => {
     await expect(
       service.generateProposal(project.id, source.record.id, {
         idempotency_key: 'reject-proposal',
-        message_selection: {
-          kind: 'selected',
-          message_ids: [source.firstAssistant.id],
-        },
+        message_ids: [source.firstAssistant.id],
         frozen_context_item_ids: [],
       }),
     ).resolves.toEqual(rejectedProposal);
@@ -1657,10 +1598,7 @@ describe('Knowledge extraction generation and resolution services', () => {
       source.record.id,
       {
         idempotency_key: 'discard-proposal',
-        message_selection: {
-          kind: 'selected',
-          message_ids: [source.firstUser.id],
-        },
+        message_ids: [source.firstUser.id],
         frozen_context_item_ids: [],
       },
     );
@@ -1712,10 +1650,7 @@ describe('Knowledge extraction generation and resolution services', () => {
       source.record.id,
       {
         idempotency_key: 'invalid-reviewed-proposal',
-        message_selection: {
-          kind: 'selected',
-          message_ids: [source.firstAssistant.id],
-        },
+        message_ids: [source.firstAssistant.id],
         frozen_context_item_ids: [],
       },
     );
@@ -1754,10 +1689,7 @@ describe('Knowledge extraction generation and resolution services', () => {
       source.record.id,
       {
         idempotency_key: 'invalid-update-target',
-        message_selection: {
-          kind: 'selected',
-          message_ids: [source.firstAssistant.id],
-        },
+        message_ids: [source.firstAssistant.id],
         frozen_context_item_ids: [],
       },
     );
@@ -1811,10 +1743,7 @@ describe('Knowledge extraction generation and resolution services', () => {
       source.record.id,
       {
         idempotency_key: 'scoped-resolution',
-        message_selection: {
-          kind: 'selected',
-          message_ids: [source.firstAssistant.id],
-        },
+        message_ids: [source.firstAssistant.id],
         frozen_context_item_ids: [],
       },
     );
@@ -1840,10 +1769,7 @@ describe('Knowledge extraction generation and resolution services', () => {
 
     const generating = createSnapshot(project.id, source.record.id, {
       idempotencyKey: 'not-ready-resolution',
-      messageSelection: {
-        kind: 'selected',
-        message_ids: [source.firstAssistant.id],
-      },
+      messageIds: [source.firstAssistant.id],
     });
 
     expect(() =>

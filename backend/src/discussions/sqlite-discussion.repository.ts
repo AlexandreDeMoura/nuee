@@ -345,15 +345,12 @@ export class SqliteDiscussionRepository
       DiscussionExtractionSourceReadResult,
       { status: 'invalid_sources' }
     >['issues'] = [];
-    const messages =
-      selection.message_selection.kind === 'whole_discussion'
-        ? this.readWholeDiscussionExtractionMessages(projectId, discussionId)
-        : this.readSelectedExtractionMessages(
-            projectId,
-            discussionId,
-            selection.message_selection.message_ids,
-            issues,
-          );
+    const messages = this.readSelectedExtractionMessages(
+      projectId,
+      discussionId,
+      selection.message_ids,
+      issues,
+    );
     const frozenContextItems = this.readSelectedExtractionContextItems(
       projectId,
       discussionId,
@@ -675,36 +672,6 @@ export class SqliteDiscussionRepository
       DiscussionMessageRow | undefined;
 
     return row ? this.toMessage(row) : undefined;
-  }
-
-  private readWholeDiscussionExtractionMessages(
-    projectId: string,
-    discussionId: string,
-  ): DiscussionExtractionMessageSource[] {
-    const rows = this.database
-      .prepare(
-        `
-          SELECT message.*
-          FROM discussion_messages AS message
-          INNER JOIN discussions AS discussion
-            ON discussion.id = message.discussion_id
-          WHERE
-            discussion.project_id = ?
-            AND discussion.id = ?
-            AND discussion.deleted_at IS NULL
-            AND message.status = 'completed'
-            AND message.role IN ('user', 'assistant')
-          ORDER BY message.created_at ASC, message.id ASC
-        `,
-      )
-      .all(projectId, discussionId) as unknown as DiscussionMessageRow[];
-
-    return rows.map(({ id, role, content, created_at }) => ({
-      id,
-      role,
-      content,
-      created_at,
-    }));
   }
 
   private readSelectedExtractionMessages(

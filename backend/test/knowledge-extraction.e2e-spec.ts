@@ -96,10 +96,7 @@ describe('Knowledge extraction generation journey (e2e)', () => {
     const frozenContext = discussion.frozen_context as FrozenContextV1;
     const input = {
       idempotency_key: 'generate-one-proposal',
-      message_selection: {
-        kind: 'selected',
-        message_ids: [discussion.messages[1].id],
-      },
+      message_ids: [discussion.messages[1].id],
       frozen_context_item_ids: [frozenContext.items[0].id],
     };
     const route = `/projects/${project.id}/discussions/${discussion.id}/knowledge-extractions`;
@@ -119,7 +116,6 @@ describe('Knowledge extraction generation journey (e2e)', () => {
         summary: 'A grounded proposal synthesized from the selected sources.',
       },
       source: {
-        message_selection_kind: 'selected',
         message_ids: [discussion.messages[1].id],
         frozen_context_item_ids: [frozenContext.items[0].id],
       },
@@ -139,10 +135,7 @@ describe('Knowledge extraction generation journey (e2e)', () => {
       .post(route)
       .send({
         ...input,
-        message_selection: {
-          kind: 'selected',
-          message_ids: [discussion.messages[0].id],
-        },
+        message_ids: [discussion.messages[0].id],
       })
       .expect(409)
       .expect(({ body }) => {
@@ -178,7 +171,7 @@ describe('Knowledge extraction generation journey (e2e)', () => {
       .expect(discussion);
   });
 
-  it('freezes whole-discussion sources before later messages and resolves only the captured provenance', async () => {
+  it('freezes explicit message sources before later messages and resolves only the captured provenance', async () => {
     const projectResponse = await request(app!.getHttpServer())
       .post('/projects')
       .send({
@@ -201,8 +194,8 @@ describe('Knowledge extraction generation journey (e2e)', () => {
     const initialMessageIds = discussion.messages.map(({ id }) => id);
     const route = `/projects/${project.id}/discussions/${discussion.id}/knowledge-extractions`;
     const input = {
-      idempotency_key: 'whole-discussion-snapshot',
-      message_selection: { kind: 'whole_discussion' },
+      idempotency_key: 'explicit-message-snapshot',
+      message_ids: initialMessageIds,
       frozen_context_item_ids: [],
     };
     const generatedResponse = await request(app!.getHttpServer())
@@ -213,7 +206,6 @@ describe('Knowledge extraction generation journey (e2e)', () => {
       generatedResponse.body as KnowledgeExtractionProposalResponse;
 
     expect(generated.source).toEqual({
-      message_selection_kind: 'whole_discussion',
       message_ids: initialMessageIds,
       frozen_context_item_ids: [],
     });
@@ -315,10 +307,7 @@ describe('Knowledge extraction generation journey (e2e)', () => {
     const route = `/projects/${project.id}/discussions/${discussion.id}/knowledge-extractions`;
     const input = {
       idempotency_key: 'retry-generation-attempt',
-      message_selection: {
-        kind: 'selected',
-        message_ids: [discussion.messages[1].id],
-      },
+      message_ids: [discussion.messages[1].id],
       frozen_context_item_ids: [],
     };
 
@@ -429,10 +418,7 @@ describe('Knowledge extraction generation journey (e2e)', () => {
       .post(route)
       .send({
         idempotency_key: 'resolve-new-bubble',
-        message_selection: {
-          kind: 'selected',
-          message_ids: [discussion.messages[1].id],
-        },
+        message_ids: [discussion.messages[1].id],
         frozen_context_item_ids: [frozenContext.items[0].id],
       })
       .expect(201);
@@ -510,10 +496,7 @@ describe('Knowledge extraction generation journey (e2e)', () => {
       .post(route)
       .send({
         idempotency_key: 'reject-resolution',
-        message_selection: {
-          kind: 'selected',
-          message_ids: [discussion.messages[0].id],
-        },
+        message_ids: [discussion.messages[0].id],
         frozen_context_item_ids: [],
       })
       .expect(201);
@@ -535,10 +518,7 @@ describe('Knowledge extraction generation journey (e2e)', () => {
       .post(route)
       .send({
         idempotency_key: 'discard-resolution',
-        message_selection: {
-          kind: 'selected',
-          message_ids: [discussion.messages[1].id],
-        },
+        message_ids: [discussion.messages[1].id],
         frozen_context_item_ids: [],
       })
       .expect(201);
@@ -661,10 +641,7 @@ describe('Knowledge extraction generation journey (e2e)', () => {
       .post(extractionRoute)
       .send({
         idempotency_key: 'resolve-existing-bubble',
-        message_selection: {
-          kind: 'selected',
-          message_ids: [discussion.messages[1].id],
-        },
+        message_ids: [discussion.messages[1].id],
         frozen_context_item_ids: [frozenTarget!.id],
       })
       .expect(201);
