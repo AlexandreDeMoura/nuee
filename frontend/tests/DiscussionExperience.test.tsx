@@ -910,7 +910,11 @@ describe('DiscussionExperience', () => {
         {
           project_id: projectId,
           discussion_id: 'discussion-1',
+          detail_level: 'standard',
+          instructions_supplied: false,
+          instructions_length_band: 'none',
           message_selection_mode: 'selected',
+          select_all_used: false,
           selected_message_count: 1,
           frozen_project_description_count: 0,
           frozen_bubble_count: 0,

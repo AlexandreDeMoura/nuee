@@ -65,7 +65,7 @@ describe('Knowledge extraction generation journey (e2e)', () => {
     rmSync(temporaryDirectory, { recursive: true, force: true });
   });
 
-  it('generates, replays, reloads, and scopes one structured proposal without changing the discussion', async () => {
+  it('generates an instructed detailed proposal, conflicts on changed intent, and replays it without changing the discussion', async () => {
     const projectResponse = await request(app!.getHttpServer())
       .post('/projects')
       .send({
@@ -136,6 +136,18 @@ describe('Knowledge extraction generation journey (e2e)', () => {
       })
       .expect(201)
       .expect(generated);
+    await request(app!.getHttpServer())
+      .post(route)
+      .send({
+        ...input,
+        instructions: 'Focus on operational risk.',
+      })
+      .expect(409)
+      .expect(({ body }) => {
+        expect(body).toMatchObject({
+          code: 'KNOWLEDGE_EXTRACTION_IDEMPOTENCY_CONFLICT',
+        });
+      });
     await request(app!.getHttpServer())
       .post(route)
       .send({

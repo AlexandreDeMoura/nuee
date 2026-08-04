@@ -310,7 +310,7 @@ export function KnowledgeExtractionSourceSelection({
             type="button"
             disabled={controlsDisabled || messages.length === 0}
             onClick={() =>
-              controller.setMessageIds(
+              controller.selectAllMessages(
                 allMessagesSelected ? [] : eligibleMessageIds,
               )
             }

@@ -193,7 +193,12 @@ describe('useKnowledgeExtraction', () => {
 
     act(() => {
       result.current.start('message-1');
+      result.current.selectAllMessages(['message-1']);
       result.current.toggleFrozenContextItem('context-1');
+      result.current.setInstructions(
+        'Keep private launch instructions out of analytics.',
+      );
+      result.current.setDetailLevel('detailed');
     });
     await act(async () => {
       await result.current.generateProposal();
@@ -220,7 +225,11 @@ describe('useKnowledgeExtraction', () => {
       {
         project_id: 'project-1',
         discussion_id: 'discussion-1',
+        detail_level: 'detailed',
+        instructions_supplied: true,
+        instructions_length_band: '1_to_100_chars',
         message_selection_mode: 'selected',
+        select_all_used: true,
         selected_message_count: 1,
         frozen_project_description_count: 0,
         frozen_bubble_count: 0,
@@ -269,6 +278,7 @@ describe('useKnowledgeExtraction', () => {
       'Private selected discussion message.',
       'Private unselected assistant response.',
       'Private discussion title',
+      'Keep private launch instructions out of analytics.',
       proposalResponse().proposal.title,
       proposalResponse().proposal.summary,
       proposalResponse().proposal.content,

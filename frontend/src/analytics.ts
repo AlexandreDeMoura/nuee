@@ -145,7 +145,15 @@ export interface AnalyticsEventProperties {
   knowledge_extraction_generation_finished: {
     project_id: string;
     discussion_id: string;
+    detail_level: 'tight' | 'standard' | 'detailed';
+    instructions_supplied: boolean;
+    instructions_length_band:
+      | 'none'
+      | '1_to_100_chars'
+      | '101_to_500_chars'
+      | '501_to_2000_chars';
     message_selection_mode: 'selected';
+    select_all_used: boolean;
     selected_message_count: number;
     frozen_project_description_count: number;
     frozen_bubble_count: number;

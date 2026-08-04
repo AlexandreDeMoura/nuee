@@ -326,7 +326,7 @@ describe('workspace integration contracts', () => {
     ).toBe(false);
   });
 
-  it('adds one persisted extraction bubble by keyboard only after approval succeeds', async () => {
+  it('guides a keyboard extraction through all three request steps and adds the approved bubble', async () => {
     const persisted = discussionDetails({
       title: 'Launch review',
       messages: [
@@ -358,10 +358,24 @@ describe('workspace integration contracts', () => {
       source_discussion_id: persisted.id,
       source_discussion_title: persisted.title,
       source_kind: 'discussion',
-      source_message_ids: ['message-assistant-1'],
+      source_message_ids: [
+        'message-user-1',
+        'message-assistant-1',
+      ],
       summary: 'Licensing is the longest lead-time constraint.',
       title: 'Launch licensing constraint',
     });
+    const guidedProposal = {
+      ...extractionProposalResponse(),
+      source: {
+        frozen_context_item_ids: [],
+        message_ids: [
+          'message-user-1',
+          'message-assistant-1',
+        ],
+      },
+    };
+    const create = vi.fn(async () => guidedProposal);
     const resolution = deferred<KnowledgeExtractionResolutionResponse>();
     const resolve = vi.fn(() => resolution.promise);
     const recordOpen = vi.fn(async () => persisted);
@@ -385,7 +399,7 @@ describe('workspace integration contracts', () => {
           recordOpen,
         }}
         extractionRequests={{
-          create: async () => extractionProposalResponse(),
+          create,
           resolve,
         }}
         project={project}
@@ -404,8 +418,49 @@ describe('workspace integration contracts', () => {
         name: 'Extract knowledge from this response',
       }),
     );
+
+    activateButtonWithKeyboard(
+      screen.getByRole('button', { name: 'Select all' }),
+      ' ',
+    );
+    expect(
+      screen.getByText('2 of 2 messages').getAttribute('role'),
+    ).toBe('status');
+
+    const instructions = screen.getByRole('textbox', {
+      name: /Tell Nuée/,
+    });
+    instructions.focus();
+    expect(document.activeElement).toBe(instructions);
+    fireEvent.change(instructions, {
+      target: {
+        value: 'Frame this as a launch decision and keep the caveat.',
+      },
+    });
+
+    activateButtonWithKeyboard(
+      screen.getByRole('radio', { name: /Detailed/ }),
+      ' ',
+    );
     activateButtonWithKeyboard(
       screen.getByRole('button', { name: 'Generate bubble' }),
+    );
+
+    expect(create).toHaveBeenCalledWith(
+      project.id,
+      persisted.id,
+      {
+        detail_level: 'detailed',
+        frozen_context_item_ids: [],
+        idempotency_key: expect.any(String),
+        instructions:
+          'Frame this as a launch decision and keep the caveat.',
+        message_ids: [
+          'message-user-1',
+          'message-assistant-1',
+        ],
+      },
+      expect.any(AbortSignal),
     );
     activateButtonWithKeyboard(
       await screen.findByRole('button', {
@@ -419,7 +474,7 @@ describe('workspace integration contracts', () => {
       'extraction-1',
       {
         kind: 'new_bubble',
-        proposal: extractionProposalResponse().proposal,
+        proposal: guidedProposal.proposal,
       },
       expect.any(AbortSignal),
     );

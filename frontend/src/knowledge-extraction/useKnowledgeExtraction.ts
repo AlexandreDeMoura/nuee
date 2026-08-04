@@ -83,6 +83,7 @@ export interface KnowledgeExtractionController {
   generateProposal: () => Promise<KnowledgeExtractionProposalResponse | null>;
   reject: () => Promise<KnowledgeExtractionResolutionResponse | null>;
   reset: () => void;
+  selectAllMessages: (messageIds: readonly string[]) => void;
   selectUpdateTarget: (bubble: Bubble) => void;
   setDetailLevel: (detailLevel: KnowledgeExtractionDetailLevel) => void;
   setInstructions: (instructions: string) => void;
@@ -456,6 +457,7 @@ export function useKnowledgeExtraction({
       createSelection: (
         current: KnowledgeExtractionSelection,
       ) => KnowledgeExtractionSelection,
+      selectAllUsed = false,
     ) => {
       const current = stateRef.current;
 
@@ -465,6 +467,7 @@ export function useKnowledgeExtraction({
 
       transition({
         selection: createSelection(current.selection),
+        selectAllUsed,
         type: 'selection_changed',
       });
     },
@@ -500,6 +503,19 @@ export function useKnowledgeExtraction({
         ...current,
         messageIds: [...messageIds],
       }));
+    },
+    [updateSelection],
+  );
+
+  const selectAllMessages = useCallback(
+    (messageIds: readonly string[]) => {
+      updateSelection(
+        (current) => ({
+          ...current,
+          messageIds: [...messageIds],
+        }),
+        true,
+      );
     },
     [updateSelection],
   );
@@ -596,7 +612,7 @@ export function useKnowledgeExtraction({
       ...selectionInput(generating),
     };
     const startedAt = Date.now();
-    const generationMetricsKey = `${attemptId}:${generating.selectionFingerprint}`;
+    const generationMetricsKey = `${attemptId}:${generating.selectionFingerprint}:${generating.selectAllUsed}`;
     const generationMetrics =
       generationMetricsRef.current?.key === generationMetricsKey
         ? generationMetricsRef.current.metrics
@@ -606,6 +622,7 @@ export function useKnowledgeExtraction({
               ? analyticsDiscussionRef.current
               : null,
             generating.selection,
+            generating.selectAllUsed,
           );
 
     generationMetricsRef.current = {
@@ -976,6 +993,7 @@ export function useKnowledgeExtraction({
     generateProposal,
     reject,
     reset,
+    selectAllMessages,
     selectUpdateTarget,
     setDetailLevel,
     setInstructions,

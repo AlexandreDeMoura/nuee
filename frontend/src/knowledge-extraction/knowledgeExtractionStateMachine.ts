@@ -95,6 +95,7 @@ export interface KnowledgeExtractionState
   proposal: KnowledgeExtractionProposal | null;
   resolution: KnowledgeExtractionResolutionResponse | null;
   retryCount: number;
+  selectAllUsed: boolean;
   selection: KnowledgeExtractionSelection;
   selectionFingerprint: string;
   status: KnowledgeExtractionStatus;
@@ -112,6 +113,7 @@ export type KnowledgeExtractionEvent =
     }
   | {
       selection: KnowledgeExtractionSelection;
+      selectAllUsed?: boolean;
       type: 'selection_changed';
     }
   | {
@@ -269,6 +271,7 @@ export function createKnowledgeExtractionState(
     proposal: null,
     resolution: null,
     retryCount: 0,
+    selectAllUsed: false,
     selection,
     selectionFingerprint:
       knowledgeExtractionSelectionFingerprint(selection),
@@ -363,6 +366,8 @@ export function knowledgeExtractionReducer(
         attemptId: selectionChanged ? null : state.attemptId,
         failure: null,
         retryCount: selectionChanged ? 0 : state.retryCount,
+        selectAllUsed:
+          state.selectAllUsed || event.selectAllUsed === true,
         selection,
         selectionFingerprint,
         status: 'selecting',
