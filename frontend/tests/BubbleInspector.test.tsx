@@ -88,6 +88,85 @@ describe('BubbleInspector', () => {
     );
   });
 
+  it('expands the bubble into a full reading dialog and returns focus on Escape', () => {
+    render(
+      <BubbleInspector
+        availableBubbles={[bubble(), bubble({ id: 'bubble-2', title: 'Regulatory lead time' })]}
+        bubble={bubble()}
+        bubbleLinks={[bubbleLink()]}
+        onBubbleUpdated={vi.fn()}
+      />,
+    );
+
+    const expandButton = screen.getByRole('button', { name: 'Expand' });
+    expandButton.focus();
+    fireEvent.click(expandButton);
+
+    const reader = screen.getByRole('dialog', {
+      name: 'Last-mile is the make-or-break',
+    });
+    expect(reader.getAttribute('aria-modal')).toBe('true');
+    expect(document.activeElement).toBe(reader);
+    expect(
+      within(reader).getByText(
+        'Density decides whether the last mile is viable.',
+      ),
+    ).toBeTruthy();
+    expect(
+      within(reader).getByText(
+        'The final delivery leg accounts for most of the delivered cost.',
+      ),
+    ).toBeTruthy();
+    expect(
+      within(reader).getByText(
+        'Discussion: Launch economics · 2 source messages',
+      ),
+    ).toBeTruthy();
+    expect(within(reader).getByText('Regulatory lead time')).toBeTruthy();
+    expect(
+      within(reader)
+        .getByText(
+          'The final delivery leg accounts for most of the delivered cost.',
+        )
+        .closest('[data-rich-response]')
+        ?.getAttribute('data-density'),
+    ).toBe('comfortable');
+
+    fireEvent.keyDown(document, { key: 'Escape' });
+
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(document.activeElement).toBe(expandButton);
+  });
+
+  it('closes the expanded reading dialog on its close control and on the backdrop', () => {
+    render(<BubbleInspector bubble={bubble()} onBubbleUpdated={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Expand' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Close expanded bubble' }),
+    );
+    expect(screen.queryByRole('dialog')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Expand' }));
+    const backdrop = screen.getByRole('dialog').parentElement!;
+    fireEvent.mouseDown(backdrop);
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('starts editing from the expanded reading dialog', () => {
+    render(<BubbleInspector bubble={bubble()} onBubbleUpdated={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Expand' }));
+    fireEvent.click(
+      within(screen.getByRole('dialog')).getByRole('button', { name: 'Edit' }),
+    );
+
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(
+      (screen.getByLabelText(/^Title/) as HTMLInputElement).value,
+    ).toBe('Last-mile is the make-or-break');
+  });
+
   it('renders markdown content compactly and preserves its source while editing', () => {
     const markdown = `## Key finding
 

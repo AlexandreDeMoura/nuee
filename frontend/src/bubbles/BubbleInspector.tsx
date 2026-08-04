@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useId, useState } from 'react';
 import {
   CircleAlert,
   CircleCheck,
@@ -6,6 +6,7 @@ import {
   Link2,
   Link2Off,
   LoaderCircle,
+  Maximize2,
   MessageSquare,
   Pencil,
   Plus,
@@ -15,6 +16,11 @@ import {
 import { focusRing } from '../ui/focusRing';
 import { RichResponse } from '../ui/RichResponse';
 import { useFieldValidity } from '../ui/useFieldValidity';
+import { BubbleReaderModal } from './BubbleReaderModal';
+import {
+  extractionSourceDetails,
+  formatBubbleDate,
+} from './bubbleReadingModel';
 import { useBubbleInspector } from './useBubbleInspector';
 import type {
   BubbleInspectorProps,
@@ -43,50 +49,6 @@ const statusPresentation: Record<
   saved: { label: 'SAVED', classes: 'text-[#5c9a6b]' },
   error: { label: 'SAVE FAILED', classes: 'text-[#b4544e]' },
 };
-
-function formatInspectorDate(value: string): string {
-  const date = new Date(value);
-
-  if (!Number.isFinite(date.getTime())) {
-    return 'Recently';
-  }
-
-  return new Intl.DateTimeFormat(undefined, {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  }).format(date);
-}
-
-function extractionSourceDetails(
-  bubble: BubbleInspectorProps['bubble'],
-): string {
-  const details = [
-    bubble.source_discussion_title
-      ? `Discussion: ${bubble.source_discussion_title}`
-      : 'Discussion extraction',
-  ];
-  const messageCount = bubble.source_message_ids.length;
-  const contextCount = bubble.source_context_item_ids.length;
-
-  if (bubble.source_discussion_deleted_at) {
-    details.push('Source discussion deleted');
-  }
-
-  if (messageCount > 0) {
-    details.push(
-      `${messageCount} source ${messageCount === 1 ? 'message' : 'messages'}`,
-    );
-  }
-
-  if (contextCount > 0) {
-    details.push(
-      `${contextCount} frozen context ${contextCount === 1 ? 'item' : 'items'}`,
-    );
-  }
-
-  return details.join(' · ');
-}
 
 export function BubbleInspector(props: BubbleInspectorProps) {
   const {
@@ -120,6 +82,7 @@ export function BubbleInspector(props: BubbleInspectorProps) {
     status,
     updateDraft,
   } = useBubbleInspector(props);
+  const [isExpanded, setIsExpanded] = useState(false);
   const titleId = useId();
   const summaryId = useId();
   const contentId = useId();
@@ -140,9 +103,24 @@ export function BubbleInspector(props: BubbleInspectorProps) {
         data-inspector-bubble-id={persistedBubble.id}
       >
         <div className="min-h-0 flex-1 overflow-y-auto p-[18px]">
-          <span className="mb-3 inline-flex rounded-[5px] bg-[#eef2fa] px-1.5 py-0.5 text-[9px] font-semibold tracking-[0.1em] text-[#3f63a8] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
-            BUBBLE
-          </span>
+          <div className="mb-3 flex items-center gap-2">
+            <span className="inline-flex rounded-[5px] bg-[#eef2fa] px-1.5 py-0.5 text-[9px] font-semibold tracking-[0.1em] text-[#3f63a8] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
+              BUBBLE
+            </span>
+            <button
+              className={`ml-auto inline-flex min-h-7 cursor-pointer items-center gap-1.5 rounded-[8px] border border-[#e1e6ec] bg-white px-2 py-1 text-[10.5px] font-semibold text-[#5c6a7a] hover:border-[#c7d2df] hover:bg-[#f6f8fc] hover:text-[#33538f] ${focusRing}`}
+              type="button"
+              title="Expand bubble"
+              onClick={() => setIsExpanded(true)}
+            >
+              <Maximize2
+                className="size-[12px]"
+                strokeWidth={1.9}
+                aria-hidden="true"
+              />
+              Expand
+            </button>
+          </div>
           <h3 className="text-[17px] leading-[1.3] font-semibold tracking-[-0.2px] text-[#1e2733]">
             {persistedBubble.title}
           </h3>
@@ -183,7 +161,7 @@ export function BubbleInspector(props: BubbleInspectorProps) {
               </dt>
               <dd className="m-0 text-xs text-[#3a4453]">
                 <time dateTime={persistedBubble.updated_at}>
-                  {formatInspectorDate(persistedBubble.updated_at)}
+                  {formatBubbleDate(persistedBubble.updated_at)}
                 </time>
               </dd>
             </div>
@@ -337,6 +315,21 @@ export function BubbleInspector(props: BubbleInspectorProps) {
             <Trash2 className="size-[15px]" strokeWidth={1.8} aria-hidden="true" />
           </button>
         </div>
+
+        {isExpanded && (
+          <BubbleReaderModal
+            bubble={persistedBubble}
+            linkedTitles={linkedEntries.map(
+              ({ bubble: linkedBubble, linkedBubbleId }) =>
+                linkedBubble?.title ?? linkedBubbleId,
+            )}
+            onClose={() => setIsExpanded(false)}
+            onEdit={() => {
+              setIsExpanded(false);
+              setIsEditing(true);
+            }}
+          />
+        )}
 
         {isDeleteConfirmationOpen && (
           <div
