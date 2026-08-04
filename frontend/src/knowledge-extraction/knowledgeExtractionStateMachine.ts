@@ -42,6 +42,16 @@ export interface KnowledgeExtractionSourceIssue {
   sourceKind: 'message' | 'frozen_context';
 }
 
+export type KnowledgeExtractionRequestField =
+  | 'detail_level'
+  | 'frozen_context_item_ids'
+  | 'instructions'
+  | 'message_ids';
+
+export type KnowledgeExtractionFieldErrors = Partial<
+  Record<KnowledgeExtractionRequestField, string>
+>;
+
 export type KnowledgeExtractionFailure =
   | {
       code: string | null;
@@ -51,6 +61,7 @@ export type KnowledgeExtractionFailure =
     }
   | {
       code: string | null;
+      fieldErrors: KnowledgeExtractionFieldErrors;
       kind: 'source_validation';
       message: string;
       retryable: false;
@@ -80,6 +91,7 @@ export interface KnowledgeExtractionState
   extractionId: string | null;
   failure: KnowledgeExtractionFailure | null;
   generatedProposal: KnowledgeExtractionProposal | null;
+  initialMessageId: string | null;
   proposal: KnowledgeExtractionProposal | null;
   resolution: KnowledgeExtractionResolutionResponse | null;
   retryCount: number;
@@ -253,6 +265,7 @@ export function createKnowledgeExtractionState(
     extractionId: null,
     failure: null,
     generatedProposal: null,
+    initialMessageId: null,
     proposal: null,
     resolution: null,
     retryCount: 0,
@@ -279,6 +292,8 @@ function selectingState(
 
   return {
     ...createKnowledgeExtractionState(state),
+    initialMessageId:
+      normalizedMessageId.length > 0 ? normalizedMessageId : null,
     selection,
     selectionFingerprint:
       knowledgeExtractionSelectionFingerprint(selection),

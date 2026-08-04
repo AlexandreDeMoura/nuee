@@ -1,10 +1,10 @@
-import type { RefObject } from 'react';
 import {
   AlertCircle,
   Check,
   CircleDot,
   FileText,
   MessageSquare,
+  MousePointer2,
   type LucideIcon,
 } from 'lucide-react';
 import type {
@@ -71,71 +71,24 @@ function SourceIssue({
   );
 }
 
-export function WholeDiscussionSource({
-  buttonRef,
-  controller,
-  disabled,
-  messageIds,
-}: {
-  buttonRef: RefObject<HTMLButtonElement | null>;
-  controller: KnowledgeExtractionController;
-  disabled: boolean;
-  messageIds: readonly string[];
-}) {
-  const selected =
-    messageIds.length > 0 &&
-    controller.state.selection.messageIds.length === messageIds.length &&
-    messageIds.every((messageId) =>
-      controller.state.selection.messageIds.includes(messageId),
-    );
-
-  return (
-    <button
-      className={`flex w-full cursor-pointer items-start gap-3 rounded-xl border px-3.5 py-3 text-left transition-colors motion-reduce:transition-none ${
-        selected
-          ? 'border-[#7892c0] bg-[#edf3fc] shadow-[0_0_0_2px_rgba(63,99,168,0.09)]'
-          : 'border-[#dce3eb] bg-white hover:border-[#b9c7da] hover:bg-[#f7f9fc]'
-      } disabled:cursor-not-allowed disabled:opacity-55 ${focusRing}`}
-      type="button"
-      aria-label="Select complete discussion for extraction"
-      aria-pressed={selected}
-      disabled={disabled || messageIds.length === 0}
-      onClick={() =>
-        controller.setMessageIds(selected ? [] : messageIds)
-      }
-      ref={buttonRef}
-    >
-      <SelectionIndicator selected={selected} />
-      <span className="min-w-0">
-        <span className="block text-[12.5px] font-semibold text-[#344050]">
-          Complete discussion
-        </span>
-        <span className="mt-1 block text-[11px] leading-[1.5] text-[#718096]">
-          Includes all persisted user and AI messages available when you
-          generate the proposal
-          {messageIds.length > 0
-            ? ` — currently ${messageIds.length}.`
-            : '.'}
-        </span>
-      </span>
-    </button>
-  );
-}
-
 export function MessageSource({
   controller,
   disabled,
   errorId,
+  extractingFrom,
   issue,
   message,
   setSourceRef,
+  threadPosition,
 }: {
   controller: KnowledgeExtractionController;
   disabled: boolean;
   errorId: string;
+  extractingFrom: boolean;
   issue: KnowledgeExtractionSourceIssue | null;
   message: DiscussionMessage;
   setSourceRef: (element: HTMLButtonElement | null) => void;
+  threadPosition: number;
 }) {
   const selected =
     controller.state.selection.messageIds.includes(message.id);
@@ -143,39 +96,50 @@ export function MessageSource({
 
   return (
     <button
-      className={`w-full cursor-pointer rounded-2xl border p-3.5 text-left transition-[border-color,background-color,box-shadow] motion-reduce:transition-none ${
+      className={`w-full cursor-pointer border-b border-[#e7ebf1] px-4 py-3 text-left transition-colors last:border-b-0 motion-reduce:transition-none ${
         selected
-          ? 'border-[#7892c0] bg-[#edf3fc] shadow-[0_0_0_2px_rgba(63,99,168,0.09)]'
-          : isUser
-            ? 'border-[#d6dfec] bg-[#f7f9fc] hover:border-[#b9c7da]'
-            : 'border-[#dfe5ec] bg-white hover:border-[#bbc8d8]'
-      } ${issue ? 'border-[#d9918b] bg-[#fff8f7]' : ''} disabled:cursor-not-allowed disabled:opacity-65 ${focusRing}`}
+          ? 'bg-[#f2f5fb]'
+          : 'bg-white hover:bg-[#f8f9fc]'
+      } ${issue ? 'bg-[#fff8f7]' : ''} disabled:cursor-not-allowed disabled:opacity-65 ${focusRing}`}
       type="button"
+      aria-checked={selected}
       aria-describedby={issue ? errorId : undefined}
       aria-invalid={issue ? 'true' : undefined}
-      aria-label={
-        isUser
-          ? 'Select your message for extraction'
-          : 'Select AI response for extraction'
-      }
-      aria-pressed={selected}
+      aria-label={`${isUser ? 'Your message' : 'Nuée response'}, message ${threadPosition}`}
       data-extraction-source-id={message.id}
       data-extraction-source-kind="message"
+      data-extraction-start-source={extractingFrom ? 'true' : undefined}
       disabled={disabled}
       onClick={() => controller.toggleMessage(message.id)}
       ref={setSourceRef}
+      role="checkbox"
     >
       <span className="flex items-start gap-3">
         <SelectionIndicator selected={selected} />
         <span className="min-w-0 flex-1">
-          <span
-            className={`block text-[9.5px] font-semibold tracking-[0.07em] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace] ${
-              isUser ? 'text-[#5873a7]' : 'text-[#7a8798]'
-            }`}
-          >
-            {isUser ? 'Your message' : 'AI response'}
+          <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+            <span
+              className={`text-[9.5px] font-semibold tracking-[0.07em] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace] ${
+                isUser ? 'text-[#7c899a]' : 'text-[#4667a8]'
+              }`}
+            >
+              {isUser ? 'You' : 'Nuée'}
+            </span>
+            <span className="text-[9.5px] font-semibold text-[#a6b0bd] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
+              {threadPosition}
+            </span>
+            {extractingFrom && (
+              <span className="inline-flex items-center gap-1 rounded-md border border-[#cbd8ee] bg-[#edf3fc] px-1.5 py-0.5 text-[8.5px] font-semibold tracking-[0.07em] text-[#4f70ae] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
+                <MousePointer2
+                  className="size-2.5"
+                  strokeWidth={1.9}
+                  aria-hidden="true"
+                />
+                Extracting from
+              </span>
+            )}
           </span>
-          <span className="mt-1.5 block whitespace-pre-wrap break-words text-[12.5px] leading-[1.6] text-[#344050]">
+          <span className="mt-1 block line-clamp-2 whitespace-pre-wrap break-words text-[12px] leading-[1.55] text-[#465469]">
             {message.content}
           </span>
           {issue && <SourceIssue issue={issue} />}
@@ -212,15 +176,16 @@ export function FrozenContextSource({
           : 'border-[#dce3eb] bg-white hover:border-[#b9c7da] hover:bg-[#f7f9fc]'
       } ${issue ? 'border-[#d9918b] bg-[#fff8f7]' : ''} disabled:cursor-not-allowed disabled:opacity-65 ${focusRing}`}
       type="button"
+      aria-checked={selected}
       aria-describedby={issue ? errorId : undefined}
       aria-invalid={issue ? 'true' : undefined}
       aria-label={`Select frozen context: ${item.source_title}`}
-      aria-pressed={selected}
       data-extraction-source-id={item.id}
       data-extraction-source-kind="frozen_context"
       disabled={disabled}
       onClick={() => controller.toggleFrozenContextItem(item.id)}
       ref={setSourceRef}
+      role="checkbox"
     >
       <SelectionIndicator selected={selected} />
       <span className="min-w-0 flex-1">

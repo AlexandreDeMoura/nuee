@@ -268,22 +268,25 @@ describe('DiscussionExperience', () => {
     );
 
     expect(
-      screen.getByRole('heading', { name: 'Choose source material' }),
+      screen.getByRole('heading', { name: 'Extract as bubble' }),
+    ).toBeTruthy();
+    expect(screen.getByText('from “New discussion”')).toBeTruthy();
+    expect(
+      screen.getByRole('group', {
+        name: 'Discussion messages available for extraction',
+      }),
     ).toBeTruthy();
     expect(
-      screen.getByRole('group', { name: 'Individual message sources' }),
-    ).toBeTruthy();
-    expect(
-      screen.getByRole('group', { name: 'Frozen context sources' }),
+      screen.getByRole('group', { name: 'Frozen context snapshots' }),
     ).toBeTruthy();
     expect(
       screen.getByText(
-        'These are the stored copies attached to this discussion, not current live project content.',
+        'Stored copies attached when this discussion started.',
       ),
     ).toBeTruthy();
 
     const generate = screen.getByRole('button', {
-      name: 'Generate proposal',
+      name: 'Generate bubble',
     }) as HTMLButtonElement;
     expect(generate.disabled).toBe(true);
 
@@ -295,22 +298,46 @@ describe('DiscussionExperience', () => {
     expect(messageSources).toHaveLength(4);
     expect(
       messageSources.every(
-        (source) => source.getAttribute('aria-pressed') === 'false',
+        (source) => source.getAttribute('aria-checked') === 'false',
       ),
     ).toBe(true);
 
     fireEvent.click(messageSources[0]);
     fireEvent.click(messageSources[3]);
     fireEvent.click(
-      screen.getByRole('button', {
+      screen.getByRole('checkbox', {
         name: 'Select frozen context: Project description',
       }),
     );
 
-    expect(messageSources[0].getAttribute('aria-pressed')).toBe('true');
-    expect(messageSources[1].getAttribute('aria-pressed')).toBe('false');
-    expect(messageSources[2].getAttribute('aria-pressed')).toBe('false');
-    expect(messageSources[3].getAttribute('aria-pressed')).toBe('true');
+    const instructions = screen.getByRole('textbox', {
+      name: /Tell Nuée/,
+    }) as HTMLTextAreaElement;
+    expect(
+      (screen.getByRole('radio', {
+        name: /Standard/,
+      }) as HTMLInputElement).checked,
+    ).toBe(true);
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Keep the caveats' }),
+    );
+    expect(instructions.value).toBe('Keep the caveats');
+    fireEvent.change(
+      instructions,
+      {
+        target: {
+          value: 'Frame this as a launch risk and preserve uncertainty.',
+        },
+      },
+    );
+    fireEvent.click(
+      screen.getByRole('radio', { name: /Detailed/ }),
+    );
+
+    expect(messageSources[0].getAttribute('aria-checked')).toBe('true');
+    expect(messageSources[1].getAttribute('aria-checked')).toBe('false');
+    expect(messageSources[2].getAttribute('aria-checked')).toBe('false');
+    expect(messageSources[3].getAttribute('aria-checked')).toBe('true');
     expect(generate.disabled).toBe(false);
 
     fireEvent.click(generate);
@@ -319,9 +346,11 @@ describe('DiscussionExperience', () => {
       projectId,
       'discussion-1',
       {
-        detail_level: 'standard',
+        detail_level: 'detailed',
         frozen_context_item_ids: ['context-project-1'],
         idempotency_key: 'extraction-attempt-1',
+        instructions:
+          'Frame this as a launch risk and preserve uncertainty.',
         message_ids: ['message-user-1', 'message-assistant-2'],
       },
       expect.any(AbortSignal),
@@ -329,7 +358,7 @@ describe('DiscussionExperience', () => {
     expect(
       (
         screen.getByRole('button', {
-          name: 'Generating proposal…',
+          name: 'Generating bubble…',
         }) as HTMLButtonElement
       ).disabled,
     ).toBe(true);
@@ -353,21 +382,23 @@ describe('DiscussionExperience', () => {
     const assistantSource = document.querySelector<HTMLButtonElement>(
       '[data-extraction-source-id="message-assistant-1"]',
     );
-    const frozenSource = screen.getByRole('button', {
+    const frozenSource = screen.getByRole('checkbox', {
       name: 'Select frozen context: Project description',
     });
     const generate = screen.getByRole('button', {
-      name: 'Generate proposal',
+      name: 'Generate bubble',
     }) as HTMLButtonElement;
 
-    expect(userSource?.getAttribute('aria-pressed')).toBe('false');
-    expect(assistantSource?.getAttribute('aria-pressed')).toBe('true');
-    expect(frozenSource.getAttribute('aria-pressed')).toBe('false');
+    expect(userSource?.getAttribute('aria-checked')).toBe('false');
+    expect(assistantSource?.getAttribute('aria-checked')).toBe('true');
+    expect(assistantSource?.dataset.extractionStartSource).toBe('true');
+    expect(assistantSource?.textContent).toContain('Extracting from');
+    expect(frozenSource.getAttribute('aria-checked')).toBe('false');
     expect(generate.disabled).toBe(false);
     expect(document.activeElement).toBe(assistantSource);
 
     activateButtonWithKeyboard(assistantSource!, ' ');
-    expect(assistantSource?.getAttribute('aria-pressed')).toBe('false');
+    expect(assistantSource?.getAttribute('aria-checked')).toBe('false');
     expect(generate.disabled).toBe(true);
 
     activateButtonWithKeyboard(
@@ -383,7 +414,7 @@ describe('DiscussionExperience', () => {
     });
   });
 
-  it('submits complete-discussion selection as explicit message identifiers', async () => {
+  it('selects and clears every message while submitting explicit identifiers', async () => {
     const create = vi.fn<
       NonNullable<KnowledgeExtractionRequests['create']>
     >(
@@ -404,17 +435,25 @@ describe('DiscussionExperience', () => {
       }),
     );
 
-    const wholeDiscussion = screen.getByRole('button', {
-      name: 'Select complete discussion for extraction',
+    const selectAll = screen.getByRole('button', {
+      name: 'Select all',
     });
-    fireEvent.click(wholeDiscussion);
-    expect(wholeDiscussion.getAttribute('aria-pressed')).toBe('true');
+    fireEvent.click(selectAll);
     expect(
-      screen.getByText('2 messages selected.'),
+      screen.getByRole('button', { name: 'Clear all' }),
     ).toBeTruthy();
+    expect(screen.getByText('2 of 2 messages')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Clear all' }));
+    expect(
+      (screen.getByRole('button', {
+        name: 'Generate bubble',
+      }) as HTMLButtonElement).disabled,
+    ).toBe(true);
+    fireEvent.click(screen.getByRole('button', { name: 'Select all' }));
 
     fireEvent.click(
-      screen.getByRole('button', { name: 'Generate proposal' }),
+      screen.getByRole('button', { name: 'Generate bubble' }),
     );
 
     expect(create).toHaveBeenCalledWith(
@@ -457,7 +496,7 @@ describe('DiscussionExperience', () => {
       }),
     );
     fireEvent.click(
-      screen.getByRole('button', { name: 'Generate proposal' }),
+      screen.getByRole('button', { name: 'Generate bubble' }),
     );
 
     expect(
@@ -468,10 +507,10 @@ describe('DiscussionExperience', () => {
     const selectedAssistant = document.querySelector<HTMLButtonElement>(
       '[data-extraction-source-id="message-assistant-1"]',
     );
-    expect(selectedAssistant?.getAttribute('aria-pressed')).toBe('true');
+    expect(selectedAssistant?.getAttribute('aria-checked')).toBe('true');
 
     fireEvent.click(
-      screen.getByRole('button', { name: 'Retry generation' }),
+      screen.getByRole('button', { name: 'Generate bubble' }),
     );
 
     expect(create).toHaveBeenCalledTimes(2);
@@ -485,6 +524,9 @@ describe('DiscussionExperience', () => {
     const create = vi.fn().mockRejectedValue(
       new ApiError(422, {
         code: 'KNOWLEDGE_EXTRACTION_SOURCE_INVALID',
+        field_errors: {
+          instructions: 'Review the extraction instructions.',
+        },
         message: 'The selected response is no longer available.',
         source_errors: [
           {
@@ -510,7 +552,7 @@ describe('DiscussionExperience', () => {
       }),
     );
     fireEvent.click(
-      screen.getByRole('button', { name: 'Generate proposal' }),
+      screen.getByRole('button', { name: 'Generate bubble' }),
     );
 
     expect(
@@ -525,11 +567,18 @@ describe('DiscussionExperience', () => {
     expect(affectedSource?.textContent).toContain(
       'This source no longer exists.',
     );
+    const instructions = screen.getByRole('textbox', {
+      name: /Tell Nuée/,
+    });
+    expect(instructions.getAttribute('aria-invalid')).toBe('true');
+    expect(
+      screen.getByText('Review the extraction instructions.'),
+    ).toBeTruthy();
     expect(document.activeElement).toBe(affectedSource);
     expect(
       (
         screen.getByRole('button', {
-          name: 'Generate proposal',
+          name: 'Generate bubble',
         }) as HTMLButtonElement
       ).disabled,
     ).toBe(true);
@@ -538,7 +587,7 @@ describe('DiscussionExperience', () => {
     expect(
       (
         screen.getByRole('button', {
-          name: 'Generate proposal',
+          name: 'Generate bubble',
         }) as HTMLButtonElement
       ).disabled,
     ).toBe(true);
@@ -654,7 +703,7 @@ describe('DiscussionExperience', () => {
     ).toBeNull();
   });
 
-  it('discards local source selection when minimized and offers a fresh flow after reopening', async () => {
+  it('closes the request without minimizing and offers a fresh flow', async () => {
     render(<Harness requests={{ get: async () => details() }} />);
     fireEvent.click(screen.getByRole('button', { name: 'Open first' }));
     fireEvent.click(
@@ -664,26 +713,28 @@ describe('DiscussionExperience', () => {
     );
 
     expect(
-      screen.getByRole('heading', { name: 'Choose source material' }),
+      screen.getByRole('heading', { name: 'Extract as bubble' }),
     ).toBeTruthy();
     expect(
       document
         .querySelector('[data-extraction-source-id="message-assistant-1"]')
-        ?.getAttribute('aria-pressed'),
+        ?.getAttribute('aria-checked'),
     ).toBe('true');
 
     fireEvent.click(
-      screen.getByRole('button', { name: 'Minimize discussion' }),
+      screen.getByRole('button', { name: 'Close extraction request' }),
     );
-    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.getByRole('dialog')).toBeTruthy();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Open first' }));
     const headerAction = await screen.findByRole('button', {
       name: 'Extract knowledge from discussion',
     });
     expect((headerAction as HTMLButtonElement).disabled).toBe(false);
     expect(
-      screen.queryByRole('heading', { name: 'Choose source material' }),
+      screen.queryByRole('heading', { name: 'Extract as bubble' }),
+    ).toBeNull();
+    expect(
+      document.querySelector('[data-extraction-source-kind]'),
     ).toBeNull();
   });
 
@@ -710,7 +761,7 @@ describe('DiscussionExperience', () => {
       }),
     );
     fireEvent.click(
-      screen.getByRole('button', { name: 'Generate proposal' }),
+      screen.getByRole('button', { name: 'Generate bubble' }),
     );
 
     expect(
@@ -809,7 +860,7 @@ describe('DiscussionExperience', () => {
       }),
     );
     activateButtonWithKeyboard(
-      screen.getByRole('button', { name: 'Generate proposal' }),
+      screen.getByRole('button', { name: 'Generate bubble' }),
     );
     activateButtonWithKeyboard(
       await screen.findByRole('button', { name: 'Reject' }),
@@ -921,7 +972,7 @@ describe('DiscussionExperience', () => {
       }),
     );
     fireEvent.click(
-      screen.getByRole('button', { name: 'Generate proposal' }),
+      screen.getByRole('button', { name: 'Generate bubble' }),
     );
 
     const title = await screen.findByRole('textbox', {
@@ -1177,9 +1228,14 @@ describe('DiscussionExperience', () => {
     });
     fireEvent.click(headerExtractionAction);
     fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
-    await waitFor(() =>
-      expect(document.activeElement).toBe(headerExtractionAction),
-    );
+    await waitFor(() => {
+      const restoredHeaderAction = screen.getByRole('button', {
+        name: 'Extract knowledge from discussion',
+      });
+
+      expect(restoredHeaderAction).not.toBe(headerExtractionAction);
+      expect(document.activeElement).toBe(restoredHeaderAction);
+    });
     fireEvent.click(
       screen.getByRole('button', {
         name: 'Extract knowledge from this response',

@@ -87,6 +87,7 @@ describe('knowledge extraction state machine', () => {
       messageIds: ['message-1'],
     });
     expect(state.proposal).toEqual(proposal);
+    expect(state.initialMessageId).toBe('message-1');
 
     state = knowledgeExtractionReducer(state, {
       field: 'title',
@@ -116,6 +117,7 @@ describe('knowledge extraction state machine', () => {
     expect(state.attemptId).toBeNull();
     expect(state.extractionId).toBeNull();
     expect(state.proposal).toBeNull();
+    expect(state.initialMessageId).toBeNull();
     expect(state.target).toBeNull();
 
     state = knowledgeExtractionReducer(state, { type: 'reset' });
@@ -237,6 +239,7 @@ describe('knowledge extraction state machine', () => {
       { kind: 'source_validation' }
     > = {
       code: 'KNOWLEDGE_EXTRACTION_SOURCE_INVALID',
+      fieldErrors: {},
       kind: 'source_validation',
       message: 'Review the missing source.',
       retryable: false,

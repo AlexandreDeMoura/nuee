@@ -5,7 +5,14 @@ import {
   type FormEvent,
   type ReactNode,
 } from 'react';
-import { ArrowUp, MessageSquare, Minus, Trash2 } from 'lucide-react';
+import {
+  ArrowUp,
+  CirclePlus,
+  MessageSquare,
+  Minus,
+  Trash2,
+  X,
+} from 'lucide-react';
 import { focusRing } from '../ui/focusRing';
 import { isTemporaryDiscussionTitle } from './discussionModel';
 import type { VisibleDiscussion } from './useDiscussionVisibility';
@@ -26,6 +33,9 @@ export interface DiscussionModalProps {
   inspectorSlot?: ReactNode;
   isObscured?: boolean;
   messagesSlot?: ReactNode;
+  presentation?: 'discussion' | 'extraction_request';
+  presentationSubtitle?: string;
+  presentationTitle?: string;
   onCloseInspector?: () => void;
   onDelete?: () => void;
   onDraftPromptChange: (prompt: string) => void;
@@ -41,6 +51,9 @@ export function DiscussionModal({
   inspectorSlot,
   isObscured = false,
   messagesSlot,
+  presentation = 'discussion',
+  presentationSubtitle,
+  presentationTitle,
   onCloseInspector,
   onDelete,
   onDraftPromptChange,
@@ -56,8 +69,11 @@ export function DiscussionModal({
   const onMinimizeRef = useRef(onMinimize);
   const onCloseInspectorRef = useRef(onCloseInspector);
   const isDraft = visibleDiscussion.kind === 'draft';
+  const isExtractionRequest = presentation === 'extraction_request';
+  const displayedTitle = presentationTitle ?? visibleDiscussion.title;
   const hasTemporaryTitle =
-    isDraft || isTemporaryDiscussionTitle(visibleDiscussion.title);
+    !isExtractionRequest &&
+    (isDraft || isTemporaryDiscussionTitle(visibleDiscussion.title));
   const visibilityIdentity = isDraft
     ? `draft:${visibleDiscussion.key}`
     : `persisted:${visibleDiscussion.discussionId}`;
@@ -175,7 +191,11 @@ export function DiscussionModal({
     >
       <div
         className={`flex max-h-[min(760px,calc(100vh-90px))] min-h-[420px] w-full flex-col overflow-hidden rounded-2xl border border-[#d9e0e8] bg-white shadow-[0_28px_72px_-24px_rgba(20,28,40,0.58)] md:flex-row ${
-          inspectorSlot ? 'max-w-[1080px]' : 'max-w-[760px]'
+          inspectorSlot
+            ? 'max-w-[1080px]'
+            : isExtractionRequest
+              ? 'max-w-[960px]'
+              : 'max-w-[760px]'
         }`}
         ref={dialogRef}
         role="dialog"
@@ -186,9 +206,26 @@ export function DiscussionModal({
         tabIndex={-1}
       >
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-white">
-          <header className="shrink-0 border-b border-[#eef1f5] px-4 sm:px-5">
-          <div className="flex min-h-13 items-center gap-3">
-            <div className="min-w-0">
+          <header
+            className={`shrink-0 border-b border-[#eef1f5] px-4 sm:px-5 ${
+              isExtractionRequest ? 'py-3' : ''
+            }`}
+          >
+          <div
+            className={`flex items-center gap-3 ${
+              isExtractionRequest ? 'min-h-14' : 'min-h-13'
+            }`}
+          >
+            {isExtractionRequest && (
+              <span className="grid size-10 shrink-0 place-items-center rounded-xl bg-[#eef3fb] text-[#4267ad]">
+                <CirclePlus
+                  className="size-5"
+                  strokeWidth={1.8}
+                  aria-hidden="true"
+                />
+              </span>
+            )}
+            <div className="min-w-0 flex-1">
               <h2
                 className={`truncate text-[15px] font-semibold ${
                   hasTemporaryTitle
@@ -197,17 +234,26 @@ export function DiscussionModal({
                 }`}
                 data-temporary-title={hasTemporaryTitle ? 'true' : undefined}
                 id={titleId}
-                title={visibleDiscussion.title}
+                title={displayedTitle}
               >
-                {visibleDiscussion.title}
+                {displayedTitle}
               </h2>
-              <p className="sr-only" id={descriptionId}>
-                Focus on one question. Keep what matters as knowledge later.
+              <p
+                className={
+                  isExtractionRequest
+                    ? 'mt-0.5 truncate text-[11px] text-[#8290a4]'
+                    : 'sr-only'
+                }
+                id={descriptionId}
+                title={presentationSubtitle}
+              >
+                {presentationSubtitle ??
+                  'Focus on one question. Keep what matters as knowledge later.'}
               </p>
             </div>
-            <div className="ml-auto flex shrink-0 items-center gap-2">
+            <div className="flex shrink-0 items-center gap-2">
               {actionsSlot}
-              {!isDraft && onDelete && (
+              {!isExtractionRequest && !isDraft && onDelete && (
                 <button
                   className={`grid size-8 cursor-pointer place-items-center rounded-[9px] border border-[#ecd4d1] bg-white text-[#b4544e] hover:bg-[#fbf1f0] ${focusRing}`}
                   type="button"
@@ -225,15 +271,31 @@ export function DiscussionModal({
               <button
                 className={`grid size-8 cursor-pointer place-items-center rounded-[9px] border border-[#e1e6ec] bg-white text-[#6f7d8e] hover:border-[#c7d2df] hover:bg-[#f6f8fc] hover:text-[#40516a] ${focusRing}`}
                 type="button"
-                aria-label="Minimize discussion"
-                title="Minimize discussion"
+                aria-label={
+                  isExtractionRequest
+                    ? 'Close extraction request'
+                    : 'Minimize discussion'
+                }
+                title={
+                  isExtractionRequest
+                    ? 'Close extraction request'
+                    : 'Minimize discussion'
+                }
                 onClick={onMinimize}
               >
-                <Minus
-                  className="size-[16px]"
-                  strokeWidth={1.8}
-                  aria-hidden="true"
-                />
+                {isExtractionRequest ? (
+                  <X
+                    className="size-[16px]"
+                    strokeWidth={1.8}
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <Minus
+                    className="size-[16px]"
+                    strokeWidth={1.8}
+                    aria-hidden="true"
+                  />
+                )}
               </button>
             </div>
           </div>
@@ -245,7 +307,9 @@ export function DiscussionModal({
           </header>
 
           <div
-            className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[#fbfcfd] px-4 py-5 sm:px-6"
+            className={`flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-5 sm:px-6 ${
+              isExtractionRequest ? 'bg-white' : 'bg-[#fbfcfd]'
+            }`}
           >
             {messagesSlot ?? (
               <div className="m-auto max-w-[380px] py-8 text-center">

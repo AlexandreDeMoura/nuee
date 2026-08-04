@@ -405,7 +405,7 @@ describe('workspace integration contracts', () => {
       }),
     );
     activateButtonWithKeyboard(
-      screen.getByRole('button', { name: 'Generate proposal' }),
+      screen.getByRole('button', { name: 'Generate bubble' }),
     );
     activateButtonWithKeyboard(
       await screen.findByRole('button', {
@@ -607,7 +607,7 @@ describe('workspace integration contracts', () => {
       }),
     );
     activateButtonWithKeyboard(
-      screen.getByRole('button', { name: 'Generate proposal' }),
+      screen.getByRole('button', { name: 'Generate bubble' }),
     );
     activateButtonWithKeyboard(
       await screen.findByRole('button', {

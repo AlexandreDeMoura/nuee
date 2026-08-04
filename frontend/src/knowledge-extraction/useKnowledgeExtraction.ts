@@ -37,6 +37,8 @@ import {
   type KnowledgeExtractionBinding,
   type KnowledgeExtractionEvent,
   type KnowledgeExtractionFailure,
+  type KnowledgeExtractionFieldErrors,
+  type KnowledgeExtractionRequestField,
   type KnowledgeExtractionSelection,
   type KnowledgeExtractionSourceIssue,
   type KnowledgeExtractionSourceIssueReason,
@@ -194,6 +196,10 @@ function sourceValidationFailure(
 > {
   return {
     code: error instanceof ApiError ? (error.code ?? null) : null,
+    fieldErrors:
+      error instanceof ApiError
+        ? normalizeFieldErrors(error.body.field_errors)
+        : {},
     kind: 'source_validation',
     message: errorMessage(
       error,
@@ -205,6 +211,35 @@ function sourceValidationFailure(
         ? normalizeSourceIssues(error.body.source_errors)
         : [],
   };
+}
+
+const REQUEST_FIELDS = new Set<KnowledgeExtractionRequestField>([
+  'detail_level',
+  'frozen_context_item_ids',
+  'instructions',
+  'message_ids',
+]);
+
+function normalizeFieldErrors(
+  value: unknown,
+): KnowledgeExtractionFieldErrors {
+  if (!isRecord(value)) {
+    return {};
+  }
+
+  const errors: KnowledgeExtractionFieldErrors = {};
+
+  for (const [field, message] of Object.entries(value)) {
+    if (
+      REQUEST_FIELDS.has(field as KnowledgeExtractionRequestField) &&
+      typeof message === 'string' &&
+      message.trim().length > 0
+    ) {
+      errors[field as KnowledgeExtractionRequestField] = message.trim();
+    }
+  }
+
+  return errors;
 }
 
 function resolutionFailure(
@@ -526,6 +561,10 @@ export function useKnowledgeExtraction({
       transition({
         failure: {
           code: 'KNOWLEDGE_EXTRACTION_SELECTION_REQUIRED',
+          fieldErrors: {
+            message_ids:
+              'Select at least one completed message or frozen context item.',
+          },
           kind: 'source_validation',
           message:
             'Select at least one completed message or frozen context item.',

@@ -291,6 +291,11 @@ function DiscussionExperienceModal({
     (extraction.state.status === 'reviewing' ||
       extraction.state.status === 'saving_new' ||
       extraction.state.status === 'saving_update');
+  const isExtractionRequestActive =
+    extraction.state.status === 'selecting' ||
+    extraction.state.status === 'generating' ||
+    extraction.state.status === 'generation_failed' ||
+    extraction.state.status === 'source_invalid';
   const canStartExtraction =
     !isExtractionFlowActive &&
     hasEligibleKnowledgeExtractionSource(lifecycle.details);
@@ -362,19 +367,19 @@ function DiscussionExperienceModal({
         return;
       }
 
-      const restoredMessageTrigger = launch.source.messageId
-        ? Array.from(
-            document.querySelectorAll<HTMLButtonElement>(
-              '[data-knowledge-extraction-entry="message"]',
-            ),
-          ).find(
-            (candidate) =>
-              candidate.dataset.knowledgeExtractionMessageId ===
-              launch.source.messageId,
-          )
-        : null;
+      const restoredTrigger = Array.from(
+        document.querySelectorAll<HTMLButtonElement>(
+          '[data-knowledge-extraction-entry]',
+        ),
+      ).find((candidate) =>
+        launch.source.messageId
+          ? candidate.dataset.knowledgeExtractionEntry === 'message' &&
+            candidate.dataset.knowledgeExtractionMessageId ===
+              launch.source.messageId
+          : candidate.dataset.knowledgeExtractionEntry === 'header',
+      );
 
-      restoredMessageTrigger?.focus();
+      restoredTrigger?.focus();
     }, 0);
   }, []);
   const cancelExtraction = useCallback(async () => {
@@ -501,7 +506,7 @@ function DiscussionExperienceModal({
     <>
       <DiscussionModal
       actionsSlot={
-        discussionId ? (
+        discussionId && !isExtractionRequestActive ? (
           <DiscussionKnowledgeAction
             disabled={!canStartExtraction}
             disabledReason={
@@ -551,6 +556,15 @@ function DiscussionExperienceModal({
         ) : undefined
       }
       isObscured={isObscured || isDiscardConfirmationOpen}
+      presentation={
+        isExtractionRequestActive ? 'extraction_request' : 'discussion'
+      }
+      presentationSubtitle={
+        isExtractionRequestActive ? `from “${title}”` : undefined
+      }
+      presentationTitle={
+        isExtractionRequestActive ? 'Extract as bubble' : undefined
+      }
       contextSlot={
         !isExtractionFlowActive &&
         discussionId &&
@@ -616,7 +630,13 @@ function DiscussionExperienceModal({
         inspectedContextItem ? closeContextInspector : undefined
       }
       onDraftPromptChange={controller.updateDraftPrompt}
-      onMinimize={minimize}
+      onMinimize={
+        isExtractionRequestActive
+          ? () => {
+              void cancelExtraction();
+            }
+          : minimize
+      }
       visibleDiscussion={presentedDiscussion}
       />
       {isDiscardConfirmationOpen && (
