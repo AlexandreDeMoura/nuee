@@ -1,4 +1,5 @@
 import type { Bubble } from '../api';
+import { markdownToPlainText } from '../ui/markdownToPlainText';
 
 const PREVIEW_MAX_LENGTH = 180;
 
@@ -34,7 +35,8 @@ export function getBubbleCardPreview(
   bubble: Pick<Bubble, 'content' | 'summary'>,
 ) {
   const summary = bubble.summary ? normalizePreviewText(bubble.summary) : '';
-  const preview = summary || contentOpeningSentence(bubble.content);
+  const preview =
+    summary || contentOpeningSentence(markdownToPlainText(bubble.content));
 
   return truncatePreview(preview);
 }

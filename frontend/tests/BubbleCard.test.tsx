@@ -46,6 +46,17 @@ describe('BubbleCard', () => {
     expect(preview).toBe('First line continues here.');
   });
 
+  it('projects markdown to plain text before deriving the content preview', () => {
+    const preview = getBubbleCardPreview({
+      summary: null,
+      content: `## Key finding
+
+**Adoption** [improves](https://example.com/evidence) with a focused rollout. A second sentence is not included.`,
+    });
+
+    expect(preview).toBe('Key finding Adoption improves with a focused rollout.');
+  });
+
   it('truncates a long preview deterministically at a word boundary', () => {
     const content = Array.from({ length: 60 }, () => 'knowledge').join(' ');
     const firstPreview = getBubbleCardPreview({ summary: null, content });
