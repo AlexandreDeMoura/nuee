@@ -1,16 +1,18 @@
-import { afterEach, describe, expect, it } from 'vitest';
 import { cleanup, render, screen, within } from '@testing-library/react';
-import { RichResponse } from '../src/discussions';
+import { afterEach, describe, expect, it } from 'vitest';
+import { RichResponse } from './RichResponse';
 
 afterEach(cleanup);
 
 describe('RichResponse', () => {
-  it('renders the approved rich-text subset without truncating the response', () => {
+  it('renders every supported block type and inline formatting', () => {
     render(
       <RichResponse
         content={`# Answer
+## Rollout
+### Checks
 
-Use a **phased rollout** with \`feature_flags\`.
+Use a **phased rollout** with *small cohorts* and \`feature_flags\`.
 
 - Validate licensing
 - Confirm support coverage
@@ -32,8 +34,11 @@ See [the launch brief](https://example.com/brief) and supporting evidence [1].
       />,
     );
 
-    expect(screen.getByRole('heading', { name: 'Answer' })).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 3, name: 'Answer' })).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 4, name: 'Rollout' })).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 5, name: 'Checks' })).toBeTruthy();
     expect(screen.getByText('phased rollout', { selector: 'strong' })).toBeTruthy();
+    expect(screen.getByText('small cohorts', { selector: 'em' })).toBeTruthy();
     expect(screen.getByText('feature_flags', { selector: 'code' })).toBeTruthy();
     expect(screen.getAllByRole('list')).toHaveLength(2);
 
@@ -59,10 +64,12 @@ See [the launch brief](https://example.com/brief) and supporting evidence [1].
     expect(directCitation.getAttribute('target')).toBe('_blank');
   });
 
-  it('keeps raw HTML and unsafe or unsupported links inert', () => {
+  it('rejects javascript URLs and leaves unsupported syntax as literal text', () => {
     const { container } = render(
       <RichResponse
-        content={`<script>window.compromised = true</script>
+        content={`#### Unsupported heading
+
+<script>window.compromised = true</script>
 
 [unsafe](javascript:alert(1))
 
@@ -74,8 +81,10 @@ See [the launch brief](https://example.com/brief) and supporting evidence [1].
 
     expect(container.querySelector('script')).toBeNull();
     expect(container.querySelector('img')).toBeNull();
+    expect(screen.queryByRole('heading')).toBeNull();
     expect(screen.queryByRole('link', { name: 'unsafe' })).toBeNull();
     expect(screen.queryByRole('link', { name: 'tracking pixel' })).toBeNull();
+    expect(container.textContent).toContain('#### Unsupported heading');
     expect(container.textContent).toContain(
       '<script>window.compromised = true</script>',
     );
@@ -83,5 +92,31 @@ See [the launch brief](https://example.com/brief) and supporting evidence [1].
     expect(container.textContent).toContain(
       '![tracking pixel](https://example.com/pixel.gif)',
     );
+  });
+
+  it.each([
+    [
+      'comfortable',
+      'space-y-3.5 text-[15.5px] leading-[1.65]',
+    ],
+    ['compact', 'space-y-2.5 text-[12.5px] leading-[1.6]'],
+  ] as const)('renders the %s density scale', (density, expectedClasses) => {
+    const { container } = render(
+      <RichResponse content="Density sample" density={density} />,
+    );
+    const response = container.querySelector('[data-rich-response]');
+
+    expect(response?.getAttribute('data-density')).toBe(density);
+    expect(response?.className).toBe(expectedClasses);
+  });
+
+  it('uses comfortable density by default', () => {
+    const { container } = render(<RichResponse content="Default scale" />);
+
+    expect(
+      container
+        .querySelector('[data-rich-response]')
+        ?.getAttribute('data-density'),
+    ).toBe('comfortable');
   });
 });

@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 
 interface RichResponseProps {
   content: string;
+  density?: 'compact' | 'comfortable';
 }
 
 type CitationReferences = ReadonlyMap<string, string>;
@@ -175,7 +176,15 @@ function preparedContent(content: string): {
   };
 }
 
-export function RichResponse({ content }: RichResponseProps) {
+const densityClasses = {
+  compact: 'space-y-2.5 text-[12.5px] leading-[1.6]',
+  comfortable: 'space-y-3.5 text-[15.5px] leading-[1.65]',
+} as const;
+
+export function RichResponse({
+  content,
+  density = 'comfortable',
+}: RichResponseProps) {
   const { lines, references } = preparedContent(content);
   const blocks: ReactNode[] = [];
   let index = 0;
@@ -389,7 +398,8 @@ export function RichResponse({ content }: RichResponseProps) {
 
   return (
     <div
-      className="space-y-3.5 text-[15.5px] leading-[1.65]"
+      className={densityClasses[density]}
+      data-density={density}
       data-rich-response
     >
       {blocks}

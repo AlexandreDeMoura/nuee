@@ -8,7 +8,7 @@ export * from './DiscussionMessages';
 export * from './DiscussionModal';
 export * from './DiscussionsPanel';
 export * from './FrozenContextInspector';
-export * from './RichResponse';
+export * from '../ui/RichResponse';
 export * from './discussionContextModel';
 export * from './discussionCreationFailure';
 export * from './discussionListModel';

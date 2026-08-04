@@ -4,7 +4,7 @@ import {
   DiscussionKnowledgeAction,
   type DiscussionKnowledgeActionHandler,
 } from './DiscussionKnowledgeAction';
-import { RichResponse } from './RichResponse';
+import { RichResponse } from '../ui/RichResponse';
 import { DiscussionMessageSources } from './DiscussionMessageSources';
 import type { PendingDiscussionTurn } from './useDiscussionLifecycle';
 
