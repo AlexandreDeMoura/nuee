@@ -5,6 +5,9 @@ import {
 } from 'react';
 import { ArrowUp, Globe2 } from 'lucide-react';
 import { focusRing } from '../ui/focusRing';
+import { useAutoGrowTextarea } from './useAutoGrowTextarea';
+
+const COMPOSER_MAX_ROWS = 3;
 
 export interface DiscussionComposerProps {
   disabled?: boolean;
@@ -34,6 +37,7 @@ export function DiscussionComposer({
   const composerId = useId();
   const statusId = useId();
   const normalizedValue = value.trim();
+  const textareaRef = useAutoGrowTextarea(value, COMPOSER_MAX_ROWS);
 
   const submit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -68,10 +72,11 @@ export function DiscussionComposer({
         <div className="flex items-end gap-2">
           <textarea
             aria-describedby={error || isSubmitting ? statusId : undefined}
-            className="max-h-40 min-h-[42px] flex-1 resize-none border-0 bg-transparent px-2 py-2 text-[13px] leading-[1.5] text-[#1e2733] outline-none placeholder:text-[#a7b1be] disabled:cursor-not-allowed disabled:text-[#7f8b99]"
+            className="scrollbar-subtle min-h-[42px] flex-1 resize-none overflow-y-hidden overscroll-contain border-0 bg-transparent px-2 py-2 text-[13px] leading-[1.5] text-[#1e2733] outline-none placeholder:text-[#a7b1be] disabled:cursor-not-allowed disabled:text-[#7f8b99]"
             disabled={disabled || isSubmitting}
             id={composerId}
             name="message"
+            ref={textareaRef}
             placeholder={
               disabled
                 ? 'Resolve the unanswered message first'

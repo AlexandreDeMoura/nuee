@@ -19,3 +19,47 @@
   --color-success: #5c9a6b;
   --color-warning: #a27439;
 }
+
+/*
+ * Thin, trackless scrollbar that stays out of the way until pointed at.
+ * Firefox and Chromium honour the standard properties; the `::-webkit-`
+ * block covers Safari, which still ignores `scrollbar-color`.
+ */
+@utility scrollbar-subtle {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-text-subtle) 35%, transparent)
+    transparent;
+
+  &:hover,
+  &:focus-visible {
+    scrollbar-color: color-mix(in srgb, var(--color-text-subtle) 60%, transparent)
+      transparent;
+  }
+
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: color-mix(
+      in srgb,
+      var(--color-text-subtle) 35%,
+      transparent
+    );
+    border-radius: 9999px;
+    transition: background-color 150ms ease;
+  }
+
+  &:hover::-webkit-scrollbar-thumb {
+    background-color: color-mix(
+      in srgb,
+      var(--color-text-subtle) 60%,
+      transparent
+    );
+  }
+}
