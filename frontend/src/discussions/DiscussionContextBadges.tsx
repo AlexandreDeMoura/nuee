@@ -30,7 +30,7 @@ const kindIcons: Record<DiscussionContextKind, LucideIcon> = {
 };
 
 const badgeClasses =
-  'inline-flex h-7 max-w-52 shrink-0 items-center gap-1.5 rounded-lg border border-[#dce3eb] bg-[#f7f9fc] px-2.5 text-[10.5px] font-medium text-[#5d6b7d]';
+  'inline-flex h-8.5 max-w-62.5 shrink-0 items-center gap-1.75 rounded-lg border border-[#dce3eb] bg-[#f7f9fc] px-3 text-[12.5px] font-medium text-[#5d6b7d]';
 const compactBadgeLimit = 3;
 
 export function DiscussionContextBadges({
@@ -53,18 +53,18 @@ export function DiscussionContextBadges({
 
   return (
     <div
-      className="flex min-w-0 items-start gap-2"
+      className="flex min-w-0 items-start gap-2.5"
       aria-label={`${badges.length} frozen context ${
         badges.length === 1 ? 'item' : 'items'
       }`}
     >
-      <span className="mt-2 inline-flex shrink-0 items-center gap-1 text-[9.5px] font-semibold tracking-[0.06em] text-[#8a96a5] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
-        <LockKeyhole className="size-3" strokeWidth={1.8} aria-hidden="true" />
+      <span className="mt-2.5 inline-flex shrink-0 items-center gap-1.25 text-[11.5px] font-semibold tracking-[0.06em] text-[#8a96a5] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
+        <LockKeyhole className="size-3.5" strokeWidth={1.8} aria-hidden="true" />
         Frozen
       </span>
-      <div className="flex min-w-0 flex-1 items-start gap-1.5">
+      <div className="flex min-w-0 flex-1 items-start gap-1.75">
         <div
-          className={`flex min-w-0 flex-1 gap-1.5 py-0.5 ${
+          className={`flex min-w-0 flex-1 gap-1.75 py-0.5 ${
             isExpanded ? 'flex-wrap' : 'overflow-hidden'
           }`}
           id={completeListId}
@@ -75,7 +75,7 @@ export function DiscussionContextBadges({
             const content = (
               <>
                 <Icon
-                  className="size-3.25 shrink-0 text-[#71829a]"
+                  className="size-4 shrink-0 text-[#71829a]"
                   strokeWidth={1.7}
                   aria-hidden="true"
                 />
@@ -114,7 +114,7 @@ export function DiscussionContextBadges({
         </div>
         {hasOverflow && (
           <button
-            className="mt-0.5 inline-flex h-7 shrink-0 cursor-pointer items-center gap-1 rounded-lg border border-[#dce3eb] bg-white px-2 text-[10.5px] font-semibold text-[#617187] hover:border-[#bac7d7] hover:bg-[#f6f8fc] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/25"
+            className="mt-0.5 inline-flex h-8.5 shrink-0 cursor-pointer items-center gap-1.25 rounded-lg border border-[#dce3eb] bg-white px-2.5 text-[12.5px] font-semibold text-[#617187] hover:border-[#bac7d7] hover:bg-[#f6f8fc] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/25"
             type="button"
             aria-controls={completeListId}
             aria-expanded={isExpanded}
@@ -129,7 +129,7 @@ export function DiscussionContextBadges({
               <>
                 Less
                 <ChevronUp
-                  className="size-3"
+                  className="size-3.5"
                   strokeWidth={1.8}
                   aria-hidden="true"
                 />
@@ -138,7 +138,7 @@ export function DiscussionContextBadges({
               <>
                 +{badges.length - compactBadgeLimit}
                 <ChevronDown
-                  className="size-3"
+                  className="size-3.5"
                   strokeWidth={1.8}
                   aria-hidden="true"
                 />

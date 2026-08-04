@@ -46,14 +46,14 @@ const sourceIssueLabels: Record<
 function SelectionIndicator({ selected }: { selected: boolean }) {
   return (
     <span
-      className={`grid size-5 shrink-0 place-items-center rounded-md border ${
+      className={`grid size-6 shrink-0 place-items-center rounded-md border ${
         selected
           ? 'border-[#3f63a8] bg-[#3f63a8] text-white'
           : 'border-[#cbd4df] bg-white text-transparent'
       }`}
       aria-hidden="true"
     >
-      <Check className="size-3.25" strokeWidth={2.4} />
+      <Check className="size-4" strokeWidth={2.4} />
     </span>
   );
 }
@@ -64,8 +64,8 @@ function SourceIssue({
   issue: KnowledgeExtractionSourceIssue;
 }) {
   return (
-    <span className="mt-2 flex items-center gap-1.5 text-[10.5px] font-semibold text-[#a64540]">
-      <AlertCircle className="size-3.25 shrink-0" aria-hidden="true" />
+    <span className="mt-2.5 flex items-center gap-1.75 text-[12.5px] font-semibold text-[#a64540]">
+      <AlertCircle className="size-4 shrink-0" aria-hidden="true" />
       {sourceIssueLabels[issue.reason]}
     </span>
   );
@@ -96,7 +96,7 @@ export function MessageSource({
 
   return (
     <button
-      className={`w-full cursor-pointer border-b border-[#e7ebf1] px-4 py-3 text-left transition-colors last:border-b-0 motion-reduce:transition-none ${
+      className={`w-full cursor-pointer border-b border-[#e7ebf1] px-4.75 py-3.5 text-left transition-colors last:border-b-0 motion-reduce:transition-none ${
         selected
           ? 'bg-[#f2f5fb]'
           : 'bg-white hover:bg-[#f8f9fc]'
@@ -114,24 +114,24 @@ export function MessageSource({
       ref={setSourceRef}
       role="checkbox"
     >
-      <span className="flex items-start gap-3">
+      <span className="flex items-start gap-3.5">
         <SelectionIndicator selected={selected} />
         <span className="min-w-0 flex-1">
-          <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span className="flex flex-wrap items-center gap-x-2.5 gap-y-1.25">
             <span
-              className={`text-[9.5px] font-semibold tracking-[0.07em] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace] ${
+              className={`text-[11.5px] font-semibold tracking-[0.07em] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace] ${
                 isUser ? 'text-[#7c899a]' : 'text-[#4667a8]'
               }`}
             >
               {isUser ? 'You' : 'Nuée'}
             </span>
-            <span className="text-[9.5px] font-semibold text-[#a6b0bd] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
+            <span className="text-[11.5px] font-semibold text-[#a6b0bd] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
               {threadPosition}
             </span>
             {extractingFrom && (
-              <span className="inline-flex items-center gap-1 rounded-md border border-[#cbd8ee] bg-[#edf3fc] px-1.5 py-0.5 text-[8.5px] font-semibold tracking-[0.07em] text-[#4f70ae] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
+              <span className="inline-flex items-center gap-1.25 rounded-md border border-[#cbd8ee] bg-[#edf3fc] px-1.75 py-0.5 text-[10px] font-semibold tracking-[0.07em] text-[#4f70ae] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
                 <MousePointer2
-                  className="size-2.5"
+                  className="size-3"
                   strokeWidth={1.9}
                   aria-hidden="true"
                 />
@@ -139,7 +139,7 @@ export function MessageSource({
               </span>
             )}
           </span>
-          <span className="mt-1 block line-clamp-2 whitespace-pre-wrap break-words text-[12px] leading-[1.55] text-[#465469]">
+          <span className="mt-1.25 block line-clamp-2 whitespace-pre-wrap break-words text-[14.5px] leading-[1.55] text-[#465469]">
             {message.content}
           </span>
           {issue && <SourceIssue issue={issue} />}
@@ -170,7 +170,7 @@ export function FrozenContextSource({
 
   return (
     <button
-      className={`flex w-full cursor-pointer items-start gap-3 rounded-xl border px-3.5 py-3 text-left transition-[border-color,background-color,box-shadow] motion-reduce:transition-none ${
+      className={`flex w-full cursor-pointer items-start gap-3.5 rounded-xl border px-4.25 py-3.5 text-left transition-[border-color,background-color,box-shadow] motion-reduce:transition-none ${
         selected
           ? 'border-[#7892c0] bg-[#edf3fc] shadow-[0_0_0_2px_rgba(63,99,168,0.09)]'
           : 'border-[#dce3eb] bg-white hover:border-[#b9c7da] hover:bg-[#f7f9fc]'
@@ -189,18 +189,18 @@ export function FrozenContextSource({
     >
       <SelectionIndicator selected={selected} />
       <span className="min-w-0 flex-1">
-        <span className="flex items-center gap-1.5 text-[9.5px] font-semibold tracking-[0.06em] text-[#708098] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
+        <span className="flex items-center gap-1.75 text-[11.5px] font-semibold tracking-[0.06em] text-[#708098] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
           <Icon
-            className="size-3.25 shrink-0"
+            className="size-4 shrink-0"
             strokeWidth={1.7}
             aria-hidden="true"
           />
           {frozenContextKindLabels[item.source_kind]}
         </span>
-        <span className="mt-1 block truncate text-[12.5px] font-semibold text-[#344050]">
+        <span className="mt-1.25 block truncate text-[15px] font-semibold text-[#344050]">
           {item.source_title}
         </span>
-        <span className="mt-1 block text-[10.5px] leading-[1.45] text-[#77869a]">
+        <span className="mt-1.25 block text-[12.5px] leading-[1.45] text-[#77869a]">
           Stored when this discussion started. Changes to the live source are
           not included.
         </span>

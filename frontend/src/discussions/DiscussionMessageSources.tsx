@@ -66,20 +66,20 @@ export function DiscussionMessageSources({
   return (
     <section
       aria-label="Web search sources"
-      className="mt-3 rounded-xl border border-[#dfe5ed] bg-[#f8fafc] px-3.5 py-3"
+      className="mt-3.5 rounded-xl border border-[#dfe5ed] bg-[#f8fafc] px-4.25 py-3.5"
       data-web-search-sources
     >
-      <div className="flex items-center gap-2 text-[11.5px] font-semibold text-[#526174]">
-        <Search className="size-3.5" strokeWidth={1.8} aria-hidden="true" />
+      <div className="flex items-center gap-2.5 text-[14px] font-semibold text-[#526174]">
+        <Search className="size-4.25" strokeWidth={1.8} aria-hidden="true" />
         Searched the web
       </div>
       {safeCitations.length > 0 ? (
-        <ol className="mt-2.5 space-y-2" aria-label="Cited web sources">
+        <ol className="mt-3 space-y-2.5" aria-label="Cited web sources">
           {safeCitations.map((citation, index) => (
             <li className="min-w-0" key={`${citation.href}:${index}`}>
               <a
                 aria-label={`Open source: ${citation.label} (opens in a new tab)`}
-                className="group inline-flex max-w-full items-center gap-1.5 text-[12px] font-medium text-[#3f63a8] hover:text-[#294b87] focus-visible:rounded-sm focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/25"
+                className="group inline-flex max-w-full items-center gap-1.75 text-[14.5px] font-medium text-[#3f63a8] hover:text-[#294b87] focus-visible:rounded-sm focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/25"
                 href={citation.href}
                 rel="noopener noreferrer"
                 target="_blank"
@@ -88,13 +88,13 @@ export function DiscussionMessageSources({
                   {citation.label}
                 </span>
                 <ExternalLink
-                  className="size-3 shrink-0"
+                  className="size-3.5 shrink-0"
                   strokeWidth={1.8}
                   aria-hidden="true"
                 />
               </a>
               {citation.snippet && (
-                <p className="mt-0.5 line-clamp-2 text-[11px] leading-[1.45] text-[#728096]">
+                <p className="mt-0.5 line-clamp-2 text-[13px] leading-[1.45] text-[#728096]">
                   {citation.snippet}
                 </p>
               )}
@@ -102,7 +102,7 @@ export function DiscussionMessageSources({
           ))}
         </ol>
       ) : (
-        <p className="mt-1.5 text-[11px] leading-[1.45] text-[#728096]">
+        <p className="mt-1.75 text-[13px] leading-[1.45] text-[#728096]">
           No web sources were cited for this response.
         </p>
       )}

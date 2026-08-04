@@ -80,14 +80,14 @@ function StepHeading({
   number: number;
 }) {
   return (
-    <div className="flex items-center gap-2.5">
+    <div className="flex items-center gap-3">
       <span
-        className="grid size-6 shrink-0 place-items-center rounded-lg bg-[#eef3fb] text-[11px] font-semibold text-[#4267ad] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]"
+        className="grid size-7.25 shrink-0 place-items-center rounded-lg bg-[#eef3fb] text-[13px] font-semibold text-[#4267ad] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]"
         aria-hidden="true"
       >
         {number}
       </span>
-      <h3 className="text-[13px] font-semibold text-[#263142]">
+      <h3 className="text-[15.5px] font-semibold text-[#263142]">
         {children}
       </h3>
       {aside}
@@ -102,11 +102,11 @@ function FieldError({ id, message }: { id: string; message?: string }) {
 
   return (
     <p
-      className="mt-1.5 flex items-center gap-1.5 text-[10.5px] font-medium text-[#a44a44]"
+      className="mt-1.75 flex items-center gap-1.75 text-[12.5px] font-medium text-[#a44a44]"
       id={id}
     >
       <AlertCircle
-        className="size-3.5 shrink-0"
+        className="size-4.25 shrink-0"
         strokeWidth={1.9}
         aria-hidden="true"
       />
@@ -259,29 +259,29 @@ export function KnowledgeExtractionSourceSelection({
 
   return (
     <section
-      className="mx-auto flex w-full max-w-[900px] flex-col gap-5"
+      className="mx-auto flex w-full max-w-[1080px] flex-col gap-6"
       aria-label="Extraction request"
       data-knowledge-extraction-status={controller.state.status}
     >
       {failure && (
         <div
-          className="rounded-xl border border-[#e8c4c0] bg-[#fff8f7] px-3.5 py-3 text-[#8f3f3a]"
+          className="rounded-xl border border-[#e8c4c0] bg-[#fff8f7] px-4.25 py-3.5 text-[#8f3f3a]"
           id={errorId}
           role="alert"
         >
-          <span className="flex items-start gap-2">
+          <span className="flex items-start gap-2.5">
             <AlertCircle
-              className="mt-0.5 size-4 shrink-0"
+              className="mt-0.5 size-4.75 shrink-0"
               strokeWidth={1.8}
               aria-hidden="true"
             />
             <span>
-              <span className="block text-[12px] font-semibold">
+              <span className="block text-[14.5px] font-semibold">
                 {failure.kind === 'generation'
                   ? 'Bubble generation failed'
                   : 'Review the extraction request'}
               </span>
-              <span className="mt-0.5 block text-[11px] leading-[1.5] text-[#a25a55]">
+              <span className="mt-0.5 block text-[13px] leading-[1.5] text-[#a25a55]">
                 {failure.message}
               </span>
             </span>
@@ -290,12 +290,12 @@ export function KnowledgeExtractionSourceSelection({
       )}
 
       <section aria-labelledby={`${detailGroupId}-sources`}>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2.5">
           <StepHeading
             number={1}
             aside={
               <span
-                className="rounded-md bg-[#f1f3f7] px-2 py-1 text-[9px] font-semibold tracking-[0.06em] text-[#8b97a8] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace]"
+                className="rounded-md bg-[#f1f3f7] px-2.5 py-1.25 text-[11px] font-semibold tracking-[0.06em] text-[#8b97a8] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace]"
                 aria-live="polite"
                 role="status"
               >
@@ -306,7 +306,7 @@ export function KnowledgeExtractionSourceSelection({
             <span id={`${detailGroupId}-sources`}>What to include</span>
           </StepHeading>
           <button
-            className={`ml-auto cursor-pointer rounded-md px-1 py-0.5 text-[11px] font-semibold text-[#4267ad] hover:text-[#2f518f] disabled:cursor-not-allowed disabled:text-[#a8b1bf] ${focusRing}`}
+            className={`ml-auto cursor-pointer rounded-md px-1.25 py-0.5 text-[13px] font-semibold text-[#4267ad] hover:text-[#2f518f] disabled:cursor-not-allowed disabled:text-[#a8b1bf] ${focusRing}`}
             type="button"
             disabled={controlsDisabled || messages.length === 0}
             onClick={() =>
@@ -318,12 +318,12 @@ export function KnowledgeExtractionSourceSelection({
             {allMessagesSelected ? 'Clear all' : 'Select all'}
           </button>
         </div>
-        <p className="mt-1 text-[11px] text-[#8a98ac]">
+        <p className="mt-1.25 text-[13px] text-[#8a98ac]">
           Only what you pick is sent. The rest of the thread stays as history.
         </p>
         {messages.length > 0 ? (
           <div
-            className={`mt-3 max-h-56 overflow-y-auto rounded-xl border bg-white ${
+            className={`mt-3.5 max-h-67.25 overflow-y-auto rounded-xl border bg-white ${
               fieldErrors.message_ids
                 ? 'border-[#d9918b]'
                 : 'border-[#dbe3ed]'
@@ -355,7 +355,7 @@ export function KnowledgeExtractionSourceSelection({
             ))}
           </div>
         ) : (
-          <p className="mt-3 rounded-xl border border-[#e1e6ec] bg-[#f8f9fb] px-4 py-3 text-[11px] text-[#8692a2]">
+          <p className="mt-3.5 rounded-xl border border-[#e1e6ec] bg-[#f8f9fb] px-4.75 py-3.5 text-[13px] text-[#8692a2]">
             No completed messages are available.
           </p>
         )}
@@ -366,23 +366,23 @@ export function KnowledgeExtractionSourceSelection({
 
         {contextItems.length > 0 && (
           <div
-            className="mt-4 space-y-2.5 border-t border-[#e3e8ef] pt-4"
+            className="mt-4.75 space-y-3 border-t border-[#e3e8ef] pt-4.75"
             aria-labelledby={`${detailGroupId}-context`}
             role="group"
           >
             <div>
               <h4
-                className="flex items-center gap-1.5 text-[11px] font-semibold text-[#465568]"
+                className="flex items-center gap-1.75 text-[13px] font-semibold text-[#465568]"
                 id={`${detailGroupId}-context`}
               >
                 <LockKeyhole
-                  className="size-3.5 text-[#6f80a0]"
+                  className="size-4.25 text-[#6f80a0]"
                   strokeWidth={1.8}
                   aria-hidden="true"
                 />
                 Frozen context snapshots
               </h4>
-              <p className="mt-1 text-[10.5px] leading-[1.45] text-[#8490a0]">
+              <p className="mt-1.25 text-[12.5px] leading-[1.45] text-[#8490a0]">
                 Stored copies attached when this discussion started.
               </p>
             </div>
@@ -409,7 +409,7 @@ export function KnowledgeExtractionSourceSelection({
         <StepHeading
           number={2}
           aside={
-            <span className="text-[10px] font-medium text-[#92a0b2]">
+            <span className="text-[12px] font-medium text-[#92a0b2]">
               optional
             </span>
           }
@@ -417,14 +417,14 @@ export function KnowledgeExtractionSourceSelection({
           <span id={`${instructionsId}-title`}>Instructions</span>
         </StepHeading>
         <label
-          className="mt-1 block text-[11px] text-[#8a98ac]"
+          className="mt-1.25 block text-[13px] text-[#8a98ac]"
           htmlFor={instructionsId}
           id={instructionsHelpId}
         >
           Tell Nuée what this bubble is for, or what to leave out.
         </label>
         <textarea
-          className={`mt-3 min-h-24 w-full resize-y rounded-xl border bg-white px-3.5 py-3 text-[12.5px] leading-[1.55] text-[#263142] outline-none placeholder:text-[#a6b0bd] focus:border-[#4267ad] focus:ring-3 focus:ring-[#4267ad]/12 disabled:cursor-not-allowed disabled:bg-[#f7f8fa] ${
+          className={`mt-3.5 min-h-28.75 w-full resize-y rounded-xl border bg-white px-4.25 py-3.5 text-[15px] leading-[1.55] text-[#263142] outline-none placeholder:text-[#a6b0bd] focus:border-[#4267ad] focus:ring-3 focus:ring-[#4267ad]/12 disabled:cursor-not-allowed disabled:bg-[#f7f8fa] ${
             fieldErrors.instructions
               ? 'border-[#d9918b]'
               : 'border-[#d7e0eb]'
@@ -441,13 +441,13 @@ export function KnowledgeExtractionSourceSelection({
           rows={3}
           value={controller.state.selection.instructions}
         />
-        <div className="mt-2 flex flex-wrap items-center gap-2">
-          <span className="text-[8.5px] font-semibold tracking-[0.08em] text-[#a0aaba] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
+        <div className="mt-2.5 flex flex-wrap items-center gap-2.5">
+          <span className="text-[10px] font-semibold tracking-[0.08em] text-[#a0aaba] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
             Try
           </span>
           {instructionPresets.map((preset) => (
             <button
-              className={`cursor-pointer rounded-lg border border-[#dbe3ed] bg-[#f7f9fc] px-2.5 py-1 text-[10.5px] text-[#68778d] hover:border-[#bdcbe0] hover:bg-[#eef3fb] disabled:cursor-not-allowed disabled:opacity-60 ${focusRing}`}
+              className={`cursor-pointer rounded-lg border border-[#dbe3ed] bg-[#f7f9fc] px-3 py-1.25 text-[12.5px] text-[#68778d] hover:border-[#bdcbe0] hover:bg-[#eef3fb] disabled:cursor-not-allowed disabled:opacity-60 ${focusRing}`}
               type="button"
               disabled={controlsDisabled}
               key={preset}
@@ -456,7 +456,7 @@ export function KnowledgeExtractionSourceSelection({
               {preset}
             </button>
           ))}
-          <span className="ml-auto text-[9px] text-[#a0aaba] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
+          <span className="ml-auto text-[11px] text-[#a0aaba] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
             {controller.state.selection.instructions.length}/
             {INSTRUCTIONS_MAX_LENGTH}
           </span>
@@ -479,12 +479,12 @@ export function KnowledgeExtractionSourceSelection({
         <StepHeading number={3}>
           <span id={detailGroupId}>How much detail</span>
         </StepHeading>
-        <p className="mt-1 text-[11px] text-[#8a98ac]">
+        <p className="mt-1.25 text-[13px] text-[#8a98ac]">
           Changes the bubble&apos;s content only — the title and summary stay
           short either way.
         </p>
         <div
-          className="mt-3 grid gap-2.5 sm:grid-cols-3"
+          className="mt-3.5 grid gap-3 sm:grid-cols-3"
           aria-labelledby={detailGroupId}
           role="radiogroup"
         >
@@ -494,7 +494,7 @@ export function KnowledgeExtractionSourceSelection({
 
             return (
               <label
-                className={`relative flex min-h-32 cursor-pointer flex-col rounded-xl border p-3.5 transition-[border-color,background-color,box-shadow] motion-reduce:transition-none ${
+                className={`relative flex min-h-38.5 cursor-pointer flex-col rounded-xl border p-4.25 transition-[border-color,background-color,box-shadow] motion-reduce:transition-none ${
                   selected
                     ? 'border-[#4267ad] bg-[#f3f6fc] shadow-[0_0_0_3px_rgba(66,103,173,0.1)]'
                     : 'border-[#dbe3ed] bg-white hover:border-[#bdcbe0]'
@@ -510,7 +510,7 @@ export function KnowledgeExtractionSourceSelection({
                   value={option.level}
                 />
                 <span
-                  className={`mb-4 flex h-3 w-4 flex-col justify-between ${
+                  className={`mb-4.75 flex h-3.5 w-4.75 flex-col justify-between ${
                     selected ? 'text-[#4267ad]' : 'text-[#94a1b2]'
                   }`}
                   aria-hidden="true"
@@ -522,14 +522,14 @@ export function KnowledgeExtractionSourceSelection({
                     />
                   ))}
                 </span>
-                <span className="text-[12.5px] font-semibold text-[#273142]">
+                <span className="text-[15px] font-semibold text-[#273142]">
                   {option.label}
                 </span>
-                <span className="mt-1 text-[10.5px] leading-[1.45] text-[#8190a4]">
+                <span className="mt-1.25 text-[12.5px] leading-[1.45] text-[#8190a4]">
                   {option.description}
                 </span>
                 <span
-                  className={`mt-auto pt-3 text-[9px] font-semibold tracking-[0.06em] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace] ${
+                  className={`mt-auto pt-3.5 text-[11px] font-semibold tracking-[0.06em] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace] ${
                     selected ? 'text-[#5274b5]' : 'text-[#a2adbb]'
                   }`}
                 >

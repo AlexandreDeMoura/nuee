@@ -33,10 +33,10 @@ export function KnowledgeExtractionSourceActions({
   const detailLabel = controller.state.selection.detailLevel.toUpperCase();
 
   return (
-    <div className="shrink-0 border-t border-[#e2e7ee] bg-white px-4 py-3.5 sm:px-5">
-      <div className="mx-auto flex w-full max-w-[900px] flex-wrap items-center gap-3">
+    <div className="shrink-0 border-t border-[#e2e7ee] bg-white px-4.75 py-4.25 sm:px-6">
+      <div className="mx-auto flex w-full max-w-[1080px] flex-wrap items-center gap-3.5">
         <div
-          className="min-w-0 flex-1 text-[9.5px] leading-[1.45] tracking-[0.04em] text-[#9aa6b6] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace]"
+          className="min-w-0 flex-1 text-[11.5px] leading-[1.45] tracking-[0.04em] text-[#9aa6b6] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace]"
           aria-live="polite"
           role="status"
         >
@@ -64,14 +64,14 @@ export function KnowledgeExtractionSourceActions({
           </p>
         </div>
         <button
-          className={`min-h-10 shrink-0 cursor-pointer rounded-[10px] border border-[#d3dae2] bg-white px-5 text-xs font-semibold text-[#5c6a7a] hover:bg-[#f6f8fc] hover:text-[#344050] ${focusRing}`}
+          className={`min-h-12 shrink-0 cursor-pointer rounded-[12px] border border-[#d3dae2] bg-white px-6 text-[14.5px] font-semibold text-[#5c6a7a] hover:bg-[#f6f8fc] hover:text-[#344050] ${focusRing}`}
           type="button"
           onClick={onCancel}
         >
           Cancel
         </button>
         <button
-          className={`inline-flex min-h-10 shrink-0 cursor-pointer items-center gap-2 rounded-[10px] bg-[#4267ad] px-5 text-xs font-semibold text-white shadow-[0_6px_16px_-8px_rgba(63,99,168,0.7)] hover:bg-[#33538f] disabled:cursor-not-allowed disabled:bg-[#aebbd1] disabled:shadow-none ${focusRing}`}
+          className={`inline-flex min-h-12 shrink-0 cursor-pointer items-center gap-2.5 rounded-[12px] bg-[#4267ad] px-6 text-[14.5px] font-semibold text-white shadow-[0_6px_16px_-8px_rgba(63,99,168,0.7)] hover:bg-[#33538f] disabled:cursor-not-allowed disabled:bg-[#aebbd1] disabled:shadow-none ${focusRing}`}
           type="button"
           disabled={
             !hasSources ||
@@ -85,13 +85,13 @@ export function KnowledgeExtractionSourceActions({
         >
           {isGenerating ? (
             <LoaderCircle
-              className="size-3.5 animate-spin motion-reduce:animate-none"
+              className="size-4.25 animate-spin motion-reduce:animate-none"
               strokeWidth={1.9}
               aria-hidden="true"
             />
           ) : (
             <Sparkles
-              className="size-3.5"
+              className="size-4.25"
               strokeWidth={1.9}
               aria-hidden="true"
             />

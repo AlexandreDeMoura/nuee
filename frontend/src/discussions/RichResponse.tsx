@@ -61,7 +61,7 @@ function inlineContent(
     if (token.startsWith('`')) {
       nodes.push(
         <code
-          className="rounded bg-[#edf1f6] px-1 py-0.5 text-[0.92em] text-[#28384e] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]"
+          className="rounded bg-[#edf1f6] px-1.25 py-0.5 text-[0.92em] text-[#28384e] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]"
           key={`inline-code:${index}`}
         >
           {token.slice(1, -1)}
@@ -207,7 +207,7 @@ export function RichResponse({ content }: RichResponseProps) {
 
       blocks.push(
         <pre
-          className="max-w-full overflow-x-auto rounded-xl border border-[#dde3ea] bg-[#202a37] px-4 py-3 text-[11.5px] leading-[1.65] text-[#edf2f7] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]"
+          className="max-w-full overflow-x-auto rounded-xl border border-[#dde3ea] bg-[#202a37] px-4.75 py-3.5 text-[14px] leading-[1.65] text-[#edf2f7] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]"
           data-code-language={language || undefined}
           key={`code:${blockKey}`}
         >
@@ -243,12 +243,12 @@ export function RichResponse({ content }: RichResponseProps) {
           className="max-w-full overflow-x-auto rounded-xl border border-[#dde3ea]"
           key={`table:${blockKey}`}
         >
-          <table className="w-full min-w-[360px] border-collapse text-left text-[11.5px] leading-[1.5]">
+          <table className="w-full min-w-[432px] border-collapse text-left text-[14px] leading-[1.5]">
             <thead className="bg-[#eef2f7] text-[#344050]">
               <tr>
                 {headers.map((header, cellIndex) => (
                   <th
-                    className="border-r border-[#dde3ea] px-3 py-2 font-semibold last:border-r-0"
+                    className="border-r border-[#dde3ea] px-3.5 py-2.5 font-semibold last:border-r-0"
                     key={`header:${cellIndex}`}
                     scope="col"
                   >
@@ -262,7 +262,7 @@ export function RichResponse({ content }: RichResponseProps) {
                 <tr className="border-t border-[#e6eaf0]" key={`row:${rowIndex}`}>
                   {row.map((cell, cellIndex) => (
                     <td
-                      className="border-r border-[#e6eaf0] px-3 py-2 align-top text-[#4b596b] last:border-r-0"
+                      className="border-r border-[#e6eaf0] px-3.5 py-2.5 align-top text-[#4b596b] last:border-r-0"
                       key={`cell:${cellIndex}`}
                     >
                       {inlineContent(cell, references)}
@@ -283,10 +283,10 @@ export function RichResponse({ content }: RichResponseProps) {
     if (heading) {
       const headingClasses =
         heading[1].length === 1
-          ? 'text-[15px]'
+          ? 'text-[18px]'
           : heading[1].length === 2
-            ? 'text-[13.5px]'
-            : 'text-[12.5px] uppercase tracking-[0.04em]';
+            ? 'text-[16px]'
+            : 'text-[15px] uppercase tracking-[0.04em]';
       const children = inlineContent(heading[2], references);
 
       blocks.push(
@@ -340,7 +340,7 @@ export function RichResponse({ content }: RichResponseProps) {
         ? 'list-decimal'
         : 'list-disc';
       const children = items.map((item, itemIndex) => (
-        <li className="pl-1" key={`item:${itemIndex}`}>
+        <li className="pl-1.25" key={`item:${itemIndex}`}>
           {inlineContent(item, references)}
         </li>
       ));
@@ -348,7 +348,7 @@ export function RichResponse({ content }: RichResponseProps) {
       blocks.push(
         ordered ? (
           <ol
-            className={`space-y-1.5 pl-5 text-[#3d4b5d] marker:font-semibold marker:text-[#66768b] ${listClasses}`}
+            className={`space-y-1.75 pl-6 text-[#3d4b5d] marker:font-semibold marker:text-[#66768b] ${listClasses}`}
             key={`list:${blockKey}`}
             start={start}
           >
@@ -356,7 +356,7 @@ export function RichResponse({ content }: RichResponseProps) {
           </ol>
         ) : (
           <ul
-            className={`space-y-1.5 pl-5 text-[#3d4b5d] marker:text-[#7f8da0] ${listClasses}`}
+            className={`space-y-1.75 pl-6 text-[#3d4b5d] marker:text-[#7f8da0] ${listClasses}`}
             key={`list:${blockKey}`}
           >
             {children}
@@ -389,7 +389,7 @@ export function RichResponse({ content }: RichResponseProps) {
 
   return (
     <div
-      className="space-y-3 text-[13px] leading-[1.65]"
+      className="space-y-3.5 text-[15.5px] leading-[1.65]"
       data-rich-response
     >
       {blocks}

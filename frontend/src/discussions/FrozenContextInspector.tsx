@@ -49,44 +49,44 @@ export function FrozenContextInspector({
 
   return (
     <aside
-      className="flex h-[280px] max-h-[45%] min-h-0 w-full shrink-0 flex-col border-t border-[#d9e0e8] bg-white md:h-auto md:max-h-none md:w-[320px] md:border-t-0 md:border-l"
+      className="flex h-[336px] max-h-[45%] min-h-0 w-full shrink-0 flex-col border-t border-[#d9e0e8] bg-white md:h-auto md:max-h-none md:w-[384px] md:border-t-0 md:border-l"
       aria-describedby={descriptionId}
       aria-labelledby={titleId}
       data-frozen-context-id={item.id}
       role="region"
     >
-      <header className="shrink-0 border-b border-[#eef1f5] px-4 py-3.5">
-        <div className="flex items-start gap-3">
+      <header className="shrink-0 border-b border-[#eef1f5] px-4.75 py-4.25">
+        <div className="flex items-start gap-3.5">
           <span
-            className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-[9px] bg-[#eef2fa] text-[#3f63a8]"
+            className="mt-0.5 grid size-9.5 shrink-0 place-items-center rounded-[11px] bg-[#eef2fa] text-[#3f63a8]"
             aria-hidden="true"
           >
-            <Icon className="size-4" strokeWidth={1.7} />
+            <Icon className="size-4.75" strokeWidth={1.7} />
           </span>
           <div className="min-w-0 flex-1">
-            <p className="flex items-center gap-1 text-[9.5px] font-semibold tracking-[0.06em] text-[#77869a] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
+            <p className="flex items-center gap-1.25 text-[11.5px] font-semibold tracking-[0.06em] text-[#77869a] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
               <LockKeyhole
-                className="size-3 shrink-0"
+                className="size-3.5 shrink-0"
                 strokeWidth={1.8}
                 aria-hidden="true"
               />
               Frozen discussion context
             </p>
             <h3
-              className="mt-1 break-words text-[13.5px] leading-[1.35] font-semibold text-[#1e2733]"
+              className="mt-1.25 break-words text-[16px] leading-[1.35] font-semibold text-[#1e2733]"
               id={titleId}
             >
               {item.source_title}
             </h3>
           </div>
           <button
-            className="grid size-8 shrink-0 cursor-pointer place-items-center rounded-[9px] border border-[#e1e6ec] bg-white text-[#6f7d8e] hover:border-[#c7d2df] hover:bg-[#f6f8fc] hover:text-[#40516a] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/30"
+            className="grid size-9.5 shrink-0 cursor-pointer place-items-center rounded-[11px] border border-[#e1e6ec] bg-white text-[#6f7d8e] hover:border-[#c7d2df] hover:bg-[#f6f8fc] hover:text-[#40516a] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/30"
             type="button"
             aria-label="Close frozen context Inspector"
             onClick={onClose}
             ref={closeButtonRef}
           >
-            <X className="size-4" strokeWidth={1.8} aria-hidden="true" />
+            <X className="size-4.75" strokeWidth={1.8} aria-hidden="true" />
           </button>
         </div>
         <p className="sr-only" id={descriptionId}>
@@ -95,8 +95,8 @@ export function FrozenContextInspector({
         </p>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto bg-[#fbfcfd] px-4 py-4">
-        <dl className="mb-4 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 border-b border-[#e8edf3] pb-4 text-[10.5px]">
+      <div className="min-h-0 flex-1 overflow-y-auto bg-[#fbfcfd] px-4.75 py-4.75">
+        <dl className="mb-4.75 grid grid-cols-[auto_1fr] gap-x-3.5 gap-y-1.75 border-b border-[#e8edf3] pb-4.75 text-[12.5px]">
           <dt className="font-medium text-[#8b97a6]">Source</dt>
           <dd className="text-right font-medium text-[#526174]">
             {kindLabels[item.source_kind]}
@@ -110,7 +110,7 @@ export function FrozenContextInspector({
         </dl>
 
         <div
-          className="whitespace-pre-wrap break-words text-[12.5px] leading-[1.65] text-[#344050]"
+          className="whitespace-pre-wrap break-words text-[15px] leading-[1.65] text-[#344050]"
           data-frozen-context-content
         >
           {item.frozen_content || (

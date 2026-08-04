@@ -14,7 +14,7 @@ import { useFieldValidity } from '../ui/useFieldValidity';
 import type { KnowledgeExtractionController } from './useKnowledgeExtraction';
 
 const fieldClasses =
-  `w-full rounded-[10px] border bg-white px-3 py-2.5 text-[13px] leading-[1.55] text-[#273446] placeholder:text-[#aab4c1] disabled:cursor-not-allowed disabled:bg-[#f7f9fb] ${focusRing}`;
+  `w-full rounded-[12px] border bg-white px-3.5 py-3 text-[15.5px] leading-[1.55] text-[#273446] placeholder:text-[#aab4c1] disabled:cursor-not-allowed disabled:bg-[#f7f9fb] ${focusRing}`;
 
 type ProposalField = keyof KnowledgeExtractionProposal;
 
@@ -112,27 +112,27 @@ export function KnowledgeExtractionProposalReview({
 
   return (
     <section
-      className="mx-auto flex w-full max-w-[650px] flex-col gap-5"
+      className="mx-auto flex w-full max-w-[780px] flex-col gap-6"
       aria-labelledby="knowledge-extraction-review-title"
       data-knowledge-extraction-status={controller.state.status}
     >
-      <header className="rounded-2xl border border-[#ced9e8] bg-[linear-gradient(145deg,#f4f7fc,#edf2fa)] px-4 py-4">
-        <span className="mb-2 inline-flex items-center gap-1.5 text-[9.5px] font-semibold tracking-[0.08em] text-[#5e78aa] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
+      <header className="rounded-2xl border border-[#ced9e8] bg-[linear-gradient(145deg,#f4f7fc,#edf2fa)] px-4.75 py-4.75">
+        <span className="mb-2.5 inline-flex items-center gap-1.75 text-[11.5px] font-semibold tracking-[0.08em] text-[#5e78aa] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
           <FilePenLine
-            className="size-3.5"
+            className="size-4.25"
             strokeWidth={1.8}
             aria-hidden="true"
           />
           Knowledge extraction
         </span>
         <h3
-          className="text-[16px] font-semibold text-[#273446]"
+          className="text-[19px] font-semibold text-[#273446]"
           id="knowledge-extraction-review-title"
         >
           Review knowledge proposal
         </h3>
         <p
-          className="mt-1.5 text-[11.5px] leading-[1.55] text-[#68778b]"
+          className="mt-1.75 text-[14px] leading-[1.55] text-[#68778b]"
           aria-live="polite"
           role="status"
         >
@@ -143,23 +143,23 @@ export function KnowledgeExtractionProposalReview({
 
       {resolutionFailure && (
         <div
-          className="rounded-xl border border-[#e8c4c0] bg-[#fff8f7] px-3.5 py-3 text-[#8f3f3a]"
+          className="rounded-xl border border-[#e8c4c0] bg-[#fff8f7] px-4.25 py-3.5 text-[#8f3f3a]"
           id={resolutionErrorId}
           role="alert"
         >
-          <span className="flex items-start gap-2">
+          <span className="flex items-start gap-2.5">
             <AlertCircle
-              className="mt-0.5 size-4 shrink-0"
+              className="mt-0.5 size-4.75 shrink-0"
               strokeWidth={1.8}
               aria-hidden="true"
             />
             <span>
-              <span className="block text-[12px] font-semibold">
+              <span className="block text-[14.5px] font-semibold">
                 {resolutionFailure.kind === 'target_changed'
                   ? 'The target bubble changed'
                   : 'Couldn’t resolve this proposal'}
               </span>
-              <span className="mt-0.5 block text-[11px] leading-[1.5] text-[#a25a55]">
+              <span className="mt-0.5 block text-[13px] leading-[1.5] text-[#a25a55]">
                 {resolutionFailure.message}
               </span>
             </span>
@@ -167,10 +167,10 @@ export function KnowledgeExtractionProposalReview({
         </div>
       )}
 
-      <div className="space-y-4">
+      <div className="space-y-4.75">
         <div>
           <label
-            className="mb-1.5 block text-[11px] font-semibold text-[#465568]"
+            className="mb-1.75 block text-[13px] font-semibold text-[#465568]"
             htmlFor={titleId}
           >
             Title
@@ -189,11 +189,11 @@ export function KnowledgeExtractionProposalReview({
           />
           {titleError && (
             <p
-              className="mt-1.5 flex items-center gap-1.5 text-[10.5px] font-medium text-[#a44a44]"
+              className="mt-1.75 flex items-center gap-1.75 text-[12.5px] font-medium text-[#a44a44]"
               id={titleErrorId}
             >
               <AlertCircle
-                className="size-3.5 shrink-0"
+                className="size-4.25 shrink-0"
                 strokeWidth={1.9}
                 aria-hidden="true"
               />
@@ -203,14 +203,14 @@ export function KnowledgeExtractionProposalReview({
         </div>
 
         <div>
-          <div className="mb-1.5 flex items-baseline justify-between gap-3">
+          <div className="mb-1.75 flex items-baseline justify-between gap-3.5">
             <label
-              className="text-[11px] font-semibold text-[#465568]"
+              className="text-[13px] font-semibold text-[#465568]"
               htmlFor={summaryId}
             >
               One-sentence summary
             </label>
-            <span className="text-[9.5px] text-[#96a1af]">Optional</span>
+            <span className="text-[11.5px] text-[#96a1af]">Optional</span>
           </div>
           <input
             className={`${fieldClasses} ${inputBorderClasses(false)}`}
@@ -224,13 +224,13 @@ export function KnowledgeExtractionProposalReview({
 
         <div>
           <label
-            className="mb-1.5 block text-[11px] font-semibold text-[#465568]"
+            className="mb-1.75 block text-[13px] font-semibold text-[#465568]"
             htmlFor={contentId}
           >
             Content
           </label>
           <textarea
-            className={`${fieldClasses} min-h-52 resize-y whitespace-pre-wrap ${inputBorderClasses(contentError)}`}
+            className={`${fieldClasses} min-h-62.5 resize-y whitespace-pre-wrap ${inputBorderClasses(contentError)}`}
             id={contentId}
             rows={9}
             value={proposal.content}
@@ -242,11 +242,11 @@ export function KnowledgeExtractionProposalReview({
           />
           {contentError && (
             <p
-              className="mt-1.5 flex items-center gap-1.5 text-[10.5px] font-medium text-[#a44a44]"
+              className="mt-1.75 flex items-center gap-1.75 text-[12.5px] font-medium text-[#a44a44]"
               id={contentErrorId}
             >
               <AlertCircle
-                className="size-3.5 shrink-0"
+                className="size-4.25 shrink-0"
                 strokeWidth={1.9}
                 aria-hidden="true"
               />
@@ -258,34 +258,34 @@ export function KnowledgeExtractionProposalReview({
 
       {target && (
         <section
-          className="rounded-xl border border-[#cfd9e7] bg-[#f6f8fc] p-3.5"
+          className="rounded-xl border border-[#cfd9e7] bg-[#f6f8fc] p-4.25"
           aria-labelledby="knowledge-extraction-update-target-title"
         >
-          <div className="flex items-start gap-3">
+          <div className="flex items-start gap-3.5">
             <span
-              className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-[9px] bg-[#e7edf7] text-[#48669a]"
+              className="mt-0.5 grid size-9.5 shrink-0 place-items-center rounded-[11px] bg-[#e7edf7] text-[#48669a]"
               aria-hidden="true"
             >
-              <Target className="size-4" strokeWidth={1.8} />
+              <Target className="size-4.75" strokeWidth={1.8} />
             </span>
             <span className="min-w-0 flex-1">
-              <span className="block text-[9.5px] font-semibold tracking-[0.08em] text-[#7588a5] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
+              <span className="block text-[11.5px] font-semibold tracking-[0.08em] text-[#7588a5] uppercase [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
                 Selected update target
               </span>
               <span
-                className="mt-1 block truncate text-[13px] font-semibold text-[#2d3b4e]"
+                className="mt-1.25 block truncate text-[15.5px] font-semibold text-[#2d3b4e]"
                 id="knowledge-extraction-update-target-title"
               >
                 {target.title}
               </span>
               {targetPreview.length > 0 && (
-                <span className="mt-1 block line-clamp-2 text-[11px] leading-[1.5] text-[#718096]">
+                <span className="mt-1.25 block line-clamp-2 text-[13px] leading-[1.5] text-[#718096]">
                   {targetPreview}
                 </span>
               )}
             </span>
             <button
-              className={`shrink-0 cursor-pointer rounded-[8px] border border-[#cfd9e7] bg-white px-2.5 py-1.5 text-[10.5px] font-semibold text-[#526b96] hover:bg-[#eef3fa] disabled:cursor-not-allowed disabled:text-[#aab4c1] ${focusRing}`}
+              className={`shrink-0 cursor-pointer rounded-[10px] border border-[#cfd9e7] bg-white px-3 py-1.75 text-[12.5px] font-semibold text-[#526b96] hover:bg-[#eef3fa] disabled:cursor-not-allowed disabled:text-[#aab4c1] ${focusRing}`}
               type="button"
               disabled={isBusy || onUpdateExistingBubble === undefined}
               onClick={() => tryResolution(onUpdateExistingBubble)}
@@ -293,7 +293,7 @@ export function KnowledgeExtractionProposalReview({
               Choose another
             </button>
           </div>
-          <p className="mt-3 border-t border-[#dde4ed] pt-2.5 text-[10.5px] leading-[1.5] text-[#77869a]">
+          <p className="mt-3.5 border-t border-[#dde4ed] pt-3 text-[12.5px] leading-[1.5] text-[#77869a]">
             Confirming replaces this bubble&apos;s title, summary, and content.
             Its canvas position and manual links stay unchanged.
           </p>
@@ -301,17 +301,17 @@ export function KnowledgeExtractionProposalReview({
       )}
 
       <div
-        className="rounded-xl border border-[#dde4ed] bg-white p-3.5"
+        className="rounded-xl border border-[#dde4ed] bg-white p-4.25"
         aria-label="Proposal resolution"
         role="group"
       >
-        <p className="mb-3 text-[10.5px] leading-[1.5] text-[#77869a]">
+        <p className="mb-3.5 text-[12.5px] leading-[1.5] text-[#77869a]">
           Choose one resolution. Rejecting keeps the discussion unchanged and
           creates no bubble.
         </p>
-        <div className="grid gap-2 sm:grid-cols-2">
+        <div className="grid gap-2.5 sm:grid-cols-2">
           <button
-            className={`inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-[9px] bg-[#3f63a8] px-3.5 text-[11.5px] font-semibold text-white shadow-[0_6px_16px_-8px_rgba(63,99,168,0.7)] hover:bg-[#33538f] disabled:cursor-not-allowed disabled:bg-[#aebbd1] disabled:shadow-none ${focusRing}`}
+            className={`inline-flex min-h-12 cursor-pointer items-center justify-center gap-2.5 rounded-[11px] bg-[#3f63a8] px-4.25 text-[14px] font-semibold text-white shadow-[0_6px_16px_-8px_rgba(63,99,168,0.7)] hover:bg-[#33538f] disabled:cursor-not-allowed disabled:bg-[#aebbd1] disabled:shadow-none ${focusRing}`}
             data-knowledge-extraction-resolution-action="new_bubble"
             type="button"
             disabled={isBusy || onApproveAsNewBubble === undefined}
@@ -319,13 +319,13 @@ export function KnowledgeExtractionProposalReview({
           >
             {controller.state.status === 'saving_new' ? (
               <LoaderCircle
-                className="size-3.5 animate-spin motion-reduce:animate-none"
+                className="size-4.25 animate-spin motion-reduce:animate-none"
                 strokeWidth={1.9}
                 aria-hidden="true"
               />
             ) : (
               <Plus
-                className="size-3.5"
+                className="size-4.25"
                 strokeWidth={1.9}
                 aria-hidden="true"
               />
@@ -335,7 +335,7 @@ export function KnowledgeExtractionProposalReview({
               : 'Approve as new bubble'}
           </button>
           <button
-            className={`inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-[9px] border border-[#ccd7e6] bg-white px-3.5 text-[11.5px] font-semibold text-[#47628f] hover:bg-[#f4f7fc] disabled:cursor-not-allowed disabled:border-[#e0e5eb] disabled:text-[#aab4c1] ${focusRing}`}
+            className={`inline-flex min-h-12 cursor-pointer items-center justify-center gap-2.5 rounded-[11px] border border-[#ccd7e6] bg-white px-4.25 text-[14px] font-semibold text-[#47628f] hover:bg-[#f4f7fc] disabled:cursor-not-allowed disabled:border-[#e0e5eb] disabled:text-[#aab4c1] ${focusRing}`}
             data-knowledge-extraction-resolution-action="update_bubble"
             type="button"
             disabled={isBusy || updateAction === undefined}
@@ -343,13 +343,13 @@ export function KnowledgeExtractionProposalReview({
           >
             {controller.state.status === 'saving_update' ? (
               <LoaderCircle
-                className="size-3.5 animate-spin motion-reduce:animate-none"
+                className="size-4.25 animate-spin motion-reduce:animate-none"
                 strokeWidth={1.9}
                 aria-hidden="true"
               />
             ) : (
               <RefreshCw
-                className="size-3.5"
+                className="size-4.25"
                 strokeWidth={1.9}
                 aria-hidden="true"
               />
@@ -361,7 +361,7 @@ export function KnowledgeExtractionProposalReview({
                 : 'Update an existing bubble'}
           </button>
           <button
-            className={`inline-flex min-h-10 cursor-pointer items-center justify-center gap-2 rounded-[9px] border border-[#e5cbc8] bg-[#fffafa] px-3.5 text-[11.5px] font-semibold text-[#a44a44] hover:bg-[#fbf1f0] disabled:cursor-not-allowed disabled:text-[#ca8d88] sm:col-span-2 ${focusRing}`}
+            className={`inline-flex min-h-12 cursor-pointer items-center justify-center gap-2.5 rounded-[11px] border border-[#e5cbc8] bg-[#fffafa] px-4.25 text-[14px] font-semibold text-[#a44a44] hover:bg-[#fbf1f0] disabled:cursor-not-allowed disabled:text-[#ca8d88] sm:col-span-2 ${focusRing}`}
             data-knowledge-extraction-resolution-action="reject"
             type="button"
             disabled={isBusy}
@@ -369,13 +369,13 @@ export function KnowledgeExtractionProposalReview({
           >
             {isRejecting ? (
               <LoaderCircle
-                className="size-3.5 animate-spin motion-reduce:animate-none"
+                className="size-4.25 animate-spin motion-reduce:animate-none"
                 strokeWidth={1.9}
                 aria-hidden="true"
               />
             ) : (
               <X
-                className="size-3.5"
+                className="size-4.25"
                 strokeWidth={2}
                 aria-hidden="true"
               />

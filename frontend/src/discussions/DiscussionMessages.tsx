@@ -43,12 +43,12 @@ function ResponseStatus({
   if (turn.status === 'pending') {
     return (
       <div
-        className="ml-1 flex items-center gap-2 text-[11.5px] text-[#728096]"
+        className="ml-1.25 flex items-center gap-2.5 text-[14px] text-[#728096]"
         aria-atomic="true"
         role="status"
       >
         <LoaderCircle
-          className="size-3.5 animate-spin motion-reduce:animate-none"
+          className="size-4.25 animate-spin motion-reduce:animate-none"
           aria-hidden="true"
         />
         Generating a focused response…
@@ -66,23 +66,23 @@ function ResponseStatus({
 
   return (
     <div
-      className="rounded-xl border border-[#efd5d2] bg-[#fff8f7] px-3.5 py-3 text-[#8f3f3a]"
+      className="rounded-xl border border-[#efd5d2] bg-[#fff8f7] px-4.25 py-3.5 text-[#8f3f3a]"
       aria-atomic="true"
       role="alert"
     >
-      <div className="flex items-start gap-2">
+      <div className="flex items-start gap-2.5">
         <AlertCircle
-          className="mt-0.5 size-4 shrink-0"
+          className="mt-0.5 size-4.75 shrink-0"
           strokeWidth={1.8}
           aria-hidden="true"
         />
         <div>
-          <p className="text-[12px] font-semibold">{failureTitle}</p>
-          <p className="mt-0.5 text-[11.5px] leading-[1.45] text-[#a25a55]">
+          <p className="text-[14.5px] font-semibold">{failureTitle}</p>
+          <p className="mt-0.5 text-[14px] leading-[1.45] text-[#a25a55]">
             {failureMessage}
           </p>
           <button
-            className="mt-2 cursor-pointer rounded-[7px] border border-[#e4bdb9] bg-white px-2.5 py-1 text-[11px] font-semibold text-[#8f3f3a] hover:bg-[#fff2f0] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#a64540]/25"
+            className="mt-2.5 cursor-pointer rounded-[9px] border border-[#e4bdb9] bg-white px-3 py-1.25 text-[13px] font-semibold text-[#8f3f3a] hover:bg-[#fff2f0] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#a64540]/25"
             type="button"
             onClick={() => onRetry(turn)}
           >
@@ -111,7 +111,7 @@ function Message({
       data-message-role={message.role}
     >
       {isUser ? (
-        <p className="whitespace-pre-wrap rounded-2xl rounded-br-[6px] bg-[#3f63a8] px-4 py-3 text-[13px] leading-[1.55] text-white">
+        <p className="whitespace-pre-wrap rounded-2xl rounded-br-[7px] bg-[#3f63a8] px-4.75 py-3.5 text-[15.5px] leading-[1.55] text-white">
           {message.content}
         </p>
       ) : (
@@ -120,7 +120,7 @@ function Message({
           {message.web_search_used === true && (
             <DiscussionMessageSources citations={message.citations} />
           )}
-          <div className="mt-3 border-t border-[#e8ecf1] pt-2.5">
+          <div className="mt-3.5 border-t border-[#e8ecf1] pt-3">
             <DiscussionKnowledgeAction
               onExtract={onExtractKnowledge}
               source={{
@@ -138,18 +138,18 @@ function Message({
 
 function EmptyDiscussion() {
   return (
-    <div className="m-auto max-w-[380px] py-8 text-center">
-      <span className="mx-auto mb-3.75 grid size-11.5 place-items-center rounded-[13px] bg-[#eef2fa] text-[#3f63a8]">
+    <div className="m-auto max-w-[456px] py-9.5 text-center">
+      <span className="mx-auto mb-4.5 grid size-13.75 place-items-center rounded-[16px] bg-[#eef2fa] text-[#3f63a8]">
         <MessageSquare
-          className="size-5.25"
+          className="size-6.25"
           strokeWidth={1.6}
           aria-hidden="true"
         />
       </span>
-      <p className="text-[16px] font-semibold text-[#1e2733]">
+      <p className="text-[19px] font-semibold text-[#1e2733]">
         Ask one focused question
       </p>
-      <p className="mt-1.5 text-[12.5px] leading-[1.55] text-[#8b97a6]">
+      <p className="mt-1.75 text-[15px] leading-[1.55] text-[#8b97a6]">
         Answers stay short by default. When something&apos;s worth keeping,
         extract it as a bubble — the thread stays as reasoning history.
       </p>
@@ -167,9 +167,9 @@ export function DiscussionMessages({
 }: DiscussionMessagesProps) {
   if (loadStatus === 'loading') {
     return (
-      <div className="m-auto flex items-center gap-2 text-[12px] text-[#728096]" role="status">
+      <div className="m-auto flex items-center gap-2.5 text-[14.5px] text-[#728096]" role="status">
         <LoaderCircle
-          className="size-4 animate-spin motion-reduce:animate-none"
+          className="size-4.75 animate-spin motion-reduce:animate-none"
           aria-hidden="true"
         />
         Loading discussion…
@@ -179,15 +179,15 @@ export function DiscussionMessages({
 
   if (loadStatus === 'error') {
     return (
-      <div className="m-auto max-w-[360px] text-center" role="alert">
+      <div className="m-auto max-w-[432px] text-center" role="alert">
         <AlertCircle
-          className="mx-auto size-5 text-[#a64540]"
+          className="mx-auto size-6 text-[#a64540]"
           aria-hidden="true"
         />
-        <p className="mt-2 text-[13px] font-semibold text-[#7d3935]">
+        <p className="mt-2.5 text-[15.5px] font-semibold text-[#7d3935]">
           Discussion unavailable
         </p>
-        <p className="mt-1 text-[11.5px] leading-[1.5] text-[#9d5c57]">
+        <p className="mt-1.25 text-[14px] leading-[1.5] text-[#9d5c57]">
           {loadError ?? 'The discussion could not be loaded.'}
         </p>
       </div>
@@ -209,7 +209,7 @@ export function DiscussionMessages({
 
   return (
     <div
-      className="flex flex-col gap-5"
+      className="flex flex-col gap-6"
       aria-label="Discussion messages"
       aria-live="polite"
       aria-relevant="additions text"
