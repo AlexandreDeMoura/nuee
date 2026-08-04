@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useId, useState } from 'react';
 import {
   CircleAlert,
   CircleCheck,
@@ -124,6 +124,17 @@ export function BubbleInspector(props: BubbleInspectorProps) {
   const deleteTitleId = useId();
   const deleteDescriptionId = useId();
   const presentedStatus = statusPresentation[status];
+  // Emptiness still gates autosave immediately; only the visible error waits
+  // until the field is left, so clearing a field to retype it stays quiet.
+  const [touched, setTouched] = useState({ content: false, title: false });
+  const showTitleError = isTitleEmpty && touched.title;
+  const showContentError = isContentEmpty && touched.content;
+
+  const markTouched = (field: 'content' | 'title') => {
+    setTouched((current) =>
+      current[field] ? current : { ...current, [field]: true },
+    );
+  };
 
   if (!isEditing) {
     return (
@@ -470,7 +481,7 @@ export function BubbleInspector(props: BubbleInspectorProps) {
         </label>
         <input
           className={`${fieldClasses} ${
-            isTitleEmpty
+            showTitleError
               ? 'border-[#e6c7c4] focus:border-[#b4544e]'
               : 'border-[#dbe1e9] focus:border-[#3f63a8]'
           }`}
@@ -478,10 +489,11 @@ export function BubbleInspector(props: BubbleInspectorProps) {
           name="title"
           value={draft.title}
           required
-          aria-invalid={isTitleEmpty}
+          aria-invalid={showTitleError}
+          onBlur={() => markTouched('title')}
           onChange={(event) => updateDraft('title', event.target.value)}
         />
-        {isTitleEmpty && (
+        {showTitleError && (
           <p className="mt-1.5 flex items-center gap-1 text-[11px] text-[#b4544e]" role="alert">
             <CircleAlert className="size-3 shrink-0" strokeWidth={2} aria-hidden="true" />
             A title is required.
@@ -512,7 +524,7 @@ export function BubbleInspector(props: BubbleInspectorProps) {
         </label>
         <textarea
           className={`${fieldClasses} min-h-[180px] resize-y ${
-            isContentEmpty
+            showContentError
               ? 'border-[#e6c7c4] focus:border-[#b4544e]'
               : 'border-[#dbe1e9] focus:border-[#3f63a8]'
           }`}
@@ -521,10 +533,11 @@ export function BubbleInspector(props: BubbleInspectorProps) {
           value={draft.content}
           required
           rows={8}
-          aria-invalid={isContentEmpty}
+          aria-invalid={showContentError}
+          onBlur={() => markTouched('content')}
           onChange={(event) => updateDraft('content', event.target.value)}
         />
-        {isContentEmpty && (
+        {showContentError && (
           <p className="mt-1.5 flex items-center gap-1 text-[11px] text-[#b4544e]" role="alert">
             <CircleAlert className="size-3 shrink-0" strokeWidth={2} aria-hidden="true" />
             Content is required.

@@ -49,6 +49,7 @@ export function CreateBubbleDialog({
   const dialogRef = useRef<HTMLDivElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const isCreatingRef = useRef(false);
+  const isTearingDownRef = useRef(false);
   const onCancelRef = useRef(onCancel);
 
   const normalizedTitle = title.trim();
@@ -69,6 +70,7 @@ export function CreateBubbleDialog({
         : null;
     const previousOverflow = document.body.style.overflow;
 
+    isTearingDownRef.current = false;
     document.body.style.overflow = 'hidden';
     titleInputRef.current?.focus();
 
@@ -116,6 +118,7 @@ export function CreateBubbleDialog({
     document.addEventListener('keydown', handleKeyDown);
 
     return () => {
+      isTearingDownRef.current = true;
       document.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = previousOverflow;
 
@@ -124,6 +127,16 @@ export function CreateBubbleDialog({
       }
     };
   }, []);
+
+  // Restoring focus on teardown blurs the autofocused field. That is the dialog
+  // closing, not the user leaving a field, so it must not reveal validation.
+  const markTouched = (field: 'title' | 'content') => {
+    if (isTearingDownRef.current) {
+      return;
+    }
+
+    setTouched((current) => ({ ...current, [field]: true }));
+  };
 
   const clearCreateError = () => {
     if (hasCreateError) {
@@ -265,9 +278,7 @@ export function CreateBubbleDialog({
               aria-describedby={
                 titleError ? 'create-bubble-name-error' : undefined
               }
-              onBlur={() =>
-                setTouched((current) => ({ ...current, title: true }))
-              }
+              onBlur={() => markTouched('title')}
               onChange={(event) => {
                 setTitle(event.target.value);
                 clearCreateError();
@@ -330,9 +341,7 @@ export function CreateBubbleDialog({
               aria-describedby={
                 contentError ? 'create-bubble-content-error' : undefined
               }
-              onBlur={() =>
-                setTouched((current) => ({ ...current, content: true }))
-              }
+              onBlur={() => markTouched('content')}
               onChange={(event) => {
                 setContent(event.target.value);
                 clearCreateError();

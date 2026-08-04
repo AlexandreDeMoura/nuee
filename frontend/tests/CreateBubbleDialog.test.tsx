@@ -1,4 +1,5 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { StrictMode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Bubble } from '../src/api';
 import { CreateBubbleDialog } from '../src/bubbles/CreateBubbleDialog';
@@ -43,6 +44,35 @@ function fillValidForm() {
 afterEach(cleanup);
 
 describe('CreateBubbleDialog', () => {
+  it('shows no validation on open when StrictMode remounts the dialog', () => {
+    const trigger = document.createElement('button');
+    document.body.append(trigger);
+    trigger.focus();
+
+    render(
+      <StrictMode>
+        <CreateBubbleDialog
+          onCancel={vi.fn()}
+          onCreated={vi.fn()}
+          placementInput={placementInput}
+          projectId="project-1"
+          requestCreate={vi.fn()}
+          requestPlacement={vi.fn()}
+        />
+      </StrictMode>,
+    );
+
+    const title = screen.getByLabelText(/^Title/);
+
+    expect(document.activeElement).toBe(title);
+    expect(title.getAttribute('aria-invalid')).toBe('false');
+    expect(
+      screen.getByText('A title is required.').className,
+    ).toContain('invisible');
+
+    trigger.remove();
+  });
+
   it('requires non-whitespace title and content while keeping summary optional', () => {
     render(
       <CreateBubbleDialog

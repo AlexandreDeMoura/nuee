@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { StrictMode } from 'react';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import App from '../src/App';
 import type { DocumentUploadPolicy, Project } from '../src/api';
@@ -72,6 +73,34 @@ describe('CreateProjectDialog', () => {
     expect(submit.disabled).toBe(false);
     expect(screen.getByText('35 / 280')).toBeTruthy();
     expect(screen.getByText('2 FIELDS · NO DOCUMENTS')).toBeTruthy();
+  });
+
+  it('shows no validation on open when StrictMode remounts the dialog', () => {
+    const trigger = document.createElement('button');
+    document.body.append(trigger);
+    trigger.focus();
+
+    render(
+      <StrictMode>
+        <CreateProjectDialog
+          onCancel={vi.fn()}
+          onCreated={vi.fn()}
+          requestCreate={vi.fn()}
+          requestDocumentPolicy={requestDocumentPolicy}
+        />
+      </StrictMode>,
+    );
+
+    const title = screen.getByLabelText(/^Title/);
+
+    expect(document.activeElement).toBe(title);
+    expect(title.getAttribute('aria-invalid')).toBe('false');
+    expect(
+      screen.getByText('A title is required.').className,
+    ).toContain('invisible');
+    expect(screen.getByText('INCOMPLETE').className).not.toContain('bg-[#f7ecec]');
+
+    trigger.remove();
   });
 
   it('keeps whitespace-only fields invalid and exposes field-level errors after blur', () => {

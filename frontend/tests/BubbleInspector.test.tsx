@@ -187,6 +187,11 @@ describe('BubbleInspector', () => {
     const title = screen.getByLabelText(/^Title/);
     fireEvent.change(title, { target: { value: '   ' } });
 
+    expect(screen.queryByText('A title is required.')).toBeNull();
+    expect(title.getAttribute('aria-invalid')).toBe('false');
+
+    fireEvent.blur(title);
+
     expect(await screen.findByText('A title is required.')).toBeTruthy();
     expect(title.getAttribute('aria-invalid')).toBe('true');
     expect(requestUpdate).not.toHaveBeenCalled();
