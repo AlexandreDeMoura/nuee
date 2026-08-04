@@ -26,6 +26,8 @@ import {
   formatDocumentSize,
 } from '../documents';
 import { focusRing } from '../ui/focusRing';
+import { useFieldValidity } from '../ui/useFieldValidity';
+import { useModalShell } from '../ui/useModalShell';
 
 const DESCRIPTION_LIMIT = 280;
 
@@ -54,7 +56,6 @@ export function CreateProjectDialog({
 }: CreateProjectDialogProps) {
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
-  const [touched, setTouched] = useState({ title: false, description: false });
   const [isCreating, setIsCreating] = useState(false);
   const [hasCreateError, setHasCreateError] = useState(false);
   const [documentFiles, setDocumentFiles] = useState<File[]>([]);
@@ -62,19 +63,31 @@ export function CreateProjectDialog({
     useState<DocumentUploadPolicy | null>(null);
   const [documentPolicyError, setDocumentPolicyError] = useState(false);
   const [documentPolicyRequestKey, setDocumentPolicyRequestKey] = useState(0);
-  const dialogRef = useRef<HTMLDivElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const documentInputRef = useRef<HTMLInputElement>(null);
   const isCreatingRef = useRef(false);
-  const isTearingDownRef = useRef(false);
-  const onCancelRef = useRef(onCancel);
 
   const normalizedTitle = title.trim();
   const normalizedDescription = description.trim();
   const isValid = normalizedTitle.length > 0 && normalizedDescription.length > 0;
-  const titleError = touched.title && normalizedTitle.length === 0;
-  const descriptionError = touched.description && normalizedDescription.length === 0;
-  const hasTouchedAnyField = touched.title || touched.description;
+  const { containerRef, isClosing } = useModalShell({
+    onEscape: () => {
+      if (!isCreatingRef.current) {
+        onCancel();
+      }
+    },
+    initialFocus: () => titleInputRef.current,
+  });
+  const fields = useFieldValidity(
+    {
+      title: normalizedTitle.length === 0,
+      description: normalizedDescription.length === 0,
+    },
+    { isSuppressed: isClosing },
+  );
+  const titleError = fields.showError.title;
+  const descriptionError = fields.showError.description;
+  const hasVisibleError = titleError || descriptionError;
   const documentAccept = useMemo(
     () =>
       documentPolicy
@@ -82,75 +95,6 @@ export function CreateProjectDialog({
         : '',
     [documentPolicy],
   );
-
-  useEffect(() => {
-    onCancelRef.current = onCancel;
-  }, [onCancel]);
-
-  useEffect(() => {
-    const previouslyFocused = document.activeElement instanceof HTMLElement
-      ? document.activeElement
-      : null;
-    const previousOverflow = document.body.style.overflow;
-
-    isTearingDownRef.current = false;
-    document.body.style.overflow = 'hidden';
-    titleInputRef.current?.focus();
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-
-        if (!isCreatingRef.current) {
-          onCancelRef.current();
-        }
-
-        return;
-      }
-
-      if (event.key !== 'Tab') {
-        return;
-      }
-
-      const dialog = dialogRef.current;
-      const focusableElements = dialog
-        ? Array.from(
-            dialog.querySelectorAll<HTMLElement>(
-              'button:not(:disabled), input:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])',
-            ),
-          )
-        : [];
-
-      if (focusableElements.length === 0) {
-        event.preventDefault();
-        dialog?.focus();
-        return;
-      }
-
-      const first = focusableElements[0];
-      const last = focusableElements[focusableElements.length - 1];
-
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      isTearingDownRef.current = true;
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = previousOverflow;
-
-      if (previouslyFocused?.isConnected) {
-        previouslyFocused.focus();
-      }
-    };
-  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -185,7 +129,7 @@ export function CreateProjectDialog({
     event.preventDefault();
 
     if (!isValid || isCreatingRef.current) {
-      setTouched({ title: true, description: true });
+      fields.revealAll();
       return;
     }
 
@@ -223,16 +167,6 @@ export function CreateProjectDialog({
     }
   };
 
-  // Restoring focus on teardown blurs the autofocused field. That is the dialog
-  // closing, not the user leaving a field, so it must not reveal validation.
-  const markTouched = (field: 'title' | 'description') => {
-    if (isTearingDownRef.current) {
-      return;
-    }
-
-    setTouched((current) => ({ ...current, [field]: true }));
-  };
-
   const clearCreateError = () => {
     if (hasCreateError) {
       setHasCreateError(false);
@@ -251,7 +185,7 @@ export function CreateProjectDialog({
     >
       <div
         className="w-full max-w-[456px] overflow-hidden rounded-2xl border border-[#e1e6ec] bg-white shadow-[0_24px_60px_-18px_rgba(20,28,40,0.55)]"
-        ref={dialogRef}
+        ref={containerRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="create-project-title"
@@ -272,7 +206,7 @@ export function CreateProjectDialog({
                 className={`ml-auto shrink-0 text-[9.5px] font-medium tracking-[0.06em] [font-family:'IBM_Plex_Mono',ui-monospace,monospace] ${
                   isCreating
                     ? 'inline-flex items-center gap-1.5 text-[#3f63a8]'
-                    : isValid || !hasTouchedAnyField
+                    : !hasVisibleError
                       ? 'text-[#b6c0cc]'
                       : 'rounded-[5px] bg-[#f7ecec] px-[7px] py-[3px] text-[#b4544e]'
                 }`}
@@ -341,7 +275,7 @@ export function CreateProjectDialog({
               required
               aria-invalid={titleError}
               aria-describedby={titleError ? 'create-project-name-error' : undefined}
-              onBlur={() => markTouched('title')}
+              onBlur={() => fields.markTouched('title')}
               onChange={(event) => {
                 setTitle(event.target.value);
                 clearCreateError();
@@ -382,7 +316,7 @@ export function CreateProjectDialog({
                   ? 'create-project-summary-error create-project-context-hint'
                   : 'create-project-context-hint'
               }
-              onBlur={() => markTouched('description')}
+              onBlur={() => fields.markTouched('description')}
               onChange={(event) => {
                 setDescription(event.target.value);
                 clearCreateError();

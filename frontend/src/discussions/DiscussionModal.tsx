@@ -14,17 +14,9 @@ import {
   X,
 } from 'lucide-react';
 import { focusRing } from '../ui/focusRing';
+import { useModalShell } from '../ui/useModalShell';
 import { isTemporaryDiscussionTitle } from './discussionModel';
 import type { VisibleDiscussion } from './useDiscussionVisibility';
-
-const focusableSelector = [
-  'a[href]',
-  'button:not(:disabled)',
-  'input:not(:disabled)',
-  'select:not(:disabled)',
-  'textarea:not(:disabled)',
-  '[tabindex]:not([tabindex="-1"])',
-].join(', ');
 
 export interface DiscussionModalProps {
   actionsSlot?: ReactNode;
@@ -64,7 +56,6 @@ export function DiscussionModal({
   const titleId = useId();
   const descriptionId = useId();
   const composerId = useId();
-  const dialogRef = useRef<HTMLDivElement>(null);
   const draftInputRef = useRef<HTMLTextAreaElement>(null);
   const onMinimizeRef = useRef(onMinimize);
   const onCloseInspectorRef = useRef(onCloseInspector);
@@ -87,84 +78,21 @@ export function DiscussionModal({
     onCloseInspectorRef.current = onCloseInspector;
   }, [onCloseInspector]);
 
-  useEffect(() => {
-    const previouslyFocused =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : null;
-    const previousOverflow = document.body.style.overflow;
-
-    document.body.style.overflow = 'hidden';
-
-    if (isDraft) {
-      const draftInput =
-        draftInputRef.current ??
-        dialogRef.current?.querySelector<HTMLTextAreaElement>('textarea');
-
-      if (draftInput) {
-        draftInput.focus();
+  const { containerRef: dialogRef } = useModalShell<HTMLDivElement>({
+    onEscape: () => {
+      if (onCloseInspectorRef.current) {
+        onCloseInspectorRef.current();
       } else {
-        dialogRef.current?.focus();
+        onMinimizeRef.current();
       }
-    } else {
-      dialogRef.current?.focus();
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-
-        if (onCloseInspectorRef.current) {
-          onCloseInspectorRef.current();
-        } else {
-          onMinimizeRef.current();
-        }
-
-        return;
-      }
-
-      if (event.key !== 'Tab') {
-        return;
-      }
-
-      const dialog = dialogRef.current;
-      const focusableElements = dialog
-        ? Array.from(dialog.querySelectorAll<HTMLElement>(focusableSelector))
-        : [];
-
-      if (focusableElements.length === 0) {
-        event.preventDefault();
-        dialog?.focus();
-        return;
-      }
-
-      const first = focusableElements[0];
-      const last = focusableElements[focusableElements.length - 1];
-      const focusedElement =
-        event.target instanceof HTMLElement
-          ? event.target
-          : document.activeElement;
-
-      if (event.shiftKey && focusedElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && focusedElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = previousOverflow;
-
-      if (previouslyFocused?.isConnected) {
-        previouslyFocused.focus();
-      }
-    };
-  }, [isDraft, visibilityIdentity]);
+    },
+    initialFocus: (dialog) =>
+      isDraft
+        ? (draftInputRef.current ??
+          dialog?.querySelector<HTMLTextAreaElement>('textarea'))
+        : dialog,
+    resetKey: `${isDraft}:${visibilityIdentity}`,
+  });
 
   const submitDraft = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();

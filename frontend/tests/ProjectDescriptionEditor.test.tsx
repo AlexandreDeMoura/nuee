@@ -177,6 +177,11 @@ describe('ProjectDescriptionEditor', () => {
     const editor = screen.getByLabelText('Project description');
     fireEvent.change(editor, { target: { value: '   ' } });
 
+    expect(screen.queryByText('A project description is required.')).toBeNull();
+    expect(editor.getAttribute('aria-invalid')).toBe('false');
+
+    fireEvent.blur(editor);
+
     expect(await screen.findByText('A project description is required.')).toBeTruthy();
     expect(editor.getAttribute('aria-invalid')).toBe('true');
     expect(requestUpdate).not.toHaveBeenCalled();

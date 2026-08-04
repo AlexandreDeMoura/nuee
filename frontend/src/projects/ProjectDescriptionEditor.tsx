@@ -7,6 +7,7 @@ import {
 } from '../api';
 import { analytics, trackAnalytics, type AnalyticsClient } from '../analytics';
 import { focusRing } from '../ui/focusRing';
+import { useFieldValidity } from '../ui/useFieldValidity';
 
 const DESCRIPTION_LIMIT = 280;
 const DEFAULT_SAVE_DELAY_MS = 600;
@@ -68,6 +69,8 @@ export function ProjectDescriptionEditor({
   const isDescriptionTooLong = draft.length > DESCRIPTION_LIMIT;
   const isDescriptionValid = !isDescriptionEmpty && !isDescriptionTooLong;
   const presentedStatus = statusPresentation[status];
+  const fields = useFieldValidity({ description: isDescriptionEmpty });
+  const showEmptyError = fields.showError.description;
 
   useEffect(() => {
     onProjectSavedRef.current = onProjectSaved;
@@ -236,7 +239,7 @@ export function ProjectDescriptionEditor({
 
       <textarea
         className={`min-h-[132px] w-full resize-y rounded-[10px] border bg-[#fafbfc] p-3 text-[12.5px] leading-[1.6] text-[#3a4453] placeholder:text-[#b6c0cc] ${focusRing} ${
-          status === 'error' || !isDescriptionValid
+          status === 'error' || showEmptyError || isDescriptionTooLong
             ? 'border-[#e6c7c4] focus:border-[#b4544e]'
             : 'border-[#e1e6ec] focus:border-[#3f63a8]'
         }`}
@@ -246,8 +249,9 @@ export function ProjectDescriptionEditor({
         maxLength={DESCRIPTION_LIMIT}
         rows={6}
         required
-        aria-invalid={!isDescriptionValid || status === 'error'}
+        aria-invalid={showEmptyError || isDescriptionTooLong || status === 'error'}
         aria-describedby="project-description-feedback project-description-context"
+        onBlur={() => fields.markTouched('description')}
         onChange={(event) => {
           const nextDraft = event.target.value;
           draftRef.current = nextDraft;
@@ -265,7 +269,7 @@ export function ProjectDescriptionEditor({
 
       <div className="mt-2 flex min-h-[18px] items-start gap-2">
         <div className="min-w-0 flex-1" id="project-description-feedback">
-          {isDescriptionEmpty && (
+          {showEmptyError && (
             <p className="m-0 flex items-center gap-1 text-[11px] text-[#b4544e]" role="alert">
               <CircleAlert className="size-3 shrink-0" strokeWidth={2} aria-hidden="true" />
               A project description is required.

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import type { FormEvent, MouseEvent as ReactMouseEvent } from 'react';
 import { CircleAlert, LoaderCircle } from 'lucide-react';
 import {
@@ -9,6 +9,8 @@ import {
   type CreateBubbleInput,
 } from '../api';
 import { focusRing } from '../ui/focusRing';
+import { useFieldValidity } from '../ui/useFieldValidity';
+import { useModalShell } from '../ui/useModalShell';
 
 const fieldClasses =
   `w-full rounded-[9px] border bg-white px-3 py-2.5 text-[13px] text-[#1e2733] placeholder:text-[#b6c0cc] disabled:cursor-not-allowed disabled:border-[#eef1f5] disabled:bg-[#fafbfc] disabled:text-[#8b97a6] ${focusRing}`;
@@ -43,100 +45,32 @@ export function CreateBubbleDialog({
   const [title, setTitle] = useState('');
   const [summary, setSummary] = useState('');
   const [content, setContent] = useState('');
-  const [touched, setTouched] = useState({ title: false, content: false });
   const [isCreating, setIsCreating] = useState(false);
   const [hasCreateError, setHasCreateError] = useState(false);
-  const dialogRef = useRef<HTMLDivElement>(null);
   const titleInputRef = useRef<HTMLInputElement>(null);
   const isCreatingRef = useRef(false);
-  const isTearingDownRef = useRef(false);
-  const onCancelRef = useRef(onCancel);
 
   const normalizedTitle = title.trim();
   const normalizedSummary = summary.trim();
   const normalizedContent = content.trim();
   const isValid = normalizedTitle.length > 0 && normalizedContent.length > 0;
-  const titleError = touched.title && normalizedTitle.length === 0;
-  const contentError = touched.content && normalizedContent.length === 0;
-
-  useEffect(() => {
-    onCancelRef.current = onCancel;
-  }, [onCancel]);
-
-  useEffect(() => {
-    const previouslyFocused =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : null;
-    const previousOverflow = document.body.style.overflow;
-
-    isTearingDownRef.current = false;
-    document.body.style.overflow = 'hidden';
-    titleInputRef.current?.focus();
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-
-        if (!isCreatingRef.current) {
-          onCancelRef.current();
-        }
-
-        return;
+  const { containerRef, isClosing } = useModalShell({
+    onEscape: () => {
+      if (!isCreatingRef.current) {
+        onCancel();
       }
-
-      if (event.key !== 'Tab') {
-        return;
-      }
-
-      const focusableElements = dialogRef.current
-        ? Array.from(
-            dialogRef.current.querySelectorAll<HTMLElement>(
-              'button:not(:disabled), input:not(:disabled), textarea:not(:disabled), [tabindex]:not([tabindex="-1"])',
-            ),
-          )
-        : [];
-
-      if (focusableElements.length === 0) {
-        event.preventDefault();
-        dialogRef.current?.focus();
-        return;
-      }
-
-      const first = focusableElements[0];
-      const last = focusableElements[focusableElements.length - 1];
-
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      isTearingDownRef.current = true;
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = previousOverflow;
-
-      if (previouslyFocused?.isConnected) {
-        previouslyFocused.focus();
-      }
-    };
-  }, []);
-
-  // Restoring focus on teardown blurs the autofocused field. That is the dialog
-  // closing, not the user leaving a field, so it must not reveal validation.
-  const markTouched = (field: 'title' | 'content') => {
-    if (isTearingDownRef.current) {
-      return;
-    }
-
-    setTouched((current) => ({ ...current, [field]: true }));
-  };
+    },
+    initialFocus: () => titleInputRef.current,
+  });
+  const fields = useFieldValidity(
+    {
+      title: normalizedTitle.length === 0,
+      content: normalizedContent.length === 0,
+    },
+    { isSuppressed: isClosing },
+  );
+  const titleError = fields.showError.title;
+  const contentError = fields.showError.content;
 
   const clearCreateError = () => {
     if (hasCreateError) {
@@ -154,7 +88,7 @@ export function CreateBubbleDialog({
     event.preventDefault();
 
     if (!isValid || isCreatingRef.current) {
-      setTouched({ title: true, content: true });
+      fields.revealAll();
       return;
     }
 
@@ -194,7 +128,7 @@ export function CreateBubbleDialog({
     >
       <div
         className="w-full max-w-[472px] overflow-hidden rounded-2xl border border-[#e1e6ec] bg-white shadow-[0_24px_60px_-18px_rgba(20,28,40,0.55)]"
-        ref={dialogRef}
+        ref={containerRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="create-bubble-title"
@@ -278,7 +212,7 @@ export function CreateBubbleDialog({
               aria-describedby={
                 titleError ? 'create-bubble-name-error' : undefined
               }
-              onBlur={() => markTouched('title')}
+              onBlur={() => fields.markTouched('title')}
               onChange={(event) => {
                 setTitle(event.target.value);
                 clearCreateError();
@@ -341,7 +275,7 @@ export function CreateBubbleDialog({
               aria-describedby={
                 contentError ? 'create-bubble-content-error' : undefined
               }
-              onBlur={() => markTouched('content')}
+              onBlur={() => fields.markTouched('content')}
               onChange={(event) => {
                 setContent(event.target.value);
                 clearCreateError();

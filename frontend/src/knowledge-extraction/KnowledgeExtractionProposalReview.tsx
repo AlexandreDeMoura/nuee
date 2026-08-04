@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import {
   AlertCircle,
   FilePenLine,
@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import type { KnowledgeExtractionProposal } from '../api';
 import { focusRing } from '../ui/focusRing';
+import { useFieldValidity } from '../ui/useFieldValidity';
 import type { KnowledgeExtractionController } from './useKnowledgeExtraction';
 
 const fieldClasses =
@@ -51,16 +52,14 @@ export function KnowledgeExtractionProposalReview({
   const contentErrorId = useId();
   const resolutionErrorId = useId();
   const titleInputRef = useRef<HTMLInputElement>(null);
-  const [touched, setTouched] = useState({
-    content: false,
-    title: false,
-  });
   const proposal = controller.state.proposal;
   const normalized = proposal ? normalizedProposal(proposal) : null;
-  const titleError =
-    touched.title && (normalized?.title.length ?? 0) === 0;
-  const contentError =
-    touched.content && (normalized?.content.length ?? 0) === 0;
+  const fields = useFieldValidity({
+    content: (normalized?.content.length ?? 0) === 0,
+    title: (normalized?.title.length ?? 0) === 0,
+  });
+  const titleError = fields.showError.title;
+  const contentError = fields.showError.content;
   const isSaving =
     controller.state.status === 'saving_new' ||
     controller.state.status === 'saving_update';
@@ -86,12 +85,6 @@ export function KnowledgeExtractionProposalReview({
     return null;
   }
 
-  const touchField = (field: 'title' | 'content') => {
-    setTouched((current) =>
-      current[field] ? current : { ...current, [field]: true },
-    );
-  };
-
   const editField = (field: ProposalField, value: string) => {
     controller.editProposal(field, value);
   };
@@ -99,7 +92,7 @@ export function KnowledgeExtractionProposalReview({
   const tryResolution = (
     action: (() => void | Promise<void>) | undefined,
   ) => {
-    setTouched({ content: true, title: true });
+    fields.revealAll();
 
     if (
       normalized.title.length === 0 ||
@@ -191,7 +184,7 @@ export function KnowledgeExtractionProposalReview({
             aria-describedby={titleError ? titleErrorId : undefined}
             aria-invalid={titleError || undefined}
             disabled={isBusy}
-            onBlur={() => touchField('title')}
+            onBlur={() => fields.markTouched('title')}
             onChange={(event) => editField('title', event.target.value)}
           />
           {titleError && (
@@ -244,7 +237,7 @@ export function KnowledgeExtractionProposalReview({
             aria-describedby={contentError ? contentErrorId : undefined}
             aria-invalid={contentError || undefined}
             disabled={isBusy}
-            onBlur={() => touchField('content')}
+            onBlur={() => fields.markTouched('content')}
             onChange={(event) => editField('content', event.target.value)}
           />
           {contentError && (

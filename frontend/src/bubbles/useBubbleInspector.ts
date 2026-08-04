@@ -18,6 +18,7 @@ import {
   analytics,
   trackAnalytics,
 } from '../analytics';
+import { useModalShell } from '../ui/useModalShell';
 import type {
   BubbleInspectorProps,
   BubbleInspectorSaveStatus,
@@ -123,11 +124,20 @@ export function useBubbleInspector({
   const requestIdRef = useRef(0);
   const activeControllerRef = useRef<AbortController | null>(null);
   const deleteControllerRef = useRef<AbortController | null>(null);
-  const deleteDialogRef = useRef<HTMLDivElement>(null);
   const deleteCancelButtonRef = useRef<HTMLButtonElement>(null);
   const isDeletingRef = useRef(false);
   const onBubbleDeletedRef = useRef(onBubbleDeleted);
   const onBubbleUpdatedRef = useRef(onBubbleUpdated);
+  const { containerRef: deleteDialogRef } = useModalShell<HTMLDivElement>({
+    enabled: isDeleteConfirmationOpen,
+    onEscape: () => {
+      if (!isDeletingRef.current) {
+        setIsDeleteConfirmationOpen(false);
+        setHasDeleteError(false);
+      }
+    },
+    initialFocus: () => deleteCancelButtonRef.current,
+  });
 
   const normalizedDraft = normalizeDraft(draft);
   const isTitleEmpty = normalizedDraft.title.length === 0;
@@ -182,74 +192,6 @@ export function useBubbleInspector({
       deleteControllerRef.current?.abort();
     };
   }, []);
-
-  useEffect(() => {
-    if (!isDeleteConfirmationOpen) {
-      return;
-    }
-
-    const previouslyFocused =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : null;
-    const previousOverflow = document.body.style.overflow;
-
-    document.body.style.overflow = 'hidden';
-    deleteCancelButtonRef.current?.focus();
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-
-        if (!isDeletingRef.current) {
-          setIsDeleteConfirmationOpen(false);
-          setHasDeleteError(false);
-        }
-
-        return;
-      }
-
-      if (event.key !== 'Tab') {
-        return;
-      }
-
-      const focusableElements = deleteDialogRef.current
-        ? Array.from(
-            deleteDialogRef.current.querySelectorAll<HTMLElement>(
-              'button:not(:disabled), [tabindex]:not([tabindex="-1"])',
-            ),
-          )
-        : [];
-
-      if (focusableElements.length === 0) {
-        event.preventDefault();
-        deleteDialogRef.current?.focus();
-        return;
-      }
-
-      const first = focusableElements[0];
-      const last = focusableElements[focusableElements.length - 1];
-
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      document.body.style.overflow = previousOverflow;
-
-      if (previouslyFocused?.isConnected) {
-        previouslyFocused.focus();
-      }
-    };
-  }, [isDeleteConfirmationOpen]);
 
   const publishStatus = useCallback((nextStatus: BubbleInspectorSaveStatus) => {
     setStatus((current) => current === nextStatus ? current : nextStatus);

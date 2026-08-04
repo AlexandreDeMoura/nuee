@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useId } from 'react';
 import {
   CircleAlert,
   CircleCheck,
@@ -13,6 +13,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { focusRing } from '../ui/focusRing';
+import { useFieldValidity } from '../ui/useFieldValidity';
 import { useBubbleInspector } from './useBubbleInspector';
 import type {
   BubbleInspectorProps,
@@ -124,17 +125,12 @@ export function BubbleInspector(props: BubbleInspectorProps) {
   const deleteTitleId = useId();
   const deleteDescriptionId = useId();
   const presentedStatus = statusPresentation[status];
-  // Emptiness still gates autosave immediately; only the visible error waits
-  // until the field is left, so clearing a field to retype it stays quiet.
-  const [touched, setTouched] = useState({ content: false, title: false });
-  const showTitleError = isTitleEmpty && touched.title;
-  const showContentError = isContentEmpty && touched.content;
-
-  const markTouched = (field: 'content' | 'title') => {
-    setTouched((current) =>
-      current[field] ? current : { ...current, [field]: true },
-    );
-  };
+  const fields = useFieldValidity({
+    content: isContentEmpty,
+    title: isTitleEmpty,
+  });
+  const showTitleError = fields.showError.title;
+  const showContentError = fields.showError.content;
 
   if (!isEditing) {
     return (
@@ -490,7 +486,7 @@ export function BubbleInspector(props: BubbleInspectorProps) {
           value={draft.title}
           required
           aria-invalid={showTitleError}
-          onBlur={() => markTouched('title')}
+          onBlur={() => fields.markTouched('title')}
           onChange={(event) => updateDraft('title', event.target.value)}
         />
         {showTitleError && (
@@ -534,7 +530,7 @@ export function BubbleInspector(props: BubbleInspectorProps) {
           required
           rows={8}
           aria-invalid={showContentError}
-          onBlur={() => markTouched('content')}
+          onBlur={() => fields.markTouched('content')}
           onChange={(event) => updateDraft('content', event.target.value)}
         />
         {showContentError && (

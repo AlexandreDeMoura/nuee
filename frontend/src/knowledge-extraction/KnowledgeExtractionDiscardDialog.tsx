@@ -1,6 +1,7 @@
-import { useEffect, useId, useRef } from 'react';
+import { useId, useRef } from 'react';
 import { Trash2 } from 'lucide-react';
 import { focusRing } from '../ui/focusRing';
+import { useModalShell } from '../ui/useModalShell';
 
 export interface KnowledgeExtractionDiscardDialogProps {
   onCancel: () => void;
@@ -13,71 +14,13 @@ export function KnowledgeExtractionDiscardDialog({
 }: KnowledgeExtractionDiscardDialogProps) {
   const titleId = useId();
   const descriptionId = useId();
-  const dialogRef = useRef<HTMLDivElement>(null);
   const cancelButtonRef = useRef<HTMLButtonElement>(null);
-  const onCancelRef = useRef(onCancel);
-
-  useEffect(() => {
-    onCancelRef.current = onCancel;
-  }, [onCancel]);
-
-  useEffect(() => {
-    const previouslyFocused =
-      document.activeElement instanceof HTMLElement
-        ? document.activeElement
-        : null;
-
-    cancelButtonRef.current?.focus();
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape' && event.key !== 'Tab') {
-        return;
-      }
-
-      event.stopImmediatePropagation();
-
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        onCancelRef.current();
-        return;
-      }
-
-      const focusableElements = dialogRef.current
-        ? Array.from(
-            dialogRef.current.querySelectorAll<HTMLElement>(
-              'button:not(:disabled), [tabindex]:not([tabindex="-1"])',
-            ),
-          )
-        : [];
-
-      if (focusableElements.length === 0) {
-        event.preventDefault();
-        dialogRef.current?.focus();
-        return;
-      }
-
-      const first = focusableElements[0];
-      const last = focusableElements[focusableElements.length - 1];
-
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault();
-        last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault();
-        first.focus();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown, true);
-
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown, true);
-
-      if (previouslyFocused?.isConnected) {
-        previouslyFocused.focus();
-      }
-    };
-  }, []);
+  const { containerRef } = useModalShell({
+    onEscape: onCancel,
+    initialFocus: () => cancelButtonRef.current,
+    lockScroll: false,
+    stacked: true,
+  });
 
   return (
     <div
@@ -92,7 +35,7 @@ export function KnowledgeExtractionDiscardDialog({
     >
       <div
         className="w-full max-w-[472px] overflow-hidden rounded-2xl border border-[#e1e6ec] bg-white shadow-[0_24px_60px_-18px_rgba(20,28,40,0.55)]"
-        ref={dialogRef}
+        ref={containerRef}
         role="alertdialog"
         aria-describedby={descriptionId}
         aria-labelledby={titleId}
