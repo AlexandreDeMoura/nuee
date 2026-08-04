@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import {
   CircleAlert,
   CircleCheck,
@@ -50,6 +50,20 @@ const statusPresentation: Record<
   error: { label: 'SAVE FAILED', classes: 'text-[#b4544e]' },
 };
 
+const expandShortcutLabel =
+  typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.userAgent)
+    ? '⌘I'
+    : 'Ctrl+I';
+
+function isExpandShortcut(event: KeyboardEvent): boolean {
+  return (
+    (event.metaKey || event.ctrlKey) &&
+    !event.altKey &&
+    !event.shiftKey &&
+    event.key.toLowerCase() === 'i'
+  );
+}
+
 export function BubbleInspector(props: BubbleInspectorProps) {
   const {
     linkLoadStatus = 'ready',
@@ -96,6 +110,26 @@ export function BubbleInspector(props: BubbleInspectorProps) {
   const showTitleError = fields.showError.title;
   const showContentError = fields.showError.content;
 
+  // The inspected bubble is the selected one, so the shortcut belongs to the
+  // reading view: editing and the deletion prompt own the keyboard instead.
+  useEffect(() => {
+    if (isEditing || isDeleteConfirmationOpen) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!isExpandShortcut(event)) {
+        return;
+      }
+
+      event.preventDefault();
+      setIsExpanded((expanded) => !expanded);
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isDeleteConfirmationOpen, isEditing]);
+
   if (!isEditing) {
     return (
       <div
@@ -108,9 +142,9 @@ export function BubbleInspector(props: BubbleInspectorProps) {
               BUBBLE
             </span>
             <button
-              className={`ml-auto inline-flex min-h-7 cursor-pointer items-center gap-1.5 rounded-[8px] border border-[#e1e6ec] bg-white px-2 py-1 text-[10.5px] font-semibold text-[#5c6a7a] hover:border-[#c7d2df] hover:bg-[#f6f8fc] hover:text-[#33538f] ${focusRing}`}
+              className={`ml-auto inline-flex min-h-7 cursor-pointer items-center gap-1.5 rounded-[8px] border border-[#e1e6ec] bg-white py-1 pr-1.5 pl-2 text-[10.5px] font-semibold text-[#5c6a7a] hover:border-[#c7d2df] hover:bg-[#f6f8fc] hover:text-[#33538f] ${focusRing}`}
               type="button"
-              title="Expand bubble"
+              title={`Expand bubble (${expandShortcutLabel})`}
               onClick={() => setIsExpanded(true)}
             >
               <Maximize2
@@ -119,6 +153,12 @@ export function BubbleInspector(props: BubbleInspectorProps) {
                 aria-hidden="true"
               />
               Expand
+              <kbd
+                className="rounded-[4px] border border-[#e4e9f0] bg-[#f6f8fc] px-1 py-px text-[9px] font-medium text-[#9aa6b4] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]"
+                aria-hidden="true"
+              >
+                {expandShortcutLabel}
+              </kbd>
             </button>
           </div>
           <h3 className="text-[17px] leading-[1.3] font-semibold tracking-[-0.2px] text-[#1e2733]">

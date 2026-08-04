@@ -153,6 +153,45 @@ describe('BubbleInspector', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
+  it('toggles the expanded reading dialog with the expand shortcut', () => {
+    render(<BubbleInspector bubble={bubble()} onBubbleUpdated={vi.fn()} />);
+
+    fireEvent.keyDown(document, { key: 'i', metaKey: true });
+    expect(
+      screen.getByRole('dialog', { name: 'Last-mile is the make-or-break' }),
+    ).toBeTruthy();
+
+    fireEvent.keyDown(document, { key: 'i', metaKey: true });
+    expect(screen.queryByRole('dialog')).toBeNull();
+
+    fireEvent.keyDown(document, { key: 'i', ctrlKey: true });
+    expect(screen.getByRole('dialog')).toBeTruthy();
+  });
+
+  it('leaves the expand shortcut to the editor and the deletion prompt', () => {
+    render(<BubbleInspector bubble={bubble()} onBubbleUpdated={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit bubble' }));
+    fireEvent.keyDown(document, { key: 'i', metaKey: true });
+    expect(screen.queryByRole('dialog')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Done editing' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete bubble' }));
+    fireEvent.keyDown(document, { key: 'i', metaKey: true });
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.getByRole('alertdialog')).toBeTruthy();
+  });
+
+  it('ignores shortcut variants that are not the expand chord', () => {
+    render(<BubbleInspector bubble={bubble()} onBubbleUpdated={vi.fn()} />);
+
+    fireEvent.keyDown(document, { key: 'i' });
+    fireEvent.keyDown(document, { key: 'i', metaKey: true, shiftKey: true });
+    fireEvent.keyDown(document, { key: 'o', metaKey: true });
+
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
   it('starts editing from the expanded reading dialog', () => {
     render(<BubbleInspector bubble={bubble()} onBubbleUpdated={vi.fn()} />);
 
