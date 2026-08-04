@@ -27,7 +27,7 @@ Output rules:
 - Return one object with exactly title, summary, and content.
 - Use a specific plain-text title.
 - Use a concise one-sentence plain-text summary.
-- Use coherent plain-text content with minimal repetition.
+- Use coherent content with minimal repetition. Markdown is optional and limited to headings no deeper than ###, bullet and ordered lists, bold and italic text, inline code, fenced code blocks, and tables. Do not use images, raw HTML, or headings at level #### or deeper.
 `.trim();
 
 export const KNOWLEDGE_EXTRACTION_PROPOSAL_FORMAT = {
@@ -48,7 +48,8 @@ export const KNOWLEDGE_EXTRACTION_PROPOSAL_FORMAT = {
       },
       content: {
         type: 'string',
-        description: 'Self-contained synthesized plain-text content.',
+        description:
+          'Self-contained synthesized content. Markdown is optional and limited to headings no deeper than ###, bullet and ordered lists, bold and italic text, inline code, fenced code blocks, and tables. Do not use images, raw HTML, or headings at level #### or deeper.',
       },
     },
     required: ['title', 'summary', 'content'],
@@ -103,6 +104,7 @@ export function buildKnowledgeExtractionModelInput(
     '',
     'Detail guidance:',
     '- The selected detail level changes content length only. Title and summary expectations remain unchanged.',
+    '- Markdown structure is optional and should follow the content naturally. Do not force tight content into headings or lists.',
     `- ${DETAIL_LEVEL_GUIDANCE[options.detailLevel]}`,
   ].join('\n');
 

@@ -58,6 +58,7 @@ describe('knowledge extraction model input', () => {
         '',
         'Detail guidance:',
         '- The selected detail level changes content length only. Title and summary expectations remain unchanged.',
+        '- Markdown structure is optional and should follow the content naturally. Do not force tight content into headings or lists.',
         '- For content only, target one short paragraph.',
       ].join('\n'),
       messages: [
@@ -101,6 +102,12 @@ describe('knowledge extraction model input', () => {
       expect(input.instructions).toContain(
         'Title and summary expectations remain unchanged',
       );
+      expect(input.instructions).toContain(
+        'Markdown structure is optional and should follow the content naturally',
+      );
+      expect(input.instructions).toContain(
+        'Do not force tight content into headings or lists',
+      );
     },
   );
 
@@ -135,9 +142,37 @@ describe('knowledge extraction model input', () => {
     const contentSchema =
       KNOWLEDGE_EXTRACTION_PROPOSAL_FORMAT.schema.properties.content;
 
-    expect(contentSchema.description).toBe(
-      'Self-contained synthesized plain-text content.',
+    expect(contentSchema.description).toContain(
+      'Self-contained synthesized content.',
     );
     expect(contentSchema.description).not.toContain('50000');
+  });
+
+  it('limits content markdown to the subset supported by the renderer', () => {
+    const contentSchemaDescription =
+      KNOWLEDGE_EXTRACTION_PROPOSAL_FORMAT.schema.properties.content
+        .description;
+    const supportedMarkdown = [
+      'headings no deeper than ###',
+      'bullet and ordered lists',
+      'bold and italic text',
+      'inline code',
+      'fenced code blocks',
+      'tables',
+    ];
+    const unsupportedMarkdown = [
+      'images',
+      'raw HTML',
+      'headings at level #### or deeper',
+    ];
+
+    for (const syntax of supportedMarkdown) {
+      expect(KNOWLEDGE_EXTRACTION_INSTRUCTIONS).toContain(syntax);
+      expect(contentSchemaDescription).toContain(syntax);
+    }
+    for (const syntax of unsupportedMarkdown) {
+      expect(KNOWLEDGE_EXTRACTION_INSTRUCTIONS).toContain(syntax);
+      expect(contentSchemaDescription).toContain(syntax);
+    }
   });
 });
