@@ -738,7 +738,7 @@ describe('DiscussionExperience', () => {
     ).toBeNull();
   });
 
-  it('reviews and edits plain-text proposal fields without changing discussion sources', async () => {
+  it('reviews and previews markdown proposal content without changing discussion sources', async () => {
     const persistedDetails = details();
     const persistedFrozenContext = persistedDetails.frozen_context;
 
@@ -771,7 +771,7 @@ describe('DiscussionExperience', () => {
     ).toBeTruthy();
     expect(
       screen.getByText(
-        'Proposal generated. Edit the plain text below before choosing what happens next. Nothing has been added to the canvas.',
+        'Proposal generated. Edit the markdown below before choosing what happens next. Nothing has been added to the canvas.',
       ).getAttribute('role'),
     ).toBe('status');
 
@@ -781,9 +781,12 @@ describe('DiscussionExperience', () => {
     const summary = screen.getByRole('textbox', {
       name: 'One-sentence summary',
     }) as HTMLInputElement;
-    const content = screen.getByRole('textbox', {
+    let content = screen.getByRole('textbox', {
       name: 'Content',
     }) as HTMLTextAreaElement;
+    const editedMarkdown = `## Edited finding
+
+Edited **self-contained** content.`;
 
     expect(title.value).toBe(generatedProposal.title);
     expect(summary.value).toBe(generatedProposal.summary);
@@ -809,11 +812,11 @@ describe('DiscussionExperience', () => {
     fireEvent.change(title, { target: { value: 'Edited title' } });
     fireEvent.change(summary, { target: { value: '' } });
     fireEvent.change(content, {
-      target: { value: 'Edited self-contained content.' },
+      target: { value: editedMarkdown },
     });
     expect(title.value).toBe('Edited title');
     expect(summary.value).toBe('');
-    expect(content.value).toBe('Edited self-contained content.');
+    expect(content.value).toBe(editedMarkdown);
     expect(summary.getAttribute('aria-invalid')).toBeNull();
     expect(persistedDetails.messages[1].content).toBe(
       'Licensing is the longest lead-time constraint.',
@@ -822,13 +825,33 @@ describe('DiscussionExperience', () => {
       persistedFrozenContext.items[0].frozen_content,
     ).toBe(projectDescription);
 
+    fireEvent.click(screen.getByRole('button', { name: 'Preview' }));
+
+    expect(screen.queryByRole('textbox', { name: 'Content' })).toBeNull();
+    expect(
+      screen.getByRole('heading', { level: 4, name: 'Edited finding' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByText('self-contained', { selector: 'strong' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'Preview' }).getAttribute('aria-pressed'),
+    ).toBe('true');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
+    content = screen.getByRole('textbox', {
+      name: 'Content',
+    }) as HTMLTextAreaElement;
+    expect(content.value).toBe(editedMarkdown);
+
     fireEvent.change(title, { target: { value: '   ' } });
     fireEvent.blur(title);
     fireEvent.change(content, { target: { value: '\n  ' } });
-    fireEvent.blur(content);
+    fireEvent.click(screen.getByRole('button', { name: 'Preview' }));
 
     expect(screen.getByText('Title is required.')).toBeTruthy();
     expect(screen.getByText('Content is required.')).toBeTruthy();
+    expect(screen.getByRole('textbox', { name: 'Content' })).toBe(content);
     expect(title.getAttribute('aria-invalid')).toBe('true');
     expect(content.getAttribute('aria-invalid')).toBe('true');
     expect(title.getAttribute('aria-describedby')).toBe(

@@ -88,6 +88,36 @@ describe('BubbleInspector', () => {
     );
   });
 
+  it('renders markdown content compactly and preserves its source while editing', () => {
+    const markdown = `## Key finding
+
+Use a **phased rollout** with \`feature_flags\`.`;
+
+    render(
+      <BubbleInspector
+        bubble={bubble({ content: markdown })}
+        onBubbleUpdated={vi.fn()}
+      />,
+    );
+
+    expect(
+      screen.getByRole('heading', { level: 4, name: 'Key finding' }),
+    ).toBeTruthy();
+    expect(screen.getByText('phased rollout', { selector: 'strong' })).toBeTruthy();
+    expect(
+      document
+        .querySelector('[data-rich-response]')
+        ?.getAttribute('data-density'),
+    ).toBe('compact');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Edit bubble' }));
+
+    expect(screen.getByText('Markdown supported')).toBeTruthy();
+    expect(
+      (screen.getByLabelText(/^Content/) as HTMLTextAreaElement).value,
+    ).toBe(markdown);
+  });
+
   it('shows frozen-context counts and a graceful deleted-source state without identifiers', () => {
     render(
       <BubbleInspector

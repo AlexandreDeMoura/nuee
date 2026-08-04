@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import {
   AlertCircle,
   FilePenLine,
@@ -10,6 +10,8 @@ import {
 } from 'lucide-react';
 import type { KnowledgeExtractionProposal } from '../api';
 import { focusRing } from '../ui/focusRing';
+import { markdownToPlainText } from '../ui/markdownToPlainText';
+import { RichResponse } from '../ui/RichResponse';
 import { useFieldValidity } from '../ui/useFieldValidity';
 import type { KnowledgeExtractionController } from './useKnowledgeExtraction';
 
@@ -17,6 +19,10 @@ const fieldClasses =
   `w-full rounded-[12px] border bg-white px-3.5 py-3 text-[15.5px] leading-[1.55] text-[#273446] placeholder:text-[#aab4c1] disabled:cursor-not-allowed disabled:bg-[#f7f9fb] ${focusRing}`;
 
 type ProposalField = keyof KnowledgeExtractionProposal;
+type ContentView = {
+  extractionId: string | null;
+  mode: 'edit' | 'preview';
+};
 
 export interface KnowledgeExtractionProposalReviewProps {
   controller: KnowledgeExtractionController;
@@ -52,6 +58,10 @@ export function KnowledgeExtractionProposalReview({
   const contentErrorId = useId();
   const resolutionErrorId = useId();
   const titleInputRef = useRef<HTMLInputElement>(null);
+  const [contentView, setContentView] = useState<ContentView>({
+    extractionId: controller.state.extractionId,
+    mode: 'edit',
+  });
   const proposal = controller.state.proposal;
   const normalized = proposal ? normalizedProposal(proposal) : null;
   const fields = useFieldValidity({
@@ -71,8 +81,12 @@ export function KnowledgeExtractionProposalReview({
       : null;
   const target = controller.state.target;
   const targetPreview = target
-    ? target.summary?.trim() || target.content.trim()
+    ? target.summary?.trim() || markdownToPlainText(target.content)
     : '';
+  const isPreviewingContent =
+    contentView.extractionId === controller.state.extractionId &&
+    contentView.mode === 'preview' &&
+    (normalized?.content.length ?? 0) > 0;
   const updateAction = target
     ? onApproveBubbleUpdate
     : onUpdateExistingBubble;
@@ -87,6 +101,26 @@ export function KnowledgeExtractionProposalReview({
 
   const editField = (field: ProposalField, value: string) => {
     controller.editProposal(field, value);
+  };
+
+  const showContentEditor = () => {
+    setContentView({
+      extractionId: controller.state.extractionId,
+      mode: 'edit',
+    });
+  };
+
+  const showContentPreview = () => {
+    fields.markTouched('content');
+
+    if (normalized.content.length === 0) {
+      return;
+    }
+
+    setContentView({
+      extractionId: controller.state.extractionId,
+      mode: 'preview',
+    });
   };
 
   const tryResolution = (
@@ -136,7 +170,7 @@ export function KnowledgeExtractionProposalReview({
           aria-live="polite"
           role="status"
         >
-          Proposal generated. Edit the plain text below before choosing what
+          Proposal generated. Edit the markdown below before choosing what
           happens next. Nothing has been added to the canvas.
         </p>
       </header>
@@ -223,23 +257,67 @@ export function KnowledgeExtractionProposalReview({
         </div>
 
         <div>
-          <label
-            className="mb-1.75 block text-[13px] font-semibold text-[#465568]"
-            htmlFor={contentId}
-          >
-            Content
-          </label>
-          <textarea
-            className={`${fieldClasses} min-h-62.5 resize-y whitespace-pre-wrap ${inputBorderClasses(contentError)}`}
-            id={contentId}
-            rows={9}
-            value={proposal.content}
-            aria-describedby={contentError ? contentErrorId : undefined}
-            aria-invalid={contentError || undefined}
-            disabled={isBusy}
-            onBlur={() => fields.markTouched('content')}
-            onChange={(event) => editField('content', event.target.value)}
-          />
+          <div className="mb-1.75 flex items-center justify-between gap-3.5">
+            <label
+              className="text-[13px] font-semibold text-[#465568]"
+              htmlFor={contentId}
+            >
+              Content
+            </label>
+            <div
+              className="inline-flex rounded-[9px] border border-[#d8e0e9] bg-[#f5f7fa] p-0.5"
+              aria-label="Content view"
+              role="group"
+            >
+              <button
+                className={`cursor-pointer rounded-[7px] px-2.5 py-1 text-[11.5px] font-semibold disabled:cursor-not-allowed disabled:text-[#aab4c1] ${
+                  !isPreviewingContent
+                    ? 'bg-white text-[#3f63a8] shadow-sm'
+                    : 'text-[#758296] hover:text-[#465568]'
+                } ${focusRing}`}
+                type="button"
+                aria-pressed={!isPreviewingContent}
+                disabled={isBusy}
+                onClick={showContentEditor}
+              >
+                Edit
+              </button>
+              <button
+                className={`cursor-pointer rounded-[7px] px-2.5 py-1 text-[11.5px] font-semibold disabled:cursor-not-allowed disabled:text-[#aab4c1] ${
+                  isPreviewingContent
+                    ? 'bg-white text-[#3f63a8] shadow-sm'
+                    : 'text-[#758296] hover:text-[#465568]'
+                } ${focusRing}`}
+                type="button"
+                aria-pressed={isPreviewingContent}
+                disabled={isBusy}
+                onClick={showContentPreview}
+              >
+                Preview
+              </button>
+            </div>
+          </div>
+          {isPreviewingContent ? (
+            <div
+              className="min-h-62.5 rounded-[12px] border border-[#d8e0e9] bg-white px-3.5 py-3"
+              aria-label="Content preview"
+              role="region"
+            >
+              <RichResponse content={proposal.content} />
+            </div>
+          ) : (
+            <textarea
+              className={`${fieldClasses} min-h-62.5 resize-y whitespace-pre-wrap ${inputBorderClasses(contentError)}`}
+              id={contentId}
+              rows={9}
+              value={proposal.content}
+              aria-describedby={contentError ? contentErrorId : undefined}
+              aria-invalid={contentError || undefined}
+              disabled={isBusy}
+              onBlur={() => fields.markTouched('content')}
+              onChange={(event) => editField('content', event.target.value)}
+            />
+          )}
           {contentError && (
             <p
               className="mt-1.75 flex items-center gap-1.75 text-[12.5px] font-medium text-[#a44a44]"

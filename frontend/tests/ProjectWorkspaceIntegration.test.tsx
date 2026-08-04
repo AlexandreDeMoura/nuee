@@ -549,7 +549,12 @@ describe('workspace integration contracts', () => {
         },
       ],
     });
-    const target = bubble();
+    const target = bubble({
+      content: `## Market evidence
+
+**Demand** remains fragmented.`,
+      summary: null,
+    });
     const linkedBubble = bubble({
       id: 'bubble-2',
       position_x: 420,
@@ -729,6 +734,11 @@ describe('workspace integration contracts', () => {
 
     expect(
       await screen.findByText('Selected update target'),
+    ).toBeTruthy();
+    expect(
+      within(
+        screen.getByText('Selected update target').closest('section') as HTMLElement,
+      ).getByText('Market evidence Demand remains fragmented.'),
     ).toBeTruthy();
     expect(screen.getAllByText(target.title).length).toBeGreaterThan(1);
     expect(resolve).not.toHaveBeenCalled();

@@ -13,6 +13,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { focusRing } from '../ui/focusRing';
+import { RichResponse } from '../ui/RichResponse';
 import { useFieldValidity } from '../ui/useFieldValidity';
 import { useBubbleInspector } from './useBubbleInspector';
 import type {
@@ -155,9 +156,7 @@ export function BubbleInspector(props: BubbleInspectorProps) {
           <p className="mt-[18px] mb-2 text-[9.5px] font-semibold tracking-[0.1em] text-[#9aa6b4] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
             CONTENT
           </p>
-          <p className="whitespace-pre-wrap text-[12.5px] leading-[1.65] text-[#3a4453]">
-            {persistedBubble.content}
-          </p>
+          <RichResponse content={persistedBubble.content} density="compact" />
 
           <dl className="mt-5 grid grid-cols-1 gap-4 border-t border-[#eef1f5] pt-4 sm:grid-cols-2">
             {persistedBubble.source_kind === 'discussion' &&
@@ -512,12 +511,17 @@ export function BubbleInspector(props: BubbleInspectorProps) {
           onChange={(event) => updateDraft('summary', event.target.value)}
         />
 
-        <label
-          className="mt-4 mb-1.5 block text-[11px] font-semibold text-[#3a4453]"
-          htmlFor={contentId}
-        >
-          Content <span className="text-[#b4544e]">*</span>
-        </label>
+        <div className="mt-4 mb-1.5 flex items-baseline justify-between gap-3">
+          <label
+            className="block text-[11px] font-semibold text-[#3a4453]"
+            htmlFor={contentId}
+          >
+            Content <span className="text-[#b4544e]">*</span>
+          </label>
+          <span className="shrink-0 text-[10.5px] text-[#8b97a6]">
+            Markdown supported
+          </span>
+        </div>
         <textarea
           className={`${fieldClasses} min-h-[180px] resize-y ${
             showContentError
