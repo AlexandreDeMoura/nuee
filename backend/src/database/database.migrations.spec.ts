@@ -55,9 +55,13 @@ describe('runDatabaseMigrations', () => {
           version: 12,
           name: 'widen-project-description',
         },
+        {
+          version: 13,
+          name: 'repair-project-foreign-keys',
+        },
       ]);
       expect(database.prepare('PRAGMA user_version;').get()).toEqual({
-        user_version: 12,
+        user_version: 13,
       });
     } finally {
       database.close();
@@ -836,6 +840,182 @@ describe('runDatabaseMigrations', () => {
             'project-widening',
           ),
       ).toThrow();
+    } finally {
+      database.close();
+    }
+  });
+
+  it('repairs project foreign keys left by the originally deployed widening migration', () => {
+    const database = new DatabaseSync(':memory:');
+    const brokenWideningMigration: DatabaseMigration = {
+      version: 12,
+      name: 'widen-project-description',
+      sql: `
+        ALTER TABLE projects
+          RENAME TO projects_pre_description_widening;
+
+        CREATE TABLE projects (
+          id TEXT PRIMARY KEY,
+          title TEXT NOT NULL CHECK (length(title) > 0),
+          description TEXT NOT NULL CHECK (
+            length(description) > 0 AND length(description) <= 800
+          ),
+          created_at TEXT NOT NULL,
+          updated_at TEXT NOT NULL,
+          canvas_viewport_x REAL NOT NULL DEFAULT 0,
+          canvas_viewport_y REAL NOT NULL DEFAULT 0,
+          canvas_zoom REAL NOT NULL DEFAULT 1
+        ) STRICT;
+
+        INSERT INTO projects SELECT * FROM projects_pre_description_widening;
+
+        DROP TABLE projects_pre_description_widening;
+
+        CREATE INDEX projects_updated_at_idx
+          ON projects (updated_at DESC, created_at DESC, id ASC);
+      `,
+    };
+
+    try {
+      database.exec('PRAGMA foreign_keys = ON;');
+      runDatabaseMigrations(database, [
+        ...DATABASE_MIGRATIONS.slice(0, 11),
+        brokenWideningMigration,
+      ]);
+      database
+        .prepare(
+          `
+            INSERT INTO projects (
+              id,
+              title,
+              description,
+              created_at,
+              updated_at
+            ) VALUES (?, ?, ?, ?, ?)
+          `,
+        )
+        .run(
+          'project-fk-repair',
+          'Project needing FK repair',
+          'The project row remains valid throughout the repair.',
+          '2026-08-06T08:00:00.000Z',
+          '2026-08-06T08:00:00.000Z',
+        );
+
+      expect(
+        database
+          .prepare(
+            `
+              SELECT DISTINCT fk.[table] AS parent_table
+              FROM sqlite_schema AS tables
+              JOIN pragma_foreign_key_list(tables.name) AS fk
+              WHERE
+                tables.type = 'table'
+                AND fk.[from] = 'project_id'
+              ORDER BY parent_table ASC
+            `,
+          )
+          .all(),
+      ).toEqual([
+        { parent_table: 'bubbles' },
+        { parent_table: 'projects_pre_description_widening' },
+      ]);
+      expect(() =>
+        database
+          .prepare(
+            `
+              INSERT INTO documents (
+                id,
+                project_id,
+                title,
+                original_filename,
+                file_reference,
+                format,
+                mime_type,
+                size_bytes,
+                source_hash,
+                upload_idempotency_key,
+                upload_request_fingerprint,
+                created_at,
+                updated_at
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `,
+          )
+          .run(
+            'document-before-fk-repair',
+            'project-fk-repair',
+            'Blocked document',
+            'blocked.txt',
+            'originals/aa/aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',
+            'plain_text',
+            'text/plain',
+            12,
+            'a'.repeat(64),
+            'blocked-upload',
+            'b'.repeat(64),
+            '2026-08-06T08:01:00.000Z',
+            '2026-08-06T08:01:00.000Z',
+          ),
+      ).toThrow(/projects_pre_description_widening/);
+
+      runDatabaseMigrations(database);
+
+      expect(
+        database
+          .prepare(
+            `
+              SELECT DISTINCT fk.[table] AS parent_table
+              FROM sqlite_schema AS tables
+              JOIN pragma_foreign_key_list(tables.name) AS fk
+              WHERE
+                tables.type = 'table'
+                AND fk.[from] = 'project_id'
+              ORDER BY parent_table ASC
+            `,
+          )
+          .all(),
+      ).toEqual([{ parent_table: 'bubbles' }, { parent_table: 'projects' }]);
+      expect(database.prepare('PRAGMA foreign_key_check;').all()).toEqual([]);
+      expect(() =>
+        database
+          .prepare(
+            `
+              INSERT INTO documents (
+                id,
+                project_id,
+                title,
+                original_filename,
+                file_reference,
+                format,
+                mime_type,
+                size_bytes,
+                source_hash,
+                upload_idempotency_key,
+                upload_request_fingerprint,
+                created_at,
+                updated_at
+              ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `,
+          )
+          .run(
+            'document-after-fk-repair',
+            'project-fk-repair',
+            'Accepted document',
+            'accepted.txt',
+            'originals/bb/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',
+            'plain_text',
+            'text/plain',
+            12,
+            'c'.repeat(64),
+            'accepted-upload',
+            'd'.repeat(64),
+            '2026-08-06T08:02:00.000Z',
+            '2026-08-06T08:02:00.000Z',
+          ),
+      ).not.toThrow();
+      expect(
+        database.prepare('SELECT COUNT(*) AS count FROM documents').get(),
+      ).toEqual({ count: 1 });
     } finally {
       database.close();
     }

@@ -11,6 +11,7 @@ import { CREATE_KNOWLEDGE_EXTRACTION_ATTEMPTS_MIGRATION } from '../knowledge-ext
 import { PERSIST_EXTRACTION_INTENT_MIGRATION } from '../knowledge-extraction/migrations/011-persist-extraction-intent';
 import { CREATE_PROJECTS_MIGRATION } from '../projects/migrations/001-create-projects';
 import { WIDEN_PROJECT_DESCRIPTION_MIGRATION } from '../projects/migrations/012-widen-project-description';
+import { REPAIR_PROJECT_FOREIGN_KEYS_MIGRATION } from '../projects/migrations/013-repair-project-foreign-keys';
 
 export interface DatabaseMigration {
   readonly version: number;
@@ -83,6 +84,11 @@ export const DATABASE_MIGRATIONS: readonly DatabaseMigration[] = [
     version: 12,
     name: 'widen-project-description',
     sql: WIDEN_PROJECT_DESCRIPTION_MIGRATION,
+  },
+  {
+    version: 13,
+    name: 'repair-project-foreign-keys',
+    sql: REPAIR_PROJECT_FOREIGN_KEYS_MIGRATION,
   },
 ];
 
