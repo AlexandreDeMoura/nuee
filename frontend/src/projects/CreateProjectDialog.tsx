@@ -28,8 +28,7 @@ import {
 import { focusRing } from '../ui/focusRing';
 import { useFieldValidity } from '../ui/useFieldValidity';
 import { useModalShell } from '../ui/useModalShell';
-
-const DESCRIPTION_LIMIT = 280;
+import { PROJECT_DESCRIPTION_MAX_LENGTH as DESCRIPTION_LIMIT } from '@nuee/shared-types';
 
 const fieldClasses =
   `w-full rounded-[9px] border bg-white px-3 py-2.5 text-[13px] text-[#1e2733] placeholder:text-[#b6c0cc] disabled:cursor-not-allowed disabled:border-[#eef1f5] disabled:bg-[#fafbfc] disabled:text-[#8b97a6] ${focusRing}`;

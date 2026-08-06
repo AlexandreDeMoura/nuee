@@ -2,6 +2,7 @@ import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { PROJECT_DESCRIPTION_MAX_LENGTH } from '@nuee/shared-types';
 import { DatabaseProvider } from '../database/database.provider';
 import { SqliteProjectRepository } from './sqlite-project.repository';
 import { ProjectsService } from './projects.service';
@@ -56,9 +57,12 @@ describe('ProjectsService', () => {
       'Description is required.',
     ],
     [
-      { title: 'Valid', description: 'a'.repeat(281) },
+      {
+        title: 'Valid',
+        description: 'a'.repeat(PROJECT_DESCRIPTION_MAX_LENGTH + 1),
+      },
       'description',
-      'Description must be 280 characters or fewer.',
+      `Description must be ${PROJECT_DESCRIPTION_MAX_LENGTH} characters or fewer.`,
     ],
   ])(
     'rejects invalid project input',

@@ -5,6 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
+import { PROJECT_DESCRIPTION_MAX_LENGTH } from '@nuee/shared-types';
 import { PROJECT_REPOSITORY } from './project.types';
 import type {
   CreateProjectInput,
@@ -14,7 +15,6 @@ import type {
   UpdateProjectViewportInput,
 } from './project.types';
 
-const MAX_DESCRIPTION_LENGTH = 280;
 const MIN_CANVAS_ZOOM = 0.25;
 const MAX_CANVAS_ZOOM = 2;
 
@@ -120,12 +120,12 @@ export class ProjectsService {
 
     const description = value.trim();
 
-    if (description.length > MAX_DESCRIPTION_LENGTH) {
+    if (description.length > PROJECT_DESCRIPTION_MAX_LENGTH) {
       throw new BadRequestException({
         code: 'PROJECT_VALIDATION_FAILED',
         message: 'Project input is invalid.',
         field_errors: {
-          description: `Description must be ${MAX_DESCRIPTION_LENGTH} characters or fewer.`,
+          description: `Description must be ${PROJECT_DESCRIPTION_MAX_LENGTH} characters or fewer.`,
         },
       });
     }

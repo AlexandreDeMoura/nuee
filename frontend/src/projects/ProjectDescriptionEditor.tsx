@@ -8,8 +8,8 @@ import {
 import { analytics, trackAnalytics, type AnalyticsClient } from '../analytics';
 import { focusRing } from '../ui/focusRing';
 import { useFieldValidity } from '../ui/useFieldValidity';
+import { PROJECT_DESCRIPTION_MAX_LENGTH as DESCRIPTION_LIMIT } from '@nuee/shared-types';
 
-const DESCRIPTION_LIMIT = 280;
 const DEFAULT_SAVE_DELAY_MS = 600;
 
 export type ProjectDescriptionSaveStatus = 'dirty' | 'saving' | 'saved' | 'error';

@@ -10,7 +10,11 @@ npm-workspaces monorepo:
 
 - `frontend/` — React 19 + Vite + TypeScript SPA: client-rendered, small first-party router, Tailwind.
 - `backend/` — synchronous NestJS modular monolith on the Express adapter, direct `node:sqlite`.
-- `shared/` — `@nuee/shared-types`, the serialized request/response contracts both sides import.
+- `shared/` — `@nuee/shared-types`, the serialized request/response contracts both sides import,
+  plus the validation limits both sides must agree on (`src/validation-limits.ts`). It compiles to
+  `shared/dist` for the backend runtime; frontend tooling and both Jest configs read `shared/src`
+  directly, so no workflow depends on a prebuilt `dist`. Keep it dependency-free and side-effect
+  free: contracts and constants only, never feature logic.
 
 From the repo root: `npm run dev`, `npm run build`, `npm run lint`, `npm test`, `npm run test:e2e`
 (backend HTTP journeys in `backend/test/`). After a module, API, or persistence boundary change,
@@ -71,6 +75,9 @@ from static verification.
   (`api/projects.ts`); `api/index.ts` is the stable public barrel.
 - Transport contracts come from `@nuee/shared-types`; UI may derive stricter local types.
   Compile-time contracts do not replace runtime response checks on mutation-critical paths.
+- A validation limit the client and server must both honour is defined once in
+  `@nuee/shared-types` and imported, never re-declared. The server still enforces it
+  independently; the shared constant removes drift, it does not make the client trusted.
 
 ### Styling and accessibility
 

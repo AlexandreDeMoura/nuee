@@ -22,8 +22,7 @@ import {
   MessageSource,
 } from './KnowledgeExtractionSourceOption';
 import type { KnowledgeExtractionController } from './useKnowledgeExtraction';
-
-const INSTRUCTIONS_MAX_LENGTH = 2_000;
+import { KNOWLEDGE_EXTRACTION_INSTRUCTIONS_MAX_LENGTH as INSTRUCTIONS_MAX_LENGTH } from '@nuee/shared-types';
 
 const instructionPresets = [
   'Numbers only',

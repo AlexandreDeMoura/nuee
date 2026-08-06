@@ -6,10 +6,15 @@
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
+    "build:shared": "npm --prefix ../shared run build",
+    "prebuild": "npm run build:shared",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "prestart": "npm run build:shared",
     "start": "nest start",
+    "prestart:dev": "npm run build:shared",
     "start:dev": "nest start --watch",
+    "prestart:debug": "npm run build:shared",
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
@@ -64,6 +69,9 @@
     ],
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
+    "moduleNameMapper": {
+      "^@nuee/shared-types$": "<rootDir>/../../shared/src/index.ts"
+    },
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },

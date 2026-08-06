@@ -5,7 +5,7 @@ import type {
   KnowledgeExtractionProposal,
 } from '@nuee/shared-types';
 
-export const KNOWLEDGE_EXTRACTION_INSTRUCTIONS_MAX_LENGTH = 2_000;
+export { KNOWLEDGE_EXTRACTION_INSTRUCTIONS_MAX_LENGTH } from '@nuee/shared-types';
 
 export interface CreateKnowledgeExtractionSnapshotInput {
   idempotency_key: string;

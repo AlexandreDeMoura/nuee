@@ -1,9 +1,18 @@
+import { PROJECT_DESCRIPTION_MAX_LENGTH } from '@nuee/shared-types';
+
+// The interpolated value is a compile-time constant, never request input, so it
+// carries none of the injection risk that bans interpolation elsewhere.
+//
+// Editing the constant only changes databases created from this point on. An
+// existing database keeps the CHECK it was built with, because an applied
+// migration is never re-run: widening or narrowing the limit for existing data
+// needs a new migration that rebuilds the table.
 export const CREATE_PROJECTS_MIGRATION = `
   CREATE TABLE IF NOT EXISTS projects (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL CHECK (length(title) > 0),
     description TEXT NOT NULL CHECK (
-      length(description) > 0 AND length(description) <= 280
+      length(description) > 0 AND length(description) <= ${PROJECT_DESCRIPTION_MAX_LENGTH}
     ),
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,

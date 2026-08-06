@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { StrictMode } from 'react';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { PROJECT_DESCRIPTION_MAX_LENGTH } from '@nuee/shared-types';
 import App from '../src/App';
 import type { DocumentUploadPolicy, Project } from '../src/api';
 import { CreateProjectDialog } from '../src/projects/CreateProjectDialog';
@@ -32,12 +33,14 @@ const documentUploadPolicy: DocumentUploadPolicy = {
 
 const requestDocumentPolicy = async () => documentUploadPolicy;
 
+const validDescriptionInput = '  Explore the launch constraints.  ';
+
 function fillValidForm() {
   fireEvent.change(screen.getByLabelText(/^Title/), {
     target: { value: '  Launch plan  ' },
   });
   fireEvent.change(screen.getByLabelText(/^Short description/), {
-    target: { value: '  Explore the launch constraints.  ' },
+    target: { value: validDescriptionInput },
   });
 }
 
@@ -65,13 +68,19 @@ describe('CreateProjectDialog', () => {
 
     expect(document.activeElement).toBe(title);
     expect(submit.disabled).toBe(true);
-    expect(description.getAttribute('maxlength')).toBe('280');
-    expect(screen.getByText('0 / 280')).toBeTruthy();
+    expect(description.getAttribute('maxlength')).toBe(
+      String(PROJECT_DESCRIPTION_MAX_LENGTH),
+    );
+    expect(screen.getByText(`0 / ${PROJECT_DESCRIPTION_MAX_LENGTH}`)).toBeTruthy();
 
     fillValidForm();
 
     expect(submit.disabled).toBe(false);
-    expect(screen.getByText('35 / 280')).toBeTruthy();
+    expect(
+      screen.getByText(
+        `${validDescriptionInput.length} / ${PROJECT_DESCRIPTION_MAX_LENGTH}`,
+      ),
+    ).toBeTruthy();
     expect(screen.getByText('2 FIELDS · NO DOCUMENTS')).toBeTruthy();
   });
 
