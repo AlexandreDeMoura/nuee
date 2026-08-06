@@ -1,18 +1,18 @@
-import { PROJECT_DESCRIPTION_MAX_LENGTH } from '@nuee/shared-types';
-
-// The interpolated value is a compile-time constant, never request input, so it
-// carries none of the injection risk that bans interpolation elsewhere.
+// Migration SQL is a historical record of one schema transition and must stay
+// literal. Interpolating PROJECT_DESCRIPTION_MAX_LENGTH here would make this
+// statement mean something different depending on when it runs, while the
+// ledger records only that "create-projects" was applied. A database that
+// applied it under one value would be indistinguishable from one that applied
+// it under another, and neither would ever be corrected.
 //
-// Editing the constant only changes databases created from this point on. An
-// existing database keeps the CHECK it was built with, because an applied
-// migration is never re-run: widening or narrowing the limit for existing data
-// needs a new migration that rebuilds the table.
+// The current limit is reached by applying this migration and every later one
+// in order; migration 012 widens the description CHECK to its present value.
 export const CREATE_PROJECTS_MIGRATION = `
   CREATE TABLE IF NOT EXISTS projects (
     id TEXT PRIMARY KEY,
     title TEXT NOT NULL CHECK (length(title) > 0),
     description TEXT NOT NULL CHECK (
-      length(description) > 0 AND length(description) <= ${PROJECT_DESCRIPTION_MAX_LENGTH}
+      length(description) > 0 AND length(description) <= 280
     ),
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,

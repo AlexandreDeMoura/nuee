@@ -1,4 +1,5 @@
 import { DatabaseSync } from 'node:sqlite';
+import { PROJECT_DESCRIPTION_MAX_LENGTH } from '@nuee/shared-types';
 import {
   DATABASE_MIGRATIONS,
   runDatabaseMigrations,
@@ -50,9 +51,13 @@ describe('runDatabaseMigrations', () => {
           version: 11,
           name: 'persist-extraction-intent',
         },
+        {
+          version: 12,
+          name: 'widen-project-description',
+        },
       ]);
       expect(database.prepare('PRAGMA user_version;').get()).toEqual({
-        user_version: 11,
+        user_version: 12,
       });
     } finally {
       database.close();
@@ -690,6 +695,195 @@ describe('runDatabaseMigrations', () => {
       expect(database.prepare('PRAGMA user_version;').get()).toEqual({
         user_version: 0,
       });
+    } finally {
+      database.close();
+    }
+  });
+
+  it('widens the project description limit without cascading to related rows', () => {
+    const database = new DatabaseSync(':memory:');
+    const legacyDescriptionLimit = 280;
+
+    try {
+      database.exec('PRAGMA foreign_keys = ON;');
+      runDatabaseMigrations(database, DATABASE_MIGRATIONS.slice(0, 11));
+      database
+        .prepare(
+          `
+            INSERT INTO projects (
+              id,
+              title,
+              description,
+              created_at,
+              updated_at,
+              canvas_viewport_x,
+              canvas_viewport_y,
+              canvas_zoom
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          `,
+        )
+        .run(
+          'project-widening',
+          'Existing project',
+          'a'.repeat(legacyDescriptionLimit),
+          '2026-08-04T08:00:00.000Z',
+          '2026-08-04T08:00:00.000Z',
+          42.5,
+          -17,
+          1.5,
+        );
+      database
+        .prepare(
+          `
+            INSERT INTO bubbles (
+              id,
+              project_id,
+              title,
+              content,
+              created_at,
+              updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?)
+          `,
+        )
+        .run(
+          'bubble-widening',
+          'project-widening',
+          'Existing bubble',
+          'Must survive the table rebuild',
+          '2026-08-04T09:00:00.000Z',
+          '2026-08-04T09:00:00.000Z',
+        );
+      database
+        .prepare(
+          `
+            INSERT INTO discussions (
+              id,
+              project_id,
+              title,
+              frozen_context,
+              created_at,
+              updated_at,
+              last_activity_at,
+              deleted_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+          `,
+        )
+        .run(
+          'discussion-widening',
+          'project-widening',
+          'Existing discussion',
+          '{}',
+          '2026-08-04T09:00:00.000Z',
+          '2026-08-04T09:00:00.000Z',
+          '2026-08-04T09:00:00.000Z',
+          null,
+        );
+
+      expect(() =>
+        database
+          .prepare('UPDATE projects SET description = ? WHERE id = ?')
+          .run('a'.repeat(legacyDescriptionLimit + 1), 'project-widening'),
+      ).toThrow();
+
+      runDatabaseMigrations(database);
+
+      // The cascade hazard: dropping the parent with foreign keys enabled would
+      // have deleted these rows rather than the emptied placeholder table.
+      expect(
+        database.prepare('SELECT COUNT(*) AS count FROM bubbles').get(),
+      ).toEqual({ count: 1 });
+      expect(
+        database.prepare('SELECT COUNT(*) AS count FROM discussions').get(),
+      ).toEqual({ count: 1 });
+      expect(
+        database
+          .prepare(
+            `
+              SELECT description, canvas_viewport_x, canvas_viewport_y, canvas_zoom
+              FROM projects
+              WHERE id = ?
+            `,
+          )
+          .get('project-widening'),
+      ).toEqual({
+        description: 'a'.repeat(legacyDescriptionLimit),
+        canvas_viewport_x: 42.5,
+        canvas_viewport_y: -17,
+        canvas_zoom: 1.5,
+      });
+      expect(
+        database
+          .prepare(
+            `
+              SELECT b.id
+              FROM bubbles AS b
+              JOIN projects AS p ON p.id = b.project_id
+            `,
+          )
+          .all(),
+      ).toEqual([{ id: 'bubble-widening' }]);
+      expect(database.prepare('PRAGMA foreign_key_check;').all()).toEqual([]);
+
+      database
+        .prepare('UPDATE projects SET description = ? WHERE id = ?')
+        .run('a'.repeat(PROJECT_DESCRIPTION_MAX_LENGTH), 'project-widening');
+
+      expect(() =>
+        database
+          .prepare('UPDATE projects SET description = ? WHERE id = ?')
+          .run(
+            'a'.repeat(PROJECT_DESCRIPTION_MAX_LENGTH + 1),
+            'project-widening',
+          ),
+      ).toThrow();
+    } finally {
+      database.close();
+    }
+  });
+
+  // Migration SQL is literal, so the schema only tracks
+  // PROJECT_DESCRIPTION_MAX_LENGTH if someone adds a migration when the
+  // constant moves. Without this guard the server accepts a description the
+  // database then rejects with a raw CHECK failure.
+  it('enforces exactly the shared project description limit after migrating', () => {
+    const database = new DatabaseSync(':memory:');
+
+    try {
+      database.exec('PRAGMA foreign_keys = ON;');
+      runDatabaseMigrations(database);
+
+      const insertProject = database.prepare(
+        `
+          INSERT INTO projects (
+            id,
+            title,
+            description,
+            created_at,
+            updated_at
+          ) VALUES (?, ?, ?, ?, ?)
+        `,
+      );
+      const insertWithDescriptionLength = (id: string, length: number) =>
+        insertProject.run(
+          id,
+          'Limit probe',
+          'a'.repeat(length),
+          '2026-08-06T10:00:00.000Z',
+          '2026-08-06T10:00:00.000Z',
+        );
+
+      expect(() =>
+        insertWithDescriptionLength(
+          'project-at-limit',
+          PROJECT_DESCRIPTION_MAX_LENGTH,
+        ),
+      ).not.toThrow();
+      expect(() =>
+        insertWithDescriptionLength(
+          'project-over-limit',
+          PROJECT_DESCRIPTION_MAX_LENGTH + 1,
+        ),
+      ).toThrow(/CHECK constraint failed/);
     } finally {
       database.close();
     }

@@ -10,6 +10,7 @@ import { CREATE_DOCUMENTS_MIGRATION } from '../documents/migrations/009-create-d
 import { CREATE_KNOWLEDGE_EXTRACTION_ATTEMPTS_MIGRATION } from '../knowledge-extraction/migrations/008-create-knowledge-extraction-attempts';
 import { PERSIST_EXTRACTION_INTENT_MIGRATION } from '../knowledge-extraction/migrations/011-persist-extraction-intent';
 import { CREATE_PROJECTS_MIGRATION } from '../projects/migrations/001-create-projects';
+import { WIDEN_PROJECT_DESCRIPTION_MIGRATION } from '../projects/migrations/012-widen-project-description';
 
 export interface DatabaseMigration {
   readonly version: number;
@@ -77,6 +78,11 @@ export const DATABASE_MIGRATIONS: readonly DatabaseMigration[] = [
     version: 11,
     name: 'persist-extraction-intent',
     sql: PERSIST_EXTRACTION_INTENT_MIGRATION,
+  },
+  {
+    version: 12,
+    name: 'widen-project-description',
+    sql: WIDEN_PROJECT_DESCRIPTION_MIGRATION,
   },
 ];
 
@@ -148,11 +154,60 @@ function getUserVersion(database: DatabaseSync): number {
   return row.user_version;
 }
 
+function getForeignKeysEnabled(database: DatabaseSync): boolean {
+  const row = database.prepare('PRAGMA foreign_keys;').get() as unknown as {
+    foreign_keys: number;
+  };
+
+  return row.foreign_keys === 1;
+}
+
+/**
+ * Replacing a CHECK constraint or a column type in SQLite means rebuilding the
+ * table, and a rebuild drops the original. With foreign keys enabled that drop
+ * runs an implicit DELETE FROM which fires ON DELETE CASCADE on every child
+ * table, so a schema change would silently delete application data.
+ *
+ * SQLite's documented rebuild procedure disables foreign keys around the work,
+ * and `PRAGMA foreign_keys` is a no-op inside a transaction, so enforcement is
+ * suspended here rather than in an individual migration. Migrations are schema
+ * definitions and never rely on cascade behaviour; `PRAGMA foreign_key_check`
+ * runs after the commit so a migration that leaves a dangling reference fails
+ * loudly instead of degrading the database silently.
+ */
 export function runDatabaseMigrations(
   database: DatabaseSync,
   migrations: readonly DatabaseMigration[] = DATABASE_MIGRATIONS,
 ): void {
   validateMigrationDefinitions(migrations);
+
+  const foreignKeysWereEnabled = getForeignKeysEnabled(database);
+
+  if (foreignKeysWereEnabled) {
+    database.exec('PRAGMA foreign_keys = OFF;');
+  }
+
+  try {
+    runMigrationTransaction(database, migrations);
+
+    const violations = database.prepare('PRAGMA foreign_key_check;').all();
+
+    if (violations.length > 0) {
+      throw new Error(
+        `Database migrations left ${violations.length} foreign key violation(s).`,
+      );
+    }
+  } finally {
+    if (foreignKeysWereEnabled) {
+      database.exec('PRAGMA foreign_keys = ON;');
+    }
+  }
+}
+
+function runMigrationTransaction(
+  database: DatabaseSync,
+  migrations: readonly DatabaseMigration[],
+): void {
   database.exec('BEGIN IMMEDIATE;');
 
   try {
