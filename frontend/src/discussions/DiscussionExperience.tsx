@@ -41,6 +41,7 @@ import {
   type AnalyticsClient,
 } from '../analytics';
 import type { DiscussionContextSelectionController } from './useDiscussionContextSelection';
+import type { DiscussionSourceCatalog } from './discussionSourceCatalog';
 
 export interface DiscussionExperienceProps {
   analyticsClient?: AnalyticsClient;
@@ -64,6 +65,7 @@ export interface DiscussionExperienceProps {
   onMinimize?: () => void;
   projectId: string;
   requests?: DiscussionLifecycleRequests;
+  sourceCatalog: DiscussionSourceCatalog;
 }
 
 export function DiscussionExperience({
@@ -84,6 +86,7 @@ export function DiscussionExperience({
   onMinimize,
   projectId,
   requests,
+  sourceCatalog,
 }: DiscussionExperienceProps) {
   const visibleDiscussion = controller.visibleDiscussion;
 
@@ -118,6 +121,7 @@ export function DiscussionExperience({
       onMinimize={onMinimize}
       projectId={projectId}
       requests={requests}
+      sourceCatalog={sourceCatalog}
       visibleDiscussion={visibleDiscussion}
     />
   );

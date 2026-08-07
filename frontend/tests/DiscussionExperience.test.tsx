@@ -200,6 +200,7 @@ function Harness({
           generateTitle: keepTemporaryTitle,
           ...requests,
         }}
+        sourceCatalog={{ projectId, sources: [] }}
       />
     </>
   );

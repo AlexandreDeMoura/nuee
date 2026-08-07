@@ -13,6 +13,7 @@ export * from './discussionContextModel';
 export * from './discussionCreationFailure';
 export * from './discussionListModel';
 export * from './discussionModel';
+export * from './discussionSourceCatalog';
 export * from './useAutoGrowTextarea';
 export * from './useDiscussionLifecycle';
 export * from './useDiscussionContextSelection';

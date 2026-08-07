@@ -67,6 +67,7 @@ import {
   type DiscussionContextSourceCandidate,
   type DiscussionDeleteTarget,
   type DiscussionKnowledgeSource,
+  type DiscussionSourceCatalog,
   type ProjectDiscussionRequests,
   type DiscussionVisibilityController,
 } from '../discussions';
@@ -94,6 +95,7 @@ import {
 import { navigate } from '../utils/routing';
 import { CurrentProjectDescriptionContext } from './currentProjectDescription';
 import { getDefaultPanelView, type WorkspacePanelView } from './panelModel';
+import { createProjectSourceCatalog } from './projectSourceCatalog';
 
 export type WorkspaceEmptyAction =
   | 'start-discussion'
@@ -665,7 +667,8 @@ export function ProjectWorkspace({
   const documentLibraryEnabled =
     activatedDocumentLibraryProjectId === currentProject.id ||
     activePanel === 'documents' ||
-    discussionContextSelection.phase === 'selecting_documents';
+    discussionContextSelection.phase === 'selecting_documents' ||
+    discussionVisibility.visibleDiscussion?.kind === 'draft';
   const documentLibrary = useDocumentLibrary({
     analyticsClient,
     enabled: documentLibraryEnabled,
@@ -700,6 +703,15 @@ export function ProjectWorkspace({
     replaceBubble,
   } = bubbleCollection;
   const availableBubbles = bubbleCollection.loadState.bubbles;
+  const discussionSourceCatalog: DiscussionSourceCatalog = useMemo(
+    () =>
+      createProjectSourceCatalog({
+        bubbles: availableBubbles,
+        documents: documentLibrary.documents,
+        projectId: currentProject.id,
+      }),
+    [availableBubbles, currentProject.id, documentLibrary.documents],
+  );
   const selectedBubble =
     availableBubbles.find((bubble) => bubble.id === selectedBubbleId) ?? null;
   const canvasInspectorSelection: WorkspaceInspectorSelection | null =
@@ -1470,6 +1482,7 @@ export function ProjectWorkspace({
                 onMinimize={minimizeDiscussion}
                 projectId={currentProject.id}
                 requests={discussionLifecycleRequests}
+                sourceCatalog={discussionSourceCatalog}
               />
             )))}
         {discussionPendingDeletion && (
