@@ -286,6 +286,5 @@ feature.
    states, reduced motion, and announced attach/remove actions. Add integration journeys: attach
    via keyboard and pointer, duplicate mention, chip removal via the remove control and via token
    deletion (including atomic edge deletion), zero-attachment send, not-ready document, empty project with CTA, canvas-seeded entry, source failure with retry preserving the
-   draft, and reload after creation. Update `FRONTEND_ARCHITECTURE_IMPROVEMENTS.md` where this
-   supersedes recorded weaknesses, and annotate PRD 04 to point its selection-flow sections here.
+   draft, and reload after creation.
    *Verify: full build, lint, unit, and backend e2e; manual UI QA separately.*

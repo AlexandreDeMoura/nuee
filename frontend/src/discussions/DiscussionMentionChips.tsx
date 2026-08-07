@@ -2,6 +2,7 @@ import { useId, useState } from 'react';
 import {
   ChevronDown,
   ChevronUp,
+  CircleAlert,
   CircleDot,
   FileText,
   LockKeyhole,
@@ -11,6 +12,10 @@ import {
 import { focusRing } from '../ui/focusRing';
 import type { DiscussionSourceCatalogItem } from './discussionSourceCatalog';
 import { discussionMentionSourceKey } from './discussionMention';
+import {
+  discussionCreationSourceIssueMessage,
+  type DiscussionCreationSourceIssue,
+} from './discussionCreationFailure';
 
 const compactChipLimit = 3;
 
@@ -21,6 +26,7 @@ interface ExitingMentionSource {
 export interface DiscussionMentionChipsProps {
   exitingSources?: readonly ExitingMentionSource[];
   onRemove: (source: DiscussionSourceCatalogItem) => void;
+  sourceIssues?: readonly DiscussionCreationSourceIssue[];
   sources: readonly DiscussionSourceCatalogItem[];
 }
 
@@ -30,6 +36,7 @@ const chipClasses =
 export function DiscussionMentionChips({
   exitingSources = [],
   onRemove,
+  sourceIssues = [],
   sources,
 }: DiscussionMentionChipsProps) {
   const completeListId = useId();
@@ -70,16 +77,43 @@ export function DiscussionMentionChips({
         </span>
         {visibleSources.map((source) => {
           const Icon = source.kind === 'bubble' ? MessageSquare : FileText;
+          const issue = sourceIssues.find(
+            (candidate) =>
+              candidate.sourceKind === source.kind &&
+              candidate.sourceId === source.id,
+          );
+          const issueId = issue
+            ? `discussion-mention-source-issue-${source.kind}-${source.id}`
+            : undefined;
 
           return (
             <span
-              className={`${chipClasses} border-[#dce3eb] bg-[#f7f9fc] text-[#5d6b7d]`}
+              aria-describedby={issueId}
+              className={`${chipClasses} ${
+                issue
+                  ? 'border-[#d9aaa5] bg-[#fffafa] text-[#9b514b]'
+                  : 'border-[#dce3eb] bg-[#f7f9fc] text-[#5d6b7d]'
+              }`}
+              data-context-source-issue={issue?.reason}
               data-discussion-mention-chip={discussionMentionSourceKey(source)}
               key={discussionMentionSourceKey(source)}
               role="listitem"
             >
-              <Icon className="size-4 shrink-0 text-[#71829a]" strokeWidth={1.7} aria-hidden="true" />
+              {issue ? (
+                <CircleAlert
+                  className="size-4 shrink-0 text-[#a95f57]"
+                  strokeWidth={1.8}
+                  aria-hidden="true"
+                />
+              ) : (
+                <Icon className="size-4 shrink-0 text-[#71829a]" strokeWidth={1.7} aria-hidden="true" />
+              )}
               <span className="truncate">{source.title}</span>
+              {issue && (
+                <span className="sr-only" id={issueId}>
+                  {discussionCreationSourceIssueMessage(issue)}
+                </span>
+              )}
               <button
                 aria-label={`Remove ${source.kind}: ${source.title}`}
                 className={`-mr-1 grid size-5 shrink-0 place-items-center rounded text-[#8a97a6] hover:bg-[#e7ebf1] hover:text-[#9d443f] ${focusRing}`}

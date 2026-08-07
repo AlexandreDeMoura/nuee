@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DiscussionModal } from './DiscussionModal';
 import { DiscussionComposer } from './DiscussionComposer';
 import { DiscussionContextBadges } from './DiscussionContextBadges';
-import { DiscussionContextSelection } from './DiscussionContextSelection';
 import {
   findFrozenContextItem,
   getDiscussionContextBadges,
@@ -41,12 +40,13 @@ import {
   type AnalyticsClient,
 } from '../analytics';
 import type { DiscussionContextSelectionController } from './useDiscussionContextSelection';
-import type { DiscussionSourceCatalog } from './discussionSourceCatalog';
+import type {
+  DiscussionSourceCatalog,
+  DiscussionSourceCatalogItem,
+} from './discussionSourceCatalog';
 
 export interface DiscussionExperienceProps {
   analyticsClient?: AnalyticsClient;
-  canSelectBubbleContext?: boolean;
-  canSelectDocumentContext?: boolean;
   contextSelection?: DiscussionContextSelectionController;
   controller: DiscussionVisibilityController;
   createExtractionAttemptId?: () => string;
@@ -72,8 +72,6 @@ export interface DiscussionExperienceProps {
 
 export function DiscussionExperience({
   analyticsClient,
-  canSelectBubbleContext,
-  canSelectDocumentContext,
   contextSelection,
   controller,
   createExtractionAttemptId,
@@ -107,8 +105,6 @@ export function DiscussionExperience({
     <DiscussionExperienceModal
       controller={controller}
       analyticsClient={analyticsClient}
-      canSelectBubbleContext={canSelectBubbleContext}
-      canSelectDocumentContext={canSelectDocumentContext}
       contextSelection={contextSelection}
       createExtractionAttemptId={createExtractionAttemptId}
       extractionRequests={extractionRequests}
@@ -135,8 +131,6 @@ export function DiscussionExperience({
 
 function DiscussionExperienceModal({
   analyticsClient,
-  canSelectBubbleContext,
-  canSelectDocumentContext,
   contextSelection,
   controller,
   createExtractionAttemptId,
@@ -214,16 +208,53 @@ function DiscussionExperienceModal({
     [onKnowledgeExtractionTargetSelectionChange],
   );
   const isDraft = visibleDiscussion.kind === 'draft';
-  const isSelectingSources =
-    isDraft &&
-    (contextSelection?.phase === 'selecting_bubbles' ||
-      contextSelection?.phase === 'selecting_documents');
-  const isChoosingContext =
-    isDraft &&
-    contextSelection !== undefined &&
-    (contextSelection.phase === 'invitation' ||
-      contextSelection.phase === 'review' ||
-      contextSelection.phase === 'error');
+  const pendingContextSources = useMemo<
+    readonly DiscussionSourceCatalogItem[]
+  >(() => {
+    if (!isDraft || !contextSelection) {
+      return [];
+    }
+
+    return contextSelection.pendingSources.map((pendingSource) => {
+      const catalogSource = sourceCatalog.sources.find(
+        (source) =>
+          source.kind === pendingSource.kind &&
+          source.id === pendingSource.id,
+      );
+
+      if (catalogSource) {
+        return catalogSource;
+      }
+
+      return pendingSource.kind === 'bubble'
+        ? {
+            id: pendingSource.id,
+            kind: 'bubble' as const,
+            secondaryLine: 'Selected bubble',
+            title: pendingSource.title,
+          }
+        : {
+            id: pendingSource.id,
+            kind: 'document' as const,
+            readiness: { status: 'ready' as const },
+            secondaryLine: 'Selected document',
+            title: pendingSource.title,
+          };
+    });
+  }, [contextSelection, isDraft, sourceCatalog.sources]);
+  const replacePendingContextSources = useCallback(
+    (sources: readonly DiscussionSourceCatalogItem[]) => {
+      contextSelection?.replaceSources(
+        sources.map((source) => ({
+          id: source.id,
+          kind: source.kind,
+          projectId,
+          title: source.title,
+        })),
+      );
+    },
+    [contextSelection, projectId],
+  );
 
   useEffect(() => {
     if (
@@ -492,13 +523,8 @@ function DiscussionExperienceModal({
     closeDiscussion();
   }, [closeDiscussion, extraction]);
   const submit = () => {
-    if (
-      isDraft &&
-      contextSelection &&
-      contextSelection.phase === 'idle'
-    ) {
-      contextSelection.invite(lifecycle.composerValue.trim());
-      return;
+    if (isDraft && contextSelection) {
+      contextSelection.beginSubmitting();
     }
 
     lifecycle.submit(
@@ -508,10 +534,7 @@ function DiscussionExperienceModal({
     );
   };
 
-  if (
-    isSelectingSources ||
-    extraction.state.status === 'selecting_update_target'
-  ) {
+  if (extraction.state.status === 'selecting_update_target') {
     return null;
   }
 
@@ -543,15 +566,15 @@ function DiscussionExperienceModal({
               void cancelExtraction();
             }}
           />
-        ) : isChoosingContext ? (
-          <></>
         ) : (
           <DiscussionComposer
+            contextSources={pendingContextSources}
             disabled={composerDisabled}
             error={lifecycle.composerError}
             isInitialPrompt={visibleDiscussion.kind === 'draft'}
             isSubmitting={lifecycle.isSubmitting}
             onChange={lifecycle.onComposerChange}
+            onContextSourcesChange={replacePendingContextSources}
             onCreateBubble={
               onCreateBubble
                 ? () => {
@@ -575,6 +598,7 @@ function DiscussionExperienceModal({
                 ? sourceCatalog
                 : undefined
             }
+            sourceIssues={contextSelection?.failure?.sourceIssues}
             value={lifecycle.composerValue}
             webSearchEnabled={lifecycle.webSearchEnabled}
             webSearchSupported={lifecycle.webSearchSupported}
@@ -628,15 +652,6 @@ function DiscussionExperienceModal({
           <KnowledgeExtractionSourceSelection
             controller={extraction}
             discussion={lifecycle.details}
-          />
-        ) : isChoosingContext && contextSelection ? (
-          <DiscussionContextSelection
-            canSelectBubbles={canSelectBubbleContext}
-            canSelectDocuments={canSelectDocumentContext}
-            controller={contextSelection}
-            onSubmit={(selection, selectionRevision) =>
-              lifecycle.submit(selection, selectionRevision)
-            }
           />
         ) : (
           <DiscussionMessages

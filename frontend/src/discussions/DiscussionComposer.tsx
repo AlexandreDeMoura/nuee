@@ -24,14 +24,17 @@ import {
   findDiscussionMentionQuery,
   isDiscussionMentionSourceAttachable,
   removeDiscussionMentionToken,
+  replaceDiscussionMentionSources,
   updateDiscussionMentionDraft,
   type DiscussionMentionDraft,
 } from './discussionMention';
+import type { DiscussionCreationSourceIssue } from './discussionCreationFailure';
 import { DiscussionMentionChips } from './DiscussionMentionChips';
 import { DiscussionMentionList } from './DiscussionMentionList';
 import { useAutoGrowTextarea } from './useAutoGrowTextarea';
 
 const COMPOSER_MAX_ROWS = 3;
+const EMPTY_CONTEXT_SOURCES: readonly DiscussionSourceCatalogItem[] = [];
 
 interface OpenMention {
   query: string;
@@ -88,34 +91,42 @@ function DiscussionMentionMirror({
 }
 
 export interface DiscussionComposerProps {
+  contextSources?: readonly DiscussionSourceCatalogItem[];
   disabled?: boolean;
   error?: string | null;
   isInitialPrompt?: boolean;
   isSubmitting: boolean;
   onChange: (value: string) => void;
   onCreateBubble?: () => void;
+  onContextSourcesChange?: (
+    sources: readonly DiscussionSourceCatalogItem[],
+  ) => void;
   onMentionSourceSelect?: (source: DiscussionSourceCatalogItem) => void;
   onSubmit: () => void;
   onUploadDocument?: () => void;
   onWebSearchChange?: (enabled: boolean) => void;
   sourceCatalog?: DiscussionSourceCatalog;
+  sourceIssues?: readonly DiscussionCreationSourceIssue[];
   value: string;
   webSearchEnabled?: boolean;
   webSearchSupported?: boolean;
 }
 
 export function DiscussionComposer({
+  contextSources = EMPTY_CONTEXT_SOURCES,
   disabled = false,
   error,
   isInitialPrompt = false,
   isSubmitting,
   onChange,
   onCreateBubble,
+  onContextSourcesChange,
   onMentionSourceSelect,
   onSubmit,
   onUploadDocument,
   onWebSearchChange,
   sourceCatalog,
+  sourceIssues,
   value,
   webSearchEnabled = false,
   webSearchSupported = false,
@@ -128,8 +139,10 @@ export function DiscussionComposer({
   const [mention, setMention] = useState<OpenMention | null>(null);
   const [activeSourceKey, setActiveSourceKey] = useState<string | null>(null);
   const [mentionDraft, setMentionDraft] = useState(() =>
-    createDiscussionMentionDraft(value),
+    createDiscussionMentionDraft(value, contextSources),
   );
+  const [controlledContextSources, setControlledContextSources] =
+    useState(contextSources);
   const [exitingSources, setExitingSources] = useState<
     { source: DiscussionSourceCatalogItem }[]
   >([]);
@@ -147,7 +160,7 @@ export function DiscussionComposer({
     displayedValue,
     COMPOSER_MAX_ROWS,
   );
-  const attachedSources = mentionDraft.tokens.map(({ source }) => source);
+  const attachedSources = mentionDraft.sources;
   const hasMentionTokens = mentionDraft.tokens.length > 0;
   const mentionResults =
     mention && sourceCatalog
@@ -187,6 +200,13 @@ export function DiscussionComposer({
       updateDiscussionMentionDraft(current, value),
     );
   }, [isInitialPrompt, value]);
+
+  if (isInitialPrompt && controlledContextSources !== contextSources) {
+    setControlledContextSources(contextSources);
+    setMentionDraft((current) =>
+      replaceDiscussionMentionSources(current, contextSources),
+    );
+  }
 
   useEffect(
     () => () => {
@@ -263,9 +283,15 @@ export function DiscussionComposer({
     caretPosition?: number,
   ) => {
     const nextSourceKeys = new Set(
-      nextDraft.tokens.map(({ source }) => discussionMentionSourceKey(source)),
+      nextDraft.sources.map(discussionMentionSourceKey),
     );
-    mentionDraft.tokens.forEach(({ source }) => {
+    const contextSourcesChanged =
+      nextDraft.sources.length !== mentionDraft.sources.length ||
+      mentionDraft.sources.some(
+        (source) =>
+          !nextSourceKeys.has(discussionMentionSourceKey(source)),
+      );
+    mentionDraft.sources.forEach((source) => {
       if (!nextSourceKeys.has(discussionMentionSourceKey(source))) {
         showExitingChip(source);
       }
@@ -278,6 +304,9 @@ export function DiscussionComposer({
     previousControlledValueRef.current = nextDraft.value;
     setMentionDraft(nextDraft);
     onChange(nextDraft.value);
+    if (contextSourcesChanged) {
+      onContextSourcesChange?.(nextDraft.sources);
+    }
   };
 
   const closeMention = () => {
@@ -465,6 +494,7 @@ export function DiscussionComposer({
                   textareaRef.current?.focus();
                 }
               }}
+              sourceIssues={sourceIssues}
               sources={attachedSources}
             />
           </div>

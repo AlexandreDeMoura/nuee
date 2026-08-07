@@ -270,11 +270,6 @@ describe('discussions panel lifecycle', () => {
     fireEvent.click(
       screen.getByRole('button', { name: 'Continue discussion' }),
     );
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: 'Continue with project context only',
-      }),
-    );
 
     expect(await screen.findByText('Answer for New discussion')).toBeTruthy();
     expect(

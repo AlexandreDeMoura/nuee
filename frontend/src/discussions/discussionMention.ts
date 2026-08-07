@@ -12,6 +12,7 @@ export interface DiscussionMentionToken {
 }
 
 export interface DiscussionMentionDraft {
+  sources: readonly DiscussionSourceCatalogItem[];
   tokens: readonly DiscussionMentionToken[];
   value: string;
 }
@@ -42,8 +43,52 @@ export function discussionMentionSourceKey(
 
 export function createDiscussionMentionDraft(
   value: string,
+  sources: readonly DiscussionSourceCatalogItem[] = [],
 ): DiscussionMentionDraft {
-  return { tokens: [], value };
+  return { sources: deduplicateSources(sources), tokens: [], value };
+}
+
+function deduplicateSources(
+  sources: readonly DiscussionSourceCatalogItem[],
+): DiscussionSourceCatalogItem[] {
+  const result: DiscussionSourceCatalogItem[] = [];
+  const indicesByKey = new Map<string, number>();
+
+  for (const source of sources) {
+    const sourceKey = discussionMentionSourceKey(source);
+    const existingIndex = indicesByKey.get(sourceKey);
+
+    if (existingIndex === undefined) {
+      indicesByKey.set(sourceKey, result.length);
+      result.push(source);
+    } else {
+      result[existingIndex] = source;
+    }
+  }
+
+  return result;
+}
+
+export function replaceDiscussionMentionSources(
+  draft: DiscussionMentionDraft,
+  sources: readonly DiscussionSourceCatalogItem[],
+): DiscussionMentionDraft {
+  const normalizedSources = deduplicateSources(sources);
+  const sourcesByKey = new Map(
+    normalizedSources.map((source) => [
+      discussionMentionSourceKey(source),
+      source,
+    ]),
+  );
+  const tokens = draft.tokens.flatMap((token) => {
+    const source = sourcesByKey.get(
+      discussionMentionSourceKey(token.source),
+    );
+
+    return source ? [{ ...token, source }] : [];
+  });
+
+  return { ...draft, sources: normalizedSources, tokens };
 }
 
 /**
@@ -82,6 +127,7 @@ export function updateDiscussionMentionDraft(
 
   const delta =
     nextSuffixStart - changeStart - (previousSuffixStart - changeStart);
+  const removedSourceKeys = new Set<string>();
   const tokens = draft.tokens.flatMap((token) => {
     if (token.end <= changeStart) {
       return [token];
@@ -95,10 +141,18 @@ export function updateDiscussionMentionDraft(
       }];
     }
 
+    removedSourceKeys.add(discussionMentionSourceKey(token.source));
     return [];
   });
 
-  return { tokens, value: nextValue };
+  return {
+    sources: draft.sources.filter(
+      (source) =>
+        !removedSourceKeys.has(discussionMentionSourceKey(source)),
+    ),
+    tokens,
+    value: nextValue,
+  };
 }
 
 export function attachDiscussionMentionSource(
@@ -111,8 +165,8 @@ export function attachDiscussionMentionSource(
 
   if (
     !isDiscussionMentionSourceAttachable(source) ||
-    draft.tokens.some(
-      (token) => discussionMentionSourceKey(token.source) === sourceKey,
+    draft.sources.some(
+      (candidate) => discussionMentionSourceKey(candidate) === sourceKey,
     ) ||
     mention.triggerIndex < 0 ||
     queryEnd > draft.value.length
@@ -138,6 +192,7 @@ export function attachDiscussionMentionSource(
     attached: true,
     caretPosition: token.end + trailingSpace.length,
     draft: {
+      sources: [...shiftedDraft.sources, source],
       tokens: [...shiftedDraft.tokens, token],
       value: nextValue,
     },
@@ -155,7 +210,13 @@ export function removeDiscussionMentionToken(
   );
 
   if (!token) {
-    return draft;
+    const sources = draft.sources.filter(
+      (candidate) => discussionMentionSourceKey(candidate) !== sourceKey,
+    );
+
+    return sources.length === draft.sources.length
+      ? draft
+      : { ...draft, sources };
   }
 
   return updateDiscussionMentionDraft(

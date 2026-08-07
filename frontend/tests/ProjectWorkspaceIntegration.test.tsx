@@ -924,7 +924,7 @@ describe('workspace integration contracts', () => {
     expect(document.activeElement).toBe(startButton);
   });
 
-  it('preserves a write-first prompt while inviting explicit project-only context', async () => {
+  it('submits write-first drafts directly with project context only', async () => {
     const creation = deferred<DiscussionDetails>();
     const create = vi.fn(() => creation.promise);
 
@@ -949,30 +949,6 @@ describe('workspace integration contracts', () => {
       screen.getByRole('button', { name: 'Continue discussion' }),
     );
 
-    expect(create).not.toHaveBeenCalled();
-    expect(
-      screen.getByRole('heading', { name: 'Choose what Nuée should use' }),
-    ).toBeTruthy();
-    expect(screen.getAllByText('Project description')).toHaveLength(2);
-
-    fireEvent.click(screen.getByRole('button', { name: 'Back to prompt' }));
-    expect(
-      (
-        screen.getByRole('combobox', {
-          name: 'Discussion prompt',
-        }) as HTMLTextAreaElement
-      ).value,
-    ).toBe('What blocks the launch?');
-
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Continue discussion' }),
-    );
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: 'Continue with project context only',
-      }),
-    );
-
     expect(create).toHaveBeenCalledTimes(1);
     expect(create).toHaveBeenCalledWith(
       project.id,
@@ -985,287 +961,20 @@ describe('workspace integration contracts', () => {
       },
       expect.any(AbortSignal),
     );
+    expect(
+      screen.queryByRole('heading', { name: 'Choose what Nuée should use' }),
+    ).toBeNull();
   });
 
-  it('coordinates canvas bubble choices into an identifier-only context review', async () => {
-    const creation = deferred<DiscussionDetails>();
-    const create = vi.fn(() => creation.promise);
-
-    render(
-      <ProjectWorkspace
-        discussionLifecycleRequests={{ create }}
-        project={project}
-        requestBubbles={async () => [bubble()]}
-      />,
-    );
-
-    fireEvent.click(
-      await screen.findByRole('button', { name: 'New discussion' }),
-    );
-    fireEvent.change(
-      screen.getByRole('combobox', { name: 'Discussion prompt' }),
-      { target: { value: 'Which evidence should guide the launch?' } },
-    );
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Continue discussion' }),
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Add bubbles' }));
-
-    expect(screen.queryByRole('dialog')).toBeNull();
-    expect(
-      screen.getByRole('region', { name: 'Project canvas' }).getAttribute(
-        'data-selection-mode',
-      ),
-    ).toBe('multiple');
-    expect(
-      document.querySelector('[data-workspace-content]')?.hasAttribute('inert'),
-    ).toBe(false);
-
-    fireEvent.pointerDown(
-      screen.getByRole('checkbox', {
-        name: 'Market is real but fragmented',
-      }),
-      {
-        button: 0,
-        clientX: 100,
-        clientY: 80,
-        pointerId: 31,
-      },
-    );
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: 'Use selected bubbles (1 selected)',
-      }),
-    );
-
-    expect(
-      screen.getByRole('heading', { name: 'Review discussion context' }),
-    ).toBeTruthy();
-    expect(
-      within(
-        screen.getByRole('list', {
-          name: 'Pending discussion context',
-        }),
-      ).getByText('Market is real but fragmented'),
-    ).toBeTruthy();
-
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Start discussion' }),
-    );
-
-    expect(create).toHaveBeenCalledTimes(1);
-    expect(create).toHaveBeenCalledWith(
-      project.id,
-      expect.objectContaining({
-        project_id: project.id,
-        first_prompt: 'Which evidence should guide the launch?',
-        bubble_ids: ['bubble-1'],
-        document_ids: [],
-      }),
-      expect.any(AbortSignal),
-    );
-  });
-
-  it('seeds, revises, and clears bubble context without changing canvas bubbles', async () => {
-    const create = vi.fn();
-    const firstBubble = bubble();
-    const secondBubble = bubble({
-      id: 'bubble-2',
-      title: 'Regulatory lead time',
-      content: 'Licensing requires nine to fourteen months.',
-      position_x: 420,
-      position_y: 160,
-    });
-
-    render(
-      <ProjectWorkspace
-        discussionLifecycleRequests={{ create }}
-        project={project}
-        requestBubbles={async () => [firstBubble, secondBubble]}
-      />,
-    );
-
-    const firstCard = await screen.findByRole('article', {
-      name: firstBubble.title,
-    });
-    fireEvent.keyDown(firstCard, { key: 'Enter' });
-    fireEvent.click(screen.getByRole('button', { name: 'New discussion' }));
-    fireEvent.change(
-      screen.getByRole('combobox', { name: 'Discussion prompt' }),
-      { target: { value: 'Which evidence should guide the launch?' } },
-    );
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Continue discussion' }),
-    );
-
-    let pendingList = screen.getByRole('list', {
-      name: 'Pending discussion context',
-    });
-    expect(within(pendingList).getByText(firstBubble.title)).toBeTruthy();
-    expect(
-      within(pendingList).queryByText(secondBubble.title),
-    ).toBeNull();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Change bubbles' }));
-
-    const firstOption = screen.getByRole('checkbox', {
-      name: firstBubble.title,
-    });
-    const secondOption = screen.getByRole('checkbox', {
-      name: secondBubble.title,
-    });
-
-    expect(firstOption.getAttribute('aria-checked')).toBe('true');
-    expect(secondOption.getAttribute('aria-checked')).toBe('false');
-    fireEvent.keyDown(secondOption, { key: ' ' });
-    expect(screen.getByText('2 SELECTED')).toBeTruthy();
-
-    fireEvent.keyDown(window, { key: 'Escape' });
-
-    expect(
-      screen.getByRole('heading', { name: 'Choose what Nuée should use' }),
-    ).toBeTruthy();
-    pendingList = screen.getByRole('list', {
-      name: 'Pending discussion context',
-    });
-    expect(within(pendingList).getByText(firstBubble.title)).toBeTruthy();
-    expect(
-      within(pendingList).queryByText(secondBubble.title),
-    ).toBeNull();
-    expect(create).not.toHaveBeenCalled();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Change bubbles' }));
-    expect(
-      screen
-        .getByRole('checkbox', { name: firstBubble.title })
-        .getAttribute('aria-checked'),
-    ).toBe('true');
-    expect(
-      screen
-        .getByRole('checkbox', { name: secondBubble.title })
-        .getAttribute('aria-checked'),
-    ).toBe('false');
-
-    fireEvent.keyDown(
-      screen.getByRole('checkbox', { name: secondBubble.title }),
-      { key: 'Enter' },
-    );
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: 'Use selected bubbles (2 selected)',
-      }),
-    );
-
-    pendingList = screen.getByRole('list', {
-      name: 'Pending discussion context',
-    });
-    expect(within(pendingList).getByText(firstBubble.title)).toBeTruthy();
-    expect(within(pendingList).getByText(secondBubble.title)).toBeTruthy();
-
-    fireEvent.click(
-      within(pendingList).getByRole('button', {
-        name: `Remove bubble: ${firstBubble.title}`,
-      }),
-    );
-    expect(within(pendingList).queryByText(firstBubble.title)).toBeNull();
-    expect(within(pendingList).getByText(secondBubble.title)).toBeTruthy();
-
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Add or change context' }),
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Change bubbles' }));
-
-    expect(
-      screen
-        .getByRole('checkbox', { name: firstBubble.title })
-        .getAttribute('aria-checked'),
-    ).toBe('false');
-    const remainingOption = screen.getByRole('checkbox', {
-      name: secondBubble.title,
-    });
-    expect(remainingOption.getAttribute('aria-checked')).toBe('true');
-
-    fireEvent.keyDown(remainingOption, { key: ' ' });
-    const confirmEmpty = screen.getByRole('button', {
-      name: 'Use selected bubbles (0 selected)',
-    });
-    expect((confirmEmpty as HTMLButtonElement).disabled).toBe(false);
-    fireEvent.click(confirmEmpty);
-
-    expect(
-      screen.getByRole('heading', { name: 'Review discussion context' }),
-    ).toBeTruthy();
-    expect(screen.getByText('0 bubbles · 0 documents')).toBeTruthy();
-    expect(
-      screen.queryByRole('list', {
-        name: 'Pending discussion context',
-      }),
-    ).toBeNull();
-
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Add or change context' }),
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Back to prompt' }));
-
-    expect(
-      (
-        screen.getByRole('combobox', {
-          name: 'Discussion prompt',
-        }) as HTMLTextAreaElement
-      ).value,
-    ).toBe('Which evidence should guide the launch?');
-    expect(create).not.toHaveBeenCalled();
-    expect(
-      document
-        .querySelector(`[data-bubble-id="${firstBubble.id}"]`)
-        ?.getAttribute('data-bubble-selected'),
-    ).toBe('true');
-    expect(
-      document
-        .querySelector('[aria-label="Project canvas"]')
-        ?.getAttribute('data-selection-mode'),
-    ).toBe('single');
-  });
-
-  it('selects ready whole documents in the Documents panel and preserves mixed context choices', async () => {
+  it('seeds the selected canvas bubble as a removable draft chip', async () => {
+    const selectedBubble = bubble();
     const create = vi.fn(
       () => new Promise<DiscussionDetails>(() => undefined),
     );
-    const firstDocument = documentSummary();
-    const secondDocument = documentSummary({
-      id: 'document-2',
-      original_filename: 'customer-interviews.txt',
-      title: 'Customer interviews',
-    });
-    const pendingDocument = documentSummary({
-      id: 'document-pending',
-      original_filename: 'market-research.txt',
-      title: 'Market research',
-      processing_status: 'processing',
-    });
-    const failedDocument = documentSummary({
-      can_retry: true,
-      id: 'document-failed',
-      original_filename: 'regulatory-report.txt',
-      processing_error_code: 'processing_unavailable',
-      title: 'Regulatory report',
-      processing_status: 'failed',
-    });
-    const selectedBubble = bubble();
-    const listDocuments = vi.fn(async () => [
-      firstDocument,
-      secondDocument,
-      pendingDocument,
-      failedDocument,
-    ]);
 
     render(
       <ProjectWorkspace
         discussionLifecycleRequests={{ create }}
-        documentLibraryRequests={{
-          list: listDocuments,
-          policy: async () => documentUploadPolicy,
-        }}
         project={project}
         requestBubbles={async () => [selectedBubble]}
       />,
@@ -1276,149 +985,113 @@ describe('workspace integration contracts', () => {
     });
     fireEvent.keyDown(bubbleCard, { key: 'Enter' });
     fireEvent.click(screen.getByRole('button', { name: 'New discussion' }));
+
+    const chip = document.querySelector(
+      `[data-discussion-mention-chip="bubble:${selectedBubble.id}"]`,
+    );
+    expect(chip?.textContent).toContain(selectedBubble.title);
+    expect(
+      document
+        .querySelector('[aria-label="Project canvas"]')
+        ?.getAttribute('data-selection-mode'),
+    ).toBe('single');
+
     fireEvent.change(
       screen.getByRole('combobox', { name: 'Discussion prompt' }),
-      { target: { value: 'Which sources support the launch plan?' } },
+      { target: { value: 'Which evidence should guide the launch?' } },
     );
     fireEvent.click(
       screen.getByRole('button', { name: 'Continue discussion' }),
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Add documents' }));
 
-    const documentsTab = screen.getByRole('tab', { name: 'Documents' });
-    expect(documentsTab.getAttribute('aria-selected')).toBe('true');
-    expect(
-      screen.getByRole('heading', {
-        name: 'Choose documents for this discussion',
-      }),
-    ).toBeTruthy();
-    expect(await screen.findByText('Market research')).toBeTruthy();
-    expect(
-      screen.getByText(
-        'Still processing. This document can be selected when it’s ready.',
-      ),
-    ).toBeTruthy();
-    expect(
-      (
-        screen.getByRole('checkbox', {
-          name: pendingDocument.title,
-        }) as HTMLButtonElement
-      ).disabled,
-    ).toBe(true);
-    expect(screen.getByText('Regulatory report')).toBeTruthy();
-    expect(
-      screen.getByText(
-        'Processing failed. This document can’t be used as discussion context.',
-      ),
-    ).toBeTruthy();
-    expect(
-      (
-        screen.getByRole('checkbox', {
-          name: failedDocument.title,
-        }) as HTMLButtonElement
-      ).disabled,
-    ).toBe(true);
-    expect(listDocuments).toHaveBeenCalledWith(
-      project.id,
-      expect.any(AbortSignal),
-    );
-
-    fireEvent.click(
-      screen.getByRole('checkbox', { name: firstDocument.title }),
-    );
-    fireEvent.click(
-      screen.getByRole('checkbox', { name: secondDocument.title }),
-    );
-    expect(screen.getByText('2 SELECTED')).toBeTruthy();
-
-    fireEvent.click(screen.getByRole('tab', { name: 'Project' }));
-    expect(
-      screen.queryByRole('heading', {
-        name: 'Choose documents for this discussion',
-      }),
-    ).toBeNull();
-    fireEvent.click(documentsTab);
-
-    expect(
-      screen
-        .getByRole('checkbox', { name: firstDocument.title })
-        .getAttribute('aria-checked'),
-    ).toBe('true');
-    expect(
-      screen
-        .getByRole('checkbox', { name: secondDocument.title })
-        .getAttribute('aria-checked'),
-    ).toBe('true');
-
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: 'Use selected documents (2 selected)',
-      }),
-    );
-
-    const pendingList = screen.getByRole('list', {
-      name: 'Pending discussion context',
-    });
-    expect(within(pendingList).getByText(selectedBubble.title)).toBeTruthy();
-    expect(within(pendingList).getByText(firstDocument.title)).toBeTruthy();
-    expect(within(pendingList).getByText(secondDocument.title)).toBeTruthy();
-    expect(screen.getByText('1 bubble · 2 documents')).toBeTruthy();
-
-    fireEvent.click(
-      within(pendingList).getByRole('button', {
-        name: `Remove document: ${firstDocument.title}`,
-      }),
-    );
-    expect(within(pendingList).queryByText(firstDocument.title)).toBeNull();
-    expect(within(pendingList).getByText(secondDocument.title)).toBeTruthy();
-
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Add or change context' }),
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Change documents' }));
-
-    expect(
-      screen
-        .getByRole('checkbox', { name: firstDocument.title })
-        .getAttribute('aria-checked'),
-    ).toBe('false');
-    expect(
-      screen
-        .getByRole('checkbox', { name: secondDocument.title })
-        .getAttribute('aria-checked'),
-    ).toBe('true');
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: 'Use selected documents (1 selected)',
-      }),
-    );
-
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Start discussion' }),
-    );
-
-    expect(create).toHaveBeenCalledTimes(1);
     expect(create).toHaveBeenCalledWith(
       project.id,
       expect.objectContaining({
         bubble_ids: [selectedBubble.id],
-        document_ids: [secondDocument.id],
-        first_prompt: 'Which sources support the launch plan?',
-        project_id: project.id,
+        document_ids: [],
+        first_prompt: 'Which evidence should guide the launch?',
       }),
       expect.any(AbortSignal),
     );
   });
 
-  it('keeps a failed context submission recoverable with the same request identity', async () => {
-    const retry = deferred<DiscussionDetails>();
+  it('attaches ready whole documents in the draft without activating the Documents panel selector', async () => {
+    const readyDocument = documentSummary();
+    const pendingDocument = documentSummary({
+      id: 'document-pending',
+      processing_status: 'processing',
+      title: 'Market research',
+    });
+    const create = vi.fn(
+      () => new Promise<DiscussionDetails>(() => undefined),
+    );
+
+    render(
+      <ProjectWorkspace
+        discussionLifecycleRequests={{ create }}
+        documentLibraryRequests={{
+          list: async () => [readyDocument, pendingDocument],
+          policy: async () => documentUploadPolicy,
+        }}
+        project={project}
+        requestBubbles={requestEmptyBubbles}
+      />,
+    );
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Start a discussion' }),
+    );
+    await waitFor(() =>
+      expect(
+        screen.getByRole('combobox', { name: 'Discussion prompt' }),
+      ).toBeTruthy(),
+    );
+    const prompt = screen.getByRole<HTMLTextAreaElement>('combobox', {
+      name: 'Discussion prompt',
+    });
+    fireEvent.change(prompt, {
+      target: {
+        selectionStart: 'Summarize @'.length,
+        value: 'Summarize @',
+      },
+    });
+
+    const readyOption = await screen.findByRole('option', {
+      name: /Launch brief/,
+    });
+    expect(
+      screen.getByRole<HTMLButtonElement>('option', {
+        name: /Market research/,
+      }).disabled,
+    ).toBe(true);
+    fireEvent.click(readyOption);
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Continue discussion' }),
+    );
+
+    expect(create).toHaveBeenCalledWith(
+      project.id,
+      expect.objectContaining({
+        bubble_ids: [],
+        document_ids: [readyDocument.id],
+        first_prompt: 'Summarize Launch brief',
+      }),
+      expect.any(AbortSignal),
+    );
+    expect(
+      screen.queryByRole('heading', {
+        name: 'Choose documents for this discussion',
+      }),
+    ).toBeNull();
+  });
+
+  it('keeps a failed inline-context submission recoverable with the same request identity', async () => {
     const inputs: CreateDiscussionInput[] = [];
     const create = vi.fn(
       async (
-        requestedProjectId: string,
+        _requestedProjectId: string,
         input: CreateDiscussionInput,
       ) => {
-        expect(requestedProjectId).toBe(project.id);
         inputs.push(input);
 
         if (inputs.length === 1) {
@@ -1428,7 +1101,7 @@ describe('workspace integration contracts', () => {
           });
         }
 
-        return retry.promise;
+        return new Promise<DiscussionDetails>(() => undefined);
       },
     );
 
@@ -1450,27 +1123,17 @@ describe('workspace integration contracts', () => {
     fireEvent.click(
       screen.getByRole('button', { name: 'Continue discussion' }),
     );
+
+    expect(await screen.findByText('The selected source changed.')).toBeTruthy();
     fireEvent.click(
-      screen.getByRole('button', {
-        name: 'Continue with project context only',
-      }),
+      screen.getByRole('button', { name: 'Continue discussion' }),
     );
 
-    expect(
-      await screen.findByRole('heading', {
-        name: "Discussion context wasn't created",
-      }),
-    ).toBeTruthy();
-    expect(screen.getByText('The selected source changed.')).toBeTruthy();
-
-    fireEvent.click(screen.getByRole('button', { name: 'Try again' }));
-
     await waitFor(() => expect(inputs).toHaveLength(2));
-    expect(inputs[1].idempotency_key).toBe(inputs[0].idempotency_key);
     expect(inputs[1]).toEqual(inputs[0]);
   });
 
-  it('marks invalid sources and rotates request identity after the selection changes', async () => {
+  it('marks an invalid draft chip and rotates request identity after removal', async () => {
     const selectedBubble = bubble();
     const inputs: CreateDiscussionInput[] = [];
     const create = vi.fn(
@@ -1483,8 +1146,7 @@ describe('workspace integration contracts', () => {
         if (inputs.length === 1) {
           throw new ApiError(422, {
             code: 'DISCUSSION_CONTEXT_SOURCE_INVALID',
-            message:
-              'One or more selected context sources are unavailable. Review or remove the affected selections.',
+            message: 'One or more selected context sources are unavailable.',
             source_errors: [
               {
                 source_kind: 'bubble',
@@ -1519,60 +1181,30 @@ describe('workspace integration contracts', () => {
     fireEvent.click(
       screen.getByRole('button', { name: 'Continue discussion' }),
     );
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Review selected context' }),
-    );
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Start discussion' }),
-    );
 
+    await waitFor(() =>
+      expect(
+        document.querySelector('[data-context-source-issue="missing"]'),
+      ).toBeTruthy(),
+    );
     expect(
-      await screen.findByRole('heading', {
-        name: "Discussion context wasn't created",
-      }),
-    ).toBeTruthy();
-    const pendingList = screen.getByRole('list', {
-      name: 'Pending discussion context',
-    });
-    expect(
-      pendingList
-        .querySelector(`[data-context-source-issue="missing"]`)
-        ?.textContent,
-    ).toContain(selectedBubble.title);
-    expect(
-      within(pendingList).getByText(
+      screen.getByText(
         'This source was deleted or is no longer available.',
       ),
     ).toBeTruthy();
 
     fireEvent.click(
-      within(pendingList).getByRole('button', {
+      screen.getByRole('button', {
         name: `Remove bubble: ${selectedBubble.title}`,
       }),
     );
     fireEvent.click(
-      screen.getByRole('button', { name: 'Review context' }),
-    );
-
-    expect(screen.getByText('0 bubbles · 0 documents')).toBeTruthy();
-    expect(
-      screen.getByLabelText('Project description, always included'),
-    ).toBeTruthy();
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Start discussion' }),
+      screen.getByRole('button', { name: 'Continue discussion' }),
     );
 
     await waitFor(() => expect(inputs).toHaveLength(2));
-    expect(inputs[0]).toMatchObject({
-      bubble_ids: [selectedBubble.id],
-      document_ids: [],
-      first_prompt: 'What changed?',
-    });
-    expect(inputs[1]).toMatchObject({
-      bubble_ids: [],
-      document_ids: [],
-      first_prompt: 'What changed?',
-    });
+    expect(inputs[0].bubble_ids).toEqual([selectedBubble.id]);
+    expect(inputs[1].bubble_ids).toEqual([]);
     expect(inputs[1].idempotency_key).not.toBe(
       inputs[0].idempotency_key,
     );

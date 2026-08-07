@@ -1,8 +1,4 @@
-import {
-  useCallback,
-  useMemo,
-  useState,
-} from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { DiscussionContextSelectionInput } from '../api';
 import type { DiscussionCreationFailure } from './discussionCreationFailure';
 
@@ -27,10 +23,6 @@ export interface DiscussionContextSourceCandidate
 
 export type DiscussionContextSelectionPhase =
   | 'idle'
-  | 'invitation'
-  | 'selecting_bubbles'
-  | 'selecting_documents'
-  | 'review'
   | 'submitting'
   | 'error';
 
@@ -42,8 +34,6 @@ interface DiscussionContextSelectionState {
   failure: DiscussionCreationFailure | null;
   phase: DiscussionContextSelectionPhase;
   projectId: string;
-  prompt: string;
-  returnPhase: 'invitation' | 'review';
   selectionRevision: number;
 }
 
@@ -53,27 +43,20 @@ export interface PrepareDiscussionContextOptions {
 }
 
 export interface DiscussionContextSelectionController {
-  backFromSourceSelection: () => void;
-  backToInvitation: () => void;
-  beginSourceSelection: (kind: PendingDiscussionContextKind) => void;
-  beginSubmitting: (projectContextOnly?: boolean) => void;
+  beginSubmitting: () => void;
   cancel: () => void;
   complete: () => void;
-  confirmSourceSelection: (
-    kind: PendingDiscussionContextKind,
-    sources: readonly DiscussionContextSourceCandidate[],
-  ) => void;
   entryPoint: DiscussionContextEntryPoint;
   error: string | null;
   failure: DiscussionCreationFailure | null;
-  invite: (prompt: string) => void;
   pendingSources: readonly PendingDiscussionContextSource[];
   phase: DiscussionContextSelectionPhase;
   prepare: (options: PrepareDiscussionContextOptions) => void;
-  prompt: string;
   removeSource: (kind: PendingDiscussionContextKind, sourceId: string) => void;
+  replaceSources: (
+    sources: readonly DiscussionContextSourceCandidate[],
+  ) => void;
   retrySubmission: () => void;
-  review: () => void;
   selection: DiscussionContextSelectionInput;
   selectionRevision: number;
   submissionFailed: (failure: DiscussionCreationFailure | string) => void;
@@ -88,8 +71,6 @@ function emptyState(projectId: string): DiscussionContextSelectionState {
     failure: null,
     phase: 'idle',
     projectId,
-    prompt: '',
-    returnPhase: 'invitation',
     selectionRevision: 0,
   };
 }
@@ -113,32 +94,29 @@ function haveSameSourceIds(
   );
 }
 
+function haveSameSources(
+  first: readonly PendingDiscussionContextSource[],
+  second: readonly PendingDiscussionContextSource[],
+): boolean {
+  return (
+    first.length === second.length &&
+    first.every((source, index) => {
+      const candidate = second[index];
+      return (
+        candidate?.id === source.id &&
+        candidate.kind === source.kind &&
+        candidate.title === source.title
+      );
+    })
+  );
+}
+
 function asFailure(
   failure: DiscussionCreationFailure | string,
 ): DiscussionCreationFailure {
   return typeof failure === 'string'
     ? { code: null, message: failure, sourceIssues: [] }
     : failure;
-}
-
-function failureAfterSourceRemoval(
-  failure: DiscussionCreationFailure | null,
-  kind: PendingDiscussionContextKind,
-  sourceId: string,
-): DiscussionCreationFailure | null {
-  if (!failure) {
-    return null;
-  }
-
-  if (failure.code !== 'DISCUSSION_CONTEXT_SOURCE_INVALID') {
-    return null;
-  }
-
-  const sourceIssues = failure.sourceIssues.filter(
-    (issue) => issue.sourceKind !== kind || issue.sourceId !== sourceId,
-  );
-
-  return sourceIssues.length > 0 ? { ...failure, sourceIssues } : null;
 }
 
 function normalizeCandidates(
@@ -176,9 +154,28 @@ function normalizeCandidates(
   return normalized;
 }
 
+function failureForSources(
+  failure: DiscussionCreationFailure | null,
+  sources: readonly PendingDiscussionContextSource[],
+): DiscussionCreationFailure | null {
+  if (!failure || failure.code !== 'DISCUSSION_CONTEXT_SOURCE_INVALID') {
+    return null;
+  }
+
+  const sourceKeys = new Set(
+    sources.map(({ id, kind }) => `${kind}:${id}`),
+  );
+  const sourceIssues = failure.sourceIssues.filter((issue) =>
+    sourceKeys.has(`${issue.sourceKind}:${issue.sourceId}`),
+  );
+
+  return sourceIssues.length > 0 ? { ...failure, sourceIssues } : null;
+}
+
 /**
- * Owns pending discussion context only. It deliberately stores identifiers and
- * review labels, never source bodies or durable frozen-context records.
+ * Owns the identifier-only context attached to a new discussion draft. The
+ * composer owns mention-token ranges; this hook owns the pending source set,
+ * submission revision, and recoverable creation failure.
  */
 export function useDiscussionContextSelection(
   projectId: string,
@@ -218,109 +215,58 @@ export function useDiscussionContextSelection(
     [projectId],
   );
 
-  const invite = useCallback(
-    (prompt: string) => {
+  const replaceSources = useCallback(
+    (sources: readonly DiscussionContextSourceCandidate[]) => {
       setStoredState((current) => {
         const scoped =
           current.projectId === projectId ? current : emptyState(projectId);
-
-        return {
-          ...scoped,
-          error: null,
-          failure: null,
-          phase: 'invitation',
-          prompt,
-        };
-      });
-    },
-    [projectId],
-  );
-
-  const beginSourceSelection = useCallback(
-    (kind: PendingDiscussionContextKind) => {
-      setStoredState((current) => {
-        const scoped =
-          current.projectId === projectId ? current : emptyState(projectId);
-
-        return {
-          ...scoped,
-          error: null,
-          failure: null,
-          phase:
-            kind === 'bubble'
-              ? 'selecting_bubbles'
-              : 'selecting_documents',
-          returnPhase:
-            scoped.phase === 'review' ? 'review' : 'invitation',
-        };
-      });
-    },
-    [projectId],
-  );
-
-  const backFromSourceSelection = useCallback(() => {
-    setStoredState((current) =>
-      current.projectId === projectId &&
-      (current.phase === 'selecting_bubbles' ||
-        current.phase === 'selecting_documents')
-        ? {
-            ...current,
-            phase: current.returnPhase,
-          }
-        : current,
-    );
-  }, [projectId]);
-
-  const confirmSourceSelection = useCallback(
-    (
-      kind: PendingDiscussionContextKind,
-      sources: readonly DiscussionContextSourceCandidate[],
-    ) => {
-      setStoredState((current) => {
-        const scoped =
-          current.projectId === projectId ? current : emptyState(projectId);
-        const normalized = normalizeCandidates(projectId, kind, sources);
-        const currentSources =
-          kind === 'bubble'
-            ? scoped.bubbleSources
-            : scoped.documentSources;
-        const selectionChanged = !haveSameSourceIds(
-          currentSources,
-          normalized,
+        const bubbleSources = normalizeCandidates(
+          projectId,
+          'bubble',
+          sources,
         );
+        const documentSources = normalizeCandidates(
+          projectId,
+          'document',
+          sources,
+        );
+        const selectionChanged =
+          !haveSameSourceIds(scoped.bubbleSources, bubbleSources) ||
+          !haveSameSourceIds(scoped.documentSources, documentSources);
+
+        if (!selectionChanged) {
+          if (
+            haveSameSources(scoped.bubbleSources, bubbleSources) &&
+            haveSameSources(scoped.documentSources, documentSources)
+          ) {
+            return scoped;
+          }
+
+          return {
+            ...scoped,
+            bubbleSources,
+            documentSources,
+          };
+        }
+
+        const failure = failureForSources(scoped.failure, [
+          ...bubbleSources,
+          ...documentSources,
+        ]);
 
         return {
           ...scoped,
-          ...(kind === 'bubble'
-            ? { bubbleSources: normalized }
-            : { documentSources: normalized }),
-          error: null,
-          failure: null,
-          phase: 'review',
-          returnPhase: 'review',
-          selectionRevision:
-            scoped.selectionRevision + (selectionChanged ? 1 : 0),
+          bubbleSources,
+          documentSources,
+          error: failure?.message ?? null,
+          failure,
+          phase: 'idle',
+          selectionRevision: scoped.selectionRevision + 1,
         };
       });
     },
     [projectId],
   );
-
-  const review = useCallback(() => {
-    setStoredState((current) =>
-      current.projectId === projectId
-        ? { ...current, phase: 'review' }
-        : current,
-    );
-  }, [projectId]);
-
-  const backToInvitation = useCallback(() => {
-    setStoredState((current) =>
-      current.projectId === projectId
-        ? { ...current, error: null, failure: null, phase: 'invitation' }
-        : current,
-    );
-  }, [projectId]);
 
   const removeSource = useCallback(
     (kind: PendingDiscussionContextKind, sourceId: string) => {
@@ -329,72 +275,48 @@ export function useDiscussionContextSelection(
           return current;
         }
 
-        const currentSources =
-          kind === 'bubble'
-            ? current.bubbleSources
-            : current.documentSources;
-
-        if (!currentSources.some(({ id }) => id === sourceId)) {
-          return current;
-        }
-
-        const failure = failureAfterSourceRemoval(
-          current.failure,
-          kind,
-          sourceId,
+        const sources = [
+          ...current.bubbleSources,
+          ...current.documentSources,
+        ].filter(
+          (source) => source.kind !== kind || source.id !== sourceId,
         );
 
-        return kind === 'bubble'
-          ? {
-              ...current,
-              bubbleSources: current.bubbleSources.filter(
-                ({ id }) => id !== sourceId,
-              ),
-              error: failure?.message ?? null,
-              failure,
-              selectionRevision: current.selectionRevision + 1,
-            }
-          : {
-              ...current,
-              documentSources: current.documentSources.filter(
-                ({ id }) => id !== sourceId,
-              ),
-              error: failure?.message ?? null,
-              failure,
-              selectionRevision: current.selectionRevision + 1,
-            };
-      });
-    },
-    [projectId],
-  );
-
-  const beginSubmitting = useCallback(
-    (projectContextOnly = false) => {
-      setStoredState((current) => {
-        if (current.projectId !== projectId) {
+        if (
+          sources.length ===
+          current.bubbleSources.length + current.documentSources.length
+        ) {
           return current;
         }
+
+        const failure = failureForSources(current.failure, sources);
 
         return {
           ...current,
-          ...(projectContextOnly
-            ? { bubbleSources: [], documentSources: [] }
-            : {}),
-          error: null,
-          failure: null,
-          phase: 'submitting',
-          selectionRevision:
-            current.selectionRevision +
-            (projectContextOnly &&
-            (current.bubbleSources.length > 0 ||
-              current.documentSources.length > 0)
-              ? 1
-              : 0),
+          bubbleSources: sources.filter(({ kind }) => kind === 'bubble'),
+          documentSources: sources.filter(({ kind }) => kind === 'document'),
+          error: failure?.message ?? null,
+          failure,
+          phase: 'idle',
+          selectionRevision: current.selectionRevision + 1,
         };
       });
     },
     [projectId],
   );
+
+  const beginSubmitting = useCallback(() => {
+    setStoredState((current) =>
+      current.projectId === projectId
+        ? {
+            ...current,
+            error: null,
+            failure: null,
+            phase: 'submitting',
+          }
+        : current,
+    );
+  }, [projectId]);
 
   const submissionFailed = useCallback(
     (failure: DiscussionCreationFailure | string) => {
@@ -446,48 +368,36 @@ export function useDiscussionContextSelection(
 
   return useMemo(
     () => ({
-      backFromSourceSelection,
-      backToInvitation,
-      beginSourceSelection,
       beginSubmitting,
       cancel,
       complete,
-      confirmSourceSelection,
       entryPoint: state.entryPoint,
       error: state.error,
       failure: state.failure,
-      invite,
       pendingSources,
       phase: state.phase,
       prepare,
-      prompt: state.prompt,
       removeSource,
+      replaceSources,
       retrySubmission,
-      review,
       selection,
       selectionRevision: state.selectionRevision,
       submissionFailed,
     }),
     [
-      backFromSourceSelection,
-      backToInvitation,
-      beginSourceSelection,
       beginSubmitting,
       cancel,
       complete,
-      confirmSourceSelection,
-      invite,
       pendingSources,
       prepare,
       removeSource,
+      replaceSources,
       retrySubmission,
-      review,
       selection,
       state.entryPoint,
       state.error,
       state.failure,
       state.phase,
-      state.prompt,
       state.selectionRevision,
       submissionFailed,
     ],
