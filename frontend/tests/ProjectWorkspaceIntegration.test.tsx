@@ -895,7 +895,7 @@ describe('workspace integration contracts', () => {
       screen.getByRole('dialog', { name: 'New discussion' }),
     ).toBeTruthy();
     expect(
-      screen.getByRole('textbox', { name: 'Discussion prompt' }),
+      screen.getByRole('combobox', { name: 'Discussion prompt' }),
     ).toBeTruthy();
   });
 
@@ -939,7 +939,7 @@ describe('workspace integration contracts', () => {
     fireEvent.click(
       await screen.findByRole('button', { name: 'Start a discussion' }),
     );
-    const prompt = screen.getByRole('textbox', {
+    const prompt = screen.getByRole('combobox', {
       name: 'Discussion prompt',
     });
     fireEvent.change(prompt, {
@@ -958,7 +958,7 @@ describe('workspace integration contracts', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Back to prompt' }));
     expect(
       (
-        screen.getByRole('textbox', {
+        screen.getByRole('combobox', {
           name: 'Discussion prompt',
         }) as HTMLTextAreaElement
       ).value,
@@ -1003,7 +1003,7 @@ describe('workspace integration contracts', () => {
       await screen.findByRole('button', { name: 'New discussion' }),
     );
     fireEvent.change(
-      screen.getByRole('textbox', { name: 'Discussion prompt' }),
+      screen.getByRole('combobox', { name: 'Discussion prompt' }),
       { target: { value: 'Which evidence should guide the launch?' } },
     );
     fireEvent.click(
@@ -1091,7 +1091,7 @@ describe('workspace integration contracts', () => {
     fireEvent.keyDown(firstCard, { key: 'Enter' });
     fireEvent.click(screen.getByRole('button', { name: 'New discussion' }));
     fireEvent.change(
-      screen.getByRole('textbox', { name: 'Discussion prompt' }),
+      screen.getByRole('combobox', { name: 'Discussion prompt' }),
       { target: { value: 'Which evidence should guide the launch?' } },
     );
     fireEvent.click(
@@ -1209,7 +1209,7 @@ describe('workspace integration contracts', () => {
 
     expect(
       (
-        screen.getByRole('textbox', {
+        screen.getByRole('combobox', {
           name: 'Discussion prompt',
         }) as HTMLTextAreaElement
       ).value,
@@ -1277,7 +1277,7 @@ describe('workspace integration contracts', () => {
     fireEvent.keyDown(bubbleCard, { key: 'Enter' });
     fireEvent.click(screen.getByRole('button', { name: 'New discussion' }));
     fireEvent.change(
-      screen.getByRole('textbox', { name: 'Discussion prompt' }),
+      screen.getByRole('combobox', { name: 'Discussion prompt' }),
       { target: { value: 'Which sources support the launch plan?' } },
     );
     fireEvent.click(
@@ -1444,7 +1444,7 @@ describe('workspace integration contracts', () => {
       await screen.findByRole('button', { name: 'Start a discussion' }),
     );
     fireEvent.change(
-      screen.getByRole('textbox', { name: 'Discussion prompt' }),
+      screen.getByRole('combobox', { name: 'Discussion prompt' }),
       { target: { value: 'What changed?' } },
     );
     fireEvent.click(
@@ -1513,7 +1513,7 @@ describe('workspace integration contracts', () => {
     fireEvent.keyDown(bubbleCard, { key: 'Enter' });
     fireEvent.click(screen.getByRole('button', { name: 'New discussion' }));
     fireEvent.change(
-      screen.getByRole('textbox', { name: 'Discussion prompt' }),
+      screen.getByRole('combobox', { name: 'Discussion prompt' }),
       { target: { value: 'What changed?' } },
     );
     fireEvent.click(

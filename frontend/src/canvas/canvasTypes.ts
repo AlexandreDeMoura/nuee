@@ -72,6 +72,7 @@ export interface CanvasMultiSelection {
 
 export interface CanvasSurfaceProps {
   bubbleCollection?: ProjectBubbleCollection;
+  createBubbleDialogOpen?: boolean;
   emptyState:
     | ReactNode
     | ((actions: CanvasEmptyStateActions) => ReactNode);
@@ -85,6 +86,7 @@ export interface CanvasSurfaceProps {
   requestBubblePositionsUpdate?: BubblePositionsUpdateRequest;
   requestViewportUpdate?: ProjectViewportUpdateRequest;
   onBubbleSelectionChange?: (bubble: Bubble | null) => void;
+  onCreateBubbleDialogOpenChange?: (open: boolean) => void;
   onStartDiscussion?: () => void;
   bubbleLinks?: BubbleLink[];
   multiSelection?: CanvasMultiSelection | null;

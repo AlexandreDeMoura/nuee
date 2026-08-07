@@ -264,7 +264,7 @@ describe('discussions panel lifecycle', () => {
     expect(screen.queryByText('New discussion', { selector: 'li *' })).toBeNull();
 
     fireEvent.change(
-      screen.getByRole('textbox', { name: 'Discussion prompt' }),
+      screen.getByRole('combobox', { name: 'Discussion prompt' }),
       { target: { value: 'What blocks the launch?' } },
     );
     fireEvent.click(

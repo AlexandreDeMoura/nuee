@@ -645,6 +645,8 @@ export function ProjectWorkspace({
     );
   const [documentUploadPickerProjectId, setDocumentUploadPickerProjectId] =
     useState<string | null>(null);
+  const [createBubbleDialogProjectId, setCreateBubbleDialogProjectId] =
+    useState<string | null>(null);
   const [selectedBubbleId, setSelectedBubbleId] = useState<string | null>(null);
   const [
     knowledgeExtractionTargetSelection,
@@ -1018,6 +1020,9 @@ export function ProjectWorkspace({
   const uploadDocumentFromCanvas =
     emptyActionHandlers?.['upload-document'] ??
     internalUploadDocumentFromCanvas;
+  const createBubbleFromDiscussion =
+    emptyActionHandlers?.['create-bubble'] ??
+    (() => setCreateBubbleDialogProjectId(currentProject.id));
   const discussionContextMultiSelection =
     useMemo<CanvasMultiSelection | null>(() => {
       if (
@@ -1315,6 +1320,9 @@ export function ProjectWorkspace({
             analyticsClient={analyticsClient}
             bubbleCollection={bubbleCollection}
             bubbleLinks={bubbleLinkLoadState.links}
+            createBubbleDialogOpen={
+              createBubbleDialogProjectId === currentProject.id
+            }
             multiSelection={resolvedCanvasMultiSelection}
             emptyState={({ onCreateBubble }) => (
               <EmptyCanvasContent
@@ -1343,6 +1351,11 @@ export function ProjectWorkspace({
             requestBubblePositionsUpdate={requestBubblePositionsUpdate}
             requestViewportUpdate={requestViewportUpdate}
             onBubbleSelectionChange={handleBubbleSelectionChange}
+            onCreateBubbleDialogOpenChange={(open) =>
+              setCreateBubbleDialogProjectId(
+                open ? currentProject.id : null,
+              )
+            }
             onStartDiscussion={startDiscussionFromCanvas}
             viewportSaveDelayMs={viewportSaveDelayMs}
           />
@@ -1478,11 +1491,13 @@ export function ProjectWorkspace({
                 }
                 onInspectContext={onInspectDiscussionContext}
                 onDiscussionChanged={projectDiscussions.updateDiscussion}
+                onCreateBubble={createBubbleFromDiscussion}
                 onDelete={openDiscussionDeleteConfirmation}
                 onMinimize={minimizeDiscussion}
                 projectId={currentProject.id}
                 requests={discussionLifecycleRequests}
                 sourceCatalog={discussionSourceCatalog}
+                onUploadDocument={uploadDocumentFromCanvas}
               />
             )))}
         {discussionPendingDeletion && (

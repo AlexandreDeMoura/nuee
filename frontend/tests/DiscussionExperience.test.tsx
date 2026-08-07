@@ -1339,7 +1339,7 @@ Edited **self-contained** content.`;
     render(<Harness requests={{ create, get }} />);
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
 
-    const prompt = screen.getByRole('textbox', {
+    const prompt = screen.getByRole('combobox', {
       name: 'Discussion prompt',
     });
     const continueButton = screen.getByRole('button', {
@@ -1420,7 +1420,7 @@ Edited **self-contained** content.`;
     fireEvent.click(searchToggle);
     expect(searchToggle.getAttribute('aria-pressed')).toBe('true');
     fireEvent.change(
-      screen.getByRole('textbox', { name: 'Discussion prompt' }),
+      screen.getByRole('combobox', { name: 'Discussion prompt' }),
       { target: { value: 'What changed today?' } },
     );
     fireEvent.click(
@@ -1465,7 +1465,7 @@ Edited **self-contained** content.`;
     );
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
     fireEvent.change(
-      screen.getByRole('textbox', { name: 'Discussion prompt' }),
+      screen.getByRole('combobox', { name: 'Discussion prompt' }),
       {
         target: { value: 'What blocks the launch?' },
       },
@@ -1515,7 +1515,7 @@ Edited **self-contained** content.`;
     render(<Harness requests={{ create }} />);
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
 
-    const prompt = screen.getByRole('textbox', {
+    const prompt = screen.getByRole('combobox', {
       name: 'Discussion prompt',
     });
     fireEvent.change(prompt, {
@@ -1853,7 +1853,7 @@ Edited **self-contained** content.`;
     fireEvent.click(
       await screen.findByRole('button', { name: 'Search the web' }),
     );
-    const prompt = screen.getByRole('textbox', {
+    const prompt = screen.getByRole('combobox', {
       name: 'Discussion prompt',
     });
     fireEvent.change(prompt, {
@@ -1916,7 +1916,7 @@ Edited **self-contained** content.`;
     );
     fireEvent.click(screen.getByRole('button', { name: 'Start' }));
     fireEvent.change(
-      screen.getByRole('textbox', { name: 'Discussion prompt' }),
+      screen.getByRole('combobox', { name: 'Discussion prompt' }),
       {
         target: { value: 'What blocks the launch?' },
       },

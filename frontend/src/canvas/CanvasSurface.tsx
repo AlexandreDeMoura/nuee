@@ -71,6 +71,7 @@ export type {
 
 export function CanvasSurface({
   bubbleCollection,
+  createBubbleDialogOpen,
   emptyState,
   initialViewport = DEFAULT_VIEWPORT,
   projectId,
@@ -82,6 +83,7 @@ export function CanvasSurface({
   requestBubblePositionsUpdate = updateBubblePositions,
   requestViewportUpdate = updateProjectViewport,
   onBubbleSelectionChange,
+  onCreateBubbleDialogOpenChange,
   onStartDiscussion,
   bubbleLinks = [],
   multiSelection = null,
@@ -91,7 +93,10 @@ export function CanvasSurface({
   const [isPanning, setIsPanning] = useState(false);
   const [compactLayoutSave, setCompactLayoutSave] =
     useState<CompactLayoutSave | null>(null);
-  const [isCreateBubbleDialogOpen, setIsCreateBubbleDialogOpen] = useState(false);
+  const [
+    isUncontrolledCreateBubbleDialogOpen,
+    setIsUncontrolledCreateBubbleDialogOpen,
+  ] = useState(false);
   const [createPlacementInput, setCreatePlacementInput] =
     useState<BubblePlacementInput | null>(null);
   const surfaceRef = useRef<HTMLElement>(null);
@@ -558,8 +563,18 @@ export function CanvasSurface({
   const backgroundPositionX = viewport.x % scaledGridSize;
   const backgroundPositionY = viewport.y % scaledGridSize;
 
+  const isCreateBubbleDialogOpen =
+    createBubbleDialogOpen ?? isUncontrolledCreateBubbleDialogOpen;
+
+  function setCreateBubbleDialogOpen(open: boolean) {
+    if (createBubbleDialogOpen === undefined) {
+      setIsUncontrolledCreateBubbleDialogOpen(open);
+    }
+    onCreateBubbleDialogOpenChange?.(open);
+  }
+
   function openCreateBubbleDialog() {
-    setIsCreateBubbleDialogOpen(true);
+    setCreateBubbleDialogOpen(true);
   }
 
   function handleBubbleCreated(bubble: Bubble) {
@@ -569,7 +584,7 @@ export function CanvasSurface({
       bubble_id: bubble.id,
       source_kind: 'manual',
     });
-    setIsCreateBubbleDialogOpen(false);
+    setCreateBubbleDialogOpen(false);
     setCreatePlacementInput(null);
   }
 
@@ -823,10 +838,10 @@ export function CanvasSurface({
         />
       )}
 
-      {createPlacementInput && (
+      {isCreateBubbleDialogOpen && createPlacementInput && (
         <CreateBubbleDialog
           onCancel={() => {
-            setIsCreateBubbleDialogOpen(false);
+            setCreateBubbleDialogOpen(false);
             setCreatePlacementInput(null);
           }}
           onCreated={handleBubbleCreated}

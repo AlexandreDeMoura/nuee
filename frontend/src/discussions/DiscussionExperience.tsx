@@ -62,7 +62,9 @@ export interface DiscussionExperienceProps {
   onInspectContext?: (inspection: DiscussionContextInspection) => void;
   onDiscussionChanged?: (discussion: DiscussionDetails) => void;
   onDelete?: (discussion: DiscussionDeleteTarget) => void;
+  onCreateBubble?: () => void;
   onMinimize?: () => void;
+  onUploadDocument?: () => void;
   projectId: string;
   requests?: DiscussionLifecycleRequests;
   sourceCatalog: DiscussionSourceCatalog;
@@ -83,7 +85,9 @@ export function DiscussionExperience({
   onInspectContext,
   onDiscussionChanged,
   onDelete,
+  onCreateBubble,
   onMinimize,
+  onUploadDocument,
   projectId,
   requests,
   sourceCatalog,
@@ -118,7 +122,9 @@ export function DiscussionExperience({
       key={identity}
       onDiscussionChanged={onDiscussionChanged}
       onDelete={onDelete}
+      onCreateBubble={onCreateBubble}
       onMinimize={onMinimize}
+      onUploadDocument={onUploadDocument}
       projectId={projectId}
       requests={requests}
       sourceCatalog={sourceCatalog}
@@ -142,9 +148,12 @@ function DiscussionExperienceModal({
   onInspectContext,
   onDiscussionChanged,
   onDelete,
+  onCreateBubble,
   onMinimize,
+  onUploadDocument,
   projectId,
   requests,
+  sourceCatalog,
   visibleDiscussion,
 }: DiscussionExperienceProps & {
   visibleDiscussion: NonNullable<
@@ -543,8 +552,29 @@ function DiscussionExperienceModal({
             isInitialPrompt={visibleDiscussion.kind === 'draft'}
             isSubmitting={lifecycle.isSubmitting}
             onChange={lifecycle.onComposerChange}
+            onCreateBubble={
+              onCreateBubble
+                ? () => {
+                    closeDiscussion();
+                    onCreateBubble();
+                  }
+                : undefined
+            }
             onSubmit={submit}
+            onUploadDocument={
+              onUploadDocument
+                ? () => {
+                    closeDiscussion();
+                    onUploadDocument();
+                  }
+                : undefined
+            }
             onWebSearchChange={lifecycle.setWebSearchEnabled}
+            sourceCatalog={
+              visibleDiscussion.kind === 'draft'
+                ? sourceCatalog
+                : undefined
+            }
             value={lifecycle.composerValue}
             webSearchEnabled={lifecycle.webSearchEnabled}
             webSearchSupported={lifecycle.webSearchSupported}
