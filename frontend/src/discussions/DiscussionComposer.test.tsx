@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { DiscussionSourceCatalog } from './discussionSourceCatalog';
@@ -58,7 +59,35 @@ function typeAtCaret(
   });
 }
 
+function ControlledComposer() {
+  const [value, setValue] = useState('');
+
+  return (
+    <DiscussionComposer
+      isInitialPrompt
+      isSubmitting={false}
+      onChange={setValue}
+      onSubmit={vi.fn()}
+      sourceCatalog={sourceCatalog}
+      value={value}
+    />
+  );
+}
+
 describe('DiscussionComposer mentions', () => {
+  it('starts with locked project context and a live one-source freeze count', () => {
+    renderComposer();
+
+    expect(
+      screen.getByLabelText('Project description, always included'),
+    ).not.toBeNull();
+    expect(screen.getByText('ALWAYS')).not.toBeNull();
+    expect(
+      screen.getByText('Type @ to bring in a bubble or document'),
+    ).not.toBeNull();
+    expect(screen.getByText(/1 SOURCE FREEZE WHEN YOU SEND/)).not.toBeNull();
+  });
+
   it('opens a grouped combobox and skips unavailable documents with the keyboard', () => {
     const onMentionSourceSelect = vi.fn();
     const { props, rerender } = renderComposer({ onMentionSourceSelect });
@@ -149,5 +178,86 @@ describe('DiscussionComposer mentions', () => {
     rerender(<DiscussionComposer {...props} value="@new" />);
     fireEvent.click(screen.getByRole('button', { name: 'Create a bubble' }));
     expect(onCreateBubble).toHaveBeenCalledOnce();
+  });
+
+  it('attaches a source as one chip and highlights its plain-text token', () => {
+    const { container } = render(<ControlledComposer />);
+    const textarea = screen.getByRole<HTMLTextAreaElement>('combobox', {
+      name: 'Discussion prompt',
+    });
+
+    typeAtCaret(textarea, 'Compare @ret');
+    fireEvent.click(
+      screen.getByRole('option', { name: /Retention signal/ }),
+    );
+
+    expect(textarea.value).toBe('Compare Retention signal ');
+    expect(
+      container.querySelector(
+        '[data-discussion-mention-chip="bubble:bubble-retention"]',
+      ),
+    ).not.toBeNull();
+    expect(
+      container.querySelector(
+        '[data-discussion-mention-token="bubble:bubble-retention"]',
+      )?.textContent,
+    ).toBe('Retention signal');
+    expect(screen.getByText(/2 SOURCES FREEZE WHEN YOU SEND/)).not.toBeNull();
+  });
+
+  it('removes both chip and token, with a transient exiting chip', () => {
+    const { container } = render(<ControlledComposer />);
+    const textarea = screen.getByRole<HTMLTextAreaElement>('combobox', {
+      name: 'Discussion prompt',
+    });
+
+    typeAtCaret(textarea, '@ret');
+    fireEvent.click(
+      screen.getByRole('option', { name: /Retention signal/ }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Remove bubble: Retention signal' }),
+    );
+
+    expect(textarea.value).toBe(' ');
+    expect(
+      container.querySelector('[data-discussion-mention-chip]'),
+    ).toBeNull();
+    expect(
+      container.querySelector('[data-discussion-mention-chip-exiting]'),
+    ).not.toBeNull();
+    expect(screen.getByText(/1 SOURCE FREEZE WHEN YOU SEND/)).not.toBeNull();
+  });
+
+  it('detaches on token edits and atomically deletes from its trailing edge', () => {
+    const { container } = render(<ControlledComposer />);
+    const textarea = screen.getByRole<HTMLTextAreaElement>('combobox', {
+      name: 'Discussion prompt',
+    });
+
+    typeAtCaret(textarea, '@ret');
+    fireEvent.click(
+      screen.getByRole('option', { name: /Retention signal/ }),
+    );
+    typeAtCaret(textarea, 'Retention xignal ');
+
+    expect(
+      container.querySelector('[data-discussion-mention-chip]'),
+    ).toBeNull();
+
+    typeAtCaret(textarea, '@ret');
+    fireEvent.click(
+      screen.getByRole('option', { name: /Retention signal/ }),
+    );
+    textarea.setSelectionRange(
+      'Retention signal'.length,
+      'Retention signal'.length,
+    );
+    fireEvent.keyDown(textarea, { key: 'Backspace' });
+
+    expect(textarea.value).toBe(' ');
+    expect(
+      container.querySelector('[data-discussion-mention-chip]'),
+    ).toBeNull();
   });
 });

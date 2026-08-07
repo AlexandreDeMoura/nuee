@@ -1,9 +1,12 @@
 import {
+  useEffect,
   useId,
+  useLayoutEffect,
   useRef,
   useState,
   type FormEvent,
   type KeyboardEvent,
+  type RefObject,
   type SyntheticEvent,
 } from 'react';
 import { ArrowUp, Globe2 } from 'lucide-react';
@@ -14,10 +17,17 @@ import {
   type DiscussionSourceCatalogItem,
 } from './discussionSourceCatalog';
 import {
+  attachDiscussionMentionSource,
+  createDiscussionMentionDraft,
+  deleteDiscussionMentionTokenAtEdge,
   discussionMentionSourceKey,
   findDiscussionMentionQuery,
   isDiscussionMentionSourceAttachable,
+  removeDiscussionMentionToken,
+  updateDiscussionMentionDraft,
+  type DiscussionMentionDraft,
 } from './discussionMention';
+import { DiscussionMentionChips } from './DiscussionMentionChips';
 import { DiscussionMentionList } from './DiscussionMentionList';
 import { useAutoGrowTextarea } from './useAutoGrowTextarea';
 
@@ -26,6 +36,55 @@ const COMPOSER_MAX_ROWS = 3;
 interface OpenMention {
   query: string;
   triggerIndex: number;
+}
+
+const textareaMetrics =
+  'min-h-[50px] w-full px-2.5 py-2.5 text-[15.5px] leading-[1.5] whitespace-pre-wrap break-words';
+
+function DiscussionMentionMirror({
+  disabled,
+  draft,
+  mirrorRef,
+}: {
+  disabled: boolean;
+  draft: DiscussionMentionDraft;
+  mirrorRef: RefObject<HTMLDivElement | null>;
+}) {
+  const orderedTokens = [...draft.tokens].sort(
+    (first, second) => first.start - second.start,
+  );
+  const content: React.ReactNode[] = [];
+  let cursor = 0;
+
+  for (const token of orderedTokens) {
+    content.push(draft.value.slice(cursor, token.start));
+    content.push(
+      <span
+        className="rounded-[4px] bg-[#e5ecf8] text-[#34558f]"
+        data-discussion-mention-token={discussionMentionSourceKey(token.source)}
+        key={`${discussionMentionSourceKey(token.source)}:${token.start}`}
+      >
+        {draft.value.slice(token.start, token.end)}
+      </span>,
+    );
+    cursor = token.end;
+  }
+
+  content.push(draft.value.slice(cursor));
+
+  return (
+    <div
+      aria-hidden="true"
+      className={`pointer-events-none absolute inset-0 overflow-hidden ${textareaMetrics} ${
+        disabled ? 'text-[#7f8b99]' : 'text-[#1e2733]'
+      }`}
+      data-discussion-mention-mirror
+      ref={mirrorRef}
+    >
+      {content}
+      {draft.value.endsWith('\n') ? '\u200b' : null}
+    </div>
+  );
 }
 
 export interface DiscussionComposerProps {
@@ -68,12 +127,28 @@ export function DiscussionComposer({
   const mentionOptionIdPrefix = useId();
   const [mention, setMention] = useState<OpenMention | null>(null);
   const [activeSourceKey, setActiveSourceKey] = useState<string | null>(null);
+  const [mentionDraft, setMentionDraft] = useState(() =>
+    createDiscussionMentionDraft(value),
+  );
+  const [exitingSources, setExitingSources] = useState<
+    { source: DiscussionSourceCatalogItem }[]
+  >([]);
   const dismissedMentionRef = useRef<{
     triggerIndex: number;
     value: string;
   } | null>(null);
-  const normalizedValue = value.trim();
-  const textareaRef = useAutoGrowTextarea(value, COMPOSER_MAX_ROWS);
+  const previousControlledValueRef = useRef(value);
+  const pendingCaretPositionRef = useRef<number | null>(null);
+  const mirrorRef = useRef<HTMLDivElement>(null);
+  const exitTimersRef = useRef<Map<string, number>>(new Map());
+  const displayedValue = isInitialPrompt ? mentionDraft.value : value;
+  const normalizedValue = displayedValue.trim();
+  const textareaRef = useAutoGrowTextarea(
+    displayedValue,
+    COMPOSER_MAX_ROWS,
+  );
+  const attachedSources = mentionDraft.tokens.map(({ source }) => source);
+  const hasMentionTokens = mentionDraft.tokens.length > 0;
   const mentionResults =
     mention && sourceCatalog
       ? filterDiscussionSourceCatalog(sourceCatalog, mention.query)
@@ -101,6 +176,109 @@ export function DiscussionComposer({
   ]
     .filter(Boolean)
     .join(' ') || undefined;
+
+  useEffect(() => {
+    if (!isInitialPrompt || previousControlledValueRef.current === value) {
+      return;
+    }
+
+    previousControlledValueRef.current = value;
+    setMentionDraft((current) =>
+      updateDiscussionMentionDraft(current, value),
+    );
+  }, [isInitialPrompt, value]);
+
+  useEffect(
+    () => () => {
+      exitTimersRef.current.forEach((timer) => window.clearTimeout(timer));
+    },
+    [],
+  );
+
+  useLayoutEffect(() => {
+    const caretPosition = pendingCaretPositionRef.current;
+    const textarea = textareaRef.current;
+
+    if (caretPosition === null || !textarea) {
+      return;
+    }
+
+    pendingCaretPositionRef.current = null;
+    textarea.setSelectionRange(caretPosition, caretPosition);
+  }, [mentionDraft.value, textareaRef]);
+
+  const showExitingChip = (source: DiscussionSourceCatalogItem) => {
+    const sourceKey = discussionMentionSourceKey(source);
+    const previousTimer = exitTimersRef.current.get(sourceKey);
+    if (previousTimer !== undefined) {
+      window.clearTimeout(previousTimer);
+    }
+
+    setExitingSources((current) =>
+      current.some(
+        (candidate) =>
+          discussionMentionSourceKey(candidate.source) === sourceKey,
+      )
+        ? current
+        : [...current, { source }],
+    );
+
+    const prefersReducedMotion =
+      typeof window.matchMedia === 'function' &&
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const timer = window.setTimeout(
+      () => {
+        setExitingSources((current) =>
+          current.filter(
+            (candidate) =>
+              discussionMentionSourceKey(candidate.source) !== sourceKey,
+          ),
+        );
+        if (exitTimersRef.current.get(sourceKey) === timer) {
+          exitTimersRef.current.delete(sourceKey);
+        }
+      },
+      prefersReducedMotion ? 0 : 170,
+    );
+    exitTimersRef.current.set(sourceKey, timer);
+  };
+
+  const cancelExitingChip = (source: DiscussionSourceCatalogItem) => {
+    const sourceKey = discussionMentionSourceKey(source);
+    const timer = exitTimersRef.current.get(sourceKey);
+    if (timer !== undefined) {
+      window.clearTimeout(timer);
+      exitTimersRef.current.delete(sourceKey);
+    }
+    setExitingSources((current) =>
+      current.filter(
+        (candidate) =>
+          discussionMentionSourceKey(candidate.source) !== sourceKey,
+      ),
+    );
+  };
+
+  const commitMentionDraft = (
+    nextDraft: DiscussionMentionDraft,
+    caretPosition?: number,
+  ) => {
+    const nextSourceKeys = new Set(
+      nextDraft.tokens.map(({ source }) => discussionMentionSourceKey(source)),
+    );
+    mentionDraft.tokens.forEach(({ source }) => {
+      if (!nextSourceKeys.has(discussionMentionSourceKey(source))) {
+        showExitingChip(source);
+      }
+    });
+
+    if (caretPosition !== undefined) {
+      pendingCaretPositionRef.current = caretPosition;
+    }
+
+    previousControlledValueRef.current = nextDraft.value;
+    setMentionDraft(nextDraft);
+    onChange(nextDraft.value);
+  };
 
   const closeMention = () => {
     setMention(null);
@@ -153,12 +331,23 @@ export function DiscussionComposer({
   };
 
   const selectSource = (source: DiscussionSourceCatalogItem) => {
-    if (!isDiscussionMentionSourceAttachable(source)) {
+    if (!isDiscussionMentionSourceAttachable(source) || !mention) {
       return;
     }
 
+    const result = attachDiscussionMentionSource(
+      mentionDraft,
+      source,
+      mention,
+    );
     closeMention();
-    onMentionSourceSelect?.(source);
+
+    if (result.attached) {
+      cancelExitingChip(source);
+      commitMentionDraft(result.draft, result.caretPosition);
+      onMentionSourceSelect?.(source);
+    }
+
     textareaRef.current?.focus();
   };
 
@@ -212,6 +401,25 @@ export function DiscussionComposer({
     }
 
     if (
+      !event.nativeEvent.isComposing &&
+      (event.key === 'Backspace' || event.key === 'Delete')
+    ) {
+      const deletion = deleteDiscussionMentionTokenAtEdge(
+        mentionDraft,
+        event.key,
+        event.currentTarget.selectionStart,
+        event.currentTarget.selectionEnd,
+      );
+
+      if (deletion) {
+        event.preventDefault();
+        closeMention();
+        commitMentionDraft(deletion.draft, deletion.caretPosition);
+        return;
+      }
+    }
+
+    if (
       event.key !== 'Enter' ||
       event.shiftKey ||
       event.nativeEvent.isComposing
@@ -243,6 +451,24 @@ export function DiscussionComposer({
         {isInitialPrompt ? 'Discussion prompt' : 'Discussion message'}
       </label>
       <div className="rounded-xl border border-[#d7dee7] bg-white p-2.5 shadow-[0_1px_2px_rgba(30,39,51,0.04)] focus-within:border-[#3f63a8] focus-within:ring-3 focus-within:ring-[#3f63a8]/10">
+        {isInitialPrompt && (
+          <div className="border-b border-[#eef1f5] px-1.25 pb-2.5">
+            <DiscussionMentionChips
+              exitingSources={exitingSources}
+              onRemove={(source) => {
+                const nextDraft = removeDiscussionMentionToken(
+                  mentionDraft,
+                  source,
+                );
+                if (nextDraft !== mentionDraft) {
+                  commitMentionDraft(nextDraft);
+                  textareaRef.current?.focus();
+                }
+              }}
+              sources={attachedSources}
+            />
+          </div>
+        )}
         <div className="flex items-end gap-2.5">
           <div className="relative min-w-0 flex-1">
             {mention && sourceCatalog && (
@@ -264,6 +490,13 @@ export function DiscussionComposer({
                 results={mentionResults}
               />
             )}
+            {isInitialPrompt && hasMentionTokens && (
+              <DiscussionMentionMirror
+                disabled={disabled || isSubmitting}
+                draft={mentionDraft}
+                mirrorRef={mirrorRef}
+              />
+            )}
             <textarea
               aria-activedescendant={mention ? activeOptionId : undefined}
               aria-autocomplete={mention ? 'list' : undefined}
@@ -277,7 +510,11 @@ export function DiscussionComposer({
                     : 'listbox'
                   : undefined
               }
-              className="scrollbar-subtle min-h-[50px] w-full resize-none overflow-y-hidden overscroll-contain border-0 bg-transparent px-2.5 py-2.5 text-[15.5px] leading-[1.5] text-[#1e2733] outline-none placeholder:text-[#a7b1be] disabled:cursor-not-allowed disabled:text-[#7f8b99]"
+              className={`scrollbar-subtle relative resize-none overflow-y-hidden overscroll-contain border-0 bg-transparent outline-none placeholder:text-[#a7b1be] disabled:cursor-not-allowed ${textareaMetrics} ${
+                isInitialPrompt && hasMentionTokens
+                  ? 'text-transparent caret-[#1e2733] disabled:caret-[#7f8b99]'
+                  : 'text-[#1e2733] disabled:text-[#7f8b99]'
+              }`}
               disabled={disabled || isSubmitting}
               id={composerId}
               name="message"
@@ -291,15 +528,31 @@ export function DiscussionComposer({
               }
               role={isInitialPrompt && sourceCatalog ? 'combobox' : undefined}
               rows={1}
-              value={value}
+              value={displayedValue}
               onChange={(event) => {
                 const nextValue = event.target.value;
                 dismissedMentionRef.current = null;
-                onChange(nextValue);
+
+                if (isInitialPrompt) {
+                  const nextDraft = updateDiscussionMentionDraft(
+                    mentionDraft,
+                    nextValue,
+                  );
+                  commitMentionDraft(nextDraft);
+                } else {
+                  onChange(nextValue);
+                }
+
                 updateMentionAtCaret(nextValue, event.target.selectionStart);
               }}
               onClick={handleCaretActivity}
               onKeyDown={handleKeyDown}
+              onScroll={(event) => {
+                if (mirrorRef.current) {
+                  mirrorRef.current.scrollLeft = event.currentTarget.scrollLeft;
+                  mirrorRef.current.scrollTop = event.currentTarget.scrollTop;
+                }
+              }}
               onSelect={handleCaretActivity}
             />
           </div>
@@ -350,6 +603,22 @@ export function DiscussionComposer({
           </div>
         )}
       </div>
+      {isInitialPrompt && (
+        <div className="mt-2.25 flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-1.25 text-[10px] font-semibold tracking-[0.07em] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
+          <p className="text-[#8b97a6]">
+            {attachedSources.length === 0
+              ? 'Type @ to bring in a bubble or document'
+              : `${attachedSources.length} attached ${
+                  attachedSources.length === 1 ? 'source' : 'sources'
+                }`}
+          </p>
+          <p aria-live="polite" className="text-[#617187]">
+            {attachedSources.length + 1}{' '}
+            {attachedSources.length === 0 ? 'SOURCE' : 'SOURCES'} FREEZE WHEN
+            YOU SEND
+          </p>
+        </div>
+      )}
       <p
         aria-live="polite"
         className="sr-only"
