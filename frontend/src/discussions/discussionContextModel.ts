@@ -49,6 +49,28 @@ export function getDiscussionContextBadges(
 }
 
 /**
+ * The project-description snapshot is created with the frozen package and is
+ * always its first item. Keeping the timestamp lookup behind the same runtime
+ * guard as the badges prevents draft or legacy context from presenting as
+ * locked.
+ */
+export function getDiscussionContextFrozenAt(
+  discussion: DiscussionDetails | null,
+): string | null {
+  if (
+    !discussion ||
+    !isFrozenContextV1(
+      discussion.frozen_context,
+      discussion.project_id,
+    )
+  ) {
+    return null;
+  }
+
+  return discussion.frozen_context.items[0].created_at;
+}
+
+/**
  * Stable public name retained for callers of the former project-only adapter.
  * It now projects every persisted versioned context item.
  */

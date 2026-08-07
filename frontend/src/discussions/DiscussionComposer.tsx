@@ -9,7 +9,7 @@ import {
   type RefObject,
   type SyntheticEvent,
 } from 'react';
-import { ArrowUp, Globe2 } from 'lucide-react';
+import { ArrowUp, Globe2, LockKeyhole } from 'lucide-react';
 import { focusRing } from '../ui/focusRing';
 import {
   filterDiscussionSourceCatalog,
@@ -35,6 +35,9 @@ import { useAutoGrowTextarea } from './useAutoGrowTextarea';
 
 const COMPOSER_MAX_ROWS = 3;
 const EMPTY_CONTEXT_SOURCES: readonly DiscussionSourceCatalogItem[] = [];
+const frozenContextTimeFormatter = new Intl.DateTimeFormat(undefined, {
+  timeStyle: 'short',
+});
 
 interface OpenMention {
   query: string;
@@ -92,6 +95,7 @@ function DiscussionMentionMirror({
 
 export interface DiscussionComposerProps {
   contextSources?: readonly DiscussionSourceCatalogItem[];
+  contextFrozenAt?: string | null;
   disabled?: boolean;
   error?: string | null;
   isInitialPrompt?: boolean;
@@ -114,6 +118,7 @@ export interface DiscussionComposerProps {
 
 export function DiscussionComposer({
   contextSources = EMPTY_CONTEXT_SOURCES,
+  contextFrozenAt,
   disabled = false,
   error,
   isInitialPrompt = false,
@@ -470,6 +475,9 @@ export function DiscussionComposer({
   const resultCountLabel = `${mentionResults.length} ${
     mentionResults.length === 1 ? 'source' : 'sources'
   } found`;
+  const formattedFrozenAt = contextFrozenAt
+    ? frozenContextTimeFormatter.format(new Date(contextFrozenAt))
+    : null;
 
   return (
     <form
@@ -479,6 +487,23 @@ export function DiscussionComposer({
       <label className="sr-only" htmlFor={composerId}>
         {isInitialPrompt ? 'Discussion prompt' : 'Discussion message'}
       </label>
+      {!isInitialPrompt && contextFrozenAt && formattedFrozenAt && (
+        <p
+          className="mb-2.5 flex items-center gap-1.75 px-1.25 text-[12px] leading-[1.45] text-[#8b97a6]"
+          data-discussion-context-locked
+        >
+          <LockKeyhole
+            aria-hidden="true"
+            className="size-3.25 shrink-0 text-[#8a96a5]"
+            strokeWidth={1.8}
+          />
+          <span>
+            Context locked for this discussion — frozen at{' '}
+            <time dateTime={contextFrozenAt}>{formattedFrozenAt}</time>. Start a
+            new discussion to change it.
+          </span>
+        </p>
+      )}
       <div className="rounded-xl border border-[#d7dee7] bg-white p-2.5 shadow-[0_1px_2px_rgba(30,39,51,0.04)] focus-within:border-[#3f63a8] focus-within:ring-3 focus-within:ring-[#3f63a8]/10">
         {isInitialPrompt && (
           <div className="border-b border-[#eef1f5] px-1.25 pb-2.5">

@@ -88,6 +88,33 @@ describe('DiscussionComposer mentions', () => {
     expect(screen.getByText(/1 SOURCE FREEZE WHEN YOU SEND/)).not.toBeNull();
   });
 
+  it('replaces pending context controls with the persisted locked-context line', () => {
+    const frozenAt = '2026-08-01T14:32:00.000Z';
+    const { container } = renderComposer({
+      contextFrozenAt: frozenAt,
+      contextSources: [sourceCatalog.sources[0]],
+      isInitialPrompt: false,
+    });
+
+    expect(container.querySelector('[data-discussion-mention-chip]')).toBeNull();
+    expect(
+      screen.queryByLabelText('Project description, always included'),
+    ).toBeNull();
+    expect(screen.queryByText(/FREEZE WHEN YOU SEND/)).toBeNull();
+    expect(
+      screen.getByText(/Context locked for this discussion/),
+    ).not.toBeNull();
+    expect(
+      screen.getByText(/Start a new discussion to change it/),
+    ).not.toBeNull();
+    expect(
+      screen.getByRole('textbox', { name: 'Discussion message' }),
+    ).not.toBeNull();
+    expect(container.querySelector('time')?.getAttribute('datetime')).toBe(
+      frozenAt,
+    );
+  });
+
   it('opens a grouped combobox and skips unavailable documents with the keyboard', () => {
     const onMentionSourceSelect = vi.fn();
     const { props, rerender } = renderComposer({ onMentionSourceSelect });

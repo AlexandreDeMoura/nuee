@@ -5,6 +5,7 @@ import { DiscussionContextBadges } from './DiscussionContextBadges';
 import {
   findFrozenContextItem,
   getDiscussionContextBadges,
+  getDiscussionContextFrozenAt,
   type DiscussionContextInspection,
 } from './discussionContextModel';
 import { FrozenContextInspector } from './FrozenContextInspector';
@@ -321,6 +322,7 @@ function DiscussionExperienceModal({
   const contextBadges = lifecycle.details
     ? getDiscussionContextBadges(lifecycle.details)
     : [];
+  const contextFrozenAt = getDiscussionContextFrozenAt(lifecycle.details);
   const discussionId = lifecycle.details?.id;
   const inspectedContextItem = findFrozenContextItem(
     lifecycle.details,
@@ -568,6 +570,7 @@ function DiscussionExperienceModal({
           />
         ) : (
           <DiscussionComposer
+            contextFrozenAt={contextFrozenAt}
             contextSources={pendingContextSources}
             disabled={composerDisabled}
             error={lifecycle.composerError}
