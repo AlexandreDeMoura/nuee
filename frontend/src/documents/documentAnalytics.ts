@@ -53,13 +53,6 @@ const allowedKeys = {
     'size_band',
     'context_readiness',
   ],
-  document_context_readiness_checked: [
-    'project_id',
-    'document_ids',
-    'action',
-    'ready_count',
-    'unavailable_count',
-  ],
 } as const satisfies Record<DocumentAnalyticsEventName, readonly string[]>;
 
 export function documentSizeBand(sizeBytes: number): DocumentSizeBand {

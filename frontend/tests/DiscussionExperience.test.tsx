@@ -1872,6 +1872,7 @@ Edited **self-contained** content.`;
     );
     expect(track.mock.calls.map(([event]) => event)).toEqual([
       'discussion_created',
+      'discussion_context_sources_frozen',
       'discussion_first_prompt_submitted',
       'discussion_response_failed',
     ]);
@@ -1926,7 +1927,7 @@ Edited **self-contained** content.`;
     );
 
     await screen.findByText('Licensing is the longest lead-time constraint.');
-    await waitFor(() => expect(track).toHaveBeenCalledTimes(3));
+    await waitFor(() => expect(track).toHaveBeenCalledTimes(4));
     const transcript = screen.getByRole('log', {
       name: 'Discussion messages',
     });
@@ -1939,6 +1940,7 @@ Edited **self-contained** content.`;
 
     expect(track.mock.calls.map(([event]) => event)).toEqual([
       'discussion_created',
+      'discussion_context_sources_frozen',
       'discussion_first_prompt_submitted',
       'discussion_response_completed',
     ]);
@@ -1947,6 +1949,17 @@ Edited **self-contained** content.`;
       discussion_id: 'discussion-1',
       occurred_at: created.created_at,
     });
+    expect(track).toHaveBeenCalledWith(
+      'discussion_context_sources_frozen',
+      {
+        project_id: projectId,
+        discussion_id: 'discussion-1',
+        bubble_count: 0,
+        document_count: 0,
+        attached_source_count: 0,
+        frozen_source_count: 1,
+      },
+    );
     expect(track).toHaveBeenCalledWith(
       'discussion_response_completed',
       expect.objectContaining({

@@ -136,6 +136,46 @@ export interface AnalyticsEventProperties {
     discussion_id: string | null;
     occurred_at: string;
   };
+  discussion_mention_list_opened: {
+    project_id: string;
+    result_count: number;
+    bubble_count: number;
+    document_count: number;
+  };
+  discussion_mention_source_attached: {
+    project_id: string;
+    source_id: string;
+    source_kind: 'bubble' | 'document';
+    input_method: 'keyboard' | 'pointer';
+  };
+  discussion_mention_source_removed: {
+    project_id: string;
+    source_id: string;
+    source_kind: 'bubble' | 'document';
+    removal_method: 'remove_control' | 'token_deletion';
+  };
+  discussion_mention_empty_state_displayed: {
+    project_id: string;
+  };
+  discussion_mention_empty_state_cta_activated: {
+    project_id: string;
+    action: 'upload_document' | 'create_bubble';
+  };
+  discussion_mention_not_ready_attach_attempted: {
+    project_id: string;
+    source_id: string;
+    source_kind: 'document';
+    input_method: 'keyboard' | 'pointer';
+    readiness_reason: 'processing' | 'failed';
+  };
+  discussion_context_sources_frozen: {
+    project_id: string;
+    discussion_id: string;
+    bubble_count: number;
+    document_count: number;
+    attached_source_count: number;
+    frozen_source_count: number;
+  };
   knowledge_extraction_started: {
     project_id: string;
     discussion_id: string;
@@ -214,13 +254,6 @@ export interface AnalyticsEventProperties {
     format_category: 'plain_text' | 'markdown' | 'pdf';
     size_band: 'under_100_kib' | '100_kib_to_1_mib' | '1_to_10_mib' | 'over_10_mib';
     context_readiness: 'ready' | 'not_ready';
-  };
-  document_context_readiness_checked: {
-    project_id: string;
-    document_ids: readonly string[];
-    action: 'selection_opened' | 'selection_confirmed';
-    ready_count: number;
-    unavailable_count: number;
   };
 }
 

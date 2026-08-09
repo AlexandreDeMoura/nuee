@@ -11,6 +11,7 @@ export * from '../ui/RichResponse';
 export * from './discussionContextModel';
 export * from './discussionCreationFailure';
 export * from './discussionListModel';
+export * from './discussionMentionAnalytics';
 export * from './discussionModel';
 export * from './discussionSourceCatalog';
 export * from './useAutoGrowTextarea';

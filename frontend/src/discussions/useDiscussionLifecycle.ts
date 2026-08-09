@@ -35,6 +35,7 @@ import {
   normalizeDiscussionCreationFailure,
   type DiscussionCreationFailure,
 } from './discussionCreationFailure';
+import { trackDiscussionMentionAnalytics } from './discussionMentionAnalytics';
 
 export type DiscussionCreateRequest = typeof createDiscussion;
 export type DiscussionCapabilitiesRequest = typeof getAiCapabilities;
@@ -127,6 +128,30 @@ function recoveryIdentifiers(error: unknown): {
     requestId.length > 0
     ? { discussionId, failureCode: error.code, requestId }
     : null;
+}
+
+function trackFrozenContextSourceCounts(
+  analyticsClient: AnalyticsClient,
+  projectId: string,
+  discussionId: string,
+  selection: DiscussionContextSelectionInput,
+): void {
+  const bubbleCount = selection.bubble_ids.length;
+  const documentCount = selection.document_ids.length;
+  const attachedSourceCount = bubbleCount + documentCount;
+
+  trackDiscussionMentionAnalytics(
+    analyticsClient,
+    'discussion_context_sources_frozen',
+    {
+      project_id: projectId,
+      discussion_id: discussionId,
+      bubble_count: bubbleCount,
+      document_count: documentCount,
+      attached_source_count: attachedSourceCount,
+      frozen_source_count: attachedSourceCount + 1,
+    },
+  );
 }
 
 function generationFailureCode(
@@ -615,6 +640,12 @@ export function useDiscussionLifecycle({
           discussion_id: next.id,
           occurred_at: next.created_at,
         });
+        trackFrozenContextSourceCounts(
+          analyticsClient,
+          projectId,
+          next.id,
+          selection,
+        );
 
         if (firstMessage?.request_id) {
           trackAnalytics(
@@ -674,6 +705,12 @@ export function useDiscussionLifecycle({
             discussion_id: recovery.discussionId,
             occurred_at: failureOccurredAt,
           });
+          trackFrozenContextSourceCounts(
+            analyticsClient,
+            projectId,
+            recovery.discussionId,
+            selection,
+          );
           trackAnalytics(
             analyticsClient,
             'discussion_first_prompt_submitted',

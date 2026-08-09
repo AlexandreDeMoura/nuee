@@ -25,18 +25,6 @@ describe('document analytics privacy boundary', () => {
     ).toThrow(/unsafe properties/u);
   });
 
-  it('rejects binary content hidden in an allowlisted property', () => {
-    expect(() =>
-      assertPrivacySafeDocumentAnalytics('document_context_readiness_checked', {
-        project_id: 'project-1',
-        document_ids: [new Uint8Array([80, 68, 70])],
-        action: 'selection_opened',
-        ready_count: 0,
-        unavailable_count: 1,
-      }),
-    ).toThrow(/unsafe values/u);
-  });
-
   it('publishes only the allowlisted typed payload', () => {
     const track = vi.fn<AnalyticsClient['track']>();
 

@@ -533,6 +533,9 @@ function DiscussionExperienceModal({
       isDraft && contextSelection
         ? contextSelection.selection
         : undefined,
+      isDraft && contextSelection
+        ? contextSelection.selectionRevision
+        : undefined,
     );
   };
 
@@ -570,6 +573,7 @@ function DiscussionExperienceModal({
           />
         ) : (
           <DiscussionComposer
+            analyticsClient={resolvedAnalyticsClient}
             contextFrozenAt={contextFrozenAt}
             contextSources={pendingContextSources}
             disabled={composerDisabled}

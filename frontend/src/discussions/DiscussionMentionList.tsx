@@ -1,5 +1,6 @@
 import { useId } from 'react';
 import {
+  CircleAlert,
   Check,
   CirclePlus,
   FileText,
@@ -19,7 +20,10 @@ export interface DiscussionMentionListProps {
   catalog: DiscussionSourceCatalog;
   listId: string;
   onCreateBubble?: () => void;
-  onSelect: (source: DiscussionSourceCatalogItem) => void;
+  onSelect: (
+    source: DiscussionSourceCatalogItem,
+    inputMethod: 'pointer',
+  ) => void;
   onUploadDocument?: () => void;
   optionIdPrefix: string;
   query: string;
@@ -44,7 +48,10 @@ function MentionOption({
 }: {
   active: boolean;
   id: string;
-  onSelect: (source: DiscussionSourceCatalogItem) => void;
+  onSelect: (
+    source: DiscussionSourceCatalogItem,
+    inputMethod: 'pointer',
+  ) => void;
   source: DiscussionSourceCatalogItem;
 }) {
   const unavailableReason =
@@ -62,11 +69,11 @@ function MentionOption({
             ? 'bg-[#eef2fa] text-[#263b62]'
             : 'text-[#344050] hover:bg-[#f6f8fb]'
       }`}
-      disabled={unavailableReason !== null}
       id={id}
-      onClick={() => onSelect(source)}
+      onClick={() => onSelect(source, 'pointer')}
       onMouseDown={(event) => event.preventDefault()}
       role="option"
+      tabIndex={-1}
       type="button"
     >
       <span
@@ -86,11 +93,18 @@ function MentionOption({
           {unavailableReason ?? source.secondaryLine}
         </span>
       </span>
-      {source.kind === 'document' && source.readiness.status === 'ready' && (
-        <span className="mt-1 inline-flex shrink-0 items-center gap-1 rounded-[5px] bg-[#edf6ef] px-1.5 py-0.75 text-[9.5px] font-semibold tracking-[0.06em] text-[#568361] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
-          <Check className="size-3" strokeWidth={2.2} aria-hidden="true" />
-          READY
-        </span>
+      {source.kind === 'document' && (
+        source.readiness.status === 'ready' ? (
+          <span className="mt-1 inline-flex shrink-0 items-center gap-1 rounded-[5px] bg-[#edf6ef] px-1.5 py-0.75 text-[9.5px] font-semibold tracking-[0.06em] text-[#568361] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
+            <Check className="size-3" strokeWidth={2.2} aria-hidden="true" />
+            READY
+          </span>
+        ) : (
+          <span className="mt-1 inline-flex shrink-0 items-center gap-1 rounded-[5px] border border-[#d9dee5] bg-[#f5f6f8] px-1.5 py-0.75 text-[9.5px] font-semibold tracking-[0.06em] text-[#727f8f] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
+            <CircleAlert className="size-3" strokeWidth={2} aria-hidden="true" />
+            NOT READY
+          </span>
+        )
       )}
     </button>
   );

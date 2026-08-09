@@ -2,6 +2,7 @@ import {
   useEffect,
   useId,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
   type FormEvent,
@@ -10,6 +11,7 @@ import {
   type SyntheticEvent,
 } from 'react';
 import { ArrowUp, Globe2, LockKeyhole } from 'lucide-react';
+import { analytics, type AnalyticsClient } from '../analytics';
 import { focusRing } from '../ui/focusRing';
 import {
   filterDiscussionSourceCatalog,
@@ -31,6 +33,7 @@ import {
 import type { DiscussionCreationSourceIssue } from './discussionCreationFailure';
 import { DiscussionMentionChips } from './DiscussionMentionChips';
 import { DiscussionMentionList } from './DiscussionMentionList';
+import { trackDiscussionMentionAnalytics } from './discussionMentionAnalytics';
 import { useAutoGrowTextarea } from './useAutoGrowTextarea';
 
 const COMPOSER_MAX_ROWS = 3;
@@ -94,6 +97,7 @@ function DiscussionMentionMirror({
 }
 
 export interface DiscussionComposerProps {
+  analyticsClient?: AnalyticsClient;
   contextSources?: readonly DiscussionSourceCatalogItem[];
   contextFrozenAt?: string | null;
   disabled?: boolean;
@@ -117,6 +121,7 @@ export interface DiscussionComposerProps {
 }
 
 export function DiscussionComposer({
+  analyticsClient = analytics,
   contextSources = EMPTY_CONTEXT_SOURCES,
   contextFrozenAt,
   disabled = false,
@@ -143,6 +148,7 @@ export function DiscussionComposer({
   const mentionOptionIdPrefix = useId();
   const [mention, setMention] = useState<OpenMention | null>(null);
   const [activeSourceKey, setActiveSourceKey] = useState<string | null>(null);
+  const [mentionAnnouncement, setMentionAnnouncement] = useState('');
   const [mentionDraft, setMentionDraft] = useState(() =>
     createDiscussionMentionDraft(value, contextSources),
   );
@@ -155,11 +161,13 @@ export function DiscussionComposer({
     triggerIndex: number;
     value: string;
   } | null>(null);
+  const mentionOpenTrackedRef = useRef(false);
   const previousControlledValueRef = useRef(value);
   const pendingCaretPositionRef = useRef<number | null>(null);
   const mirrorRef = useRef<HTMLDivElement>(null);
   const exitTimersRef = useRef<Map<string, number>>(new Map());
   const displayedValue = isInitialPrompt ? mentionDraft.value : value;
+  const analyticsProjectId = sourceCatalog?.projectId;
   const normalizedValue = displayedValue.trim();
   const textareaRef = useAutoGrowTextarea(
     displayedValue,
@@ -167,19 +175,19 @@ export function DiscussionComposer({
   );
   const attachedSources = mentionDraft.sources;
   const hasMentionTokens = mentionDraft.tokens.length > 0;
-  const mentionResults =
-    mention && sourceCatalog
-      ? filterDiscussionSourceCatalog(sourceCatalog, mention.query)
-      : [];
-  const selectableSources = mentionResults.filter(
-    isDiscussionMentionSourceAttachable,
+  const mentionResults = useMemo(
+    () =>
+      mention && sourceCatalog
+        ? filterDiscussionSourceCatalog(sourceCatalog, mention.query)
+        : [],
+    [mention, sourceCatalog],
   );
-  const resolvedActiveSourceKey = selectableSources.some(
+  const resolvedActiveSourceKey = mentionResults.some(
     (source) => discussionMentionSourceKey(source) === activeSourceKey,
   )
     ? activeSourceKey
-    : selectableSources[0]
-      ? discussionMentionSourceKey(selectableSources[0])
+    : mentionResults[0]
+      ? discussionMentionSourceKey(mentionResults[0])
       : null;
   const activeOptionIndex = mentionResults.findIndex(
     (source) => discussionMentionSourceKey(source) === resolvedActiveSourceKey,
@@ -205,6 +213,41 @@ export function DiscussionComposer({
       updateDiscussionMentionDraft(current, value),
     );
   }, [isInitialPrompt, value]);
+
+  useEffect(() => {
+    if (!mention || !sourceCatalog) {
+      mentionOpenTrackedRef.current = false;
+      return;
+    }
+
+    if (mentionOpenTrackedRef.current || !analyticsProjectId) {
+      return;
+    }
+
+    mentionOpenTrackedRef.current = true;
+    const bubbleCount = mentionResults.filter(
+      ({ kind }) => kind === 'bubble',
+    ).length;
+    const documentCount = mentionResults.length - bubbleCount;
+    trackDiscussionMentionAnalytics(
+      analyticsClient,
+      'discussion_mention_list_opened',
+      {
+        project_id: analyticsProjectId,
+        result_count: mentionResults.length,
+        bubble_count: bubbleCount,
+        document_count: documentCount,
+      },
+    );
+
+    if (sourceCatalog.sources.length === 0) {
+      trackDiscussionMentionAnalytics(
+        analyticsClient,
+        'discussion_mention_empty_state_displayed',
+        { project_id: analyticsProjectId },
+      );
+    }
+  }, [analyticsClient, analyticsProjectId, mention, mentionResults, sourceCatalog]);
 
   if (isInitialPrompt && controlledContextSources !== contextSources) {
     setControlledContextSources(contextSources);
@@ -286,6 +329,7 @@ export function DiscussionComposer({
   const commitMentionDraft = (
     nextDraft: DiscussionMentionDraft,
     caretPosition?: number,
+    removalMethod?: 'remove_control' | 'token_deletion',
   ) => {
     const nextSourceKeys = new Set(
       nextDraft.sources.map(discussionMentionSourceKey),
@@ -296,11 +340,42 @@ export function DiscussionComposer({
         (source) =>
           !nextSourceKeys.has(discussionMentionSourceKey(source)),
       );
-    mentionDraft.sources.forEach((source) => {
+    const removedSources = mentionDraft.sources.filter(
+      (source) =>
+        !nextSourceKeys.has(discussionMentionSourceKey(source)),
+    );
+    removedSources.forEach((source) => {
       if (!nextSourceKeys.has(discussionMentionSourceKey(source))) {
         showExitingChip(source);
       }
     });
+
+    if (removalMethod) {
+      removedSources.forEach((source) => {
+        if (analyticsProjectId) {
+          trackDiscussionMentionAnalytics(
+            analyticsClient,
+            'discussion_mention_source_removed',
+            {
+              project_id: analyticsProjectId,
+              source_id: source.id,
+              source_kind: source.kind,
+              removal_method: removalMethod,
+            },
+          );
+        }
+      });
+
+      if (removedSources.length === 1) {
+        setMentionAnnouncement(
+          `${removedSources[0].title} removed from discussion context.`,
+        );
+      } else if (removedSources.length > 1) {
+        setMentionAnnouncement(
+          `${removedSources.length} sources removed from discussion context.`,
+        );
+      }
+    }
 
     if (caretPosition !== undefined) {
       pendingCaretPositionRef.current = caretPosition;
@@ -364,8 +439,35 @@ export function DiscussionComposer({
     }
   };
 
-  const selectSource = (source: DiscussionSourceCatalogItem) => {
-    if (!isDiscussionMentionSourceAttachable(source) || !mention) {
+  const selectSource = (
+    source: DiscussionSourceCatalogItem,
+    inputMethod: 'keyboard' | 'pointer',
+  ) => {
+    if (!mention) {
+      return;
+    }
+
+    if (!isDiscussionMentionSourceAttachable(source)) {
+      if (
+        source.kind === 'document' &&
+        source.readiness.status === 'not_ready' &&
+        analyticsProjectId
+      ) {
+        trackDiscussionMentionAnalytics(
+          analyticsClient,
+          'discussion_mention_not_ready_attach_attempted',
+          {
+            project_id: analyticsProjectId,
+            source_id: source.id,
+            source_kind: source.kind,
+            input_method: inputMethod,
+            readiness_reason: source.readiness.reason,
+          },
+        );
+      }
+      setMentionAnnouncement(
+        `${source.title} is not ready and was not attached.`,
+      );
       return;
     }
 
@@ -380,25 +482,44 @@ export function DiscussionComposer({
       cancelExitingChip(source);
       commitMentionDraft(result.draft, result.caretPosition);
       onMentionSourceSelect?.(source);
+      if (analyticsProjectId) {
+        trackDiscussionMentionAnalytics(
+          analyticsClient,
+          'discussion_mention_source_attached',
+          {
+            project_id: analyticsProjectId,
+            source_id: source.id,
+            source_kind: source.kind,
+            input_method: inputMethod,
+          },
+        );
+      }
+      setMentionAnnouncement(
+        `${source.title} attached to discussion context.`,
+      );
+    } else {
+      setMentionAnnouncement(
+        `${source.title} is already attached to discussion context.`,
+      );
     }
 
     textareaRef.current?.focus();
   };
 
   const moveActiveSource = (direction: 1 | -1) => {
-    if (selectableSources.length === 0) {
+    if (mentionResults.length === 0) {
       return;
     }
 
-    const currentIndex = selectableSources.findIndex(
+    const currentIndex = mentionResults.findIndex(
       (source) =>
         discussionMentionSourceKey(source) === resolvedActiveSourceKey,
     );
     const nextIndex =
-      (currentIndex + direction + selectableSources.length) %
-      selectableSources.length;
+      (currentIndex + direction + mentionResults.length) %
+      mentionResults.length;
     setActiveSourceKey(
-      discussionMentionSourceKey(selectableSources[nextIndex]),
+      discussionMentionSourceKey(mentionResults[nextIndex]),
     );
   };
 
@@ -423,12 +544,12 @@ export function DiscussionComposer({
 
       if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault();
-        const activeSource = selectableSources.find(
+        const activeSource = mentionResults.find(
           (source) =>
             discussionMentionSourceKey(source) === resolvedActiveSourceKey,
         );
         if (activeSource) {
-          selectSource(activeSource);
+          selectSource(activeSource, 'keyboard');
         }
         return;
       }
@@ -448,7 +569,11 @@ export function DiscussionComposer({
       if (deletion) {
         event.preventDefault();
         closeMention();
-        commitMentionDraft(deletion.draft, deletion.caretPosition);
+        commitMentionDraft(
+          deletion.draft,
+          deletion.caretPosition,
+          'token_deletion',
+        );
         return;
       }
     }
@@ -515,7 +640,11 @@ export function DiscussionComposer({
                   source,
                 );
                 if (nextDraft !== mentionDraft) {
-                  commitMentionDraft(nextDraft);
+                  commitMentionDraft(
+                    nextDraft,
+                    undefined,
+                    'remove_control',
+                  );
                   textareaRef.current?.focus();
                 }
               }}
@@ -533,11 +662,31 @@ export function DiscussionComposer({
                 listId={mentionListId}
                 onCreateBubble={() => {
                   closeMention();
+                  if (analyticsProjectId) {
+                    trackDiscussionMentionAnalytics(
+                      analyticsClient,
+                      'discussion_mention_empty_state_cta_activated',
+                      {
+                        project_id: analyticsProjectId,
+                        action: 'create_bubble',
+                      },
+                    );
+                  }
                   onCreateBubble?.();
                 }}
                 onSelect={selectSource}
                 onUploadDocument={() => {
                   closeMention();
+                  if (analyticsProjectId) {
+                    trackDiscussionMentionAnalytics(
+                      analyticsClient,
+                      'discussion_mention_empty_state_cta_activated',
+                      {
+                        project_id: analyticsProjectId,
+                        action: 'upload_document',
+                      },
+                    );
+                  }
                   onUploadDocument?.();
                 }}
                 optionIdPrefix={mentionOptionIdPrefix}
@@ -593,7 +742,11 @@ export function DiscussionComposer({
                     mentionDraft,
                     nextValue,
                   );
-                  commitMentionDraft(nextDraft);
+                  commitMentionDraft(
+                    nextDraft,
+                    undefined,
+                    'token_deletion',
+                  );
                 } else {
                   onChange(nextValue);
                 }
@@ -680,6 +833,9 @@ export function DiscussionComposer({
         id={mentionStatusId}
       >
         {mention ? resultCountLabel : ''}
+      </p>
+      <p aria-atomic="true" aria-live="polite" className="sr-only" role="status">
+        {mentionAnnouncement}
       </p>
       {(error || isSubmitting) && (
         <p

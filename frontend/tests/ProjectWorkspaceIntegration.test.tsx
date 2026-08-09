@@ -1060,10 +1060,10 @@ describe('workspace integration contracts', () => {
       name: /Launch brief/,
     });
     expect(
-      screen.getByRole<HTMLButtonElement>('option', {
-        name: /Market research/,
-      }).disabled,
-    ).toBe(true);
+      screen
+        .getByRole('option', { name: /Market research/ })
+        .getAttribute('aria-disabled'),
+    ).toBe('true');
     fireEvent.click(readyOption);
     fireEvent.click(
       screen.getByRole('button', { name: 'Continue discussion' }),
