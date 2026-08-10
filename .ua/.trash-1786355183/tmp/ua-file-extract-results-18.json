@@ -1,0 +1,485 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 13,
+  "filesSkipped": [
+    ".ua/.understandignore",
+    "design/project/Discussion Context Flow.html",
+    "frontend/src/index.css"
+  ],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 13,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 8,
+      "failed": 0,
+      "skipped": 5
+    }
+  },
+  "results": [
+    {
+      "path": ".ua/config.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 1,
+      "nonEmptyLines": 1,
+      "sections": [
+        {
+          "heading": "outputLanguage",
+          "level": 1,
+          "line": 1
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    },
+    {
+      "path": "backend/eslint.config.mjs",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 35,
+      "nonEmptyLines": 34,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/test/jest-e2e.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 12,
+      "nonEmptyLines": 12,
+      "sections": [
+        {
+          "heading": "moduleFileExtensions",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "rootDir",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "testEnvironment",
+          "level": 1,
+          "line": 4
+        },
+        {
+          "heading": "testRegex",
+          "level": 1,
+          "line": 5
+        },
+        {
+          "heading": "moduleNameMapper",
+          "level": 1,
+          "line": 6
+        },
+        {
+          "heading": "transform",
+          "level": 1,
+          "line": 9
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 6
+      }
+    },
+    {
+      "path": "design/README.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 22,
+      "nonEmptyLines": 12,
+      "sections": [
+        {
+          "heading": "CODING AGENTS: READ THIS FIRST",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "What you should do — IMPORTANT",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "About the design files",
+          "level": 2,
+          "line": 13
+        },
+        {
+          "heading": "Bundle contents",
+          "level": 2,
+          "line": 19
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "path": "frontend/eslint.config.js",
+      "language": "javascript",
+      "fileCategory": "code",
+      "totalLines": 22,
+      "nonEmptyLines": 21,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/utils/date/formatUpdatedAt.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 31,
+      "functions": [
+        {
+          "name": "formatUpdatedAt",
+          "startLine": 1,
+          "endLine": 44,
+          "params": [
+            "updatedAt",
+            "now"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "formatUpdatedAt",
+          "line": 1,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "formatUpdatedAt",
+          "callee": "new Date(updatedAt).getTime",
+          "lineNumber": 2
+        },
+        {
+          "caller": "formatUpdatedAt",
+          "callee": "Number.isFinite",
+          "lineNumber": 4
+        },
+        {
+          "caller": "formatUpdatedAt",
+          "callee": "Math.max",
+          "lineNumber": 8
+        },
+        {
+          "caller": "formatUpdatedAt",
+          "callee": "now.getTime",
+          "lineNumber": 8
+        },
+        {
+          "caller": "formatUpdatedAt",
+          "callee": "Math.floor",
+          "lineNumber": 9
+        },
+        {
+          "caller": "formatUpdatedAt",
+          "callee": "Math.floor",
+          "lineNumber": 19
+        },
+        {
+          "caller": "formatUpdatedAt",
+          "callee": "Math.floor",
+          "lineNumber": 25
+        },
+        {
+          "caller": "formatUpdatedAt",
+          "callee": "Math.floor",
+          "lineNumber": 31
+        },
+        {
+          "caller": "formatUpdatedAt",
+          "callee": "Math.floor",
+          "lineNumber": 37
+        },
+        {
+          "caller": "formatUpdatedAt",
+          "callee": "Math.floor",
+          "lineNumber": 43
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/utils/routing/navigate.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 22,
+      "nonEmptyLines": 19,
+      "functions": [
+        {
+          "name": "navigateTo",
+          "startLine": 3,
+          "endLine": 6,
+          "params": [
+            "href"
+          ]
+        },
+        {
+          "name": "navigate",
+          "startLine": 8,
+          "endLine": 22,
+          "params": [
+            "event",
+            "href"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "navigateTo",
+          "line": 3,
+          "isDefault": false
+        },
+        {
+          "name": "navigate",
+          "line": 8,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "navigateTo",
+          "callee": "window.history.pushState",
+          "lineNumber": 4
+        },
+        {
+          "caller": "navigateTo",
+          "callee": "window.dispatchEvent",
+          "lineNumber": 5
+        },
+        {
+          "caller": "navigate",
+          "callee": "event.preventDefault",
+          "lineNumber": 20
+        },
+        {
+          "caller": "navigate",
+          "callee": "navigateTo",
+          "lineNumber": 21
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/utils/routing/resolveRoute.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 25,
+      "nonEmptyLines": 21,
+      "functions": [
+        {
+          "name": "resolveRoute",
+          "startLine": 6,
+          "endLine": 25,
+          "params": [
+            "pathname"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "resolveRoute",
+          "line": 6,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "resolveRoute",
+          "callee": "pathname.match",
+          "lineNumber": 11
+        },
+        {
+          "caller": "resolveRoute",
+          "callee": "decodeURIComponent",
+          "lineNumber": 17
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/vite.config.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 17,
+      "nonEmptyLines": 16,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "shared/package.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 24,
+      "nonEmptyLines": 24,
+      "sections": [
+        {
+          "heading": "name",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "version",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "private",
+          "level": 1,
+          "line": 4
+        },
+        {
+          "heading": "main",
+          "level": 1,
+          "line": 5
+        },
+        {
+          "heading": "types",
+          "level": 1,
+          "line": 6
+        },
+        {
+          "heading": "exports",
+          "level": 1,
+          "line": 7
+        },
+        {
+          "heading": "files",
+          "level": 1,
+          "line": 13
+        },
+        {
+          "heading": "sideEffects",
+          "level": 1,
+          "line": 16
+        },
+        {
+          "heading": "scripts",
+          "level": 1,
+          "line": 17
+        },
+        {
+          "heading": "devDependencies",
+          "level": 1,
+          "line": 21
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 10
+      }
+    },
+    {
+      "path": "shared/src/index.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 411,
+      "nonEmptyLines": 352,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "shared/src/validation-limits.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 22,
+      "nonEmptyLines": 20,
+      "exports": [
+        {
+          "name": "PROJECT_DESCRIPTION_MAX_LENGTH",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "KNOWLEDGE_EXTRACTION_INSTRUCTIONS_MAX_LENGTH",
+          "line": 22,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "shared/tsconfig.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 17,
+      "nonEmptyLines": 17,
+      "sections": [
+        {
+          "heading": "compilerOptions",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "include",
+          "level": 1,
+          "line": 16
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    }
+  ]
+}

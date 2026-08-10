@@ -1,0 +1,294 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 6,
+  "filesSkipped": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 6,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 6
+    }
+  },
+  "results": [
+    {
+      "path": "backend/DOCUMENT_OPERATIONS.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 154,
+      "nonEmptyLines": 119,
+      "sections": [
+        {
+          "heading": "Document storage and processing operations",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Supported deployment boundary",
+          "level": 2,
+          "line": 8
+        },
+        {
+          "heading": "Storage topology",
+          "level": 2,
+          "line": 20
+        },
+        {
+          "heading": "Formats and limits",
+          "level": 2,
+          "line": 38
+        },
+        {
+          "heading": "Malware scanner provisioning",
+          "level": 2,
+          "line": 68
+        },
+        {
+          "heading": "Processing and lease recovery",
+          "level": 2,
+          "line": 86
+        },
+        {
+          "heading": "Cleanup and retention",
+          "level": 2,
+          "line": 105
+        },
+        {
+          "heading": "Backup and restore",
+          "level": 2,
+          "line": 124
+        },
+        {
+          "heading": "Release checklist",
+          "level": 2,
+          "line": 143
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "path": "backend/README.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 142,
+      "nonEmptyLines": 109,
+      "sections": [
+        {
+          "heading": "Description",
+          "level": 2,
+          "line": 24
+        },
+        {
+          "heading": "Configuration",
+          "level": 2,
+          "line": 28
+        },
+        {
+          "heading": "Project setup",
+          "level": 2,
+          "line": 72
+        },
+        {
+          "heading": "Compile and run the project",
+          "level": 2,
+          "line": 78
+        },
+        {
+          "heading": "Run tests",
+          "level": 2,
+          "line": 91
+        },
+        {
+          "heading": "Deployment",
+          "level": 2,
+          "line": 104
+        },
+        {
+          "heading": "Resources",
+          "level": 2,
+          "line": 117
+        },
+        {
+          "heading": "Support",
+          "level": 2,
+          "line": 130
+        },
+        {
+          "heading": "Stay in touch",
+          "level": 2,
+          "line": 134
+        },
+        {
+          "heading": "License",
+          "level": 2,
+          "line": 140
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 10
+      }
+    },
+    {
+      "path": "backend/nest-cli.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 8,
+      "nonEmptyLines": 8,
+      "sections": [
+        {
+          "heading": "$schema",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "collection",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "sourceRoot",
+          "level": 1,
+          "line": 4
+        },
+        {
+          "heading": "compilerOptions",
+          "level": 1,
+          "line": 5
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 4
+      }
+    },
+    {
+      "path": "backend/package.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 84,
+      "nonEmptyLines": 84,
+      "sections": [
+        {
+          "heading": "name",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "version",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "description",
+          "level": 1,
+          "line": 4
+        },
+        {
+          "heading": "author",
+          "level": 1,
+          "line": 5
+        },
+        {
+          "heading": "private",
+          "level": 1,
+          "line": 6
+        },
+        {
+          "heading": "license",
+          "level": 1,
+          "line": 7
+        },
+        {
+          "heading": "scripts",
+          "level": 1,
+          "line": 8
+        },
+        {
+          "heading": "dependencies",
+          "level": 1,
+          "line": 27
+        },
+        {
+          "heading": "devDependencies",
+          "level": 1,
+          "line": 38
+        },
+        {
+          "heading": "jest",
+          "level": 1,
+          "line": 53
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 10
+      }
+    },
+    {
+      "path": "backend/tsconfig.build.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 4,
+      "nonEmptyLines": 4,
+      "sections": [
+        {
+          "heading": "extends",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "exclude",
+          "level": 1,
+          "line": 3
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 2
+      }
+    },
+    {
+      "path": "backend/tsconfig.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 28,
+      "nonEmptyLines": 28,
+      "sections": [
+        {
+          "heading": "compilerOptions",
+          "level": 1,
+          "line": 2
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 1
+      }
+    }
+  ]
+}

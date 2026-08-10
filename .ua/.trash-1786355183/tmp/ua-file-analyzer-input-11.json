@@ -1,0 +1,147 @@
+{
+  "projectRoot": "/Users/alexandredemoura/Desktop/dev/nuee",
+  "batchFiles": [
+    {
+      "path": "frontend/src/documents/DocumentInspectionPanel.tsx",
+      "language": "typescript",
+      "sizeLines": 324,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/documents/DocumentsPanel.test.tsx",
+      "language": "typescript",
+      "sizeLines": 159,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/documents/DocumentsPanel.tsx",
+      "language": "typescript",
+      "sizeLines": 596,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/documents/documentAnalytics.ts",
+      "language": "typescript",
+      "sizeLines": 145,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/documents/documentPresentation.ts",
+      "language": "typescript",
+      "sizeLines": 76,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/documents/documentTestFixtures.ts",
+      "language": "typescript",
+      "sizeLines": 74,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/documents/documentUploadPreflight.test.ts",
+      "language": "typescript",
+      "sizeLines": 75,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/documents/documentUploadPreflight.ts",
+      "language": "typescript",
+      "sizeLines": 135,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/documents/useDocumentLibrary.test.tsx",
+      "language": "typescript",
+      "sizeLines": 240,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/documents/useDocumentLibrary.ts",
+      "language": "typescript",
+      "sizeLines": 886,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/workspace/ProjectWorkspace.documents.test.tsx",
+      "language": "typescript",
+      "sizeLines": 53,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/workspace/projectSourceCatalog.test.ts",
+      "language": "typescript",
+      "sizeLines": 142,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/workspace/projectSourceCatalog.ts",
+      "language": "typescript",
+      "sizeLines": 62,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "frontend/src/documents/DocumentInspectionPanel.tsx": [
+      "frontend/src/api/index.ts",
+      "frontend/src/documents/documentPresentation.ts",
+      "frontend/src/ui/focusRing.ts"
+    ],
+    "frontend/src/documents/DocumentsPanel.test.tsx": [
+      "frontend/src/documents/DocumentsPanel.tsx",
+      "frontend/src/documents/documentTestFixtures.ts",
+      "frontend/src/documents/useDocumentLibrary.ts"
+    ],
+    "frontend/src/documents/DocumentsPanel.tsx": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/documents/DocumentInspectionPanel.tsx",
+      "frontend/src/documents/documentAnalytics.ts",
+      "frontend/src/documents/documentPresentation.ts",
+      "frontend/src/documents/useDocumentLibrary.ts",
+      "frontend/src/ui/focusRing.ts"
+    ],
+    "frontend/src/documents/documentAnalytics.ts": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts"
+    ],
+    "frontend/src/documents/documentPresentation.ts": [
+      "frontend/src/api/index.ts"
+    ],
+    "frontend/src/documents/documentTestFixtures.ts": [
+      "frontend/src/api/index.ts"
+    ],
+    "frontend/src/documents/documentUploadPreflight.test.ts": [
+      "frontend/src/documents/documentTestFixtures.ts",
+      "frontend/src/documents/documentUploadPreflight.ts"
+    ],
+    "frontend/src/documents/documentUploadPreflight.ts": [
+      "frontend/src/api/index.ts"
+    ],
+    "frontend/src/documents/useDocumentLibrary.test.tsx": [
+      "frontend/src/analytics.ts",
+      "frontend/src/documents/documentTestFixtures.ts",
+      "frontend/src/documents/useDocumentLibrary.ts"
+    ],
+    "frontend/src/documents/useDocumentLibrary.ts": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/documents/documentAnalytics.ts",
+      "frontend/src/documents/documentUploadPreflight.ts"
+    ],
+    "frontend/src/workspace/ProjectWorkspace.documents.test.tsx": [
+      "frontend/src/documents/documentTestFixtures.ts",
+      "frontend/src/workspace/ProjectWorkspace.tsx"
+    ],
+    "frontend/src/workspace/projectSourceCatalog.test.ts": [
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/discussionSourceCatalog.ts",
+      "frontend/src/documents/documentTestFixtures.ts",
+      "frontend/src/workspace/projectSourceCatalog.ts"
+    ],
+    "frontend/src/workspace/projectSourceCatalog.ts": [
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/discussionSourceCatalog.ts",
+      "frontend/src/documents/documentPresentation.ts"
+    ]
+  }
+}

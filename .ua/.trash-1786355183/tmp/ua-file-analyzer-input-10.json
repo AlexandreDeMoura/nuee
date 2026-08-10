@@ -1,0 +1,140 @@
+{
+  "projectRoot": "/Users/alexandredemoura/Desktop/dev/nuee",
+  "batchFiles": [
+    {
+      "path": "frontend/src/api/ai.ts",
+      "language": "typescript",
+      "sizeLines": 38,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/api/bubbles.ts",
+      "language": "typescript",
+      "sizeLines": 437,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/api/client.ts",
+      "language": "typescript",
+      "sizeLines": 55,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/api/discussionResponse.test.ts",
+      "language": "typescript",
+      "sizeLines": 60,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/api/discussionResponse.ts",
+      "language": "typescript",
+      "sizeLines": 280,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/api/discussions.ts",
+      "language": "typescript",
+      "sizeLines": 190,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/api/documents.ts",
+      "language": "typescript",
+      "sizeLines": 347,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/api/knowledgeExtractions.ts",
+      "language": "typescript",
+      "sizeLines": 355,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/api/projects.ts",
+      "language": "typescript",
+      "sizeLines": 174,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/aiApi.test.ts",
+      "language": "typescript",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/bubblesApi.test.ts",
+      "language": "typescript",
+      "sizeLines": 222,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/discussionsApi.test.ts",
+      "language": "typescript",
+      "sizeLines": 393,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/documentsApi.test.ts",
+      "language": "typescript",
+      "sizeLines": 264,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/knowledgeExtractionsApi.test.ts",
+      "language": "typescript",
+      "sizeLines": 331,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/projectsApi.test.ts",
+      "language": "typescript",
+      "sizeLines": 170,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "frontend/src/api/ai.ts": [
+      "frontend/src/api/client.ts"
+    ],
+    "frontend/src/api/bubbles.ts": [
+      "frontend/src/api/client.ts"
+    ],
+    "frontend/src/api/client.ts": [],
+    "frontend/src/api/discussionResponse.test.ts": [
+      "frontend/src/api/discussionResponse.ts"
+    ],
+    "frontend/src/api/discussionResponse.ts": [],
+    "frontend/src/api/discussions.ts": [
+      "frontend/src/api/client.ts",
+      "frontend/src/api/discussionResponse.ts"
+    ],
+    "frontend/src/api/documents.ts": [
+      "frontend/src/api/client.ts"
+    ],
+    "frontend/src/api/knowledgeExtractions.ts": [
+      "frontend/src/api/bubbles.ts",
+      "frontend/src/api/client.ts"
+    ],
+    "frontend/src/api/projects.ts": [
+      "frontend/src/api/client.ts"
+    ],
+    "frontend/tests/aiApi.test.ts": [
+      "frontend/src/api/ai.ts"
+    ],
+    "frontend/tests/bubblesApi.test.ts": [
+      "frontend/src/api/bubbles.ts"
+    ],
+    "frontend/tests/discussionsApi.test.ts": [
+      "frontend/src/api/discussions.ts"
+    ],
+    "frontend/tests/documentsApi.test.ts": [
+      "frontend/src/api/documents.ts"
+    ],
+    "frontend/tests/knowledgeExtractionsApi.test.ts": [
+      "frontend/src/api/knowledgeExtractions.ts"
+    ],
+    "frontend/tests/projectsApi.test.ts": [
+      "frontend/src/api/projects.ts"
+    ]
+  }
+}

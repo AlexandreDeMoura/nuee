@@ -1,0 +1,813 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 10,
+  "filesSkipped": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 10,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 10
+    }
+  },
+  "results": [
+    {
+      "path": "shared/PRD/PRD_0.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 84,
+      "nonEmptyLines": 66,
+      "sections": [
+        {
+          "heading": "PRD 0 — Nuée MVP Foundation",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Problem",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Target Users and Feature Impact",
+          "level": 2,
+          "line": 11
+        },
+        {
+          "heading": "Success criteria",
+          "level": 2,
+          "line": 21
+        },
+        {
+          "heading": "Scope",
+          "level": 2,
+          "line": 34
+        },
+        {
+          "heading": "In scope",
+          "level": 3,
+          "line": 36
+        },
+        {
+          "heading": "Out of scope",
+          "level": 3,
+          "line": 58
+        },
+        {
+          "heading": "Risks / Open Questions",
+          "level": 2,
+          "line": 75
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 8
+      }
+    },
+    {
+      "path": "shared/PRD/PRD_01.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 130,
+      "nonEmptyLines": 105,
+      "sections": [
+        {
+          "heading": "PRD 01 — Project Workspace",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Problem",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Target Users and Feature Impact",
+          "level": 2,
+          "line": 11
+        },
+        {
+          "heading": "Success criteria",
+          "level": 2,
+          "line": 17
+        },
+        {
+          "heading": "Scope",
+          "level": 2,
+          "line": 35
+        },
+        {
+          "heading": "In scope",
+          "level": 3,
+          "line": 37
+        },
+        {
+          "heading": "Out of scope",
+          "level": 3,
+          "line": 54
+        },
+        {
+          "heading": "Risks / Open Questions",
+          "level": 2,
+          "line": 71
+        },
+        {
+          "heading": "Commit Plan",
+          "level": 2,
+          "line": 83
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "path": "shared/PRD/PRD_02.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 190,
+      "nonEmptyLines": 160,
+      "sections": [
+        {
+          "heading": "PRD 02 — Bubble Canvas",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Problem",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Target Users and Feature Impact",
+          "level": 2,
+          "line": 11
+        },
+        {
+          "heading": "Success criteria",
+          "level": 2,
+          "line": 17
+        },
+        {
+          "heading": "Scope",
+          "level": 2,
+          "line": 50
+        },
+        {
+          "heading": "In scope",
+          "level": 3,
+          "line": 52
+        },
+        {
+          "heading": "Out of scope",
+          "level": 3,
+          "line": 79
+        },
+        {
+          "heading": "Risks / Open Questions",
+          "level": 2,
+          "line": 100
+        },
+        {
+          "heading": "Commit Plan",
+          "level": 2,
+          "line": 118
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "path": "shared/PRD/PRD_03.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 295,
+      "nonEmptyLines": 256,
+      "sections": [
+        {
+          "heading": "PRD 03 — Focused Discussions",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Problem",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Target Users and Feature Impact",
+          "level": 2,
+          "line": 11
+        },
+        {
+          "heading": "Success criteria",
+          "level": 2,
+          "line": 17
+        },
+        {
+          "heading": "Scope",
+          "level": 2,
+          "line": 60
+        },
+        {
+          "heading": "In scope",
+          "level": 3,
+          "line": 62
+        },
+        {
+          "heading": "Out of scope",
+          "level": 3,
+          "line": 96
+        },
+        {
+          "heading": "Risks / Open Questions",
+          "level": 2,
+          "line": 121
+        },
+        {
+          "heading": "Commit Plan",
+          "level": 2,
+          "line": 145
+        },
+        {
+          "heading": "Seams and defaults decided for the MVP",
+          "level": 3,
+          "line": 153
+        },
+        {
+          "heading": "Phase A — Backend",
+          "level": 3,
+          "line": 181
+        },
+        {
+          "heading": "Phase B — Frontend",
+          "level": 3,
+          "line": 230
+        },
+        {
+          "heading": "Phase C — Cross-cutting close-out",
+          "level": 3,
+          "line": 273
+        },
+        {
+          "heading": "Notes on sequencing",
+          "level": 3,
+          "line": 287
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 14
+      }
+    },
+    {
+      "path": "shared/PRD/PRD_04.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 337,
+      "nonEmptyLines": 301,
+      "sections": [
+        {
+          "heading": "PRD 04 — Discussion Context",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Problem",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Target Users and Feature Impact",
+          "level": 2,
+          "line": 11
+        },
+        {
+          "heading": "Success criteria",
+          "level": 2,
+          "line": 17
+        },
+        {
+          "heading": "Scope",
+          "level": 2,
+          "line": 75
+        },
+        {
+          "heading": "In scope",
+          "level": 3,
+          "line": 77
+        },
+        {
+          "heading": "Out of scope",
+          "level": 3,
+          "line": 110
+        },
+        {
+          "heading": "Risks / Open Questions",
+          "level": 2,
+          "line": 141
+        },
+        {
+          "heading": "Commit Plan",
+          "level": 2,
+          "line": 164
+        },
+        {
+          "heading": "Phase A — Contracts and backend",
+          "level": 3,
+          "line": 190
+        },
+        {
+          "heading": "Phase B — Frontend selection and creation",
+          "level": 3,
+          "line": 260
+        },
+        {
+          "heading": "Phase C — Frozen-context presentation and close-out",
+          "level": 3,
+          "line": 311
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 12
+      }
+    },
+    {
+      "path": "shared/PRD/PRD_05.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 726,
+      "nonEmptyLines": 579,
+      "sections": [
+        {
+          "heading": "PRD 05 — Knowledge Extraction",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Problem",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Target Users and Feature Impact",
+          "level": 2,
+          "line": 13
+        },
+        {
+          "heading": "Success criteria",
+          "level": 2,
+          "line": 19
+        },
+        {
+          "heading": "Scope",
+          "level": 2,
+          "line": 102
+        },
+        {
+          "heading": "In scope",
+          "level": 3,
+          "line": 104
+        },
+        {
+          "heading": "Out of scope",
+          "level": 3,
+          "line": 154
+        },
+        {
+          "heading": "Risks / Open Questions",
+          "level": 2,
+          "line": 198
+        },
+        {
+          "heading": "Implementation Commit Plan",
+          "level": 2,
+          "line": 223
+        },
+        {
+          "heading": "Current-state findings",
+          "level": 3,
+          "line": 229
+        },
+        {
+          "heading": "Proposed API and persistence shape",
+          "level": 3,
+          "line": 247
+        },
+        {
+          "heading": "Commit 1 — `refactor(frontend): centralize project bubble collection ownership`",
+          "level": 3,
+          "line": 292
+        },
+        {
+          "heading": "Commit 2 — `feat(bubbles): persist complete discussion extraction provenance`",
+          "level": 3,
+          "line": 309
+        },
+        {
+          "heading": "Commit 3 — `feat(extraction): persist authoritative discussion source snapshots`",
+          "level": 3,
+          "line": 335
+        },
+        {
+          "heading": "Commit 4 — `feat(extraction): generate one grounded structured proposal`",
+          "level": 3,
+          "line": 364
+        },
+        {
+          "heading": "Commit 5 — `feat(extraction): resolve proposals as new bubbles or reject them`",
+          "level": 3,
+          "line": 413
+        },
+        {
+          "heading": "Commit 6 — `feat(extraction): update bubbles with optimistic concurrency`",
+          "level": 3,
+          "line": 446
+        },
+        {
+          "heading": "Commit 7 — `feat(bubbles): retain provenance after source discussion deletion`",
+          "level": 3,
+          "line": 474
+        },
+        {
+          "heading": "Commit 8 — `feat(frontend): add extraction API guards and lifecycle state machine`",
+          "level": 3,
+          "line": 498
+        },
+        {
+          "heading": "Commit 9 — `feat(frontend): implement extraction source selection`",
+          "level": 3,
+          "line": 535
+        },
+        {
+          "heading": "Commit 10 — `feat(frontend): review edit and discard extraction proposals`",
+          "level": 3,
+          "line": 567
+        },
+        {
+          "heading": "Commit 11 — `feat(frontend): approve extraction proposals as new bubbles`",
+          "level": 3,
+          "line": 595
+        },
+        {
+          "heading": "Commit 12 — `feat(frontend): select and update an extraction target`",
+          "level": 3,
+          "line": 622
+        },
+        {
+          "heading": "Commit 13 — `test(extraction): cover privacy accessibility and complete journeys`",
+          "level": 3,
+          "line": 651
+        },
+        {
+          "heading": "Success-criteria coverage audit",
+          "level": 3,
+          "line": 680
+        },
+        {
+          "heading": "Acceptance caveats",
+          "level": 3,
+          "line": 701
+        },
+        {
+          "heading": "Verification cadence",
+          "level": 3,
+          "line": 713
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 27
+      }
+    },
+    {
+      "path": "shared/PRD/PRD_06.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 437,
+      "nonEmptyLines": 391,
+      "sections": [
+        {
+          "heading": "PRD 06 — Document Library",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Problem",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Target Users and Feature Impact",
+          "level": 2,
+          "line": 13
+        },
+        {
+          "heading": "Success criteria",
+          "level": 2,
+          "line": 19
+        },
+        {
+          "heading": "Scope",
+          "level": 2,
+          "line": 102
+        },
+        {
+          "heading": "In scope",
+          "level": 3,
+          "line": 104
+        },
+        {
+          "heading": "Out of scope",
+          "level": 3,
+          "line": 149
+        },
+        {
+          "heading": "Implementation Commit Plan",
+          "level": 2,
+          "line": 192
+        },
+        {
+          "heading": "Agreed MVP implementation baseline",
+          "level": 3,
+          "line": 194
+        },
+        {
+          "heading": "Security prerequisite",
+          "level": 3,
+          "line": 216
+        },
+        {
+          "heading": "Ordered commits",
+          "level": 3,
+          "line": 229
+        },
+        {
+          "heading": "Success-criteria traceability",
+          "level": 3,
+          "line": 361
+        },
+        {
+          "heading": "Dependency commands",
+          "level": 3,
+          "line": 380
+        },
+        {
+          "heading": "Verification",
+          "level": 3,
+          "line": 390
+        },
+        {
+          "heading": "Risks / Open Questions",
+          "level": 2,
+          "line": 410
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 15
+      }
+    },
+    {
+      "path": "shared/PRD/PRD_07.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 181,
+      "nonEmptyLines": 157,
+      "sections": [
+        {
+          "heading": "PRD 07 — Discussion Web Search",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Problem",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Target Users and Feature Impact",
+          "level": 2,
+          "line": 21
+        },
+        {
+          "heading": "Success criteria",
+          "level": 2,
+          "line": 31
+        },
+        {
+          "heading": "Scope",
+          "level": 2,
+          "line": 69
+        },
+        {
+          "heading": "In scope",
+          "level": 3,
+          "line": 71
+        },
+        {
+          "heading": "Out of scope",
+          "level": 3,
+          "line": 98
+        },
+        {
+          "heading": "Risks / Open Questions",
+          "level": 2,
+          "line": 113
+        },
+        {
+          "heading": "Commit Plan",
+          "level": 2,
+          "line": 141
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    },
+    {
+      "path": "shared/PRD/PRD_08.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 272,
+      "nonEmptyLines": 235,
+      "sections": [
+        {
+          "heading": "PRD 08 — Guided Bubble Extraction",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Problem",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Target Users and Feature Impact",
+          "level": 2,
+          "line": 30
+        },
+        {
+          "heading": "Success criteria",
+          "level": 2,
+          "line": 41
+        },
+        {
+          "heading": "Dialog and structure",
+          "level": 3,
+          "line": 43
+        },
+        {
+          "heading": "Message selection",
+          "level": 3,
+          "line": 57
+        },
+        {
+          "heading": "Instructions",
+          "level": 3,
+          "line": 74
+        },
+        {
+          "heading": "Detail level",
+          "level": 3,
+          "line": 91
+        },
+        {
+          "heading": "Request identity and persistence",
+          "level": 3,
+          "line": 105
+        },
+        {
+          "heading": "Downstream and cross-cutting",
+          "level": 3,
+          "line": 115
+        },
+        {
+          "heading": "Scope",
+          "level": 2,
+          "line": 128
+        },
+        {
+          "heading": "In scope",
+          "level": 3,
+          "line": 130
+        },
+        {
+          "heading": "Out of scope",
+          "level": 3,
+          "line": 166
+        },
+        {
+          "heading": "Risks / Open Questions",
+          "level": 2,
+          "line": 183
+        },
+        {
+          "heading": "Commit Plan",
+          "level": 2,
+          "line": 222
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 15
+      }
+    },
+    {
+      "path": "shared/PRD/PRD_09.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 290,
+      "nonEmptyLines": 266,
+      "sections": [
+        {
+          "heading": "PRD 09 — Inline Mention Context for Discussions",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Problem",
+          "level": 2,
+          "line": 3
+        },
+        {
+          "heading": "Target Users and Feature Impact",
+          "level": 2,
+          "line": 28
+        },
+        {
+          "heading": "Success criteria",
+          "level": 2,
+          "line": 40
+        },
+        {
+          "heading": "Scope",
+          "level": 2,
+          "line": 102
+        },
+        {
+          "heading": "In scope",
+          "level": 3,
+          "line": 104
+        },
+        {
+          "heading": "Out of scope",
+          "level": 3,
+          "line": 143
+        },
+        {
+          "heading": "Risks / Open Questions",
+          "level": 2,
+          "line": 158
+        },
+        {
+          "heading": "Commit Plan",
+          "level": 2,
+          "line": 201
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 9
+      }
+    }
+  ]
+}

@@ -1,0 +1,1014 @@
+{
+  "nodes": [
+    {
+      "id": "file:frontend/src/projects/ProjectDescriptionEditor.tsx",
+      "type": "file",
+      "name": "ProjectDescriptionEditor.tsx",
+      "filePath": "frontend/src/projects/ProjectDescriptionEditor.tsx",
+      "summary": "Debounced auto-saving editor for the project description, reporting save status upward and keeping failed saves visible and retryable rather than silently discarding the draft.",
+      "tags": [
+        "component",
+        "projects",
+        "autosave",
+        "form",
+        "validation"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Uses an AbortController ref plus a save-delay timer so a newer edit cancels the in-flight request without leaving a stale success applied."
+    },
+    {
+      "id": "function:frontend/src/projects/ProjectDescriptionEditor.tsx:ProjectDescriptionEditor",
+      "type": "function",
+      "name": "ProjectDescriptionEditor",
+      "filePath": "frontend/src/projects/ProjectDescriptionEditor.tsx",
+      "lineRange": [
+        46,
+        334
+      ],
+      "summary": "Manages the description draft, debounced persistence, abort of superseded saves, status reporting via onStatusChange, and analytics for description edits.",
+      "tags": [
+        "component",
+        "autosave",
+        "async",
+        "abort-handling",
+        "status-reporting"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:frontend/src/ui/RichResponse.test.tsx",
+      "type": "file",
+      "name": "RichResponse.test.tsx",
+      "filePath": "frontend/src/ui/RichResponse.test.tsx",
+      "summary": "Vitest suite covering RichResponse rendering of every supported block type — headings, paragraphs, bold/italic/code inlines, bullet and ordered lists, and tables.",
+      "tags": [
+        "test",
+        "ui",
+        "rendering-test",
+        "markdown"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/src/ui/RichResponse.tsx",
+      "type": "file",
+      "name": "RichResponse.tsx",
+      "filePath": "frontend/src/ui/RichResponse.tsx",
+      "summary": "Renders the supported markdown subset used for assistant answers and bubble content — headings, paragraphs, lists, tables, inline emphasis, code, and safe citation links — without pulling in a markdown library.",
+      "tags": [
+        "component",
+        "ui",
+        "markdown",
+        "rendering",
+        "security"
+      ],
+      "complexity": "complex",
+      "languageNotes": "External link hrefs are filtered through a scheme allowlist before rendering, so untrusted model output cannot emit javascript: URLs."
+    },
+    {
+      "id": "function:frontend/src/ui/RichResponse.tsx:safeExternalUrl",
+      "type": "function",
+      "name": "safeExternalUrl",
+      "filePath": "frontend/src/ui/RichResponse.tsx",
+      "lineRange": [
+        16,
+        26
+      ],
+      "summary": "Validates a candidate href against an allowed URL scheme and returns it only when safe to render as a link.",
+      "tags": [
+        "security",
+        "validation",
+        "url-sanitization"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/ui/RichResponse.tsx:citationLink",
+      "type": "function",
+      "name": "citationLink",
+      "filePath": "frontend/src/ui/RichResponse.tsx",
+      "lineRange": [
+        28,
+        45
+      ],
+      "summary": "Builds the rendered citation anchor element for a resolved reference href and label.",
+      "tags": [
+        "utility",
+        "rendering",
+        "citation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/ui/RichResponse.tsx:inlineContent",
+      "type": "function",
+      "name": "inlineContent",
+      "filePath": "frontend/src/ui/RichResponse.tsx",
+      "lineRange": [
+        47,
+        116
+      ],
+      "summary": "Tokenizes a line of markdown into React nodes, handling bold, italic, inline code, inline links, and numbered or short-form citation references.",
+      "tags": [
+        "parsing",
+        "markdown",
+        "rendering",
+        "tokenizer"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:frontend/src/ui/RichResponse.tsx:isBlockStart",
+      "type": "function",
+      "name": "isBlockStart",
+      "filePath": "frontend/src/ui/RichResponse.tsx",
+      "lineRange": [
+        145,
+        154
+      ],
+      "summary": "Detects whether a line begins a new markdown block (heading, list item, or table) during paragraph accumulation.",
+      "tags": [
+        "parsing",
+        "markdown",
+        "predicate"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/ui/RichResponse.tsx:preparedContent",
+      "type": "function",
+      "name": "preparedContent",
+      "filePath": "frontend/src/ui/RichResponse.tsx",
+      "lineRange": [
+        156,
+        177
+      ],
+      "summary": "Normalizes line endings and pre-processes the raw markdown into the line array the block renderer walks.",
+      "tags": [
+        "parsing",
+        "markdown",
+        "normalization"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/ui/RichResponse.tsx:RichResponse",
+      "type": "function",
+      "name": "RichResponse",
+      "filePath": "frontend/src/ui/RichResponse.tsx",
+      "lineRange": [
+        184,
+        408
+      ],
+      "summary": "Walks the prepared markdown lines and emits headings, paragraphs, bullet and ordered lists, and tables at the requested density.",
+      "tags": [
+        "component",
+        "markdown",
+        "rendering"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:frontend/src/ui/focusRing.ts",
+      "type": "file",
+      "name": "focusRing.ts",
+      "filePath": "frontend/src/ui/focusRing.ts",
+      "summary": "Single shared Tailwind class string for the focus-visible outline, imported everywhere an interactive element needs the project focus ring.",
+      "tags": [
+        "ui",
+        "styling",
+        "accessibility",
+        "design-token"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/src/ui/markdownToPlainText.test.ts",
+      "type": "file",
+      "name": "markdownToPlainText.test.ts",
+      "filePath": "frontend/src/ui/markdownToPlainText.test.ts",
+      "summary": "Vitest suite verifying that markdownToPlainText projects the supported markdown subset — headings, emphasis, inline code, links, lists, and tables — into collapsed plain text.",
+      "tags": [
+        "test",
+        "ui",
+        "unit-test",
+        "markdown"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/src/ui/markdownToPlainText.ts",
+      "type": "file",
+      "name": "markdownToPlainText.ts",
+      "filePath": "frontend/src/ui/markdownToPlainText.ts",
+      "summary": "Projects the supported markdown subset into collapsed plain text for previews and other contexts that must not render formatting, stripping code fences, table dividers, and inline markers.",
+      "tags": [
+        "utility",
+        "ui",
+        "markdown",
+        "text-processing"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/ui/markdownToPlainText.ts:isTableDivider",
+      "type": "function",
+      "name": "isTableDivider",
+      "filePath": "frontend/src/ui/markdownToPlainText.ts",
+      "lineRange": [
+        5,
+        14
+      ],
+      "summary": "Detects a markdown table divider row so alignment separators are dropped from the plain-text projection.",
+      "tags": [
+        "utility",
+        "markdown",
+        "predicate"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/ui/markdownToPlainText.ts:markdownToPlainText",
+      "type": "function",
+      "name": "markdownToPlainText",
+      "filePath": "frontend/src/ui/markdownToPlainText.ts",
+      "lineRange": [
+        16,
+        56
+      ],
+      "summary": "Strips fenced code blocks, table dividers, heading markers, and inline emphasis or link syntax, then collapses the result into a single plain-text string.",
+      "tags": [
+        "utility",
+        "markdown",
+        "text-processing"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/src/ui/useFieldValidity.ts",
+      "type": "file",
+      "name": "useFieldValidity.ts",
+      "filePath": "frontend/src/ui/useFieldValidity.ts",
+      "summary": "Shared form hook that tracks which fields the user has touched, so validation errors surface progressively rather than firing on an untouched form, with a revealAll escape hatch for submit.",
+      "tags": [
+        "hook",
+        "ui",
+        "form",
+        "validation",
+        "accessibility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/src/ui/useFieldValidity.ts:useFieldValidity",
+      "type": "function",
+      "name": "useFieldValidity",
+      "filePath": "frontend/src/ui/useFieldValidity.ts",
+      "lineRange": [
+        35,
+        63
+      ],
+      "summary": "Returns per-field touched state plus markTouched and revealAll helpers derived from an isInvalid map, honouring an isSuppressed option.",
+      "tags": [
+        "hook",
+        "form",
+        "validation"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/src/ui/useModalShell.ts",
+      "type": "file",
+      "name": "useModalShell.ts",
+      "filePath": "frontend/src/ui/useModalShell.ts",
+      "summary": "Shared modal behavior hook providing escape handling, focus trapping across tab and shift-tab, initial focus placement, scroll locking, focus restoration on close, and support for stacked modals.",
+      "tags": [
+        "hook",
+        "ui",
+        "modal",
+        "accessibility",
+        "focus-management"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "stopImmediatePropagation on the document keydown listener lets a stacked modal consume Escape without closing the modal beneath it."
+    },
+    {
+      "id": "function:frontend/src/ui/useModalShell.ts:useModalShell",
+      "type": "function",
+      "name": "useModalShell",
+      "filePath": "frontend/src/ui/useModalShell.ts",
+      "lineRange": [
+        58,
+        161
+      ],
+      "summary": "Wires the document keydown listener for escape and tab cycling, applies initial focus, locks body scroll, and restores the previously focused element on teardown.",
+      "tags": [
+        "hook",
+        "modal",
+        "focus-management",
+        "event-handler"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:frontend/src/utils/date/index.ts",
+      "type": "file",
+      "name": "index.ts",
+      "filePath": "frontend/src/utils/date/index.ts",
+      "summary": "Barrel re-exporting the formatUpdatedAt date helper as the public surface of the date utilities.",
+      "tags": [
+        "barrel",
+        "utility",
+        "exports",
+        "date"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/src/utils/routing/index.ts",
+      "type": "file",
+      "name": "index.ts",
+      "filePath": "frontend/src/utils/routing/index.ts",
+      "summary": "Barrel for the first-party router utilities, re-exporting navigate, navigateTo, resolveRoute, and the AppRoute type.",
+      "tags": [
+        "barrel",
+        "utility",
+        "routing",
+        "exports"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/src/workspace/ProjectCanvasRoute.tsx",
+      "type": "file",
+      "name": "ProjectCanvasRoute.tsx",
+      "filePath": "frontend/src/workspace/ProjectCanvasRoute.tsx",
+      "summary": "Route-level component for a single project: loads the project as an explicit load state (loading, ready, failed, missing), renders the matching state screen with retry, and mounts ProjectWorkspace once the project is available.",
+      "tags": [
+        "component",
+        "workspace",
+        "routing",
+        "load-state",
+        "entry-point"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Server data is modeled as a discriminated ProjectLoadState union rather than separate loading and error booleans, so no impossible combination is representable."
+    },
+    {
+      "id": "function:frontend/src/workspace/ProjectCanvasRoute.tsx:ProjectRouteState",
+      "type": "function",
+      "name": "ProjectRouteState",
+      "filePath": "frontend/src/workspace/ProjectCanvasRoute.tsx",
+      "lineRange": [
+        80,
+        150
+      ],
+      "summary": "Renders the non-ready route screens — loading, load failure with retry, and project-not-found — with navigation back to the project list.",
+      "tags": [
+        "component",
+        "load-state",
+        "error-display"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/src/workspace/ProjectCanvasRoute.tsx:ProjectCanvasRoute",
+      "type": "function",
+      "name": "ProjectCanvasRoute",
+      "filePath": "frontend/src/workspace/ProjectCanvasRoute.tsx",
+      "lineRange": [
+        152,
+        248
+      ],
+      "summary": "Fetches the project with an abortable request, tracks the load state, emits the project_opened analytics event once per project, and forwards every workspace request prop through to ProjectWorkspace.",
+      "tags": [
+        "component",
+        "routing",
+        "async",
+        "abort-handling",
+        "analytics"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "type": "file",
+      "name": "ProjectWorkspace.tsx",
+      "filePath": "frontend/src/workspace/ProjectWorkspace.tsx",
+      "summary": "Route-level composition for an open project: owns the shared workspace state and panel layout, and wires the canvas, bubble inspector, discussions, document library, and knowledge-extraction integration points together.",
+      "tags": [
+        "component",
+        "workspace",
+        "composition",
+        "state-management",
+        "orchestration"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Acts as the lowest common owner for flows crossing canvas, bubbles, discussions, documents, and extraction, delegating each feature lifecycle to its own hook rather than centralizing the logic."
+    },
+    {
+      "id": "function:frontend/src/workspace/ProjectWorkspace.tsx:ProjectBar",
+      "type": "function",
+      "name": "ProjectBar",
+      "filePath": "frontend/src/workspace/ProjectWorkspace.tsx",
+      "lineRange": [
+        238,
+        276
+      ],
+      "summary": "Renders the workspace top bar with the project title, description save status, and navigation back to the project list.",
+      "tags": [
+        "component",
+        "presentational",
+        "navigation"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/src/workspace/ProjectWorkspace.tsx:ActionCard",
+      "type": "function",
+      "name": "ActionCard",
+      "filePath": "frontend/src/workspace/ProjectWorkspace.tsx",
+      "lineRange": [
+        288,
+        329
+      ],
+      "summary": "Renders a single launchable action card with icon, label, description, and optional primary emphasis for the empty-canvas state.",
+      "tags": [
+        "component",
+        "presentational",
+        "action-card"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/src/workspace/ProjectWorkspace.tsx:EmptyProjectActions",
+      "type": "function",
+      "name": "EmptyProjectActions",
+      "filePath": "frontend/src/workspace/ProjectWorkspace.tsx",
+      "lineRange": [
+        331,
+        380
+      ],
+      "summary": "Renders the starter action cards shown on an empty canvas and emits the analytics event for the launched action before invoking its handler.",
+      "tags": [
+        "component",
+        "empty-state",
+        "analytics",
+        "event-handler"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/src/workspace/ProjectWorkspace.tsx:EmptyCanvasContent",
+      "type": "function",
+      "name": "EmptyCanvasContent",
+      "filePath": "frontend/src/workspace/ProjectWorkspace.tsx",
+      "lineRange": [
+        382,
+        421
+      ],
+      "summary": "Composes the empty-canvas screen from the primary action list and the starter action cards.",
+      "tags": [
+        "component",
+        "empty-state",
+        "composition"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/src/workspace/ProjectWorkspace.tsx:InspectorEmptyState",
+      "type": "function",
+      "name": "InspectorEmptyState",
+      "filePath": "frontend/src/workspace/ProjectWorkspace.tsx",
+      "lineRange": [
+        423,
+        440
+      ],
+      "summary": "Renders the placeholder shown in the side panel when no bubble or document is selected.",
+      "tags": [
+        "component",
+        "empty-state",
+        "presentational"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/workspace/ProjectWorkspace.tsx:WorkspacePanel",
+      "type": "function",
+      "name": "WorkspacePanel",
+      "filePath": "frontend/src/workspace/ProjectWorkspace.tsx",
+      "lineRange": [
+        442,
+        579
+      ],
+      "summary": "Renders the right-hand workspace panel, resolving the active view among discussions, documents, and the inspector and forwarding each view its requests and selection.",
+      "tags": [
+        "component",
+        "panel",
+        "composition",
+        "routing"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:frontend/src/workspace/ProjectWorkspace.tsx:ProjectWorkspace",
+      "type": "function",
+      "name": "ProjectWorkspace",
+      "filePath": "frontend/src/workspace/ProjectWorkspace.tsx",
+      "lineRange": [
+        581,
+        1385
+      ],
+      "summary": "Coordinates the open-project workspace: composes the bubble, discussion, document, and extraction hooks, owns panel view and inspector selection state, and provides the current project description context to descendants.",
+      "tags": [
+        "component",
+        "orchestration",
+        "state-management",
+        "composition"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:frontend/src/workspace/currentProjectDescription.ts",
+      "type": "file",
+      "name": "currentProjectDescription.ts",
+      "filePath": "frontend/src/workspace/currentProjectDescription.ts",
+      "summary": "React context carrying the last successfully persisted project description, with a hook that throws when used outside a project workspace; consumers can read but never mutate the live project through it.",
+      "tags": [
+        "context",
+        "hook",
+        "workspace",
+        "state-management"
+      ],
+      "complexity": "simple",
+      "languageNotes": "The context is intentionally read-only: discussion creation snapshots the authoritative server value instead of trusting this client-side copy."
+    },
+    {
+      "id": "function:frontend/src/workspace/currentProjectDescription.ts:useCurrentProjectDescription",
+      "type": "function",
+      "name": "useCurrentProjectDescription",
+      "filePath": "frontend/src/workspace/currentProjectDescription.ts",
+      "lineRange": [
+        18,
+        28
+      ],
+      "summary": "Reads the CurrentProjectDescriptionContext and throws a descriptive error when no project workspace provider is above the consumer.",
+      "tags": [
+        "hook",
+        "context",
+        "guard"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:frontend/src/projects/ProjectDescriptionEditor.tsx",
+      "target": "function:frontend/src/projects/ProjectDescriptionEditor.tsx:ProjectDescriptionEditor",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/projects/ProjectDescriptionEditor.tsx",
+      "target": "function:frontend/src/projects/ProjectDescriptionEditor.tsx:ProjectDescriptionEditor",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/ui/RichResponse.tsx",
+      "target": "function:frontend/src/ui/RichResponse.tsx:safeExternalUrl",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/ui/RichResponse.tsx",
+      "target": "function:frontend/src/ui/RichResponse.tsx:citationLink",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/ui/RichResponse.tsx",
+      "target": "function:frontend/src/ui/RichResponse.tsx:inlineContent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/ui/RichResponse.tsx",
+      "target": "function:frontend/src/ui/RichResponse.tsx:isBlockStart",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/ui/RichResponse.tsx",
+      "target": "function:frontend/src/ui/RichResponse.tsx:preparedContent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/ui/RichResponse.tsx",
+      "target": "function:frontend/src/ui/RichResponse.tsx:RichResponse",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/ui/RichResponse.tsx",
+      "target": "function:frontend/src/ui/RichResponse.tsx:RichResponse",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/ui/markdownToPlainText.ts",
+      "target": "function:frontend/src/ui/markdownToPlainText.ts:isTableDivider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/ui/markdownToPlainText.ts",
+      "target": "function:frontend/src/ui/markdownToPlainText.ts:markdownToPlainText",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/ui/markdownToPlainText.ts",
+      "target": "function:frontend/src/ui/markdownToPlainText.ts:markdownToPlainText",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/ui/useFieldValidity.ts",
+      "target": "function:frontend/src/ui/useFieldValidity.ts:useFieldValidity",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/ui/useFieldValidity.ts",
+      "target": "function:frontend/src/ui/useFieldValidity.ts:useFieldValidity",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/ui/useModalShell.ts",
+      "target": "function:frontend/src/ui/useModalShell.ts:useModalShell",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/ui/useModalShell.ts",
+      "target": "function:frontend/src/ui/useModalShell.ts:useModalShell",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectCanvasRoute.tsx",
+      "target": "function:frontend/src/workspace/ProjectCanvasRoute.tsx:ProjectRouteState",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectCanvasRoute.tsx",
+      "target": "function:frontend/src/workspace/ProjectCanvasRoute.tsx:ProjectCanvasRoute",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectCanvasRoute.tsx",
+      "target": "function:frontend/src/workspace/ProjectCanvasRoute.tsx:ProjectCanvasRoute",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "target": "function:frontend/src/workspace/ProjectWorkspace.tsx:ProjectBar",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "target": "function:frontend/src/workspace/ProjectWorkspace.tsx:ActionCard",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "target": "function:frontend/src/workspace/ProjectWorkspace.tsx:EmptyProjectActions",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "target": "function:frontend/src/workspace/ProjectWorkspace.tsx:EmptyCanvasContent",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "target": "function:frontend/src/workspace/ProjectWorkspace.tsx:InspectorEmptyState",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "target": "function:frontend/src/workspace/ProjectWorkspace.tsx:WorkspacePanel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "target": "function:frontend/src/workspace/ProjectWorkspace.tsx:ProjectWorkspace",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "target": "function:frontend/src/workspace/ProjectWorkspace.tsx:ProjectWorkspace",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/workspace/currentProjectDescription.ts",
+      "target": "function:frontend/src/workspace/currentProjectDescription.ts:useCurrentProjectDescription",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/workspace/currentProjectDescription.ts",
+      "target": "function:frontend/src/workspace/currentProjectDescription.ts:useCurrentProjectDescription",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/projects/ProjectDescriptionEditor.tsx",
+      "target": "file:frontend/src/analytics.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/projects/ProjectDescriptionEditor.tsx",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/projects/ProjectDescriptionEditor.tsx",
+      "target": "file:frontend/src/ui/focusRing.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/projects/ProjectDescriptionEditor.tsx",
+      "target": "file:frontend/src/ui/useFieldValidity.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/ui/RichResponse.test.tsx",
+      "target": "file:frontend/src/ui/RichResponse.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/ui/markdownToPlainText.test.ts",
+      "target": "file:frontend/src/ui/markdownToPlainText.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectCanvasRoute.tsx",
+      "target": "file:frontend/src/analytics.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectCanvasRoute.tsx",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectCanvasRoute.tsx",
+      "target": "file:frontend/src/bubbles/BubbleInspector.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectCanvasRoute.tsx",
+      "target": "file:frontend/src/bubbles/CreateBubbleDialog.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectCanvasRoute.tsx",
+      "target": "file:frontend/src/canvas/CanvasSurface.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectCanvasRoute.tsx",
+      "target": "file:frontend/src/documents/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectCanvasRoute.tsx",
+      "target": "file:frontend/src/ui/focusRing.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectCanvasRoute.tsx",
+      "target": "file:frontend/src/utils/routing/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectCanvasRoute.tsx",
+      "target": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "target": "file:frontend/src/analytics.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "target": "file:frontend/src/bubbles/BubbleInspector.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "target": "file:frontend/src/bubbles/CreateBubbleDialog.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "target": "file:frontend/src/canvas/CanvasSurface.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "target": "file:frontend/src/canvas/useProjectBubbles.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "target": "file:frontend/src/discussions/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "target": "file:frontend/src/documents/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "target": "file:frontend/src/knowledge-extraction/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "target": "file:frontend/src/projects/ProjectDescriptionEditor.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "target": "file:frontend/src/ui/focusRing.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "target": "file:frontend/src/utils/routing/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "target": "file:frontend/src/workspace/currentProjectDescription.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "target": "file:frontend/src/workspace/panelModel.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "target": "file:frontend/src/workspace/projectSourceCatalog.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:frontend/src/projects/ProjectDescriptionEditor.tsx:ProjectDescriptionEditor",
+      "target": "function:frontend/src/ui/useFieldValidity.ts:useFieldValidity",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:frontend/src/workspace/ProjectWorkspace.tsx:ProjectWorkspace",
+      "target": "function:frontend/src/workspace/panelModel.ts:getDefaultPanelView",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:frontend/src/workspace/ProjectWorkspace.tsx:ProjectWorkspace",
+      "target": "function:frontend/src/canvas/useProjectBubbles.ts:useProjectBubbles",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/ui/RichResponse.tsx",
+      "target": "file:frontend/src/ui/RichResponse.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/src/ui/markdownToPlainText.ts",
+      "target": "file:frontend/src/ui/markdownToPlainText.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

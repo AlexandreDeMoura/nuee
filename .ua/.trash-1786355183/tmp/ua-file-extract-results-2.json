@@ -1,0 +1,5203 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 26,
+  "filesSkipped": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 26,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 26,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "frontend/src/App.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 344,
+      "nonEmptyLines": 311,
+      "functions": [
+        {
+          "name": "Logo",
+          "startLine": 24,
+          "endLine": 33,
+          "params": []
+        },
+        {
+          "name": "AppHeader",
+          "startLine": 35,
+          "endLine": 56,
+          "params": [
+            "{ onNewProject }"
+          ]
+        },
+        {
+          "name": "LoadingProjects",
+          "startLine": 58,
+          "endLine": 84,
+          "params": []
+        },
+        {
+          "name": "EmptyProjects",
+          "startLine": 86,
+          "endLine": 109,
+          "params": [
+            "{ onNewProject }"
+          ]
+        },
+        {
+          "name": "ProjectsError",
+          "startLine": 111,
+          "endLine": 129,
+          "params": [
+            "{ onRetry }"
+          ]
+        },
+        {
+          "name": "ProjectList",
+          "startLine": 131,
+          "endLine": 173,
+          "params": [
+            "{ projects }"
+          ]
+        },
+        {
+          "name": "ProjectEntry",
+          "startLine": 175,
+          "endLine": 265,
+          "params": [
+            "{\n  analyticsClient,\n  onProjectCreated,\n}"
+          ]
+        },
+        {
+          "name": "NotFoundRoute",
+          "startLine": 267,
+          "endLine": 283,
+          "params": []
+        },
+        {
+          "name": "App",
+          "startLine": 289,
+          "endLine": 342,
+          "params": [
+            "{ analyticsClient = analytics }"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "AppHeader",
+          "callee": "navigate",
+          "lineNumber": 38
+        },
+        {
+          "caller": "LoadingProjects",
+          "callee": "[0, 1, 2].map",
+          "lineNumber": 67
+        },
+        {
+          "caller": "ProjectList",
+          "callee": "projects.map",
+          "lineNumber": 134
+        },
+        {
+          "caller": "ProjectList",
+          "callee": "encodeURIComponent",
+          "lineNumber": 135
+        },
+        {
+          "caller": "ProjectList",
+          "callee": "navigate",
+          "lineNumber": 141
+        },
+        {
+          "caller": "ProjectList",
+          "callee": "formatUpdatedAt",
+          "lineNumber": 161
+        },
+        {
+          "caller": "ProjectEntry",
+          "callee": "useState",
+          "lineNumber": 182
+        },
+        {
+          "caller": "ProjectEntry",
+          "callee": "useState",
+          "lineNumber": 183
+        },
+        {
+          "caller": "ProjectEntry",
+          "callee": "useState",
+          "lineNumber": 184
+        },
+        {
+          "caller": "ProjectEntry",
+          "callee": "useState",
+          "lineNumber": 185
+        },
+        {
+          "caller": "ProjectEntry",
+          "callee": "useEffect",
+          "lineNumber": 187
+        },
+        {
+          "caller": "ProjectEntry",
+          "callee": "getProjects(controller.signal)\n      .then(setProjects)\n      .catch",
+          "lineNumber": 190
+        },
+        {
+          "caller": "ProjectEntry",
+          "callee": "getProjects(controller.signal)\n      .then",
+          "lineNumber": 190
+        },
+        {
+          "caller": "ProjectEntry",
+          "callee": "getProjects",
+          "lineNumber": 190
+        },
+        {
+          "caller": "ProjectEntry",
+          "callee": "setHasError",
+          "lineNumber": 197
+        },
+        {
+          "caller": "ProjectEntry",
+          "callee": "controller.abort",
+          "lineNumber": 200
+        },
+        {
+          "caller": "retry",
+          "callee": "setProjects",
+          "lineNumber": 204
+        },
+        {
+          "caller": "retry",
+          "callee": "setHasError",
+          "lineNumber": 205
+        },
+        {
+          "caller": "retry",
+          "callee": "setRequestKey",
+          "lineNumber": 206
+        },
+        {
+          "caller": "openCreateDialog",
+          "callee": "setIsCreateDialogOpen",
+          "lineNumber": 209
+        },
+        {
+          "caller": "handleProjectCreated",
+          "callee": "setIsCreateDialogOpen",
+          "lineNumber": 215
+        },
+        {
+          "caller": "handleProjectCreated",
+          "callee": "onProjectCreated",
+          "lineNumber": 216
+        },
+        {
+          "caller": "ProjectEntry",
+          "callee": "setIsCreateDialogOpen",
+          "lineNumber": 259
+        },
+        {
+          "caller": "NotFoundRoute",
+          "callee": "navigate",
+          "lineNumber": 276
+        },
+        {
+          "caller": "App",
+          "callee": "useState",
+          "lineNumber": 290
+        },
+        {
+          "caller": "App",
+          "callee": "useState",
+          "lineNumber": 291
+        },
+        {
+          "caller": "App",
+          "callee": "useEffect",
+          "lineNumber": 296
+        },
+        {
+          "caller": "updatePathname",
+          "callee": "setPathname",
+          "lineNumber": 297
+        },
+        {
+          "caller": "App",
+          "callee": "window.addEventListener",
+          "lineNumber": 299
+        },
+        {
+          "caller": "App",
+          "callee": "window.removeEventListener",
+          "lineNumber": 300
+        },
+        {
+          "caller": "App",
+          "callee": "resolveRoute",
+          "lineNumber": 303
+        },
+        {
+          "caller": "App",
+          "callee": "setProjectCreationUploads",
+          "lineNumber": 310
+        },
+        {
+          "caller": "App",
+          "callee": "navigateTo",
+          "lineNumber": 315
+        },
+        {
+          "caller": "App",
+          "callee": "encodeURIComponent",
+          "lineNumber": 315
+        },
+        {
+          "caller": "App",
+          "callee": "setProjectCreationUploads",
+          "lineNumber": 331
+        }
+      ],
+      "metrics": {
+        "importCount": 7,
+        "exportCount": 0,
+        "functionCount": 9,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/analytics.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 302,
+      "nonEmptyLines": 295,
+      "functions": [
+        {
+          "name": "trackAnalytics",
+          "startLine": 292,
+          "endLine": 302,
+          "params": [
+            "analyticsClient",
+            "event",
+            "properties"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "browserAnalyticsEventName",
+          "line": 276,
+          "isDefault": false
+        },
+        {
+          "name": "analytics",
+          "line": 282,
+          "isDefault": false
+        },
+        {
+          "name": "trackAnalytics",
+          "line": 292,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "track",
+          "callee": "window.dispatchEvent",
+          "lineNumber": 286
+        },
+        {
+          "caller": "trackAnalytics",
+          "callee": "analyticsClient.track",
+          "lineNumber": 298
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/api/index.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 7,
+      "nonEmptyLines": 7,
+      "exports": [
+        {
+          "name": "ApiError",
+          "line": 3,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/bubbles/BubbleInspector.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 624,
+      "nonEmptyLines": 594,
+      "functions": [
+        {
+          "name": "isExpandShortcut",
+          "startLine": 58,
+          "endLine": 65,
+          "params": [
+            "event"
+          ]
+        },
+        {
+          "name": "BubbleInspector",
+          "startLine": 67,
+          "endLine": 624,
+          "params": [
+            "props"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "BubbleDeleteRequest",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "BubbleInspectorProps",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "BubbleInspectorSaveStatus",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "BubbleLinkCreateRequest",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "BubbleLinkDeleteRequest",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "BubbleLinkLoadStatus",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "BubbleUpdateRequest",
+          "line": 30,
+          "isDefault": false
+        },
+        {
+          "name": "BubbleInspector",
+          "line": 67,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "isExpandShortcut",
+          "callee": "event.key.toLowerCase",
+          "lineNumber": 63
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "useBubbleInspector",
+          "lineNumber": 98
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "useState",
+          "lineNumber": 99
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "useId",
+          "lineNumber": 100
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "useId",
+          "lineNumber": 101
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "useId",
+          "lineNumber": 102
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "useId",
+          "lineNumber": 103
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "useId",
+          "lineNumber": 104
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "useFieldValidity",
+          "lineNumber": 106
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "useEffect",
+          "lineNumber": 115
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "isExpandShortcut",
+          "lineNumber": 121
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "event.preventDefault",
+          "lineNumber": 125
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "setIsExpanded",
+          "lineNumber": 126
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "window.addEventListener",
+          "lineNumber": 129
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "window.removeEventListener",
+          "lineNumber": 130
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "setIsExpanded",
+          "lineNumber": 148
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "extractionSourceDetails",
+          "lineNumber": 193
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "formatBubbleDate",
+          "lineNumber": 204
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "linkedEntries.map",
+          "lineNumber": 270
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "removeLink",
+          "lineNumber": 283
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "selectLinkTarget",
+          "lineNumber": 303
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "linkCandidates.map",
+          "lineNumber": 311
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "addLink",
+          "lineNumber": 321
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "setIsEditing",
+          "lineNumber": 343
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "linkedEntries.map",
+          "lineNumber": 362
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "setIsExpanded",
+          "lineNumber": 366
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "setIsExpanded",
+          "lineNumber": 368
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "setIsEditing",
+          "lineNumber": 369
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "closeDeleteConfirmation",
+          "lineNumber": 380
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "confirmDelete",
+          "lineNumber": 446
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "fields.markTouched",
+          "lineNumber": 521
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "updateDraft",
+          "lineNumber": 522
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "updateDraft",
+          "lineNumber": 544
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "fields.markTouched",
+          "lineNumber": 570
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "updateDraft",
+          "lineNumber": 571
+        },
+        {
+          "caller": "BubbleInspector",
+          "callee": "setIsEditing",
+          "lineNumber": 617
+        }
+      ],
+      "metrics": {
+        "importCount": 7,
+        "exportCount": 8,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/bubbles/BubbleReaderModal.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 183,
+      "nonEmptyLines": 175,
+      "functions": [
+        {
+          "name": "BubbleReaderModal",
+          "startLine": 24,
+          "endLine": 183,
+          "params": [
+            "{\n  bubble,\n  linkedTitles = [],\n  onClose,\n  onEdit,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "BubbleReaderModal",
+          "line": 24,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "BubbleReaderModal",
+          "callee": "useId",
+          "lineNumber": 30
+        },
+        {
+          "caller": "BubbleReaderModal",
+          "callee": "useId",
+          "lineNumber": 31
+        },
+        {
+          "caller": "BubbleReaderModal",
+          "callee": "useModalShell",
+          "lineNumber": 34
+        },
+        {
+          "caller": "BubbleReaderModal",
+          "callee": "onClose",
+          "lineNumber": 44
+        },
+        {
+          "caller": "BubbleReaderModal",
+          "callee": "event.stopPropagation",
+          "lineNumber": 47
+        },
+        {
+          "caller": "BubbleReaderModal",
+          "callee": "formatBubbleDate",
+          "lineNumber": 68
+        },
+        {
+          "caller": "BubbleReaderModal",
+          "callee": "linkedTitles.map",
+          "lineNumber": 138
+        },
+        {
+          "caller": "BubbleReaderModal",
+          "callee": "extractionSourceDetails",
+          "lineNumber": 169
+        },
+        {
+          "caller": "BubbleReaderModal",
+          "callee": "formatBubbleDate",
+          "lineNumber": 176
+        }
+      ],
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/bubbles/CreateBubbleDialog.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 330,
+      "nonEmptyLines": 309,
+      "functions": [
+        {
+          "name": "CreateBubbleDialog",
+          "startLine": 37,
+          "endLine": 330,
+          "params": [
+            "{\n  onCancel,\n  onCreated,\n  placementInput,\n  projectId,\n  requestCreate = createBubble,\n  requestPlacement = getBubblePlacement,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "CreateBubbleDialog",
+          "line": 37,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "CreateBubbleDialog",
+          "callee": "useState",
+          "lineNumber": 45
+        },
+        {
+          "caller": "CreateBubbleDialog",
+          "callee": "useState",
+          "lineNumber": 46
+        },
+        {
+          "caller": "CreateBubbleDialog",
+          "callee": "useState",
+          "lineNumber": 47
+        },
+        {
+          "caller": "CreateBubbleDialog",
+          "callee": "useState",
+          "lineNumber": 48
+        },
+        {
+          "caller": "CreateBubbleDialog",
+          "callee": "useState",
+          "lineNumber": 49
+        },
+        {
+          "caller": "CreateBubbleDialog",
+          "callee": "useRef",
+          "lineNumber": 50
+        },
+        {
+          "caller": "CreateBubbleDialog",
+          "callee": "useRef",
+          "lineNumber": 51
+        },
+        {
+          "caller": "CreateBubbleDialog",
+          "callee": "title.trim",
+          "lineNumber": 53
+        },
+        {
+          "caller": "CreateBubbleDialog",
+          "callee": "summary.trim",
+          "lineNumber": 54
+        },
+        {
+          "caller": "CreateBubbleDialog",
+          "callee": "content.trim",
+          "lineNumber": 55
+        },
+        {
+          "caller": "CreateBubbleDialog",
+          "callee": "useModalShell",
+          "lineNumber": 57
+        },
+        {
+          "caller": "CreateBubbleDialog",
+          "callee": "onCancel",
+          "lineNumber": 60
+        },
+        {
+          "caller": "CreateBubbleDialog",
+          "callee": "useFieldValidity",
+          "lineNumber": 65
+        },
+        {
+          "caller": "clearCreateError",
+          "callee": "setHasCreateError",
+          "lineNumber": 77
+        },
+        {
+          "caller": "handleBackdropMouseDown",
+          "callee": "onCancel",
+          "lineNumber": 83
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "event.preventDefault",
+          "lineNumber": 88
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "fields.revealAll",
+          "lineNumber": 91
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setIsCreating",
+          "lineNumber": 96
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setHasCreateError",
+          "lineNumber": 97
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "requestPlacement",
+          "lineNumber": 100
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "requestCreate",
+          "lineNumber": 101
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setIsCreating",
+          "lineNumber": 109
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "onCreated",
+          "lineNumber": 110
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setIsCreating",
+          "lineNumber": 113
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setHasCreateError",
+          "lineNumber": 114
+        },
+        {
+          "caller": "CreateBubbleDialog",
+          "callee": "inputBorderClasses",
+          "lineNumber": 202
+        },
+        {
+          "caller": "CreateBubbleDialog",
+          "callee": "fields.markTouched",
+          "lineNumber": 215
+        },
+        {
+          "caller": "CreateBubbleDialog",
+          "callee": "setTitle",
+          "lineNumber": 217
+        },
+        {
+          "caller": "CreateBubbleDialog",
+          "callee": "clearCreateError",
+          "lineNumber": 218
+        },
+        {
+          "caller": "CreateBubbleDialog",
+          "callee": "inputBorderClasses",
+          "lineNumber": 239
+        },
+        {
+          "caller": "CreateBubbleDialog",
+          "callee": "setSummary",
+          "lineNumber": 248
+        },
+        {
+          "caller": "CreateBubbleDialog",
+          "callee": "clearCreateError",
+          "lineNumber": 249
+        },
+        {
+          "caller": "CreateBubbleDialog",
+          "callee": "inputBorderClasses",
+          "lineNumber": 266
+        },
+        {
+          "caller": "CreateBubbleDialog",
+          "callee": "fields.markTouched",
+          "lineNumber": 278
+        },
+        {
+          "caller": "CreateBubbleDialog",
+          "callee": "setContent",
+          "lineNumber": 280
+        },
+        {
+          "caller": "CreateBubbleDialog",
+          "callee": "clearCreateError",
+          "lineNumber": 281
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/bubbles/bubbleInspectorTypes.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 57,
+      "nonEmptyLines": 50,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/bubbles/bubbleReadingModel.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 36,
+      "functions": [
+        {
+          "name": "formatBubbleDate",
+          "startLine": 4,
+          "endLine": 16,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "extractionSourceDetails",
+          "startLine": 18,
+          "endLine": 44,
+          "params": [
+            "bubble"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "formatBubbleDate",
+          "line": 4,
+          "isDefault": false
+        },
+        {
+          "name": "extractionSourceDetails",
+          "line": 18,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "formatBubbleDate",
+          "callee": "Number.isFinite",
+          "lineNumber": 7
+        },
+        {
+          "caller": "formatBubbleDate",
+          "callee": "date.getTime",
+          "lineNumber": 7
+        },
+        {
+          "caller": "formatBubbleDate",
+          "callee": "new Intl.DateTimeFormat(undefined, {\n    day: 'numeric',\n    month: 'short',\n    year: 'numeric',\n  }).format",
+          "lineNumber": 11
+        },
+        {
+          "caller": "extractionSourceDetails",
+          "callee": "details.push",
+          "lineNumber": 28
+        },
+        {
+          "caller": "extractionSourceDetails",
+          "callee": "details.push",
+          "lineNumber": 32
+        },
+        {
+          "caller": "extractionSourceDetails",
+          "callee": "details.push",
+          "lineNumber": 38
+        },
+        {
+          "caller": "extractionSourceDetails",
+          "callee": "details.join",
+          "lineNumber": 43
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/bubbles/useBubbleInspector.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 506,
+      "nonEmptyLines": 450,
+      "functions": [
+        {
+          "name": "toDraft",
+          "startLine": 41,
+          "endLine": 47,
+          "params": [
+            "bubble"
+          ]
+        },
+        {
+          "name": "normalizeDraft",
+          "startLine": 49,
+          "endLine": 57,
+          "params": [
+            "draft"
+          ]
+        },
+        {
+          "name": "draftSignature",
+          "startLine": 59,
+          "endLine": 61,
+          "params": [
+            "draft"
+          ]
+        },
+        {
+          "name": "isSameContent",
+          "startLine": 63,
+          "endLine": 69,
+          "params": [
+            "bubble",
+            "input"
+          ]
+        },
+        {
+          "name": "isAbortError",
+          "startLine": 71,
+          "endLine": 73,
+          "params": [
+            "error"
+          ]
+        },
+        {
+          "name": "assertSavedBubble",
+          "startLine": 75,
+          "endLine": 89,
+          "params": [
+            "bubble",
+            "projectId",
+            "bubbleId"
+          ]
+        },
+        {
+          "name": "useBubbleInspector",
+          "startLine": 91,
+          "endLine": 506,
+          "params": [
+            "{\n  bubble,\n  availableBubbles = [],\n  bubbleLinks = [],\n  onBubbleDeleted,\n  onBubbleUpdated,\n  onBubbleLinkCreated,\n  onBubbleLinkRemoved,\n  requestCreateLink = createBubbleLink,\n  requestDelete = deleteBubble,\n  requestDeleteLink = deleteBubbleLink,\n  requestUpdate = updateBubble,\n  saveDelayMs = DEFAULT_SAVE_DELAY_MS,\n  analyticsClient = analytics,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "useBubbleInspector",
+          "line": 91,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "normalizeDraft",
+          "callee": "draft.summary.trim",
+          "lineNumber": 50
+        },
+        {
+          "caller": "normalizeDraft",
+          "callee": "draft.title.trim",
+          "lineNumber": 53
+        },
+        {
+          "caller": "normalizeDraft",
+          "callee": "draft.content.trim",
+          "lineNumber": 55
+        },
+        {
+          "caller": "draftSignature",
+          "callee": "JSON.stringify",
+          "lineNumber": 60
+        },
+        {
+          "caller": "assertSavedBubble",
+          "callee": "isBubbleResponse",
+          "lineNumber": 81
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useState",
+          "lineNumber": 106
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useState",
+          "lineNumber": 107
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "toDraft",
+          "lineNumber": 107
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useState",
+          "lineNumber": 108
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useState",
+          "lineNumber": 110
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useState",
+          "lineNumber": 112
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useState",
+          "lineNumber": 113
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useState",
+          "lineNumber": 114
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useState",
+          "lineNumber": 115
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useState",
+          "lineNumber": 116
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useState",
+          "lineNumber": 118
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useState",
+          "lineNumber": 119
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useState",
+          "lineNumber": 120
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useRef",
+          "lineNumber": 121
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useRef",
+          "lineNumber": 122
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useRef",
+          "lineNumber": 123
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useRef",
+          "lineNumber": 124
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useRef",
+          "lineNumber": 125
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useRef",
+          "lineNumber": 126
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useRef",
+          "lineNumber": 127
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useRef",
+          "lineNumber": 128
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useRef",
+          "lineNumber": 129
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useRef",
+          "lineNumber": 130
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useModalShell",
+          "lineNumber": 131
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "setIsDeleteConfirmationOpen",
+          "lineNumber": 135
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "setHasDeleteError",
+          "lineNumber": 136
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "normalizeDraft",
+          "lineNumber": 142
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "isSameContent",
+          "lineNumber": 146
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "bubbleLinks.flatMap",
+          "lineNumber": 147
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "availableBubbles.find",
+          "lineNumber": 161
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "linkedEntries.map",
+          "lineNumber": 168
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "availableBubbles.filter",
+          "lineNumber": 170
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "linkedBubbleIds.has",
+          "lineNumber": 174
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useEffect",
+          "lineNumber": 177
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useEffect",
+          "lineNumber": 181
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useEffect",
+          "lineNumber": 185
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "activeControllerRef.current?.abort",
+          "lineNumber": 191
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "deleteControllerRef.current?.abort",
+          "lineNumber": 192
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useCallback",
+          "lineNumber": 196
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "setStatus",
+          "lineNumber": 197
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useCallback",
+          "lineNumber": 200
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "normalizeDraft",
+          "lineNumber": 202
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "isSameContent",
+          "lineNumber": 207
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "setIsSaving",
+          "lineNumber": 217
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "setFailedDraftSignature",
+          "lineNumber": 218
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "publishStatus",
+          "lineNumber": 219
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "requestUpdate",
+          "lineNumber": 222
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "assertSavedBubble",
+          "lineNumber": 228
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "setPersistedBubble",
+          "lineNumber": 239
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "onBubbleUpdatedRef.current",
+          "lineNumber": 240
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "trackAnalytics",
+          "lineNumber": 241
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "draftSignature",
+          "lineNumber": 247
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "draftSignature",
+          "lineNumber": 247
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "toDraft",
+          "lineNumber": 249
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "setDraft",
+          "lineNumber": 251
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "publishStatus",
+          "lineNumber": 252
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "publishStatus",
+          "lineNumber": 254
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "isAbortError",
+          "lineNumber": 260
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "draftSignature",
+          "lineNumber": 265
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "setFailedDraftSignature",
+          "lineNumber": 266
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "publishStatus",
+          "lineNumber": 267
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "draftSignature",
+          "lineNumber": 268
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "setIsSaving",
+          "lineNumber": 275
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "useEffect",
+          "lineNumber": 288
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "draftSignature",
+          "lineNumber": 293
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "window.setTimeout",
+          "lineNumber": 299
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "saveDraft",
+          "lineNumber": 300
+        },
+        {
+          "caller": "useBubbleInspector",
+          "callee": "window.clearTimeout",
+          "lineNumber": 303
+        },
+        {
+          "caller": "updateDraft",
+          "callee": "setDraft",
+          "lineNumber": 318
+        },
+        {
+          "caller": "updateDraft",
+          "callee": "setFailedDraftSignature",
+          "lineNumber": 319
+        },
+        {
+          "caller": "updateDraft",
+          "callee": "normalizeDraft",
+          "lineNumber": 322
+        },
+        {
+          "caller": "updateDraft",
+          "callee": "publishStatus",
+          "lineNumber": 323
+        },
+        {
+          "caller": "updateDraft",
+          "callee": "isSameContent",
+          "lineNumber": 326
+        },
+        {
+          "caller": "retrySave",
+          "callee": "setFailedDraftSignature",
+          "lineNumber": 338
+        },
+        {
+          "caller": "retrySave",
+          "callee": "saveDraft",
+          "lineNumber": 339
+        },
+        {
+          "caller": "openDeleteConfirmation",
+          "callee": "setHasDeleteError",
+          "lineNumber": 343
+        },
+        {
+          "caller": "openDeleteConfirmation",
+          "callee": "setIsDeleteConfirmationOpen",
+          "lineNumber": 344
+        },
+        {
+          "caller": "closeDeleteConfirmation",
+          "callee": "setIsDeleteConfirmationOpen",
+          "lineNumber": 352
+        },
+        {
+          "caller": "closeDeleteConfirmation",
+          "callee": "setHasDeleteError",
+          "lineNumber": 353
+        },
+        {
+          "caller": "confirmDelete",
+          "callee": "setIsDeleting",
+          "lineNumber": 364
+        },
+        {
+          "caller": "confirmDelete",
+          "callee": "setHasDeleteError",
+          "lineNumber": 365
+        },
+        {
+          "caller": "confirmDelete",
+          "callee": "requestDelete",
+          "lineNumber": 368
+        },
+        {
+          "caller": "confirmDelete",
+          "callee": "trackAnalytics",
+          "lineNumber": 378
+        },
+        {
+          "caller": "confirmDelete",
+          "callee": "setIsDeleteConfirmationOpen",
+          "lineNumber": 382
+        },
+        {
+          "caller": "confirmDelete",
+          "callee": "onBubbleDeletedRef.current",
+          "lineNumber": 383
+        },
+        {
+          "caller": "confirmDelete",
+          "callee": "isAbortError",
+          "lineNumber": 385
+        },
+        {
+          "caller": "confirmDelete",
+          "callee": "setHasDeleteError",
+          "lineNumber": 386
+        },
+        {
+          "caller": "confirmDelete",
+          "callee": "setIsDeleting",
+          "lineNumber": 392
+        },
+        {
+          "caller": "selectLinkTarget",
+          "callee": "setSelectedLinkTargetId",
+          "lineNumber": 398
+        },
+        {
+          "caller": "selectLinkTarget",
+          "callee": "setLinkActionError",
+          "lineNumber": 399
+        },
+        {
+          "caller": "addLink",
+          "callee": "setPendingLinkId",
+          "lineNumber": 408
+        },
+        {
+          "caller": "addLink",
+          "callee": "setLinkActionError",
+          "lineNumber": 409
+        },
+        {
+          "caller": "addLink",
+          "callee": "requestCreateLink",
+          "lineNumber": 412
+        },
+        {
+          "caller": "addLink",
+          "callee": "endpointIds.has",
+          "lineNumber": 421
+        },
+        {
+          "caller": "addLink",
+          "callee": "endpointIds.has",
+          "lineNumber": 422
+        },
+        {
+          "caller": "addLink",
+          "callee": "onBubbleLinkCreated",
+          "lineNumber": 427
+        },
+        {
+          "caller": "addLink",
+          "callee": "trackAnalytics",
+          "lineNumber": 428
+        },
+        {
+          "caller": "addLink",
+          "callee": "setSelectedLinkTargetId",
+          "lineNumber": 435
+        },
+        {
+          "caller": "addLink",
+          "callee": "setLinkActionError",
+          "lineNumber": 439
+        },
+        {
+          "caller": "addLink",
+          "callee": "setPendingLinkId",
+          "lineNumber": 443
+        },
+        {
+          "caller": "removeLink",
+          "callee": "setPendingLinkId",
+          "lineNumber": 453
+        },
+        {
+          "caller": "removeLink",
+          "callee": "setLinkActionError",
+          "lineNumber": 454
+        },
+        {
+          "caller": "removeLink",
+          "callee": "requestDeleteLink",
+          "lineNumber": 457
+        },
+        {
+          "caller": "removeLink",
+          "callee": "onBubbleLinkRemoved",
+          "lineNumber": 462
+        },
+        {
+          "caller": "removeLink",
+          "callee": "trackAnalytics",
+          "lineNumber": 463
+        },
+        {
+          "caller": "removeLink",
+          "callee": "setLinkActionError",
+          "lineNumber": 470
+        },
+        {
+          "caller": "removeLink",
+          "callee": "setPendingLinkId",
+          "lineNumber": 474
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 1,
+        "functionCount": 7,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/canvas/BubbleCard.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 145,
+      "nonEmptyLines": 138,
+      "functions": [
+        {
+          "name": "BubbleCard",
+          "startLine": 42,
+          "endLine": 145,
+          "params": [
+            "{\n  bubble,\n  isLinked = false,\n  isMultiSelecting = false,\n  isSelected = false,\n  onActivate,\n  onPointerDown,\n  status = 'default',\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "BubbleCard",
+          "line": 42,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "handleKeyDown",
+          "callee": "event.preventDefault",
+          "lineNumber": 75
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "onActivate",
+          "lineNumber": 76
+        },
+        {
+          "caller": "BubbleCard",
+          "callee": "formatUpdatedAt",
+          "lineNumber": 130
+        },
+        {
+          "caller": "BubbleCard",
+          "callee": "getBubbleCardPreview",
+          "lineNumber": 141
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/canvas/CanvasOverlays.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 367,
+      "nonEmptyLines": 356,
+      "functions": [
+        {
+          "name": "CanvasLoadingState",
+          "startLine": 16,
+          "endLine": 33,
+          "params": []
+        },
+        {
+          "name": "CanvasErrorState",
+          "startLine": 35,
+          "endLine": 61,
+          "params": [
+            "{ onRetry }"
+          ]
+        },
+        {
+          "name": "CanvasBubbleLoadNotice",
+          "startLine": 63,
+          "endLine": 108,
+          "params": [
+            "{\n  hasBubbles,\n  isPartial,\n  onRetry,\n}"
+          ]
+        },
+        {
+          "name": "CanvasViewportSaveError",
+          "startLine": 110,
+          "endLine": 128,
+          "params": [
+            "{ onRetry }"
+          ]
+        },
+        {
+          "name": "BubblePositionSaveError",
+          "startLine": 130,
+          "endLine": 167,
+          "params": [
+            "{\n  bubbleTitle,\n  onRetry,\n  onRevert,\n}"
+          ]
+        },
+        {
+          "name": "CompactLayoutSaveError",
+          "startLine": 169,
+          "endLine": 195,
+          "params": [
+            "{\n  onRetry,\n}"
+          ]
+        },
+        {
+          "name": "CanvasZoomControls",
+          "startLine": 197,
+          "endLine": 243,
+          "params": [
+            "{\n  zoom,\n  onReset,\n  onZoomIn,\n  onZoomOut,\n}"
+          ]
+        },
+        {
+          "name": "CanvasBubbleActions",
+          "startLine": 245,
+          "endLine": 295,
+          "params": [
+            "{\n  canCompact,\n  isCompacting,\n  onCompact,\n  onCreate,\n  onStartDiscussion,\n}"
+          ]
+        },
+        {
+          "name": "CanvasMultiSelectionBar",
+          "startLine": 297,
+          "endLine": 367,
+          "params": [
+            "{\n  allowEmptySelection,\n  confirmLabel,\n  instruction,\n  selectedCount,\n  onCancel,\n  onConfirm,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "CanvasLoadingState",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "CanvasErrorState",
+          "line": 35,
+          "isDefault": false
+        },
+        {
+          "name": "CanvasBubbleLoadNotice",
+          "line": 63,
+          "isDefault": false
+        },
+        {
+          "name": "CanvasViewportSaveError",
+          "line": 110,
+          "isDefault": false
+        },
+        {
+          "name": "BubblePositionSaveError",
+          "line": 130,
+          "isDefault": false
+        },
+        {
+          "name": "CompactLayoutSaveError",
+          "line": 169,
+          "isDefault": false
+        },
+        {
+          "name": "CanvasZoomControls",
+          "line": 197,
+          "isDefault": false
+        },
+        {
+          "name": "CanvasBubbleActions",
+          "line": 245,
+          "isDefault": false
+        },
+        {
+          "name": "CanvasMultiSelectionBar",
+          "line": 297,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "CanvasZoomControls",
+          "callee": "Math.round",
+          "lineNumber": 230
+        },
+        {
+          "caller": "CanvasMultiSelectionBar",
+          "callee": "useRef",
+          "lineNumber": 312
+        },
+        {
+          "caller": "CanvasMultiSelectionBar",
+          "callee": "useEffect",
+          "lineNumber": 314
+        },
+        {
+          "caller": "CanvasMultiSelectionBar",
+          "callee": "cancelButtonRef.current?.focus",
+          "lineNumber": 315
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 9,
+        "functionCount": 9,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/canvas/CanvasSurface.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 856,
+      "nonEmptyLines": 774,
+      "functions": [
+        {
+          "name": "CanvasSurface",
+          "startLine": 72,
+          "endLine": 856,
+          "params": [
+            "{\n  bubbleCollection,\n  createBubbleDialogOpen,\n  emptyState,\n  initialViewport = DEFAULT_VIEWPORT,\n  projectId,\n  analyticsClient = analytics,\n  requestBubbleCreate,\n  requestBubbles = getProjectBubbles,\n  requestBubblePlacement,\n  requestBubblePositionUpdate = updateBubblePosition,\n  requestBubblePositionsUpdate = updateBubblePositions,\n  requestViewportUpdate = updateProjectViewport,\n  onBubbleSelectionChange,\n  onCreateBubbleDialogOpenChange,\n  onStartDiscussion,\n  bubbleLinks = [],\n  multiSelection = null,\n  viewportSaveDelayMs = DEFAULT_VIEWPORT_SAVE_DELAY_MS,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "BubbleListRequest",
+          "line": 59,
+          "isDefault": false
+        },
+        {
+          "name": "BubblePositionUpdateRequest",
+          "line": 59,
+          "isDefault": false
+        },
+        {
+          "name": "BubblePositionsUpdateRequest",
+          "line": 59,
+          "isDefault": false
+        },
+        {
+          "name": "CanvasEmptyStateActions",
+          "line": 59,
+          "isDefault": false
+        },
+        {
+          "name": "CanvasMultiSelection",
+          "line": 59,
+          "isDefault": false
+        },
+        {
+          "name": "CanvasMultiSelectionResult",
+          "line": 59,
+          "isDefault": false
+        },
+        {
+          "name": "CanvasSurfaceProps",
+          "line": 59,
+          "isDefault": false
+        },
+        {
+          "name": "CanvasViewport",
+          "line": 59,
+          "isDefault": false
+        },
+        {
+          "name": "ProjectBubbleCollection",
+          "line": 59,
+          "isDefault": false
+        },
+        {
+          "name": "ProjectViewportUpdateRequest",
+          "line": 59,
+          "isDefault": false
+        },
+        {
+          "name": "CanvasSurface",
+          "line": 72,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "CanvasSurface",
+          "callee": "useState",
+          "lineNumber": 92
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useState",
+          "lineNumber": 93
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useState",
+          "lineNumber": 95
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useState",
+          "lineNumber": 99
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useState",
+          "lineNumber": 101
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useRef",
+          "lineNumber": 102
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useRef",
+          "lineNumber": 103
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useRef",
+          "lineNumber": 104
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useRef",
+          "lineNumber": 105
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useRef",
+          "lineNumber": 106
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useRef",
+          "lineNumber": 107
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useRef",
+          "lineNumber": 108
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useRef",
+          "lineNumber": 109
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useRef",
+          "lineNumber": 110
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useState",
+          "lineNumber": 111
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useEffect",
+          "lineNumber": 115
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useEffect",
+          "lineNumber": 119
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useCallback",
+          "lineNumber": 126
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "setSelectedBubbleId",
+          "lineNumber": 128
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "onBubbleSelectionChangeRef.current",
+          "lineNumber": 129
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useViewportPersistence",
+          "lineNumber": 137
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useProjectBubbles",
+          "lineNumber": 145
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useMemo",
+          "lineNumber": 153
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "loadState.bubbles.map",
+          "lineNumber": 155
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useCallback",
+          "lineNumber": 169
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "setLocalBubblePositions",
+          "lineNumber": 171
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useCallback",
+          "lineNumber": 178
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "setLocalBubblePositions",
+          "lineNumber": 180
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useCallback",
+          "lineNumber": 195
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "setLocalBubblePositions",
+          "lineNumber": 197
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useCallback",
+          "lineNumber": 215
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "activeBubbleCollection.updateBubblePositions",
+          "lineNumber": 217
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "clearLocalBubblePositions",
+          "lineNumber": 224
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useEffect",
+          "lineNumber": 229
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "displayedBubbles.some",
+          "lineNumber": 232
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "selectBubble",
+          "lineNumber": 236
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useMultiSelection",
+          "lineNumber": 247
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useBubbleDrag",
+          "lineNumber": 264
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useCallback",
+          "lineNumber": 280
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "setCompactLayoutSave",
+          "lineNumber": 283
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useCallback",
+          "lineNumber": 288
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "setLocalBubblePositionBatch",
+          "lineNumber": 301
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "replaceCompactLayoutSave",
+          "lineNumber": 302
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "requestBubblePositionsUpdate",
+          "lineNumber": 305
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "requestedPositions.map",
+          "lineNumber": 309
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "Array.isArray",
+          "lineNumber": 317
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "savedBubbles.some",
+          "lineNumber": 319
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "expectedById.get",
+          "lineNumber": 320
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "isRenderableBubble",
+          "lineNumber": 322
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "seenIds.has",
+          "lineNumber": 324
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "seenIds.add",
+          "lineNumber": 328
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "savedBubbles.map",
+          "lineNumber": 342
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "activeBubbleCollection.updateBubblePositions",
+          "lineNumber": 347
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "clearLocalBubblePositions",
+          "lineNumber": 348
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "savedPositions.map",
+          "lineNumber": 349
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "replaceCompactLayoutSave",
+          "lineNumber": 351
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "trackAnalytics",
+          "lineNumber": 352
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "requestedPositions.map",
+          "lineNumber": 354
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "setLocalBubblePositionBatch",
+          "lineNumber": 361
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "replaceCompactLayoutSave",
+          "lineNumber": 362
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "linkedBubbleIds.add",
+          "lineNumber": 389
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "linkedBubbleIds.add",
+          "lineNumber": 391
+        },
+        {
+          "caller": "isInteractiveTarget",
+          "callee": "target.closest",
+          "lineNumber": 399
+        },
+        {
+          "caller": "handlePointerDown",
+          "callee": "isInteractiveTarget",
+          "lineNumber": 406
+        },
+        {
+          "caller": "handlePointerDown",
+          "callee": "event.preventDefault",
+          "lineNumber": 411
+        },
+        {
+          "caller": "handlePointerDown",
+          "callee": "event.stopPropagation",
+          "lineNumber": 412
+        },
+        {
+          "caller": "handlePointerDown",
+          "callee": "selectBubble",
+          "lineNumber": 415
+        },
+        {
+          "caller": "handlePointerDown",
+          "callee": "setIsPanning",
+          "lineNumber": 425
+        },
+        {
+          "caller": "handlePointerDown",
+          "callee": "event.currentTarget.setPointerCapture",
+          "lineNumber": 428
+        },
+        {
+          "caller": "handlePointerMove",
+          "callee": "moveActiveBubble",
+          "lineNumber": 433
+        },
+        {
+          "caller": "handlePointerMove",
+          "callee": "event.preventDefault",
+          "lineNumber": 443
+        },
+        {
+          "caller": "handlePointerMove",
+          "callee": "event.stopPropagation",
+          "lineNumber": 444
+        },
+        {
+          "caller": "handlePointerMove",
+          "callee": "applyViewport",
+          "lineNumber": 445
+        },
+        {
+          "caller": "finishPointerPan",
+          "callee": "finishBubbleDrag",
+          "lineNumber": 453
+        },
+        {
+          "caller": "finishPointerPan",
+          "callee": "event.preventDefault",
+          "lineNumber": 461
+        },
+        {
+          "caller": "finishPointerPan",
+          "callee": "event.stopPropagation",
+          "lineNumber": 462
+        },
+        {
+          "caller": "finishPointerPan",
+          "callee": "setIsPanning",
+          "lineNumber": 464
+        },
+        {
+          "caller": "finishPointerPan",
+          "callee": "event.currentTarget.hasPointerCapture",
+          "lineNumber": 468
+        },
+        {
+          "caller": "finishPointerPan",
+          "callee": "event.currentTarget.releasePointerCapture",
+          "lineNumber": 470
+        },
+        {
+          "caller": "cancelPointerInteraction",
+          "callee": "cancelBubbleDrag",
+          "lineNumber": 475
+        },
+        {
+          "caller": "cancelPointerInteraction",
+          "callee": "finishPointerPan",
+          "lineNumber": 479
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useCallback",
+          "lineNumber": 482
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "applyViewport",
+          "lineNumber": 488
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "nextZoomValue",
+          "lineNumber": 491
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "clampZoom",
+          "lineNumber": 493
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "surfaceRef.current?.getBoundingClientRect",
+          "lineNumber": 499
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useCallback",
+          "lineNumber": 521
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "event.preventDefault",
+          "lineNumber": 523
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "event.stopPropagation",
+          "lineNumber": 524
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "surfaceRef.current?.getBoundingClientRect",
+          "lineNumber": 526
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "normalizeWheelDelta",
+          "lineNumber": 529
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "normalizeWheelDelta",
+          "lineNumber": 530
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "Math.exp",
+          "lineNumber": 533
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "zoomAt",
+          "lineNumber": 534
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "applyViewport",
+          "lineNumber": 542
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useEffect",
+          "lineNumber": 551
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "surface.addEventListener",
+          "lineNumber": 558
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "surface.removeEventListener",
+          "lineNumber": 559
+        },
+        {
+          "caller": "setCreateBubbleDialogOpen",
+          "callee": "setIsUncontrolledCreateBubbleDialogOpen",
+          "lineNumber": 571
+        },
+        {
+          "caller": "setCreateBubbleDialogOpen",
+          "callee": "onCreateBubbleDialogOpenChange",
+          "lineNumber": 573
+        },
+        {
+          "caller": "openCreateBubbleDialog",
+          "callee": "setCreateBubbleDialogOpen",
+          "lineNumber": 577
+        },
+        {
+          "caller": "handleBubbleCreated",
+          "callee": "activeBubbleCollection.addBubble",
+          "lineNumber": 581
+        },
+        {
+          "caller": "handleBubbleCreated",
+          "callee": "trackAnalytics",
+          "lineNumber": 582
+        },
+        {
+          "caller": "handleBubbleCreated",
+          "callee": "setCreateBubbleDialogOpen",
+          "lineNumber": 587
+        },
+        {
+          "caller": "handleBubbleCreated",
+          "callee": "setCreatePlacementInput",
+          "lineNumber": 588
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "useEffect",
+          "lineNumber": 591
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "surfaceRef.current?.getBoundingClientRect",
+          "lineNumber": 596
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "setCreatePlacementInput",
+          "lineNumber": 600
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "emptyState",
+          "lineNumber": 611
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "Object.entries(positionSaves).find",
+          "lineNumber": 613
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "Object.entries",
+          "lineNumber": 613
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "displayedBubbles.find",
+          "lineNumber": 617
+        },
+        {
+          "caller": "compactLayout",
+          "callee": "Object.keys",
+          "lineNumber": 626
+        },
+        {
+          "caller": "compactLayout",
+          "callee": "getCompactBubblePositions",
+          "lineNumber": 632
+        },
+        {
+          "caller": "compactLayout",
+          "callee": "displayedBubbles.map",
+          "lineNumber": 634
+        },
+        {
+          "caller": "compactLayout",
+          "callee": "requestedPositions.filter",
+          "lineNumber": 636
+        },
+        {
+          "caller": "compactLayout",
+          "callee": "bubblesById.get",
+          "lineNumber": 637
+        },
+        {
+          "caller": "compactLayout",
+          "callee": "replaceCompactLayoutSave",
+          "lineNumber": 647
+        },
+        {
+          "caller": "compactLayout",
+          "callee": "trackAnalytics",
+          "lineNumber": 648
+        },
+        {
+          "caller": "compactLayout",
+          "callee": "requestedPositions.map",
+          "lineNumber": 650
+        },
+        {
+          "caller": "compactLayout",
+          "callee": "changedPositions.map",
+          "lineNumber": 655
+        },
+        {
+          "caller": "compactLayout",
+          "callee": "bubblesById.get",
+          "lineNumber": 656
+        },
+        {
+          "caller": "compactLayout",
+          "callee": "persistCompactLayout",
+          "lineNumber": 665
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "Object.keys",
+          "lineNumber": 672
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "cancelActiveBubbleDrag",
+          "lineNumber": 691
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "setIsPanning",
+          "lineNumber": 693
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "displayedBubbles.map",
+          "lineNumber": 716
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "linkedBubbleIds.has",
+          "lineNumber": 731
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "activeMultiSelectedBubbleIdSet.has",
+          "lineNumber": 736
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "toggleMultiSelectedBubble",
+          "lineNumber": 742
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "selectBubble",
+          "lineNumber": 743
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "handleBubblePointerDown",
+          "lineNumber": 746
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "zoomAt",
+          "lineNumber": 795
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "zoomAt",
+          "lineNumber": 796
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "zoomAt",
+          "lineNumber": 797
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "retryPositionSave",
+          "lineNumber": 821
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "revertPositionSave",
+          "lineNumber": 825
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "persistCompactLayout",
+          "lineNumber": 833
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "setCreateBubbleDialogOpen",
+          "lineNumber": 844
+        },
+        {
+          "caller": "CanvasSurface",
+          "callee": "setCreatePlacementInput",
+          "lineNumber": 845
+        }
+      ],
+      "metrics": {
+        "importCount": 12,
+        "exportCount": 11,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/canvas/bubbleCardPreview.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 42,
+      "nonEmptyLines": 33,
+      "functions": [
+        {
+          "name": "normalizePreviewText",
+          "startLine": 6,
+          "endLine": 8,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "truncatePreview",
+          "startLine": 10,
+          "endLine": 23,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "contentOpeningSentence",
+          "startLine": 25,
+          "endLine": 32,
+          "params": [
+            "content"
+          ]
+        },
+        {
+          "name": "getBubbleCardPreview",
+          "startLine": 34,
+          "endLine": 42,
+          "params": [
+            "bubble"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "getBubbleCardPreview",
+          "line": 34,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "normalizePreviewText",
+          "callee": "value.trim().replace",
+          "lineNumber": 7
+        },
+        {
+          "caller": "normalizePreviewText",
+          "callee": "value.trim",
+          "lineNumber": 7
+        },
+        {
+          "caller": "truncatePreview",
+          "callee": "value.slice",
+          "lineNumber": 15
+        },
+        {
+          "caller": "truncatePreview",
+          "callee": "candidate.lastIndexOf",
+          "lineNumber": 16
+        },
+        {
+          "caller": "truncatePreview",
+          "callee": "candidate.slice(0, end).trimEnd",
+          "lineNumber": 22
+        },
+        {
+          "caller": "truncatePreview",
+          "callee": "candidate.slice",
+          "lineNumber": 22
+        },
+        {
+          "caller": "contentOpeningSentence",
+          "callee": "normalizePreviewText",
+          "lineNumber": 26
+        },
+        {
+          "caller": "contentOpeningSentence",
+          "callee": "normalizedContent.search",
+          "lineNumber": 27
+        },
+        {
+          "caller": "contentOpeningSentence",
+          "callee": "normalizedContent.slice",
+          "lineNumber": 31
+        },
+        {
+          "caller": "getBubbleCardPreview",
+          "callee": "normalizePreviewText",
+          "lineNumber": 37
+        },
+        {
+          "caller": "getBubbleCardPreview",
+          "callee": "contentOpeningSentence",
+          "lineNumber": 39
+        },
+        {
+          "caller": "getBubbleCardPreview",
+          "callee": "markdownToPlainText",
+          "lineNumber": 39
+        },
+        {
+          "caller": "getBubbleCardPreview",
+          "callee": "truncatePreview",
+          "lineNumber": 41
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/canvas/canvasModel.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 102,
+      "nonEmptyLines": 85,
+      "functions": [
+        {
+          "name": "clampZoom",
+          "startLine": 16,
+          "endLine": 18,
+          "params": [
+            "zoom"
+          ]
+        },
+        {
+          "name": "isSameViewport",
+          "startLine": 20,
+          "endLine": 25,
+          "params": [
+            "first",
+            "second"
+          ]
+        },
+        {
+          "name": "projectViewport",
+          "startLine": 27,
+          "endLine": 33,
+          "params": [
+            "project"
+          ]
+        },
+        {
+          "name": "viewportInput",
+          "startLine": 35,
+          "endLine": 43,
+          "params": [
+            "viewport"
+          ]
+        },
+        {
+          "name": "normalizeWheelDelta",
+          "startLine": 45,
+          "endLine": 59,
+          "params": [
+            "delta",
+            "deltaMode",
+            "pageSize"
+          ]
+        },
+        {
+          "name": "isRenderableBubble",
+          "startLine": 61,
+          "endLine": 66,
+          "params": [
+            "value",
+            "projectId"
+          ]
+        },
+        {
+          "name": "renderableBubbles",
+          "startLine": 68,
+          "endLine": 88,
+          "params": [
+            "records",
+            "projectId"
+          ]
+        },
+        {
+          "name": "mergeBubbles",
+          "startLine": 90,
+          "endLine": 102,
+          "params": [
+            "current",
+            "incoming"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "MIN_ZOOM",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "MAX_ZOOM",
+          "line": 10,
+          "isDefault": false
+        },
+        {
+          "name": "ZOOM_STEP",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "GRID_SIZE",
+          "line": 12,
+          "isDefault": false
+        },
+        {
+          "name": "DEFAULT_VIEWPORT_SAVE_DELAY_MS",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "DEFAULT_VIEWPORT",
+          "line": 14,
+          "isDefault": false
+        },
+        {
+          "name": "clampZoom",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "isSameViewport",
+          "line": 20,
+          "isDefault": false
+        },
+        {
+          "name": "projectViewport",
+          "line": 27,
+          "isDefault": false
+        },
+        {
+          "name": "viewportInput",
+          "line": 35,
+          "isDefault": false
+        },
+        {
+          "name": "normalizeWheelDelta",
+          "line": 45,
+          "isDefault": false
+        },
+        {
+          "name": "isRenderableBubble",
+          "line": 61,
+          "isDefault": false
+        },
+        {
+          "name": "renderableBubbles",
+          "line": 68,
+          "isDefault": false
+        },
+        {
+          "name": "mergeBubbles",
+          "line": 90,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "clampZoom",
+          "callee": "Math.min",
+          "lineNumber": 17
+        },
+        {
+          "caller": "clampZoom",
+          "callee": "Math.max",
+          "lineNumber": 17
+        },
+        {
+          "caller": "isRenderableBubble",
+          "callee": "isBubbleResponse",
+          "lineNumber": 65
+        },
+        {
+          "caller": "renderableBubbles",
+          "callee": "Array.isArray",
+          "lineNumber": 69
+        },
+        {
+          "caller": "renderableBubbles",
+          "callee": "isRenderableBubble",
+          "lineNumber": 78
+        },
+        {
+          "caller": "renderableBubbles",
+          "callee": "seenIds.has",
+          "lineNumber": 78
+        },
+        {
+          "caller": "renderableBubbles",
+          "callee": "seenIds.add",
+          "lineNumber": 83
+        },
+        {
+          "caller": "renderableBubbles",
+          "callee": "bubbles.push",
+          "lineNumber": 84
+        },
+        {
+          "caller": "mergeBubbles",
+          "callee": "incoming.map",
+          "lineNumber": 91
+        },
+        {
+          "caller": "mergeBubbles",
+          "callee": "current.map",
+          "lineNumber": 92
+        },
+        {
+          "caller": "mergeBubbles",
+          "callee": "incomingById.get",
+          "lineNumber": 92
+        },
+        {
+          "caller": "mergeBubbles",
+          "callee": "current.map",
+          "lineNumber": 93
+        },
+        {
+          "caller": "mergeBubbles",
+          "callee": "currentIds.has",
+          "lineNumber": 96
+        },
+        {
+          "caller": "mergeBubbles",
+          "callee": "merged.push",
+          "lineNumber": 97
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 14,
+        "functionCount": 8,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/canvas/canvasTypes.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 157,
+      "nonEmptyLines": 140,
+      "exports": [
+        {
+          "name": "BubblePlacementInput",
+          "line": 157,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/canvas/compactLayout.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 39,
+      "nonEmptyLines": 34,
+      "functions": [
+        {
+          "name": "compareSpatialOrder",
+          "startLine": 7,
+          "endLine": 14,
+          "params": [
+            "first",
+            "second"
+          ]
+        },
+        {
+          "name": "getCompactBubblePositions",
+          "startLine": 16,
+          "endLine": 39,
+          "params": [
+            "bubbles"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "BUBBLE_CARD_WIDTH",
+          "line": 3,
+          "isDefault": false
+        },
+        {
+          "name": "BUBBLE_CARD_HEIGHT",
+          "line": 4,
+          "isDefault": false
+        },
+        {
+          "name": "COMPACT_LAYOUT_GAP",
+          "line": 5,
+          "isDefault": false
+        },
+        {
+          "name": "getCompactBubblePositions",
+          "line": 16,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "compareSpatialOrder",
+          "callee": "first.created_at.localeCompare",
+          "lineNumber": 11
+        },
+        {
+          "caller": "compareSpatialOrder",
+          "callee": "first.id.localeCompare",
+          "lineNumber": 12
+        },
+        {
+          "caller": "getCompactBubblePositions",
+          "callee": "Math.min",
+          "lineNumber": 23
+        },
+        {
+          "caller": "getCompactBubblePositions",
+          "callee": "bubbles.map",
+          "lineNumber": 23
+        },
+        {
+          "caller": "getCompactBubblePositions",
+          "callee": "Math.min",
+          "lineNumber": 24
+        },
+        {
+          "caller": "getCompactBubblePositions",
+          "callee": "bubbles.map",
+          "lineNumber": 24
+        },
+        {
+          "caller": "getCompactBubblePositions",
+          "callee": "Math.ceil",
+          "lineNumber": 25
+        },
+        {
+          "caller": "getCompactBubblePositions",
+          "callee": "Math.sqrt",
+          "lineNumber": 25
+        },
+        {
+          "caller": "getCompactBubblePositions",
+          "callee": "[...bubbles]\n    .sort(compareSpatialOrder)\n    .map",
+          "lineNumber": 27
+        },
+        {
+          "caller": "getCompactBubblePositions",
+          "callee": "[...bubbles]\n    .sort",
+          "lineNumber": 27
+        },
+        {
+          "caller": "getCompactBubblePositions",
+          "callee": "Math.floor",
+          "lineNumber": 36
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 4,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/canvas/useBubbleDrag.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 349,
+      "nonEmptyLines": 305,
+      "functions": [
+        {
+          "name": "useBubbleDrag",
+          "startLine": 44,
+          "endLine": 349,
+          "params": [
+            "{\n  activeBubbleDragRef,\n  analyticsClient,\n  displayedBubbles,\n  isMultiSelectionActive,\n  positionSavesRef,\n  projectId,\n  requestBubblePositionUpdate,\n  commitBubblePosition,\n  selectBubble,\n  setLocalBubblePosition,\n  surfaceRef,\n  toggleMultiSelectedBubble,\n  viewport,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "useBubbleDrag",
+          "line": 44,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useBubbleDrag",
+          "callee": "useState",
+          "lineNumber": 59
+        },
+        {
+          "caller": "useBubbleDrag",
+          "callee": "useState",
+          "lineNumber": 60
+        },
+        {
+          "caller": "useBubbleDrag",
+          "callee": "useRef",
+          "lineNumber": 63
+        },
+        {
+          "caller": "useBubbleDrag",
+          "callee": "useRef",
+          "lineNumber": 64
+        },
+        {
+          "caller": "useBubbleDrag",
+          "callee": "useEffect",
+          "lineNumber": 66
+        },
+        {
+          "caller": "useBubbleDrag",
+          "callee": "useCallback",
+          "lineNumber": 73
+        },
+        {
+          "caller": "useBubbleDrag",
+          "callee": "setPositionSaves",
+          "lineNumber": 84
+        },
+        {
+          "caller": "useBubbleDrag",
+          "callee": "useCallback",
+          "lineNumber": 89
+        },
+        {
+          "caller": "useBubbleDrag",
+          "callee": "replacePositionSave",
+          "lineNumber": 96
+        },
+        {
+          "caller": "useBubbleDrag",
+          "callee": "requestBubblePositionUpdate",
+          "lineNumber": 104
+        },
+        {
+          "caller": "useBubbleDrag",
+          "callee": "Number.isFinite",
+          "lineNumber": 116
+        },
+        {
+          "caller": "useBubbleDrag",
+          "callee": "Number.isFinite",
+          "lineNumber": 117
+        },
+        {
+          "caller": "useBubbleDrag",
+          "callee": "commitBubblePosition",
+          "lineNumber": 129
+        },
+        {
+          "caller": "useBubbleDrag",
+          "callee": "replacePositionSave",
+          "lineNumber": 130
+        },
+        {
+          "caller": "useBubbleDrag",
+          "callee": "trackAnalytics",
+          "lineNumber": 131
+        },
+        {
+          "caller": "useBubbleDrag",
+          "callee": "replacePositionSave",
+          "lineNumber": 140
+        },
+        {
+          "caller": "useBubbleDrag",
+          "callee": "useCallback",
+          "lineNumber": 159
+        },
+        {
+          "caller": "useBubbleDrag",
+          "callee": "surface.hasPointerCapture",
+          "lineNumber": 164
+        },
+        {
+          "caller": "useBubbleDrag",
+          "callee": "surface.releasePointerCapture",
+          "lineNumber": 166
+        },
+        {
+          "caller": "handleBubblePointerDown",
+          "callee": "event.preventDefault",
+          "lineNumber": 176
+        },
+        {
+          "caller": "handleBubblePointerDown",
+          "callee": "event.stopPropagation",
+          "lineNumber": 177
+        },
+        {
+          "caller": "handleBubblePointerDown",
+          "callee": "toggleMultiSelectedBubble",
+          "lineNumber": 178
+        },
+        {
+          "caller": "handleBubblePointerDown",
+          "callee": "event.preventDefault",
+          "lineNumber": 188
+        },
+        {
+          "caller": "handleBubblePointerDown",
+          "callee": "event.stopPropagation",
+          "lineNumber": 189
+        },
+        {
+          "caller": "handleBubblePointerDown",
+          "callee": "selectBubble",
+          "lineNumber": 190
+        },
+        {
+          "caller": "handleBubblePointerDown",
+          "callee": "event.preventDefault",
+          "lineNumber": 195
+        },
+        {
+          "caller": "handleBubblePointerDown",
+          "callee": "event.stopPropagation",
+          "lineNumber": 196
+        },
+        {
+          "caller": "handleBubblePointerDown",
+          "callee": "setDraggingBubbleId",
+          "lineNumber": 214
+        },
+        {
+          "caller": "handleBubblePointerDown",
+          "callee": "surfaceRef.current.setPointerCapture",
+          "lineNumber": 217
+        },
+        {
+          "caller": "moveActiveBubble",
+          "callee": "event.preventDefault",
+          "lineNumber": 228
+        },
+        {
+          "caller": "moveActiveBubble",
+          "callee": "event.stopPropagation",
+          "lineNumber": 229
+        },
+        {
+          "caller": "moveActiveBubble",
+          "callee": "setLocalBubblePosition",
+          "lineNumber": 241
+        },
+        {
+          "caller": "finishBubbleDrag",
+          "callee": "event.preventDefault",
+          "lineNumber": 252
+        },
+        {
+          "caller": "finishBubbleDrag",
+          "callee": "event.stopPropagation",
+          "lineNumber": 253
+        },
+        {
+          "caller": "finishBubbleDrag",
+          "callee": "setDraggingBubbleId",
+          "lineNumber": 255
+        },
+        {
+          "caller": "finishBubbleDrag",
+          "callee": "releasePointerCapture",
+          "lineNumber": 256
+        },
+        {
+          "caller": "finishBubbleDrag",
+          "callee": "displayedBubbles.find",
+          "lineNumber": 263
+        },
+        {
+          "caller": "finishBubbleDrag",
+          "callee": "selectBubble",
+          "lineNumber": 268
+        },
+        {
+          "caller": "finishBubbleDrag",
+          "callee": "replacePositionSave",
+          "lineNumber": 279
+        },
+        {
+          "caller": "finishBubbleDrag",
+          "callee": "persistBubblePosition",
+          "lineNumber": 283
+        },
+        {
+          "caller": "cancelBubbleDrag",
+          "callee": "event.preventDefault",
+          "lineNumber": 298
+        },
+        {
+          "caller": "cancelBubbleDrag",
+          "callee": "event.stopPropagation",
+          "lineNumber": 299
+        },
+        {
+          "caller": "cancelBubbleDrag",
+          "callee": "setLocalBubblePosition",
+          "lineNumber": 300
+        },
+        {
+          "caller": "cancelBubbleDrag",
+          "callee": "setDraggingBubbleId",
+          "lineNumber": 302
+        },
+        {
+          "caller": "cancelBubbleDrag",
+          "callee": "releasePointerCapture",
+          "lineNumber": 303
+        },
+        {
+          "caller": "cancelActiveBubbleDrag",
+          "callee": "setLocalBubblePosition",
+          "lineNumber": 314
+        },
+        {
+          "caller": "cancelActiveBubbleDrag",
+          "callee": "setDraggingBubbleId",
+          "lineNumber": 316
+        },
+        {
+          "caller": "retryPositionSave",
+          "callee": "persistBubblePosition",
+          "lineNumber": 323
+        },
+        {
+          "caller": "revertPositionSave",
+          "callee": "setLocalBubblePosition",
+          "lineNumber": 334
+        },
+        {
+          "caller": "revertPositionSave",
+          "callee": "replacePositionSave",
+          "lineNumber": 335
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/canvas/useMultiSelection.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 200,
+      "nonEmptyLines": 173,
+      "functions": [
+        {
+          "name": "selectionLimit",
+          "startLine": 22,
+          "endLine": 32,
+          "params": [
+            "multiSelection"
+          ]
+        },
+        {
+          "name": "initialSelection",
+          "startLine": 34,
+          "endLine": 41,
+          "params": [
+            "multiSelection"
+          ]
+        },
+        {
+          "name": "useMultiSelection",
+          "startLine": 43,
+          "endLine": 200,
+          "params": [
+            "{\n  analyticsClient,\n  displayedBubbles,\n  multiSelection,\n  projectId,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "useMultiSelection",
+          "line": 43,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "selectionLimit",
+          "callee": "Number.isFinite",
+          "lineNumber": 28
+        },
+        {
+          "caller": "selectionLimit",
+          "callee": "Math.floor",
+          "lineNumber": 30
+        },
+        {
+          "caller": "initialSelection",
+          "callee": "selectionLimit",
+          "lineNumber": 38
+        },
+        {
+          "caller": "initialSelection",
+          "callee": "identifiers.slice",
+          "lineNumber": 40
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "useState",
+          "lineNumber": 49
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "initialSelection",
+          "lineNumber": 50
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "useRef",
+          "lineNumber": 52
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "useRef",
+          "lineNumber": 53
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "useMemo",
+          "lineNumber": 54
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "displayedBubbles.map",
+          "lineNumber": 55
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "useMemo",
+          "lineNumber": 58
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "selectedBubbleIds.filter",
+          "lineNumber": 59
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "displayedBubbleIds.has",
+          "lineNumber": 59
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "useMemo",
+          "lineNumber": 62
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "useCallback",
+          "lineNumber": 67
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "trackAnalytics",
+          "lineNumber": 79
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "useCallback",
+          "lineNumber": 88
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "complete",
+          "lineNumber": 94
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "multiSelection.onCancel",
+          "lineNumber": 102
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "useCallback",
+          "lineNumber": 105
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "displayedBubbles.map",
+          "lineNumber": 111
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "activeSelectedBubbleIds.flatMap",
+          "lineNumber": 113
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "bubblesById.get",
+          "lineNumber": 114
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "selectedBubbles.map",
+          "lineNumber": 117
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "complete",
+          "lineNumber": 119
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "multiSelection.onConfirm",
+          "lineNumber": 123
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "useCallback",
+          "lineNumber": 136
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "setSelectedBubbleIds",
+          "lineNumber": 138
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "current.includes",
+          "lineNumber": 139
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "current.filter",
+          "lineNumber": 140
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "selectionLimit",
+          "lineNumber": 143
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "[...current, bubbleId].slice",
+          "lineNumber": 151
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "useEffect",
+          "lineNumber": 157
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "setSelectedBubbleIds",
+          "lineNumber": 161
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "initialSelection",
+          "lineNumber": 161
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "trackAnalytics",
+          "lineNumber": 163
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "setSelectedBubbleIds",
+          "lineNumber": 167
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "useEffect",
+          "lineNumber": 174
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "event.preventDefault",
+          "lineNumber": 184
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "cancel",
+          "lineNumber": 185
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "window.addEventListener",
+          "lineNumber": 188
+        },
+        {
+          "caller": "useMultiSelection",
+          "callee": "window.removeEventListener",
+          "lineNumber": 189
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/canvas/useProjectBubbles.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 274,
+      "nonEmptyLines": 244,
+      "functions": [
+        {
+          "name": "replaceBubblePreservingPosition",
+          "startLine": 43,
+          "endLine": 56,
+          "params": [
+            "bubbles",
+            "replacement"
+          ]
+        },
+        {
+          "name": "updateBubblePositions",
+          "startLine": 58,
+          "endLine": 77,
+          "params": [
+            "bubbles",
+            "positions"
+          ]
+        },
+        {
+          "name": "applyMutations",
+          "startLine": 79,
+          "endLine": 95,
+          "params": [
+            "bubbles",
+            "mutations"
+          ]
+        },
+        {
+          "name": "useProjectBubbles",
+          "startLine": 97,
+          "endLine": 274,
+          "params": [
+            "{\n  enabled = true,\n  projectId,\n  requestBubbles,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "useProjectBubbles",
+          "line": 97,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "replaceBubblePreservingPosition",
+          "callee": "bubbles.map",
+          "lineNumber": 47
+        },
+        {
+          "caller": "updateBubblePositions",
+          "callee": "positions.map",
+          "lineNumber": 63
+        },
+        {
+          "caller": "updateBubblePositions",
+          "callee": "bubbles.map",
+          "lineNumber": 66
+        },
+        {
+          "caller": "updateBubblePositions",
+          "callee": "positionsById.get",
+          "lineNumber": 67
+        },
+        {
+          "caller": "applyMutations",
+          "callee": "mutations.reduce",
+          "lineNumber": 83
+        },
+        {
+          "caller": "applyMutations",
+          "callee": "mergeBubbles",
+          "lineNumber": 86
+        },
+        {
+          "caller": "applyMutations",
+          "callee": "replaceBubblePreservingPosition",
+          "lineNumber": 88
+        },
+        {
+          "caller": "applyMutations",
+          "callee": "current.filter",
+          "lineNumber": 90
+        },
+        {
+          "caller": "applyMutations",
+          "callee": "updateBubblePositions",
+          "lineNumber": 92
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "useState",
+          "lineNumber": 102
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "useState",
+          "lineNumber": 106
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "useRef",
+          "lineNumber": 107
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "useRef",
+          "lineNumber": 108
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "useRef",
+          "lineNumber": 109
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "useCallback",
+          "lineNumber": 111
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "mutationsRef.current.push",
+          "lineNumber": 113
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "useCallback",
+          "lineNumber": 118
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "isRenderableBubble",
+          "lineNumber": 120
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "removedBubbleIdsRef.current.delete",
+          "lineNumber": 124
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "recordMutation",
+          "lineNumber": 125
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "setLoadState",
+          "lineNumber": 126
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "mergeBubbles",
+          "lineNumber": 128
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "useCallback",
+          "lineNumber": 134
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "isRenderableBubble",
+          "lineNumber": 136
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "recordMutation",
+          "lineNumber": 140
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "setLoadState",
+          "lineNumber": 141
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "replaceBubblePreservingPosition",
+          "lineNumber": 143
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "useCallback",
+          "lineNumber": 149
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "removedBubbleIdsRef.current.add",
+          "lineNumber": 151
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "recordMutation",
+          "lineNumber": 152
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "setLoadState",
+          "lineNumber": 153
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "current.bubbles.filter",
+          "lineNumber": 155
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "useCallback",
+          "lineNumber": 161
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "removedBubbleIdsRef.current.has",
+          "lineNumber": 162
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "useCallback",
+          "lineNumber": 166
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "positions.filter",
+          "lineNumber": 168
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "Number.isFinite",
+          "lineNumber": 171
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "Number.isFinite",
+          "lineNumber": 172
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "recordMutation",
+          "lineNumber": 179
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "setLoadState",
+          "lineNumber": 180
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "updateBubblePositions",
+          "lineNumber": 182
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "useCallback",
+          "lineNumber": 188
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "setLoadState",
+          "lineNumber": 189
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "setRequestKey",
+          "lineNumber": 193
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "useEffect",
+          "lineNumber": 196
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "setLoadState",
+          "lineNumber": 210
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "requestBubbles(projectId, controller.signal)\n      .then((records) => {\n        if (controller.signal.aborted) {\n          return;\n        }\n\n        const result = renderableBubbles(records, projectId);\n\n        setLoadState((current) => {\n          const loadedBubbles =\n            result.invalidCount === 0\n              ? result.bubbles\n              : mergeBubbles(current.bubbles, result.bubbles);\n\n          return {\n            status: result.invalidCount === 0 ? 'ready' : 'partial',\n            bubbles: applyMutations(loadedBubbles, mutationsRef.current),\n          };\n        });\n      })\n      .catch",
+          "lineNumber": 215
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "requestBubbles(projectId, controller.signal)\n      .then",
+          "lineNumber": 215
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "requestBubbles",
+          "lineNumber": 215
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "renderableBubbles",
+          "lineNumber": 221
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "setLoadState",
+          "lineNumber": 223
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "mergeBubbles",
+          "lineNumber": 227
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "applyMutations",
+          "lineNumber": 231
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "setLoadState",
+          "lineNumber": 243
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "controller.abort",
+          "lineNumber": 249
+        },
+        {
+          "caller": "useProjectBubbles",
+          "callee": "useMemo",
+          "lineNumber": 252
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/canvas/useViewportPersistence.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 204,
+      "nonEmptyLines": 178,
+      "functions": [
+        {
+          "name": "useViewportPersistence",
+          "startLine": 30,
+          "endLine": 204,
+          "params": [
+            "{\n  analyticsClient,\n  initialViewport,\n  projectId,\n  requestViewportUpdate,\n  saveDelayMs,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "useViewportPersistence",
+          "line": 30,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useViewportPersistence",
+          "callee": "useState",
+          "lineNumber": 37
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "useState",
+          "lineNumber": 38
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "useRef",
+          "lineNumber": 39
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "useRef",
+          "lineNumber": 40
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "useRef",
+          "lineNumber": 41
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "useRef",
+          "lineNumber": 42
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "useRef",
+          "lineNumber": 43
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "useRef",
+          "lineNumber": 44
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "useRef",
+          "lineNumber": 48
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "useRef",
+          "lineNumber": 49
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "useEffect",
+          "lineNumber": 51
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "isSameViewport",
+          "lineNumber": 54
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "trackAnalytics",
+          "lineNumber": 60
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "useCallback",
+          "lineNumber": 65
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "isSameViewport",
+          "lineNumber": 78
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "setViewportSaveFailed",
+          "lineNumber": 85
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "requestViewportUpdate",
+          "lineNumber": 89
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "viewportInput",
+          "lineNumber": 91
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "projectViewport",
+          "lineNumber": 94
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "setViewportSaveFailed",
+          "lineNumber": 98
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "isSameViewport",
+          "lineNumber": 101
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "setViewportSaveFailed",
+          "lineNumber": 105
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "isSameViewport",
+          "lineNumber": 115
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "persist",
+          "lineNumber": 117
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "useCallback",
+          "lineNumber": 124
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "setViewport",
+          "lineNumber": 126
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "update",
+          "lineNumber": 127
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "isSameViewport",
+          "lineNumber": 129
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "useCallback",
+          "lineNumber": 140
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "window.clearTimeout",
+          "lineNumber": 142
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "persistViewport",
+          "lineNumber": 147
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "useCallback",
+          "lineNumber": 150
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "persistViewport",
+          "lineNumber": 152
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "useEffect",
+          "lineNumber": 155
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "isSameViewport",
+          "lineNumber": 158
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "setViewportSaveFailed",
+          "lineNumber": 160
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "isSameViewport",
+          "lineNumber": 166
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "setViewportSaveFailed",
+          "lineNumber": 171
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "window.setTimeout",
+          "lineNumber": 172
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "persistViewport",
+          "lineNumber": 174
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "window.clearTimeout",
+          "lineNumber": 179
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "useEffect",
+          "lineNumber": 185
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "window.addEventListener",
+          "lineNumber": 187
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "window.addEventListener",
+          "lineNumber": 188
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "window.removeEventListener",
+          "lineNumber": 192
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "window.removeEventListener",
+          "lineNumber": 193
+        },
+        {
+          "caller": "useViewportPersistence",
+          "callee": "flushViewport",
+          "lineNumber": 194
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionDeleteDialog.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 136,
+      "nonEmptyLines": 131,
+      "functions": [
+        {
+          "name": "DiscussionDeleteDialog",
+          "startLine": 19,
+          "endLine": 136,
+          "params": [
+            "{\n  error,\n  isDeleting,\n  onCancel,\n  onConfirm,\n  target,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DiscussionDeleteDialog",
+          "line": 19,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "DiscussionDeleteDialog",
+          "callee": "useId",
+          "lineNumber": 26
+        },
+        {
+          "caller": "DiscussionDeleteDialog",
+          "callee": "useId",
+          "lineNumber": 27
+        },
+        {
+          "caller": "DiscussionDeleteDialog",
+          "callee": "useRef",
+          "lineNumber": 28
+        },
+        {
+          "caller": "DiscussionDeleteDialog",
+          "callee": "useRef",
+          "lineNumber": 29
+        },
+        {
+          "caller": "DiscussionDeleteDialog",
+          "callee": "useModalShell",
+          "lineNumber": 30
+        },
+        {
+          "caller": "DiscussionDeleteDialog",
+          "callee": "onCancel",
+          "lineNumber": 33
+        },
+        {
+          "caller": "DiscussionDeleteDialog",
+          "callee": "useEffect",
+          "lineNumber": 41
+        },
+        {
+          "caller": "DiscussionDeleteDialog",
+          "callee": "onCancel",
+          "lineNumber": 54
+        },
+        {
+          "caller": "DiscussionDeleteDialog",
+          "callee": "event.stopPropagation",
+          "lineNumber": 57
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionsPanel.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 271,
+      "nonEmptyLines": 261,
+      "functions": [
+        {
+          "name": "EmptyDiscussions",
+          "startLine": 28,
+          "endLine": 57,
+          "params": [
+            "{ onStart }"
+          ]
+        },
+        {
+          "name": "DiscussionListError",
+          "startLine": 59,
+          "endLine": 94,
+          "params": [
+            "{\n  error,\n  onRetry,\n}"
+          ]
+        },
+        {
+          "name": "DiscussionsPanel",
+          "startLine": 96,
+          "endLine": 271,
+          "params": [
+            "{\n  discussions,\n  deletingDiscussionId,\n  error,\n  onDelete,\n  onOpen,\n  onRetry,\n  onStart,\n  openingDiscussionId,\n  openError,\n  status,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DiscussionsPanel",
+          "line": 96,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "DiscussionsPanel",
+          "callee": "discussions.map",
+          "lineNumber": 152
+        },
+        {
+          "caller": "DiscussionsPanel",
+          "callee": "isTemporaryDiscussionTitle",
+          "lineNumber": 154
+        },
+        {
+          "caller": "DiscussionsPanel",
+          "callee": "onOpen",
+          "lineNumber": 173
+        },
+        {
+          "caller": "DiscussionsPanel",
+          "callee": "formatUpdatedAt",
+          "lineNumber": 225
+        },
+        {
+          "caller": "DiscussionsPanel",
+          "callee": "onDelete",
+          "lineNumber": 238
+        }
+      ],
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 1,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/discussions/discussionListModel.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 125,
+      "nonEmptyLines": 105,
+      "functions": [
+        {
+          "name": "isNonEmptyString",
+          "startLine": 7,
+          "endLine": 9,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isTimestamp",
+          "startLine": 11,
+          "endLine": 13,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isDiscussionSummary",
+          "startLine": 15,
+          "endLine": 34,
+          "params": [
+            "value",
+            "projectId"
+          ]
+        },
+        {
+          "name": "newestFirst",
+          "startLine": 36,
+          "endLine": 55,
+          "params": [
+            "first",
+            "second"
+          ]
+        },
+        {
+          "name": "normalizeDiscussionList",
+          "startLine": 62,
+          "endLine": 89,
+          "params": [
+            "value",
+            "projectId"
+          ]
+        },
+        {
+          "name": "discussionSummaryFromDetails",
+          "startLine": 91,
+          "endLine": 103,
+          "params": [
+            "discussion"
+          ]
+        },
+        {
+          "name": "mergeDiscussionLists",
+          "startLine": 105,
+          "endLine": 125,
+          "params": [
+            "projectId",
+            "...lists"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "normalizeDiscussionList",
+          "line": 62,
+          "isDefault": false
+        },
+        {
+          "name": "discussionSummaryFromDetails",
+          "line": 91,
+          "isDefault": false
+        },
+        {
+          "name": "mergeDiscussionLists",
+          "line": 105,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "isNonEmptyString",
+          "callee": "value.trim",
+          "lineNumber": 8
+        },
+        {
+          "caller": "isTimestamp",
+          "callee": "isNonEmptyString",
+          "lineNumber": 12
+        },
+        {
+          "caller": "isTimestamp",
+          "callee": "Number.isNaN",
+          "lineNumber": 12
+        },
+        {
+          "caller": "isTimestamp",
+          "callee": "Date.parse",
+          "lineNumber": 12
+        },
+        {
+          "caller": "isDiscussionSummary",
+          "callee": "isNonEmptyString",
+          "lineNumber": 26
+        },
+        {
+          "caller": "isDiscussionSummary",
+          "callee": "isNonEmptyString",
+          "lineNumber": 28
+        },
+        {
+          "caller": "isDiscussionSummary",
+          "callee": "isTimestamp",
+          "lineNumber": 29
+        },
+        {
+          "caller": "isDiscussionSummary",
+          "callee": "isTimestamp",
+          "lineNumber": 30
+        },
+        {
+          "caller": "isDiscussionSummary",
+          "callee": "isTimestamp",
+          "lineNumber": 31
+        },
+        {
+          "caller": "newestFirst",
+          "callee": "Date.parse",
+          "lineNumber": 41
+        },
+        {
+          "caller": "newestFirst",
+          "callee": "Date.parse",
+          "lineNumber": 41
+        },
+        {
+          "caller": "newestFirst",
+          "callee": "Date.parse",
+          "lineNumber": 48
+        },
+        {
+          "caller": "newestFirst",
+          "callee": "Date.parse",
+          "lineNumber": 48
+        },
+        {
+          "caller": "newestFirst",
+          "callee": "second.id.localeCompare",
+          "lineNumber": 54
+        },
+        {
+          "caller": "normalizeDiscussionList",
+          "callee": "Array.isArray",
+          "lineNumber": 66
+        },
+        {
+          "caller": "normalizeDiscussionList",
+          "callee": "isDiscussionSummary",
+          "lineNumber": 74
+        },
+        {
+          "caller": "normalizeDiscussionList",
+          "callee": "seenIds.has",
+          "lineNumber": 75
+        },
+        {
+          "caller": "normalizeDiscussionList",
+          "callee": "seenIds.add",
+          "lineNumber": 80
+        },
+        {
+          "caller": "normalizeDiscussionList",
+          "callee": "[...value]\n    .sort(newestFirst)\n    .map",
+          "lineNumber": 83
+        },
+        {
+          "caller": "normalizeDiscussionList",
+          "callee": "[...value]\n    .sort",
+          "lineNumber": 83
+        },
+        {
+          "caller": "mergeDiscussionLists",
+          "callee": "byId.get",
+          "lineNumber": 113
+        },
+        {
+          "caller": "mergeDiscussionLists",
+          "callee": "Date.parse",
+          "lineNumber": 117
+        },
+        {
+          "caller": "mergeDiscussionLists",
+          "callee": "Date.parse",
+          "lineNumber": 117
+        },
+        {
+          "caller": "mergeDiscussionLists",
+          "callee": "byId.set",
+          "lineNumber": 119
+        },
+        {
+          "caller": "mergeDiscussionLists",
+          "callee": "normalizeDiscussionList",
+          "lineNumber": 124
+        },
+        {
+          "caller": "mergeDiscussionLists",
+          "callee": "byId.values",
+          "lineNumber": 124
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 3,
+        "functionCount": 7,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/discussions/useProjectDiscussions.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 494,
+      "nonEmptyLines": 450,
+      "functions": [
+        {
+          "name": "isAbort",
+          "startLine": 72,
+          "endLine": 74,
+          "params": [
+            "error"
+          ]
+        },
+        {
+          "name": "message",
+          "startLine": 76,
+          "endLine": 80,
+          "params": [
+            "error",
+            "fallback"
+          ]
+        },
+        {
+          "name": "useProjectDiscussions",
+          "startLine": 82,
+          "endLine": 494,
+          "params": [
+            "{\n  analyticsClient = analytics,\n  enabled,\n  projectId,\n  requests,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "useProjectDiscussions",
+          "line": 82,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "message",
+          "callee": "error.message.trim",
+          "lineNumber": 77
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "useState",
+          "lineNumber": 91
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "useState",
+          "lineNumber": 97
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "useState",
+          "lineNumber": 98
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "useState",
+          "lineNumber": 101
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "useState",
+          "lineNumber": 102
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "useRef",
+          "lineNumber": 107
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "useRef",
+          "lineNumber": 108
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "useRef",
+          "lineNumber": 109
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "useRef",
+          "lineNumber": 110
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "useRef",
+          "lineNumber": 111
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "useRef",
+          "lineNumber": 112
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "useRef",
+          "lineNumber": 113
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "useRef",
+          "lineNumber": 114
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "useRef",
+          "lineNumber": 115
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "useEffect",
+          "lineNumber": 134
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "listRequest(projectId, controller.signal)\n      .then((response) => {\n        if (\n          controller.signal.aborted ||\n          operation !== listOperationRef.current\n        ) {\n          return;\n        }\n\n        const loaded = normalizeDiscussionList(response, projectId);\n        const deletedIds = deletedDiscussionIdsRef.current.get(projectId);\n        const availableLoaded = normalizeDiscussionList(\n          deletedIds\n            ? loaded.filter((discussion) => !deletedIds.has(discussion.id))\n            : loaded,\n          projectId,\n        );\n        const discussions =\n          mutationRevision === mutationRevisionRef.current\n            ? availableLoaded\n            : mergeDiscussionLists(\n                projectId,\n                availableLoaded,\n                (discussionListsRef.current.get(projectId) ?? []).filter(\n                  (discussion) => !deletedIds?.has(discussion.id),\n                ),\n              );\n        discussionListsRef.current.set(projectId, discussions);\n        activeDiscussionIdsRef.current.set(\n          projectId,\n          discussions.find((discussion) => discussion.is_active)?.id ?? null,\n        );\n\n        setStore({\n          discussions,\n          error: null,\n          projectId,\n          status: 'ready',\n        });\n      })\n      .catch",
+          "lineNumber": 144
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "listRequest(projectId, controller.signal)\n      .then",
+          "lineNumber": 144
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "listRequest",
+          "lineNumber": 144
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "normalizeDiscussionList",
+          "lineNumber": 153
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "deletedDiscussionIdsRef.current.get",
+          "lineNumber": 154
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "normalizeDiscussionList",
+          "lineNumber": 155
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "loaded.filter",
+          "lineNumber": 157
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "deletedIds.has",
+          "lineNumber": 157
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "mergeDiscussionLists",
+          "lineNumber": 164
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "(discussionListsRef.current.get(projectId) ?? []).filter",
+          "lineNumber": 167
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "discussionListsRef.current.get",
+          "lineNumber": 167
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "deletedIds?.has",
+          "lineNumber": 168
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "discussionListsRef.current.set",
+          "lineNumber": 171
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "activeDiscussionIdsRef.current.set",
+          "lineNumber": 172
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "discussions.find",
+          "lineNumber": 174
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "setStore",
+          "lineNumber": 177
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "isAbort",
+          "lineNumber": 188
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "setStore",
+          "lineNumber": 193
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "message",
+          "lineNumber": 196
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "controller.abort",
+          "lineNumber": 202
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "useEffect",
+          "lineNumber": 205
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "openControllerRef.current?.abort",
+          "lineNumber": 209
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "deleteControllerRef.current?.abort",
+          "lineNumber": 212
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "useCallback",
+          "lineNumber": 217
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "setStore",
+          "lineNumber": 218
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "setRefreshKey",
+          "lineNumber": 225
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "useCallback",
+          "lineNumber": 228
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "deletedDiscussionIdsRef.current\n          .get(projectId)\n          ?.has",
+          "lineNumber": 232
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "deletedDiscussionIdsRef.current\n          .get",
+          "lineNumber": 232
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "discussionSummaryFromDetails",
+          "lineNumber": 239
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "activeDiscussionIdsRef.current.get",
+          "lineNumber": 242
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "mergeDiscussionLists",
+          "lineNumber": 243
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "discussionListsRef.current.get",
+          "lineNumber": 245
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "discussionListsRef.current.set",
+          "lineNumber": 248
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "activeDiscussionIdsRef.current.set",
+          "lineNumber": 249
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "discussions.find",
+          "lineNumber": 251
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "activeDiscussionIdsRef.current.get",
+          "lineNumber": 254
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "setStore",
+          "lineNumber": 256
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "trackAnalytics",
+          "lineNumber": 267
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "useCallback",
+          "lineNumber": 278
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "openControllerRef.current?.abort",
+          "lineNumber": 282
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "setOpeningDiscussionId",
+          "lineNumber": 288
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "setOpenError",
+          "lineNumber": 289
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "openRequest",
+          "lineNumber": 292
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "assertDiscussionDetails",
+          "lineNumber": 305
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "trackAnalytics",
+          "lineNumber": 310
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "updateDiscussion",
+          "lineNumber": 315
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "setOpeningDiscussionId",
+          "lineNumber": 316
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "isAbort",
+          "lineNumber": 323
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "setOpeningDiscussionId",
+          "lineNumber": 328
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "setOpenError",
+          "lineNumber": 329
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "message",
+          "lineNumber": 330
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "useCallback",
+          "lineNumber": 338
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "setDeleteState",
+          "lineNumber": 339
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "useCallback",
+          "lineNumber": 346
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "setDeleteState",
+          "lineNumber": 359
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "activeDiscussionIdsRef.current.get",
+          "lineNumber": 365
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "deleteRequest",
+          "lineNumber": 368
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "deletedDiscussionIdsRef.current.get",
+          "lineNumber": 378
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "deletedIds.add",
+          "lineNumber": 379
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "deletedDiscussionIdsRef.current.set",
+          "lineNumber": 380
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "normalizeDiscussionList",
+          "lineNumber": 383
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "(discussionListsRef.current.get(projectId) ?? []).filter",
+          "lineNumber": 384
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "discussionListsRef.current.get",
+          "lineNumber": 384
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "discussions.find",
+          "lineNumber": 390
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "discussionListsRef.current.set",
+          "lineNumber": 391
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "activeDiscussionIdsRef.current.set",
+          "lineNumber": 392
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "setStore",
+          "lineNumber": 397
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "new Date().toISOString",
+          "lineNumber": 404
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "trackAnalytics",
+          "lineNumber": 405
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "trackAnalytics",
+          "lineNumber": 412
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "isAbort",
+          "lineNumber": 425
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "setDeleteState",
+          "lineNumber": 430
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "message",
+          "lineNumber": 432
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "setDeleteState",
+          "lineNumber": 445
+        },
+        {
+          "caller": "useProjectDiscussions",
+          "callee": "useMemo",
+          "lineNumber": 460
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 1,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/documents/index.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 9,
+      "nonEmptyLines": 9,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/knowledge-extraction/KnowledgeExtractionDiscardDialog.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 90,
+      "nonEmptyLines": 87,
+      "functions": [
+        {
+          "name": "KnowledgeExtractionDiscardDialog",
+          "startLine": 11,
+          "endLine": 90,
+          "params": [
+            "{\n  onCancel,\n  onConfirm,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "KnowledgeExtractionDiscardDialog",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "KnowledgeExtractionDiscardDialog",
+          "callee": "useId",
+          "lineNumber": 15
+        },
+        {
+          "caller": "KnowledgeExtractionDiscardDialog",
+          "callee": "useId",
+          "lineNumber": 16
+        },
+        {
+          "caller": "KnowledgeExtractionDiscardDialog",
+          "callee": "useRef",
+          "lineNumber": 17
+        },
+        {
+          "caller": "KnowledgeExtractionDiscardDialog",
+          "callee": "useModalShell",
+          "lineNumber": 18
+        },
+        {
+          "caller": "KnowledgeExtractionDiscardDialog",
+          "callee": "onCancel",
+          "lineNumber": 31
+        },
+        {
+          "caller": "KnowledgeExtractionDiscardDialog",
+          "callee": "event.stopPropagation",
+          "lineNumber": 34
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    }
+  ]
+}

@@ -1,0 +1,190 @@
+{
+  "nodes": [
+    {
+      "id": "document:backend/DOCUMENT_OPERATIONS.md",
+      "type": "document",
+      "name": "DOCUMENT_OPERATIONS.md",
+      "filePath": "backend/DOCUMENT_OPERATIONS.md",
+      "summary": "Production runbook for the MVP Document Library, specifying the trusted single-user deployment boundary, the paired SQLite/private-originals durability unit, format and size limits, ClamAV provisioning, lease recovery, cleanup, retention, and backup/restore procedures. Nine sections close with a release checklist covering data paths, HTTPS ingress, scanner health, single-instance operation, and log-redaction rules.",
+      "tags": ["documentation", "operations", "deployment", "security", "database"],
+      "complexity": "moderate",
+      "languageNotes": "Uses markdown tables to make the backend-authoritative format allowlist and the configurable document limits (each mapped to an environment variable) reviewable at a glance."
+    },
+    {
+      "id": "document:backend/README.md",
+      "type": "document",
+      "name": "README.md",
+      "filePath": "backend/README.md",
+      "summary": "Backend entry documentation, largely the stock NestJS starter README wrapped around a project-specific Configuration section that tabulates every validated environment variable — HTTP, CORS, SQLite path, AI provider/model and token budgets, and the full DOCUMENT_* processing and malware-scanner settings — with defaults and purpose.",
+      "tags": ["documentation", "entry-point", "configuration", "overview"],
+      "complexity": "moderate",
+      "languageNotes": "Boilerplate framework marketing content sits alongside the only genuinely project-owned section, the environment-variable table; the operational detail is delegated to DOCUMENT_OPERATIONS.md rather than duplicated."
+    },
+    {
+      "id": "config:backend/nest-cli.json",
+      "type": "config",
+      "name": "nest-cli.json",
+      "filePath": "backend/nest-cli.json",
+      "summary": "NestJS CLI configuration pointing the schematics collection at @nestjs/schematics, setting the source root to src, and clearing the output directory on each build.",
+      "tags": ["configuration", "build-system", "nestjs", "tooling"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:backend/package.json",
+      "type": "config",
+      "name": "package.json",
+      "filePath": "backend/package.json",
+      "summary": "Backend workspace manifest declaring the NestJS 11 / Express runtime, the OpenAI SDK and pdfjs-dist processing dependencies, and the @nuee/shared-types workspace contract. Scripts chain a shared-package build before every build/start, and the inline Jest config maps @nuee/shared-types straight to shared/src so tests never need a prebuilt dist.",
+      "tags": ["configuration", "build-system", "dependencies", "test", "monorepo"],
+      "complexity": "moderate",
+      "languageNotes": "Every Jest invocation sets NODE_OPTIONS=--experimental-vm-modules, and pre* lifecycle scripts (prebuild, prestart, prestart:dev) rebuild the shared workspace so the backend runtime always resolves shared/dist."
+    },
+    {
+      "id": "config:backend/tsconfig.build.json",
+      "type": "config",
+      "name": "tsconfig.build.json",
+      "filePath": "backend/tsconfig.build.json",
+      "summary": "Production build variant of the backend TypeScript config; extends tsconfig.json and excludes node_modules, the e2e test directory, dist, and all *.spec.ts files from emitted output.",
+      "tags": ["configuration", "build-system", "typescript"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:backend/tsconfig.json",
+      "type": "config",
+      "name": "tsconfig.json",
+      "filePath": "backend/tsconfig.json",
+      "summary": "Base TypeScript compiler configuration for the backend: nodenext modules and resolution, ES2023 target, decorator metadata emission for NestJS dependency injection, incremental builds into dist, and a partial-strictness set (strictNullChecks, noImplicitAny, strictBindCallApply, noFallthroughCasesInSwitch).",
+      "tags": ["configuration", "typescript", "build-system", "nestjs"],
+      "complexity": "simple",
+      "languageNotes": "experimentalDecorators plus emitDecoratorMetadata are what let NestJS resolve constructor-injected providers by type at runtime; module/moduleResolution nodenext is required for the node:sqlite-era Node major this backend pins."
+    }
+  ],
+  "edges": [
+    {
+      "source": "document:backend/DOCUMENT_OPERATIONS.md",
+      "target": "file:backend/src/documents/documents.service.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:backend/DOCUMENT_OPERATIONS.md",
+      "target": "file:backend/src/documents/document-processing.coordinator.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:backend/DOCUMENT_OPERATIONS.md",
+      "target": "file:backend/src/documents/private-document-file.storage.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:backend/DOCUMENT_OPERATIONS.md",
+      "target": "file:backend/src/documents/clamav-document-malware.scanner.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:backend/DOCUMENT_OPERATIONS.md",
+      "target": "file:backend/src/config/configuration.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:backend/DOCUMENT_OPERATIONS.md",
+      "target": "file:backend/src/database/database.provider.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:backend/README.md",
+      "target": "file:backend/src/config/configuration.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:backend/README.md",
+      "target": "file:backend/src/main.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:backend/README.md",
+      "target": "file:backend/src/app.module.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:backend/README.md",
+      "target": "document:backend/DOCUMENT_OPERATIONS.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "config:backend/package.json",
+      "target": "file:backend/src/main.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:backend/package.json",
+      "target": "config:backend/nest-cli.json",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:backend/package.json",
+      "target": "config:shared/package.json",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:backend/nest-cli.json",
+      "target": "file:backend/src/main.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:backend/tsconfig.json",
+      "target": "file:backend/src/main.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:backend/tsconfig.json",
+      "target": "file:backend/src/app.module.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:backend/tsconfig.build.json",
+      "target": "config:backend/tsconfig.json",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:backend/tsconfig.build.json",
+      "target": "file:backend/src/main.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    }
+  ]
+}

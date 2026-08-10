@@ -1,0 +1,77 @@
+{
+  "projectRoot": "/Users/alexandredemoura/Desktop/dev/nuee",
+  "batchFiles": [
+    {
+      "path": "shared/PRD/PRD_0.md",
+      "language": "markdown",
+      "sizeLines": 84,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "shared/PRD/PRD_01.md",
+      "language": "markdown",
+      "sizeLines": 130,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "shared/PRD/PRD_02.md",
+      "language": "markdown",
+      "sizeLines": 189,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "shared/PRD/PRD_03.md",
+      "language": "markdown",
+      "sizeLines": 295,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "shared/PRD/PRD_04.md",
+      "language": "markdown",
+      "sizeLines": 337,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "shared/PRD/PRD_05.md",
+      "language": "markdown",
+      "sizeLines": 726,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "shared/PRD/PRD_06.md",
+      "language": "markdown",
+      "sizeLines": 437,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "shared/PRD/PRD_07.md",
+      "language": "markdown",
+      "sizeLines": 181,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "shared/PRD/PRD_08.md",
+      "language": "markdown",
+      "sizeLines": 272,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "shared/PRD/PRD_09.md",
+      "language": "markdown",
+      "sizeLines": 290,
+      "fileCategory": "docs"
+    }
+  ],
+  "batchImportData": {
+    "shared/PRD/PRD_0.md": [],
+    "shared/PRD/PRD_01.md": [],
+    "shared/PRD/PRD_02.md": [],
+    "shared/PRD/PRD_03.md": [],
+    "shared/PRD/PRD_04.md": [],
+    "shared/PRD/PRD_05.md": [],
+    "shared/PRD/PRD_06.md": [],
+    "shared/PRD/PRD_07.md": [],
+    "shared/PRD/PRD_08.md": [],
+    "shared/PRD/PRD_09.md": []
+  }
+}

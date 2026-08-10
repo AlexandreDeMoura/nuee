@@ -1,0 +1,396 @@
+{
+  "nodes": [
+    {
+      "id": "file:.ua/.understandignore",
+      "type": "file",
+      "name": ".understandignore",
+      "filePath": ".ua/.understandignore",
+      "summary": "Metadata for the Understand-Anything analysis tool (not the Nuée application): a gitignore-syntax exclusion list telling the code scanner to skip node_modules, build output, the backend data directory and env files. A large commented block offers ready-made per-language test-file patterns that stay inactive until uncommented.",
+      "tags": ["configuration", "tooling", "analysis-tool", "ignore-rules"],
+      "complexity": "simple",
+      "languageNotes": "Uses .gitignore semantics — glob patterns, # comments, ! negation to force-include, trailing / for directories — layered on top of the tool's built-in defaults."
+    },
+    {
+      "id": "config:.ua/config.json",
+      "type": "config",
+      "name": "config.json",
+      "filePath": ".ua/config.json",
+      "summary": "Single-line settings file for the Understand-Anything analysis tool (not the Nuée application), pinning the generated knowledge graph's output language to English.",
+      "tags": ["configuration", "tooling", "analysis-tool", "localization"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/eslint.config.mjs",
+      "type": "file",
+      "name": "eslint.config.mjs",
+      "filePath": "backend/eslint.config.mjs",
+      "summary": "ESLint flat config for the NestJS backend workspace, layering the recommended JS rules, type-checked TypeScript rules and Prettier integration over Node and Jest globals. Relaxes a few strict type rules to warnings so the type-checked preset can be adopted incrementally.",
+      "tags": ["configuration", "linting", "build-system", "typescript", "backend"],
+      "complexity": "simple",
+      "languageNotes": "Flat-config format: `tseslint.config()` composes an array of config objects, and `projectService: true` with `tsconfigRootDir` enables type-aware linting without listing tsconfig paths by hand."
+    },
+    {
+      "id": "config:backend/test/jest-e2e.json",
+      "type": "config",
+      "name": "jest-e2e.json",
+      "filePath": "backend/test/jest-e2e.json",
+      "summary": "Jest configuration for the backend end-to-end suite: matches only `*.e2e-spec.ts` files, compiles TypeScript through ts-jest in a Node environment, and maps `@nuee/shared-types` straight to the shared package source so tests never depend on a prebuilt dist.",
+      "tags": ["configuration", "test", "e2e", "build-system", "backend"],
+      "complexity": "simple"
+    },
+    {
+      "id": "document:design/README.md",
+      "type": "document",
+      "name": "README.md",
+      "filePath": "design/README.md",
+      "summary": "Entry document for a Claude Design handoff bundle, describing the exported HTML/CSS/JS prototypes as visual references to be recreated rather than production code to be copied. Names the primary workspace-screen prototype and lists the bundle's contents.",
+      "tags": ["documentation", "design", "entry-point", "handoff"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:design/project/Discussion Context Flow.html",
+      "type": "file",
+      "name": "Discussion Context Flow.html",
+      "filePath": "design/project/Discussion Context Flow.html",
+      "summary": "Self-contained HTML prototype from the Claude Design bundle mocking up the discussion context-selection flow. Everything — fonts, styles, scripts and assets — is inlined into a single bundled page with an embedded resource manifest, so it renders standalone as a visual reference.",
+      "tags": ["design", "prototype", "markup", "documentation"],
+      "complexity": "complex",
+      "languageNotes": "A bundler-exported page: assets are addressed by opaque UUIDs resolved from inline `__bundler/manifest` and `window.__resources` blocks rather than by real file paths, so it is not meant to be edited by hand."
+    },
+    {
+      "id": "file:frontend/eslint.config.js",
+      "type": "file",
+      "name": "eslint.config.js",
+      "filePath": "frontend/eslint.config.js",
+      "summary": "ESLint flat config for the React frontend, applying the recommended JS and TypeScript rule sets plus the react-hooks and react-refresh (Vite) presets to all `.ts`/`.tsx` sources under browser globals, while ignoring the `dist` build output.",
+      "tags": ["configuration", "linting", "build-system", "react", "frontend"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/src/index.css",
+      "type": "file",
+      "name": "index.css",
+      "filePath": "frontend/src/index.css",
+      "summary": "Global stylesheet that imports Tailwind and defines the application's design tokens — accent, ink, text, hairline, surface, danger, success and warning colours — as `@theme` custom properties. Also declares the `scrollbar-subtle` utility and the mention-chip exit keyframes used by the discussion composer.",
+      "tags": ["styling", "design-tokens", "tailwind", "theme", "frontend"],
+      "complexity": "simple",
+      "languageNotes": "Tailwind v4 CSS-first configuration: `@theme` turns the palette into generated utility classes, and `@utility` registers a custom class with nested `&` selectors — no JavaScript tailwind.config file involved."
+    },
+    {
+      "id": "file:frontend/src/utils/date/formatUpdatedAt.ts",
+      "type": "file",
+      "name": "formatUpdatedAt.ts",
+      "filePath": "frontend/src/utils/date/formatUpdatedAt.ts",
+      "summary": "Cross-cutting date helper exposing a single relative-time formatter used to render \"last updated\" labels in list and card UI.",
+      "tags": ["utility", "date", "formatting", "frontend"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/utils/date/formatUpdatedAt.ts:formatUpdatedAt",
+      "type": "function",
+      "name": "formatUpdatedAt",
+      "filePath": "frontend/src/utils/date/formatUpdatedAt.ts",
+      "lineRange": [1, 44],
+      "summary": "Converts an ISO timestamp into a compact relative label (\"Just now\", \"5m ago\", \"3d ago\", \"2y ago\") by walking descending time buckets. Falls back to \"Recently\" for unparseable input and clamps future timestamps to zero elapsed time.",
+      "tags": ["utility", "date", "formatting", "validation"],
+      "complexity": "simple",
+      "languageNotes": "Takes `now` as a defaulted parameter rather than reading the clock internally, which makes the bucket boundaries directly testable."
+    },
+    {
+      "id": "file:frontend/src/utils/routing/navigate.ts",
+      "type": "file",
+      "name": "navigate.ts",
+      "filePath": "frontend/src/utils/routing/navigate.ts",
+      "summary": "Client-side navigation helpers for the first-party router: pushes History API entries and adapts anchor click events into in-app navigation.",
+      "tags": ["utility", "routing", "navigation", "frontend"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/utils/routing/navigate.ts:navigateTo",
+      "type": "function",
+      "name": "navigateTo",
+      "filePath": "frontend/src/utils/routing/navigate.ts",
+      "lineRange": [3, 6],
+      "summary": "Pushes a new History entry for the given href and dispatches a synthetic `popstate` event so route subscribers re-resolve without a full page load.",
+      "tags": ["routing", "navigation", "history-api", "utility"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/utils/routing/navigate.ts:navigate",
+      "type": "function",
+      "name": "navigate",
+      "filePath": "frontend/src/utils/routing/navigate.ts",
+      "lineRange": [8, 22],
+      "summary": "Anchor click handler that intercepts a plain left-click and routes it in-app, while deliberately letting already-prevented, middle/right-click and modifier-key clicks fall through to the browser's native behaviour.",
+      "tags": ["routing", "event-handler", "navigation", "accessibility"],
+      "complexity": "simple",
+      "languageNotes": "Preserving meta/ctrl/shift/alt clicks is what keeps \"open in new tab\" and \"open in new window\" working in a custom router."
+    },
+    {
+      "id": "file:frontend/src/utils/routing/resolveRoute.ts",
+      "type": "file",
+      "name": "resolveRoute.ts",
+      "filePath": "frontend/src/utils/routing/resolveRoute.ts",
+      "summary": "Defines the application's `AppRoute` union and the pure function that maps a URL pathname onto it, forming the parsing half of the small first-party router.",
+      "tags": ["routing", "type-definition", "utility", "frontend"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/utils/routing/resolveRoute.ts:resolveRoute",
+      "type": "function",
+      "name": "resolveRoute",
+      "filePath": "frontend/src/utils/routing/resolveRoute.ts",
+      "lineRange": [6, 25],
+      "summary": "Matches a pathname to the project entry route or a `/projects/:projectId` canvas route, decoding the project ID and degrading to `not-found` on both unmatched paths and malformed percent-encoding.",
+      "tags": ["routing", "parsing", "validation", "utility"],
+      "complexity": "simple",
+      "languageNotes": "Returns a discriminated union keyed on `name`, so consumers get exhaustive narrowing on the route shape instead of juggling optional fields."
+    },
+    {
+      "id": "file:frontend/vite.config.ts",
+      "type": "file",
+      "name": "vite.config.ts",
+      "filePath": "frontend/vite.config.ts",
+      "summary": "Vite build and dev-server configuration for the SPA, enabling the React and Tailwind plugins and aliasing `@nuee/shared-types` to the shared workspace source so dev, tests and builds never read a stale prebuilt `shared/dist`.",
+      "tags": ["configuration", "build-system", "vite", "react", "frontend"],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:shared/package.json",
+      "type": "config",
+      "name": "package.json",
+      "filePath": "shared/package.json",
+      "summary": "Manifest for the private `@nuee/shared-types` workspace package, publishing only the compiled `dist` through a types-first exports map and declaring the package side-effect free. Its single build script compiles the sources with tsc.",
+      "tags": ["configuration", "package-manifest", "build-system", "monorepo"],
+      "complexity": "simple",
+      "languageNotes": "`\"sideEffects\": false` lets bundlers tree-shake the package aggressively — safe here because it contains only types and constants."
+    },
+    {
+      "id": "file:shared/src/index.ts",
+      "type": "file",
+      "name": "index.ts",
+      "filePath": "shared/src/index.ts",
+      "summary": "Public barrel of `@nuee/shared-types`: the serialized request/response contracts that frontend and backend both import, covering projects, bubbles and links, documents and their processing states, discussions with frozen context and citations, and the knowledge-extraction workflow. Also re-exports the shared validation limits.",
+      "tags": ["type-definition", "barrel", "api-contract", "shared", "entry-point"],
+      "complexity": "complex",
+      "languageNotes": "Contracts are modelled with discriminated unions (for example `DocumentSummary` keyed on processing status) and derived helpers like `Omit`/`Pick`, so an unready document simply cannot carry fields that only exist once processing succeeds."
+    },
+    {
+      "id": "file:shared/src/validation-limits.ts",
+      "type": "file",
+      "name": "validation-limits.ts",
+      "filePath": "shared/src/validation-limits.ts",
+      "summary": "Defines the runtime validation bounds both sides of the API must agree on — the maximum project description length and the maximum knowledge-extraction instruction length — in one place so client and server cannot drift apart.",
+      "tags": ["validation", "shared", "constants", "api-contract"],
+      "complexity": "simple",
+      "languageNotes": "The file's own doc comment warns that these constants must never be interpolated into SQLite migrations: a migration runs once and is recorded as done, so an interpolated limit would mean different things in databases created at different times."
+    },
+    {
+      "id": "config:shared/tsconfig.json",
+      "type": "config",
+      "name": "tsconfig.json",
+      "filePath": "shared/tsconfig.json",
+      "summary": "TypeScript compiler configuration for the shared contracts package, emitting strict CommonJS output with declaration files from `src` into `dist` and deliberately setting `types: []` so no ambient Node or DOM typings leak into the dependency-free package.",
+      "tags": ["configuration", "typescript", "build-system", "monorepo"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:frontend/src/utils/date/formatUpdatedAt.ts",
+      "target": "function:frontend/src/utils/date/formatUpdatedAt.ts:formatUpdatedAt",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:frontend/src/utils/date/formatUpdatedAt.ts",
+      "target": "function:frontend/src/utils/date/formatUpdatedAt.ts:formatUpdatedAt",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/utils/routing/navigate.ts",
+      "target": "function:frontend/src/utils/routing/navigate.ts:navigateTo",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:frontend/src/utils/routing/navigate.ts",
+      "target": "function:frontend/src/utils/routing/navigate.ts:navigateTo",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/utils/routing/navigate.ts",
+      "target": "function:frontend/src/utils/routing/navigate.ts:navigate",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:frontend/src/utils/routing/navigate.ts",
+      "target": "function:frontend/src/utils/routing/navigate.ts:navigate",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/utils/routing/resolveRoute.ts",
+      "target": "function:frontend/src/utils/routing/resolveRoute.ts:resolveRoute",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:frontend/src/utils/routing/resolveRoute.ts",
+      "target": "function:frontend/src/utils/routing/resolveRoute.ts:resolveRoute",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:shared/src/index.ts",
+      "target": "file:shared/src/validation-limits.ts",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:frontend/vite.config.ts",
+      "target": "file:frontend/src/main.tsx",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:frontend/vite.config.ts",
+      "target": "file:shared/src/index.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:frontend/eslint.config.js",
+      "target": "file:frontend/src/main.tsx",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:frontend/eslint.config.js",
+      "target": "file:frontend/src/App.tsx",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:backend/eslint.config.mjs",
+      "target": "file:backend/src/main.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:shared/tsconfig.json",
+      "target": "file:shared/src/index.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:shared/tsconfig.json",
+      "target": "file:shared/src/validation-limits.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:shared/package.json",
+      "target": "file:shared/src/index.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:backend/test/jest-e2e.json",
+      "target": "file:shared/src/index.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:backend/test/jest-e2e.json",
+      "target": "file:backend/test/app.e2e-spec.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:backend/test/jest-e2e.json",
+      "target": "file:backend/test/projects.e2e-spec.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:backend/test/jest-e2e.json",
+      "target": "file:backend/test/bubble-canvas.e2e-spec.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:backend/test/jest-e2e.json",
+      "target": "file:backend/test/bubble-links.e2e-spec.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:backend/test/jest-e2e.json",
+      "target": "file:backend/test/discussions.e2e-spec.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:backend/test/jest-e2e.json",
+      "target": "file:backend/test/documents.e2e-spec.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:backend/test/jest-e2e.json",
+      "target": "file:backend/test/knowledge-extraction.e2e-spec.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "document:design/README.md",
+      "target": "file:design/project/Discussion Context Flow.html",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/src/index.css",
+      "target": "file:frontend/src/main.tsx",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "config:.ua/config.json",
+      "target": "file:.ua/.understandignore",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

@@ -1,0 +1,1226 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 24,
+  "filesSkipped": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 24,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 24,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "frontend/src/workspace/panelModel.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 9,
+      "nonEmptyLines": 8,
+      "functions": [
+        {
+          "name": "getDefaultPanelView",
+          "startLine": 7,
+          "endLine": 9,
+          "params": [
+            "discussionCount"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "getDefaultPanelView",
+          "line": 7,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/BubbleCanvasJourney.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 678,
+      "nonEmptyLines": 618,
+      "functions": [
+        {
+          "name": "response",
+          "startLine": 23,
+          "endLine": 29,
+          "params": [
+            "body",
+            "status"
+          ]
+        },
+        {
+          "name": "noContentResponse",
+          "startLine": 31,
+          "endLine": 33,
+          "params": []
+        },
+        {
+          "name": "bubble",
+          "startLine": 35,
+          "endLine": 54,
+          "params": [
+            "overrides"
+          ]
+        },
+        {
+          "name": "bubblePositions",
+          "startLine": 56,
+          "endLine": 66,
+          "params": [
+            "bubbles"
+          ]
+        },
+        {
+          "name": "expectNoOverlaps",
+          "startLine": 68,
+          "endLine": 86,
+          "params": [
+            "bubbles"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "noContentResponse",
+          "callee": "response",
+          "lineNumber": 32
+        },
+        {
+          "caller": "bubblePositions",
+          "callee": "Object.fromEntries",
+          "lineNumber": 57
+        },
+        {
+          "caller": "bubblePositions",
+          "callee": "bubbles.map",
+          "lineNumber": 58
+        },
+        {
+          "caller": "expectNoOverlaps",
+          "callee": "expect(overlaps).toBe",
+          "lineNumber": 83
+        },
+        {
+          "caller": "expectNoOverlaps",
+          "callee": "expect",
+          "lineNumber": 83
+        },
+        {
+          "caller": "MultiSelectionHarness",
+          "callee": "useState",
+          "lineNumber": 594
+        },
+        {
+          "caller": "MultiSelectionHarness",
+          "callee": "setIsSelecting",
+          "lineNumber": 603
+        },
+        {
+          "caller": "MultiSelectionHarness",
+          "callee": "vi.fn",
+          "lineNumber": 604
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 0,
+        "functionCount": 5,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/BubbleCard.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 143,
+      "nonEmptyLines": 116,
+      "functions": [
+        {
+          "name": "bubble",
+          "startLine": 7,
+          "endLine": 26,
+          "params": [
+            "overrides"
+          ]
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/BubbleInspector.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 598,
+      "nonEmptyLines": 520,
+      "functions": [
+        {
+          "name": "deferred",
+          "startLine": 15,
+          "endLine": 24,
+          "params": []
+        },
+        {
+          "name": "bubble",
+          "startLine": 26,
+          "endLine": 46,
+          "params": [
+            "overrides"
+          ]
+        },
+        {
+          "name": "bubbleLink",
+          "startLine": 48,
+          "endLine": 57,
+          "params": [
+            "overrides"
+          ]
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/CanvasSurface.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 1382,
+      "nonEmptyLines": 1220,
+      "functions": [
+        {
+          "name": "deferred",
+          "startLine": 17,
+          "endLine": 26,
+          "params": []
+        },
+        {
+          "name": "bubble",
+          "startLine": 40,
+          "endLine": 59,
+          "params": [
+            "overrides"
+          ]
+        },
+        {
+          "name": "projectWithViewport",
+          "startLine": 61,
+          "endLine": 63,
+          "params": [
+            "input"
+          ]
+        },
+        {
+          "name": "bubbleCollection",
+          "startLine": 65,
+          "endLine": 76,
+          "params": [
+            "bubbles"
+          ]
+        },
+        {
+          "name": "requestViewportUpdate",
+          "startLine": 78,
+          "endLine": 81,
+          "params": [
+            "_projectId",
+            "input"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "bubbleCollection",
+          "callee": "vi.fn",
+          "lineNumber": 67
+        },
+        {
+          "caller": "bubbleCollection",
+          "callee": "vi.fn",
+          "lineNumber": 68
+        },
+        {
+          "caller": "bubbleCollection",
+          "callee": "vi.fn",
+          "lineNumber": 71
+        },
+        {
+          "caller": "bubbleCollection",
+          "callee": "vi.fn",
+          "lineNumber": 72
+        },
+        {
+          "caller": "bubbleCollection",
+          "callee": "vi.fn",
+          "lineNumber": 73
+        },
+        {
+          "caller": "bubbleCollection",
+          "callee": "vi.fn",
+          "lineNumber": 74
+        },
+        {
+          "caller": "requestViewportUpdate",
+          "callee": "projectWithViewport",
+          "lineNumber": 81
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 5,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/CreateBubbleDialog.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 225,
+      "nonEmptyLines": 193,
+      "functions": [
+        {
+          "name": "fillValidForm",
+          "startLine": 33,
+          "endLine": 42,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "fillValidForm",
+          "callee": "fireEvent.change",
+          "lineNumber": 34
+        },
+        {
+          "caller": "fillValidForm",
+          "callee": "screen.getByLabelText",
+          "lineNumber": 34
+        },
+        {
+          "caller": "fillValidForm",
+          "callee": "fireEvent.change",
+          "lineNumber": 37
+        },
+        {
+          "caller": "fillValidForm",
+          "callee": "screen.getByLabelText",
+          "lineNumber": 37
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/CreateProjectDialog.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 357,
+      "nonEmptyLines": 305,
+      "functions": [
+        {
+          "name": "requestDocumentPolicy",
+          "startLine": 34,
+          "endLine": 34,
+          "params": []
+        },
+        {
+          "name": "fillValidForm",
+          "startLine": 38,
+          "endLine": 45,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "fillValidForm",
+          "callee": "fireEvent.change",
+          "lineNumber": 39
+        },
+        {
+          "caller": "fillValidForm",
+          "callee": "screen.getByLabelText",
+          "lineNumber": 39
+        },
+        {
+          "caller": "fillValidForm",
+          "callee": "fireEvent.change",
+          "lineNumber": 42
+        },
+        {
+          "caller": "fillValidForm",
+          "callee": "screen.getByLabelText",
+          "lineNumber": 42
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/DiscussionExperience.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 1982,
+      "nonEmptyLines": 1819,
+      "functions": [
+        {
+          "name": "deferred",
+          "startLine": 34,
+          "endLine": 43,
+          "params": []
+        },
+        {
+          "name": "activateButtonWithKeyboard",
+          "startLine": 45,
+          "endLine": 54,
+          "params": [
+            "button",
+            "key"
+          ]
+        },
+        {
+          "name": "keepTemporaryTitle",
+          "startLine": 56,
+          "endLine": 58,
+          "params": []
+        },
+        {
+          "name": "details",
+          "startLine": 60,
+          "endLine": 106,
+          "params": [
+            "overrides"
+          ]
+        },
+        {
+          "name": "proposalResponse",
+          "startLine": 115,
+          "endLine": 129,
+          "params": []
+        },
+        {
+          "name": "rejectedResponse",
+          "startLine": 131,
+          "endLine": 139,
+          "params": []
+        },
+        {
+          "name": "Harness",
+          "startLine": 141,
+          "endLine": 207,
+          "params": [
+            "{\n  analyticsClient,\n  createExtractionAttemptId,\n  extractionRequests,\n  onDiscussionChanged,\n  onExtractKnowledge,\n  onInspectContext,\n  requests,\n}"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "activateButtonWithKeyboard",
+          "callee": "button.focus",
+          "lineNumber": 49
+        },
+        {
+          "caller": "activateButtonWithKeyboard",
+          "callee": "expect(document.activeElement).toBe",
+          "lineNumber": 50
+        },
+        {
+          "caller": "activateButtonWithKeyboard",
+          "callee": "expect",
+          "lineNumber": 50
+        },
+        {
+          "caller": "activateButtonWithKeyboard",
+          "callee": "fireEvent.keyDown",
+          "lineNumber": 51
+        },
+        {
+          "caller": "activateButtonWithKeyboard",
+          "callee": "fireEvent.click",
+          "lineNumber": 52
+        },
+        {
+          "caller": "activateButtonWithKeyboard",
+          "callee": "fireEvent.keyUp",
+          "lineNumber": 53
+        },
+        {
+          "caller": "Harness",
+          "callee": "useDiscussionVisibility",
+          "lineNumber": 158
+        },
+        {
+          "caller": "Harness",
+          "callee": "useState",
+          "lineNumber": 159
+        },
+        {
+          "caller": "Harness",
+          "callee": "controller.openDiscussion",
+          "lineNumber": 169
+        },
+        {
+          "caller": "Harness",
+          "callee": "rerender",
+          "lineNumber": 173
+        },
+        {
+          "caller": "Harness",
+          "callee": "controller.openDiscussion",
+          "lineNumber": 181
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 0,
+        "functionCount": 7,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/DiscussionsPanelLifecycle.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 510,
+      "nonEmptyLines": 462,
+      "functions": [
+        {
+          "name": "summary",
+          "startLine": 30,
+          "endLine": 45,
+          "params": [
+            "id",
+            "title",
+            "lastActivityAt",
+            "isActive"
+          ]
+        },
+        {
+          "name": "details",
+          "startLine": 47,
+          "endLine": 94,
+          "params": [
+            "discussion",
+            "overrides"
+          ]
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/DocumentsPanel.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 322,
+      "nonEmptyLines": 287,
+      "functions": [
+        {
+          "name": "readyDocument",
+          "startLine": 46,
+          "endLine": 64,
+          "params": [
+            "overrides"
+          ]
+        },
+        {
+          "name": "failedDocument",
+          "startLine": 66,
+          "endLine": 84,
+          "params": [
+            "overrides"
+          ]
+        },
+        {
+          "name": "libraryController",
+          "startLine": 86,
+          "endLine": 108,
+          "params": [
+            "overrides"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "libraryController",
+          "callee": "vi.fn",
+          "lineNumber": 90
+        },
+        {
+          "caller": "libraryController",
+          "callee": "vi.fn",
+          "lineNumber": 91
+        },
+        {
+          "caller": "libraryController",
+          "callee": "vi.fn",
+          "lineNumber": 98
+        },
+        {
+          "caller": "libraryController",
+          "callee": "vi.fn",
+          "lineNumber": 99
+        },
+        {
+          "caller": "libraryController",
+          "callee": "vi.fn",
+          "lineNumber": 100
+        },
+        {
+          "caller": "libraryController",
+          "callee": "vi.fn",
+          "lineNumber": 101
+        },
+        {
+          "caller": "libraryController",
+          "callee": "vi.fn",
+          "lineNumber": 105
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/ProjectCreationJourney.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 345,
+      "nonEmptyLines": 309,
+      "functions": [
+        {
+          "name": "jsonResponse",
+          "startLine": 13,
+          "endLine": 18,
+          "params": [
+            "body"
+          ]
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/ProjectDescriptionEditor.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 364,
+      "nonEmptyLines": 305,
+      "functions": [
+        {
+          "name": "requestEmptyBubbles",
+          "startLine": 21,
+          "endLine": 21,
+          "params": []
+        },
+        {
+          "name": "projectWithDescription",
+          "startLine": 23,
+          "endLine": 29,
+          "params": [
+            "description",
+            "milliseconds"
+          ]
+        },
+        {
+          "name": "deferred",
+          "startLine": 31,
+          "endLine": 40,
+          "params": []
+        },
+        {
+          "name": "CurrentDescriptionProbe",
+          "startLine": 42,
+          "endLine": 46,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "projectWithDescription",
+          "callee": "milliseconds.toString().padStart",
+          "lineNumber": 27
+        },
+        {
+          "caller": "projectWithDescription",
+          "callee": "milliseconds.toString",
+          "lineNumber": 27
+        },
+        {
+          "caller": "CurrentDescriptionProbe",
+          "callee": "useCurrentProjectDescription",
+          "lineNumber": 43
+        }
+      ],
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 0,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/ProjectWorkspaceAnalytics.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 247,
+      "nonEmptyLines": 215,
+      "functions": [
+        {
+          "name": "requestEmptyBubbles",
+          "startLine": 26,
+          "endLine": 26,
+          "params": []
+        },
+        {
+          "name": "createAnalyticsSpy",
+          "startLine": 28,
+          "endLine": 33,
+          "params": []
+        },
+        {
+          "name": "jsonResponse",
+          "startLine": 35,
+          "endLine": 40,
+          "params": [
+            "body"
+          ]
+        },
+        {
+          "name": "fillCreateProjectForm",
+          "startLine": 42,
+          "endLine": 49,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "createAnalyticsSpy",
+          "callee": "vi.fn",
+          "lineNumber": 29
+        },
+        {
+          "caller": "fillCreateProjectForm",
+          "callee": "fireEvent.change",
+          "lineNumber": 43
+        },
+        {
+          "caller": "fillCreateProjectForm",
+          "callee": "screen.getByLabelText",
+          "lineNumber": 43
+        },
+        {
+          "caller": "fillCreateProjectForm",
+          "callee": "fireEvent.change",
+          "lineNumber": 46
+        },
+        {
+          "caller": "fillCreateProjectForm",
+          "callee": "screen.getByLabelText",
+          "lineNumber": 46
+        }
+      ],
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 0,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/ProjectWorkspaceIntegration.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 1735,
+      "nonEmptyLines": 1570,
+      "functions": [
+        {
+          "name": "requestEmptyBubbles",
+          "startLine": 41,
+          "endLine": 41,
+          "params": []
+        },
+        {
+          "name": "deferred",
+          "startLine": 43,
+          "endLine": 52,
+          "params": []
+        },
+        {
+          "name": "activateButtonWithKeyboard",
+          "startLine": 54,
+          "endLine": 63,
+          "params": [
+            "button",
+            "key"
+          ]
+        },
+        {
+          "name": "bubble",
+          "startLine": 65,
+          "endLine": 84,
+          "params": [
+            "overrides"
+          ]
+        },
+        {
+          "name": "documentSummary",
+          "startLine": 100,
+          "endLine": 118,
+          "params": [
+            "overrides"
+          ]
+        },
+        {
+          "name": "discussionDetails",
+          "startLine": 120,
+          "endLine": 156,
+          "params": [
+            "overrides"
+          ]
+        },
+        {
+          "name": "extractionProposalResponse",
+          "startLine": 158,
+          "endLine": 176,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "activateButtonWithKeyboard",
+          "callee": "button.focus",
+          "lineNumber": 58
+        },
+        {
+          "caller": "activateButtonWithKeyboard",
+          "callee": "expect(document.activeElement).toBe",
+          "lineNumber": 59
+        },
+        {
+          "caller": "activateButtonWithKeyboard",
+          "callee": "expect",
+          "lineNumber": 59
+        },
+        {
+          "caller": "activateButtonWithKeyboard",
+          "callee": "fireEvent.keyDown",
+          "lineNumber": 60
+        },
+        {
+          "caller": "activateButtonWithKeyboard",
+          "callee": "fireEvent.click",
+          "lineNumber": 61
+        },
+        {
+          "caller": "activateButtonWithKeyboard",
+          "callee": "fireEvent.keyUp",
+          "lineNumber": 62
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 7,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/bubbleResponse.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 79,
+      "nonEmptyLines": 76,
+      "functions": [
+        {
+          "name": "manualBubble",
+          "startLine": 5,
+          "endLine": 24,
+          "params": [
+            "overrides"
+          ]
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/compactLayout.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 93,
+      "nonEmptyLines": 86,
+      "functions": [
+        {
+          "name": "bubble",
+          "startLine": 10,
+          "endLine": 33,
+          "params": [
+            "id",
+            "position_x",
+            "position_y",
+            "created_at"
+          ]
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/documentAnalytics.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 51,
+      "nonEmptyLines": 47,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/documentContextSelection.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 139,
+      "nonEmptyLines": 125,
+      "functions": [
+        {
+          "name": "documentSource",
+          "startLine": 12,
+          "endLine": 22,
+          "params": [
+            "overrides"
+          ]
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/documentUploadPreflight.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 87,
+      "nonEmptyLines": 79,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/knowledgeExtractionStateMachine.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 378,
+      "nonEmptyLines": 347,
+      "functions": [
+        {
+          "name": "resolution",
+          "startLine": 40,
+          "endLine": 53,
+          "params": [
+            "kind"
+          ]
+        },
+        {
+          "name": "dispatch",
+          "startLine": 55,
+          "endLine": 60,
+          "params": [
+            "state",
+            "...events"
+          ]
+        },
+        {
+          "name": "reviewingState",
+          "startLine": 62,
+          "endLine": 76,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "dispatch",
+          "callee": "events.reduce",
+          "lineNumber": 59
+        },
+        {
+          "caller": "reviewingState",
+          "callee": "dispatch",
+          "lineNumber": 63
+        },
+        {
+          "caller": "reviewingState",
+          "callee": "createKnowledgeExtractionState",
+          "lineNumber": 64
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/useDocumentLibrary.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 417,
+      "nonEmptyLines": 378,
+      "functions": [
+        {
+          "name": "deferred",
+          "startLine": 13,
+          "endLine": 20,
+          "params": []
+        },
+        {
+          "name": "documentSummary",
+          "startLine": 36,
+          "endLine": 54,
+          "params": [
+            "overrides"
+          ]
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/useFieldValidity.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 94,
+      "nonEmptyLines": 72,
+      "functions": [
+        {
+          "name": "TestForm",
+          "startLine": 8,
+          "endLine": 33,
+          "params": [
+            "{ isSuppressed }"
+          ]
+        },
+        {
+          "name": "isInvalid",
+          "startLine": 35,
+          "endLine": 35,
+          "params": []
+        },
+        {
+          "name": "showError",
+          "startLine": 36,
+          "endLine": 36,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "TestForm",
+          "callee": "useState",
+          "lineNumber": 9
+        },
+        {
+          "caller": "TestForm",
+          "callee": "useFieldValidity",
+          "lineNumber": 10
+        },
+        {
+          "caller": "TestForm",
+          "callee": "title.trim",
+          "lineNumber": 11
+        },
+        {
+          "caller": "TestForm",
+          "callee": "event.preventDefault",
+          "lineNumber": 18
+        },
+        {
+          "caller": "TestForm",
+          "callee": "fields.revealAll",
+          "lineNumber": 19
+        },
+        {
+          "caller": "TestForm",
+          "callee": "fields.markTouched",
+          "lineNumber": 25
+        },
+        {
+          "caller": "TestForm",
+          "callee": "setTitle",
+          "lineNumber": 26
+        },
+        {
+          "caller": "TestForm",
+          "callee": "String",
+          "lineNumber": 28
+        },
+        {
+          "caller": "TestForm",
+          "callee": "String",
+          "lineNumber": 29
+        },
+        {
+          "caller": "isInvalid",
+          "callee": "screen.getByTestId",
+          "lineNumber": 35
+        },
+        {
+          "caller": "showError",
+          "callee": "screen.getByTestId",
+          "lineNumber": 36
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/useKnowledgeExtraction.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 729,
+      "nonEmptyLines": 679,
+      "functions": [
+        {
+          "name": "deferred",
+          "startLine": 25,
+          "endLine": 34,
+          "params": []
+        },
+        {
+          "name": "proposalResponse",
+          "startLine": 36,
+          "endLine": 57,
+          "params": [
+            "overrides"
+          ]
+        },
+        {
+          "name": "bubble",
+          "startLine": 59,
+          "endLine": 80,
+          "params": [
+            "overrides"
+          ]
+        },
+        {
+          "name": "newBubbleResolution",
+          "startLine": 82,
+          "endLine": 101,
+          "params": []
+        },
+        {
+          "name": "analyticsDiscussion",
+          "startLine": 103,
+          "endLine": 155,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "newBubbleResolution",
+          "callee": "bubble",
+          "lineNumber": 88
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 5,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/useProjectBubbles.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 172,
+      "nonEmptyLines": 151,
+      "functions": [
+        {
+          "name": "deferred",
+          "startLine": 11,
+          "endLine": 18,
+          "params": []
+        },
+        {
+          "name": "bubble",
+          "startLine": 20,
+          "endLine": 39,
+          "params": [
+            "overrides"
+          ]
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    }
+  ]
+}

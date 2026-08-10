@@ -1,0 +1,1056 @@
+{
+  "nodes": [
+    {
+      "id": "file:backend/src/documents/documents.controller.ts",
+      "type": "file",
+      "name": "documents.controller.ts",
+      "filePath": "backend/src/documents/documents.controller.ts",
+      "summary": "HTTP boundary for the document library: exposes the global upload-policy endpoint plus project-nested upload, list, inspect, and processing-retry routes, delegating all workflow to `DocumentsService`.",
+      "tags": [
+        "api-handler",
+        "http-boundary",
+        "controller",
+        "rest",
+        "backend"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/src/documents/documents.module.ts",
+      "type": "file",
+      "name": "documents.module.ts",
+      "filePath": "backend/src/documents/documents.module.ts",
+      "summary": "NestJS module wiring for the documents feature: registers controllers and providers, binds the repository, storage, inspector, and processing-queue ports, selects the ClamAV or deterministic scanner by environment, and exports the discussion-context source reader.",
+      "tags": [
+        "module",
+        "dependency-injection",
+        "configuration",
+        "backend",
+        "wiring"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "A `useFactory` provider swaps the malware scanner implementation on `appConfig.environment`, keeping the production dependency out of test runs."
+    },
+    {
+      "id": "file:backend/src/documents/documents.service.spec.ts",
+      "type": "file",
+      "name": "documents.service.spec.ts",
+      "filePath": "backend/src/documents/documents.service.spec.ts",
+      "summary": "Unit tests for the document upload and read workflow, covering quota enforcement, idempotent replay, per-project upload serialization, compensating file deletion on failure, retry queuing, and context-source reads.",
+      "tags": [
+        "test",
+        "service",
+        "document-processing",
+        "idempotency",
+        "backend"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:backend/src/documents/documents.service.ts",
+      "type": "file",
+      "name": "documents.service.ts",
+      "filePath": "backend/src/documents/documents.service.ts",
+      "summary": "Owns the document workflow: validates and stores uploads under an idempotency key with per-project quota and serialization, compensates orphaned files on failure, schedules processing, serves list/detail reads, and implements the project-scoped context-source reader for discussion context.",
+      "tags": [
+        "service",
+        "workflow",
+        "idempotency",
+        "document-processing",
+        "backend"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Implements `DocumentContextSourceReader` so discussion-context consumes ready documents through a narrow capability instead of the full service surface."
+    },
+    {
+      "id": "file:backend/src/documents/pdfjs-adapters.spec.ts",
+      "type": "file",
+      "name": "pdfjs-adapters.spec.ts",
+      "filePath": "backend/src/documents/pdfjs-adapters.spec.ts",
+      "summary": "Integration-style tests running the real pdfjs adapters — upload inspector and text extractor — against synthesized PDF byte fixtures.",
+      "tags": [
+        "test",
+        "document-processing",
+        "pdf",
+        "integration"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/src/documents/pdfjs-document-text.extractor.spec.ts",
+      "type": "file",
+      "name": "pdfjs-document-text.extractor.spec.ts",
+      "filePath": "backend/src/documents/pdfjs-document-text.extractor.spec.ts",
+      "summary": "Unit tests for the PDF text extractor using fake pdfjs loading tasks, documents, and pages to cover page limits, cleanup, abort handling, and parser-error classification.",
+      "tags": [
+        "test",
+        "document-processing",
+        "pdf",
+        "error-handling"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/src/documents/pdfjs-document-text.extractor.ts",
+      "type": "file",
+      "name": "pdfjs-document-text.extractor.ts",
+      "filePath": "backend/src/documents/pdfjs-document-text.extractor.ts",
+      "summary": "Text extractor for PDF uploads: lazily imports pdfjs behind the extractor port, enforces the configured page cap, serializes page text items, and maps parser failures onto typed retryable or terminal extraction errors.",
+      "tags": [
+        "document-processing",
+        "pdf",
+        "adapter",
+        "text-processing",
+        "backend"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Loads `pdfjs-dist` through a dynamic ESM import so the optional heavy dependency is never required by TXT/Markdown code paths."
+    },
+    {
+      "id": "file:backend/src/documents/pdfjs-upload.inspector.ts",
+      "type": "file",
+      "name": "pdfjs-upload.inspector.ts",
+      "filePath": "backend/src/documents/pdfjs-upload.inspector.ts",
+      "summary": "Upload-time PDF inspection port implementation: opens the uploaded bytes with pdfjs in a hardened configuration to confirm the file parses and report its page count before acceptance.",
+      "tags": [
+        "validation",
+        "pdf",
+        "adapter",
+        "upload",
+        "security"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/src/documents/private-document-file.storage.spec.ts",
+      "type": "file",
+      "name": "private-document-file.storage.spec.ts",
+      "filePath": "backend/src/documents/private-document-file.storage.spec.ts",
+      "summary": "Unit tests for private original-file storage, covering opaque key generation, round-trip read, removal, and rejection of malformed file references.",
+      "tags": [
+        "test",
+        "storage",
+        "security",
+        "document-processing"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/src/documents/private-document-file.storage.ts",
+      "type": "file",
+      "name": "private-document-file.storage.ts",
+      "filePath": "backend/src/documents/private-document-file.storage.ts",
+      "summary": "Stores uploaded originals privately under server-generated opaque UUID keys, writing through a staging directory into bucketed originals with restricted permissions and validating every file reference before read or delete.",
+      "tags": [
+        "storage",
+        "security",
+        "filesystem",
+        "document-processing",
+        "backend"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "A strict regex on `originals/<bucket>/<uuid>` means a submitted filename can never become a path; staging plus hard link makes the durable write atomic."
+    },
+    {
+      "id": "file:backend/src/documents/sqlite-document.repository.ts",
+      "type": "file",
+      "name": "sqlite-document.repository.ts",
+      "filePath": "backend/src/documents/sqlite-document.repository.ts",
+      "summary": "Direct `node:sqlite` repository behind the document repository port: explicit parameterized SQL for creation, project-scoped reads, quota usage, and the full processing lease lifecycle (claim, renew, release, complete, fail, retry) with runtime validation of every persisted row.",
+      "tags": [
+        "persistence",
+        "repository",
+        "sqlite",
+        "document-processing",
+        "backend"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Every column read is re-validated (`isIsoTimestamp`, `isHash`, `isBoundedString`) so corrupt persisted values become controlled repository failures rather than silently typed data."
+    },
+    {
+      "id": "file:backend/src/documents/utf8-document-text.extractors.ts",
+      "type": "file",
+      "name": "utf8-document-text.extractors.ts",
+      "filePath": "backend/src/documents/utf8-document-text.extractors.ts",
+      "summary": "UTF-8 text extractors for plain-text and Markdown uploads: a shared abstract base strictly decodes bytes, honours the abort signal, and delegates to the shared normalizer.",
+      "tags": [
+        "document-processing",
+        "text-processing",
+        "adapter",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/test/documents.e2e-spec.ts",
+      "type": "file",
+      "name": "documents.e2e-spec.ts",
+      "filePath": "backend/test/documents.e2e-spec.ts",
+      "summary": "End-to-end HTTP journeys for the document library: upload policy, multipart validation failures, idempotent replay, quota rejection, processing to ready, failure and retry, and inspection reads against a real Nest application.",
+      "tags": [
+        "test",
+        "e2e",
+        "http-boundary",
+        "document-processing",
+        "backend"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:backend/test/fixtures/document-files.ts",
+      "type": "file",
+      "name": "document-files.ts",
+      "filePath": "backend/test/fixtures/document-files.ts",
+      "summary": "Shared byte fixtures for document tests: plain-text and Markdown buffers, an EICAR unsafe-file sample, and minimal hand-built PDFs with and without extractable text.",
+      "tags": [
+        "test",
+        "fixture",
+        "document-processing",
+        "pdf"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/src/documents/documents.controller.ts:DocumentUploadPolicyController",
+      "type": "class",
+      "name": "DocumentUploadPolicyController",
+      "filePath": "backend/src/documents/documents.controller.ts",
+      "lineRange": [
+        29,
+        36
+      ],
+      "summary": "Exposes the global `GET /document-upload-policy` endpoint so the client can preflight uploads against the server-owned limits.",
+      "tags": [
+        "api-handler",
+        "controller",
+        "rest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/src/documents/documents.controller.ts:DocumentsController",
+      "type": "class",
+      "name": "DocumentsController",
+      "filePath": "backend/src/documents/documents.controller.ts",
+      "lineRange": [
+        39,
+        80
+      ],
+      "summary": "Project-nested REST controller for document upload, listing, inspection, and processing retry; defines HTTP concerns only and delegates workflow to the service.",
+      "tags": [
+        "api-handler",
+        "controller",
+        "rest",
+        "http-boundary"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/src/documents/documents.service.ts:DocumentsService",
+      "type": "class",
+      "name": "DocumentsService",
+      "filePath": "backend/src/documents/documents.service.ts",
+      "lineRange": [
+        57,
+        549
+      ],
+      "summary": "Owns the document workflow: project scoping, upload validation, quota and idempotency enforcement, private file storage with compensation, processing scheduling and retry, read models, and the discussion-context source read.",
+      "tags": [
+        "service",
+        "workflow",
+        "idempotency",
+        "document-processing"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:backend/src/documents/pdfjs-document-text.extractor.ts:PdfJsDocumentTextExtractor",
+      "type": "class",
+      "name": "PdfJsDocumentTextExtractor",
+      "filePath": "backend/src/documents/pdfjs-document-text.extractor.ts",
+      "lineRange": [
+        56,
+        239
+      ],
+      "summary": "Extractor port implementation for PDFs: lazily loads pdfjs, enforces the page cap, concatenates text items per page with cleanup, and classifies parser errors as retryable or terminal.",
+      "tags": [
+        "document-processing",
+        "pdf",
+        "adapter",
+        "error-handling"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:backend/src/documents/pdfjs-upload.inspector.ts:PdfJsUploadInspector",
+      "type": "class",
+      "name": "PdfJsUploadInspector",
+      "filePath": "backend/src/documents/pdfjs-upload.inspector.ts",
+      "lineRange": [
+        32,
+        94
+      ],
+      "summary": "Inspector port implementation that parses uploaded PDF bytes with fonts, streaming, and eval disabled to confirm structural validity and report the page count.",
+      "tags": [
+        "validation",
+        "pdf",
+        "adapter",
+        "security"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/src/documents/private-document-file.storage.ts:PrivateDocumentFileStorage",
+      "type": "class",
+      "name": "PrivateDocumentFileStorage",
+      "filePath": "backend/src/documents/private-document-file.storage.ts",
+      "lineRange": [
+        17,
+        134
+      ],
+      "summary": "File storage port implementation writing originals to a private bucketed directory under opaque UUID keys via a staging path, and refusing any file reference that does not match the expected pattern.",
+      "tags": [
+        "storage",
+        "security",
+        "filesystem"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/src/documents/sqlite-document.repository.ts:SqliteDocumentRepository",
+      "type": "class",
+      "name": "SqliteDocumentRepository",
+      "filePath": "backend/src/documents/sqlite-document.repository.ts",
+      "lineRange": [
+        48,
+        748
+      ],
+      "summary": "Document repository port backed by direct `node:sqlite`: parameterized SQL for creation, project-scoped queries, idempotency lookups, quota usage, and lease claim/renew/release/complete/fail/retry, with row-level runtime validation.",
+      "tags": [
+        "persistence",
+        "repository",
+        "sqlite",
+        "document-processing"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:backend/src/documents/utf8-document-text.extractors.ts:Utf8DocumentTextExtractor",
+      "type": "class",
+      "name": "Utf8DocumentTextExtractor",
+      "filePath": "backend/src/documents/utf8-document-text.extractors.ts",
+      "lineRange": [
+        9,
+        43
+      ],
+      "summary": "Abstract base extractor that strictly decodes UTF-8 bytes, honours the abort signal, and delegates the result to the shared text normalizer.",
+      "tags": [
+        "document-processing",
+        "text-processing",
+        "abstract-base"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/src/documents/utf8-document-text.extractors.ts:PlainTextDocumentTextExtractor",
+      "type": "class",
+      "name": "PlainTextDocumentTextExtractor",
+      "filePath": "backend/src/documents/utf8-document-text.extractors.ts",
+      "lineRange": [
+        46,
+        50
+      ],
+      "summary": "Injectable extractor binding for `.txt` uploads over the shared UTF-8 base.",
+      "tags": [
+        "document-processing",
+        "text-processing",
+        "adapter"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/src/documents/utf8-document-text.extractors.ts:MarkdownDocumentTextExtractor",
+      "type": "class",
+      "name": "MarkdownDocumentTextExtractor",
+      "filePath": "backend/src/documents/utf8-document-text.extractors.ts",
+      "lineRange": [
+        53,
+        57
+      ],
+      "summary": "Injectable extractor binding for `.md` uploads over the shared UTF-8 base; Markdown is stored as its raw source text.",
+      "tags": [
+        "document-processing",
+        "text-processing",
+        "adapter"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:backend/src/documents/documents.controller.ts",
+      "target": "class:backend/src/documents/documents.controller.ts:DocumentUploadPolicyController",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/documents/documents.controller.ts",
+      "target": "class:backend/src/documents/documents.controller.ts:DocumentUploadPolicyController",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/documents/documents.controller.ts",
+      "target": "class:backend/src/documents/documents.controller.ts:DocumentsController",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/documents/documents.controller.ts",
+      "target": "class:backend/src/documents/documents.controller.ts:DocumentsController",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/documents/documents.service.ts",
+      "target": "class:backend/src/documents/documents.service.ts:DocumentsService",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/documents/documents.service.ts",
+      "target": "class:backend/src/documents/documents.service.ts:DocumentsService",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/documents/pdfjs-document-text.extractor.ts",
+      "target": "class:backend/src/documents/pdfjs-document-text.extractor.ts:PdfJsDocumentTextExtractor",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/documents/pdfjs-document-text.extractor.ts",
+      "target": "class:backend/src/documents/pdfjs-document-text.extractor.ts:PdfJsDocumentTextExtractor",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/documents/pdfjs-upload.inspector.ts",
+      "target": "class:backend/src/documents/pdfjs-upload.inspector.ts:PdfJsUploadInspector",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/documents/pdfjs-upload.inspector.ts",
+      "target": "class:backend/src/documents/pdfjs-upload.inspector.ts:PdfJsUploadInspector",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/documents/private-document-file.storage.ts",
+      "target": "class:backend/src/documents/private-document-file.storage.ts:PrivateDocumentFileStorage",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/documents/private-document-file.storage.ts",
+      "target": "class:backend/src/documents/private-document-file.storage.ts:PrivateDocumentFileStorage",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/documents/sqlite-document.repository.ts",
+      "target": "class:backend/src/documents/sqlite-document.repository.ts:SqliteDocumentRepository",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/documents/sqlite-document.repository.ts",
+      "target": "class:backend/src/documents/sqlite-document.repository.ts:SqliteDocumentRepository",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/documents/utf8-document-text.extractors.ts",
+      "target": "class:backend/src/documents/utf8-document-text.extractors.ts:Utf8DocumentTextExtractor",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/documents/utf8-document-text.extractors.ts",
+      "target": "class:backend/src/documents/utf8-document-text.extractors.ts:PlainTextDocumentTextExtractor",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/documents/utf8-document-text.extractors.ts",
+      "target": "class:backend/src/documents/utf8-document-text.extractors.ts:PlainTextDocumentTextExtractor",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/documents/utf8-document-text.extractors.ts",
+      "target": "class:backend/src/documents/utf8-document-text.extractors.ts:MarkdownDocumentTextExtractor",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/documents/utf8-document-text.extractors.ts",
+      "target": "class:backend/src/documents/utf8-document-text.extractors.ts:MarkdownDocumentTextExtractor",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/documents/documents.controller.ts",
+      "target": "file:backend/src/documents/document-upload.interceptor.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.controller.ts",
+      "target": "file:backend/src/documents/documents.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.module.ts",
+      "target": "file:backend/src/config/configuration.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.module.ts",
+      "target": "file:backend/src/discussion-context/discussion-context.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.module.ts",
+      "target": "file:backend/src/documents/clamav-document-malware.scanner.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.module.ts",
+      "target": "file:backend/src/documents/deterministic-document-malware.scanner.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.module.ts",
+      "target": "file:backend/src/documents/document-processing.coordinator.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.module.ts",
+      "target": "file:backend/src/documents/document-text.normalizer.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.module.ts",
+      "target": "file:backend/src/documents/document-upload.interceptor.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.module.ts",
+      "target": "file:backend/src/documents/document-upload.validator.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.module.ts",
+      "target": "file:backend/src/documents/document.telemetry.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.module.ts",
+      "target": "file:backend/src/documents/document.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.module.ts",
+      "target": "file:backend/src/documents/documents.controller.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.module.ts",
+      "target": "file:backend/src/documents/documents.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.module.ts",
+      "target": "file:backend/src/documents/pdfjs-document-text.extractor.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.module.ts",
+      "target": "file:backend/src/documents/pdfjs-upload.inspector.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.module.ts",
+      "target": "file:backend/src/documents/private-document-file.storage.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.module.ts",
+      "target": "file:backend/src/documents/sqlite-document.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.module.ts",
+      "target": "file:backend/src/documents/utf8-document-text.extractors.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.module.ts",
+      "target": "file:backend/src/projects/projects.module.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.service.spec.ts",
+      "target": "file:backend/src/config/configuration.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.service.spec.ts",
+      "target": "file:backend/src/database/database.provider.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.service.spec.ts",
+      "target": "file:backend/src/documents/document-upload.validator.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.service.spec.ts",
+      "target": "file:backend/src/documents/document.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.service.spec.ts",
+      "target": "file:backend/src/documents/documents.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.service.spec.ts",
+      "target": "file:backend/src/documents/sqlite-document.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.service.spec.ts",
+      "target": "file:backend/src/projects/projects.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.service.spec.ts",
+      "target": "file:backend/src/projects/sqlite-project.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.service.ts",
+      "target": "file:backend/src/config/configuration.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.service.ts",
+      "target": "file:backend/src/discussion-context/discussion-context.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.service.ts",
+      "target": "file:backend/src/documents/document-upload.validator.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.service.ts",
+      "target": "file:backend/src/documents/document.telemetry.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.service.ts",
+      "target": "file:backend/src/documents/document.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/documents.service.ts",
+      "target": "file:backend/src/projects/projects.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/pdfjs-adapters.spec.ts",
+      "target": "file:backend/src/documents/document-text.normalizer.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/pdfjs-adapters.spec.ts",
+      "target": "file:backend/src/documents/pdfjs-document-text.extractor.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/pdfjs-adapters.spec.ts",
+      "target": "file:backend/src/documents/pdfjs-upload.inspector.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/pdfjs-document-text.extractor.spec.ts",
+      "target": "file:backend/src/documents/document-text.normalizer.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/pdfjs-document-text.extractor.spec.ts",
+      "target": "file:backend/src/documents/pdfjs-document-text.extractor.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/pdfjs-document-text.extractor.ts",
+      "target": "file:backend/src/documents/document-text.normalizer.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/pdfjs-document-text.extractor.ts",
+      "target": "file:backend/src/documents/document.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/pdfjs-upload.inspector.ts",
+      "target": "file:backend/src/documents/document.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/private-document-file.storage.spec.ts",
+      "target": "file:backend/src/documents/document.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/private-document-file.storage.spec.ts",
+      "target": "file:backend/src/documents/private-document-file.storage.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/private-document-file.storage.ts",
+      "target": "file:backend/src/config/configuration.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/private-document-file.storage.ts",
+      "target": "file:backend/src/documents/document.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/sqlite-document.repository.ts",
+      "target": "file:backend/src/database/database.provider.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/sqlite-document.repository.ts",
+      "target": "file:backend/src/documents/document.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/utf8-document-text.extractors.ts",
+      "target": "file:backend/src/documents/document-text.normalizer.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/utf8-document-text.extractors.ts",
+      "target": "file:backend/src/documents/document.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/test/documents.e2e-spec.ts",
+      "target": "file:backend/src/app.module.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/test/documents.e2e-spec.ts",
+      "target": "file:backend/src/database/database.provider.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/test/documents.e2e-spec.ts",
+      "target": "file:backend/src/documents/document-processing.coordinator.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/test/documents.e2e-spec.ts",
+      "target": "file:backend/src/documents/document.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/test/documents.e2e-spec.ts",
+      "target": "file:backend/test/fixtures/document-files.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "class:backend/src/documents/utf8-document-text.extractors.ts:PlainTextDocumentTextExtractor",
+      "target": "class:backend/src/documents/utf8-document-text.extractors.ts:Utf8DocumentTextExtractor",
+      "type": "inherits",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "class:backend/src/documents/utf8-document-text.extractors.ts:MarkdownDocumentTextExtractor",
+      "target": "class:backend/src/documents/utf8-document-text.extractors.ts:Utf8DocumentTextExtractor",
+      "type": "inherits",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "class:backend/src/documents/documents.controller.ts:DocumentsController",
+      "target": "class:backend/src/documents/documents.service.ts:DocumentsService",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:backend/src/documents/documents.controller.ts:DocumentUploadPolicyController",
+      "target": "class:backend/src/documents/documents.service.ts:DocumentsService",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:backend/src/documents/documents.service.ts:DocumentsService",
+      "target": "class:backend/src/documents/document-upload.validator.ts:DocumentUploadValidator",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:backend/src/documents/documents.service.ts:DocumentsService",
+      "target": "function:backend/src/documents/document.types.ts:toDocumentSummary",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:backend/src/documents/documents.service.ts:DocumentsService",
+      "target": "function:backend/src/documents/document.types.ts:toDocumentDetail",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:backend/src/documents/documents.service.ts:DocumentsService",
+      "target": "class:backend/src/documents/document.telemetry.ts:DocumentTelemetry",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:backend/src/documents/documents.service.ts:DocumentsService",
+      "target": "class:backend/src/projects/projects.service.ts:ProjectsService",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:backend/src/documents/pdfjs-document-text.extractor.ts:PdfJsDocumentTextExtractor",
+      "target": "class:backend/src/documents/document-text.normalizer.ts:DocumentTextNormalizer",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:backend/src/documents/utf8-document-text.extractors.ts:Utf8DocumentTextExtractor",
+      "target": "class:backend/src/documents/document-text.normalizer.ts:DocumentTextNormalizer",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:backend/src/documents/sqlite-document.repository.ts:SqliteDocumentRepository",
+      "target": "class:backend/src/database/database.provider.ts:DatabaseProvider",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/documents/documents.service.ts",
+      "target": "file:backend/src/documents/documents.service.spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/src/documents/pdfjs-document-text.extractor.ts",
+      "target": "file:backend/src/documents/pdfjs-document-text.extractor.spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/src/documents/pdfjs-document-text.extractor.ts",
+      "target": "file:backend/src/documents/pdfjs-adapters.spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/src/documents/pdfjs-upload.inspector.ts",
+      "target": "file:backend/src/documents/pdfjs-adapters.spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/src/documents/private-document-file.storage.ts",
+      "target": "file:backend/src/documents/private-document-file.storage.spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/src/documents/documents.service.ts",
+      "target": "file:backend/test/documents.e2e-spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/src/documents/documents.controller.ts",
+      "target": "file:backend/test/documents.e2e-spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/src/documents/sqlite-document.repository.ts",
+      "target": "file:backend/src/documents/document-processing.coordinator.spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/src/documents/pdfjs-adapters.spec.ts",
+      "target": "file:backend/test/fixtures/document-files.ts",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    }
+  ]
+}

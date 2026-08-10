@@ -1,0 +1,3040 @@
+{
+  "name": "nuee",
+  "description": "Nuee is an npm-workspaces TypeScript monorepo pairing a React 19 + Vite SPA frontend with a synchronous NestJS modular monolith backend on SQLite, sharing serialized API contracts and validation limits through a dependency-free @nuee/shared-types package. It centers on a spatial canvas of knowledge bubbles with AI-assisted discussions, document processing, and knowledge extraction. Note: this project has over 100 source files; consider scoping analysis to a subdirectory for faster results.",
+  "languages": [
+    "css",
+    "html",
+    "javascript",
+    "json",
+    "markdown",
+    "typescript"
+  ],
+  "frameworks": [
+    "React",
+    "Vite",
+    "Vitest",
+    "Tailwind CSS",
+    "NestJS",
+    "Express",
+    "Jest"
+  ],
+  "files": [
+    {
+      "path": ".ua/.understandignore",
+      "language": "unknown",
+      "sizeLines": 76,
+      "fileCategory": "code"
+    },
+    {
+      "path": ".ua/config.json",
+      "language": "json",
+      "sizeLines": 1,
+      "fileCategory": "config"
+    },
+    {
+      "path": "AGENTS.md",
+      "language": "markdown",
+      "sizeLines": 205,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "CLAUDE.md",
+      "language": "markdown",
+      "sizeLines": 205,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "backend/DOCUMENT_OPERATIONS.md",
+      "language": "markdown",
+      "sizeLines": 154,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "backend/README.md",
+      "language": "markdown",
+      "sizeLines": 142,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "backend/eslint.config.mjs",
+      "language": "javascript",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/nest-cli.json",
+      "language": "json",
+      "sizeLines": 8,
+      "fileCategory": "config"
+    },
+    {
+      "path": "backend/package.json",
+      "language": "json",
+      "sizeLines": 84,
+      "fileCategory": "config"
+    },
+    {
+      "path": "backend/src/ai/ai-capabilities.controller.ts",
+      "language": "typescript",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/ai-capabilities.spec.ts",
+      "language": "typescript",
+      "sizeLines": 12,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/ai-capabilities.ts",
+      "language": "typescript",
+      "sizeLines": 12,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/ai.module.ts",
+      "language": "typescript",
+      "sizeLines": 66,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/answer-instructions.ts",
+      "language": "typescript",
+      "sizeLines": 12,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/fake-model.client.spec.ts",
+      "language": "typescript",
+      "sizeLines": 154,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/fake-model.client.ts",
+      "language": "typescript",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/frozen-context.formatter.spec.ts",
+      "language": "typescript",
+      "sizeLines": 72,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/frozen-context.formatter.ts",
+      "language": "typescript",
+      "sizeLines": 110,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/input-token-estimator.spec.ts",
+      "language": "typescript",
+      "sizeLines": 12,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/input-token-estimator.ts",
+      "language": "typescript",
+      "sizeLines": 18,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/model-client.ts",
+      "language": "typescript",
+      "sizeLines": 68,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/model-input-budget.spec.ts",
+      "language": "typescript",
+      "sizeLines": 136,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/model-input-budget.ts",
+      "language": "typescript",
+      "sizeLines": 102,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/openai-model.client.spec.ts",
+      "language": "typescript",
+      "sizeLines": 383,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/openai-model.client.ts",
+      "language": "typescript",
+      "sizeLines": 311,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/app.controller.spec.ts",
+      "language": "typescript",
+      "sizeLines": 23,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/app.controller.ts",
+      "language": "typescript",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/app.module.ts",
+      "language": "typescript",
+      "sizeLines": 38,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/app.service.ts",
+      "language": "typescript",
+      "sizeLines": 8,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/bubble-links.controller.ts",
+      "language": "typescript",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/bubble-links.service.spec.ts",
+      "language": "typescript",
+      "sizeLines": 146,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/bubble-links.service.ts",
+      "language": "typescript",
+      "sizeLines": 110,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/bubble-placement.service.spec.ts",
+      "language": "typescript",
+      "sizeLines": 146,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/bubble-placement.service.ts",
+      "language": "typescript",
+      "sizeLines": 241,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/bubble.types.ts",
+      "language": "typescript",
+      "sizeLines": 175,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/bubbles.controller.spec.ts",
+      "language": "typescript",
+      "sizeLines": 197,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/bubbles.controller.ts",
+      "language": "typescript",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/bubbles.module.ts",
+      "language": "typescript",
+      "sizeLines": 55,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/bubbles.service.spec.ts",
+      "language": "typescript",
+      "sizeLines": 612,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/bubbles.service.ts",
+      "language": "typescript",
+      "sizeLines": 562,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/migrations/002-create-bubbles.ts",
+      "language": "typescript",
+      "sizeLines": 26,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/migrations/003-create-bubble-links.ts",
+      "language": "typescript",
+      "sizeLines": 28,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/migrations/007-complete-discussion-extraction-provenance.ts",
+      "language": "typescript",
+      "sizeLines": 167,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/sqlite-bubble.repository.spec.ts",
+      "language": "typescript",
+      "sizeLines": 183,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/sqlite-bubble.repository.ts",
+      "language": "typescript",
+      "sizeLines": 511,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/config/configuration.spec.ts",
+      "language": "typescript",
+      "sizeLines": 208,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/config/configuration.ts",
+      "language": "typescript",
+      "sizeLines": 421,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/database/database-transaction.ts",
+      "language": "typescript",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/database/database.migrations.spec.ts",
+      "language": "typescript",
+      "sizeLines": 1071,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/database/database.migrations.ts",
+      "language": "typescript",
+      "sizeLines": 261,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/database/database.module.ts",
+      "language": "typescript",
+      "sizeLines": 10,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/database/database.provider.spec.ts",
+      "language": "typescript",
+      "sizeLines": 74,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/database/database.provider.ts",
+      "language": "typescript",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussion-context/discussion-context.assembler.spec.ts",
+      "language": "typescript",
+      "sizeLines": 406,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussion-context/discussion-context.assembler.ts",
+      "language": "typescript",
+      "sizeLines": 235,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussion-context/discussion-context.module.ts",
+      "language": "typescript",
+      "sizeLines": 12,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussion-context/discussion-context.types.ts",
+      "language": "typescript",
+      "sizeLines": 57,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussions/discussion.types.ts",
+      "language": "typescript",
+      "sizeLines": 206,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussions/discussions.controller.ts",
+      "language": "typescript",
+      "sizeLines": 80,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussions/discussions.module.ts",
+      "language": "typescript",
+      "sizeLines": 36,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussions/discussions.service.spec.ts",
+      "language": "typescript",
+      "sizeLines": 1481,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussions/discussions.service.ts",
+      "language": "typescript",
+      "sizeLines": 1067,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussions/migrations/004-create-discussions.ts",
+      "language": "typescript",
+      "sizeLines": 30,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussions/migrations/005-create-discussion-messages.ts",
+      "language": "typescript",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussions/migrations/006-persist-discussion-context-items.ts",
+      "language": "typescript",
+      "sizeLines": 171,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussions/migrations/010-persist-discussion-search-attribution.ts",
+      "language": "typescript",
+      "sizeLines": 68,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussions/sqlite-discussion.repository.spec.ts",
+      "language": "typescript",
+      "sizeLines": 874,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussions/sqlite-discussion.repository.ts",
+      "language": "typescript",
+      "sizeLines": 1186,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/clamav-document-malware.scanner.ts",
+      "language": "typescript",
+      "sizeLines": 163,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/deterministic-document-malware.scanner.ts",
+      "language": "typescript",
+      "sizeLines": 34,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/document-malware.scanner.spec.ts",
+      "language": "typescript",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/document-processing.coordinator.spec.ts",
+      "language": "typescript",
+      "sizeLines": 364,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/document-processing.coordinator.ts",
+      "language": "typescript",
+      "sizeLines": 381,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/document-text.normalizer.spec.ts",
+      "language": "typescript",
+      "sizeLines": 71,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/document-text.normalizer.ts",
+      "language": "typescript",
+      "sizeLines": 46,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/document-upload.interceptor.ts",
+      "language": "typescript",
+      "sizeLines": 162,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/document-upload.validator.spec.ts",
+      "language": "typescript",
+      "sizeLines": 243,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/document-upload.validator.ts",
+      "language": "typescript",
+      "sizeLines": 308,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/document.telemetry.spec.ts",
+      "language": "typescript",
+      "sizeLines": 84,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/document.telemetry.ts",
+      "language": "typescript",
+      "sizeLines": 143,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/document.types.ts",
+      "language": "typescript",
+      "sizeLines": 366,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/documents.controller.ts",
+      "language": "typescript",
+      "sizeLines": 80,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/documents.module.ts",
+      "language": "typescript",
+      "sizeLines": 88,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/documents.service.spec.ts",
+      "language": "typescript",
+      "sizeLines": 489,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/documents.service.ts",
+      "language": "typescript",
+      "sizeLines": 549,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/migrations/009-create-documents.ts",
+      "language": "typescript",
+      "sizeLines": 226,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/pdfjs-adapters.spec.ts",
+      "language": "typescript",
+      "sizeLines": 76,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/pdfjs-document-text.extractor.spec.ts",
+      "language": "typescript",
+      "sizeLines": 177,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/pdfjs-document-text.extractor.ts",
+      "language": "typescript",
+      "sizeLines": 239,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/pdfjs-upload.inspector.ts",
+      "language": "typescript",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/private-document-file.storage.spec.ts",
+      "language": "typescript",
+      "sizeLines": 62,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/private-document-file.storage.ts",
+      "language": "typescript",
+      "sizeLines": 134,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/sqlite-document.repository.spec.ts",
+      "language": "typescript",
+      "sizeLines": 506,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/sqlite-document.repository.ts",
+      "language": "typescript",
+      "sizeLines": 748,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/utf8-document-text.extractors.ts",
+      "language": "typescript",
+      "sizeLines": 57,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts",
+      "language": "typescript",
+      "sizeLines": 623,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/knowledge-extraction/knowledge-extraction.controller.ts",
+      "language": "typescript",
+      "sizeLines": 62,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/knowledge-extraction/knowledge-extraction.module.ts",
+      "language": "typescript",
+      "sizeLines": 26,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/knowledge-extraction/knowledge-extraction.prompt.spec.ts",
+      "language": "typescript",
+      "sizeLines": 178,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/knowledge-extraction/knowledge-extraction.prompt.ts",
+      "language": "typescript",
+      "sizeLines": 109,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/knowledge-extraction/knowledge-extraction.service.spec.ts",
+      "language": "typescript",
+      "sizeLines": 1944,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/knowledge-extraction/knowledge-extraction.service.ts",
+      "language": "typescript",
+      "sizeLines": 732,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/knowledge-extraction/knowledge-extraction.types.ts",
+      "language": "typescript",
+      "sizeLines": 138,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/knowledge-extraction/migrations/008-create-knowledge-extraction-attempts.ts",
+      "language": "typescript",
+      "sizeLines": 157,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/knowledge-extraction/migrations/011-persist-extraction-intent.ts",
+      "language": "typescript",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.spec.ts",
+      "language": "typescript",
+      "sizeLines": 381,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.ts",
+      "language": "typescript",
+      "sizeLines": 754,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/main.ts",
+      "language": "typescript",
+      "sizeLines": 17,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/projects/migrations/001-create-projects.ts",
+      "language": "typescript",
+      "sizeLines": 26,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/projects/migrations/012-widen-project-description.ts",
+      "language": "typescript",
+      "sizeLines": 69,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/projects/migrations/013-repair-project-foreign-keys.ts",
+      "language": "typescript",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/projects/project.types.ts",
+      "language": "typescript",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/projects/projects.controller.spec.ts",
+      "language": "typescript",
+      "sizeLines": 90,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/projects/projects.controller.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/projects/projects.module.ts",
+      "language": "typescript",
+      "sizeLines": 19,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/projects/projects.service.spec.ts",
+      "language": "typescript",
+      "sizeLines": 235,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/projects/projects.service.ts",
+      "language": "typescript",
+      "sizeLines": 185,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/projects/sqlite-project.repository.ts",
+      "language": "typescript",
+      "sizeLines": 133,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/test/app.e2e-spec.ts",
+      "language": "typescript",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/test/bubble-canvas.e2e-spec.ts",
+      "language": "typescript",
+      "sizeLines": 278,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/test/bubble-links.e2e-spec.ts",
+      "language": "typescript",
+      "sizeLines": 276,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/test/discussions.e2e-spec.ts",
+      "language": "typescript",
+      "sizeLines": 639,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/test/documents.e2e-spec.ts",
+      "language": "typescript",
+      "sizeLines": 590,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/test/fixtures/document-files.ts",
+      "language": "typescript",
+      "sizeLines": 66,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/test/jest-e2e.json",
+      "language": "json",
+      "sizeLines": 12,
+      "fileCategory": "config"
+    },
+    {
+      "path": "backend/test/knowledge-extraction.e2e-spec.ts",
+      "language": "typescript",
+      "sizeLines": 810,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/test/projects.e2e-spec.ts",
+      "language": "typescript",
+      "sizeLines": 149,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/tsconfig.build.json",
+      "language": "json",
+      "sizeLines": 4,
+      "fileCategory": "config"
+    },
+    {
+      "path": "backend/tsconfig.json",
+      "language": "json",
+      "sizeLines": 28,
+      "fileCategory": "config"
+    },
+    {
+      "path": "design/README.md",
+      "language": "markdown",
+      "sizeLines": 22,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "design/project/Discussion Context Flow.html",
+      "language": "html",
+      "sizeLines": 397,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "frontend/README.md",
+      "language": "markdown",
+      "sizeLines": 75,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "frontend/eslint.config.js",
+      "language": "javascript",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/index.html",
+      "language": "html",
+      "sizeLines": 23,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "frontend/package.json",
+      "language": "json",
+      "sizeLines": 39,
+      "fileCategory": "config"
+    },
+    {
+      "path": "frontend/src/App.tsx",
+      "language": "typescript",
+      "sizeLines": 344,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/analytics.ts",
+      "language": "typescript",
+      "sizeLines": 302,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/api/ai.ts",
+      "language": "typescript",
+      "sizeLines": 38,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/api/bubbles.ts",
+      "language": "typescript",
+      "sizeLines": 437,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/api/client.ts",
+      "language": "typescript",
+      "sizeLines": 55,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/api/discussionResponse.test.ts",
+      "language": "typescript",
+      "sizeLines": 60,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/api/discussionResponse.ts",
+      "language": "typescript",
+      "sizeLines": 280,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/api/discussions.ts",
+      "language": "typescript",
+      "sizeLines": 190,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/api/documents.ts",
+      "language": "typescript",
+      "sizeLines": 347,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/api/index.ts",
+      "language": "typescript",
+      "sizeLines": 7,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/api/knowledgeExtractions.ts",
+      "language": "typescript",
+      "sizeLines": 355,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/api/projects.ts",
+      "language": "typescript",
+      "sizeLines": 174,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/bubbles/BubbleInspector.tsx",
+      "language": "typescript",
+      "sizeLines": 624,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/bubbles/BubbleReaderModal.tsx",
+      "language": "typescript",
+      "sizeLines": 183,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/bubbles/CreateBubbleDialog.tsx",
+      "language": "typescript",
+      "sizeLines": 330,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/bubbles/bubbleInspectorTypes.ts",
+      "language": "typescript",
+      "sizeLines": 57,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/bubbles/bubbleReadingModel.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/bubbles/useBubbleInspector.ts",
+      "language": "typescript",
+      "sizeLines": 506,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/canvas/BubbleCard.tsx",
+      "language": "typescript",
+      "sizeLines": 145,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/canvas/CanvasOverlays.tsx",
+      "language": "typescript",
+      "sizeLines": 367,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/canvas/CanvasSurface.tsx",
+      "language": "typescript",
+      "sizeLines": 856,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/canvas/bubbleCardPreview.ts",
+      "language": "typescript",
+      "sizeLines": 42,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/canvas/canvasModel.ts",
+      "language": "typescript",
+      "sizeLines": 102,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/canvas/canvasTypes.ts",
+      "language": "typescript",
+      "sizeLines": 157,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/canvas/compactLayout.ts",
+      "language": "typescript",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/canvas/useBubbleDrag.ts",
+      "language": "typescript",
+      "sizeLines": 349,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/canvas/useMultiSelection.ts",
+      "language": "typescript",
+      "sizeLines": 200,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/canvas/useProjectBubbles.ts",
+      "language": "typescript",
+      "sizeLines": 274,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/canvas/useViewportPersistence.ts",
+      "language": "typescript",
+      "sizeLines": 204,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionComposer.test.tsx",
+      "language": "typescript",
+      "sizeLines": 488,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionComposer.tsx",
+      "language": "typescript",
+      "sizeLines": 853,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionContextBadges.tsx",
+      "language": "typescript",
+      "sizeLines": 152,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionDeleteDialog.tsx",
+      "language": "typescript",
+      "sizeLines": 136,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionExperience.tsx",
+      "language": "typescript",
+      "sizeLines": 706,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionKnowledgeAction.tsx",
+      "language": "typescript",
+      "sizeLines": 63,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionMentionChips.tsx",
+      "language": "typescript",
+      "sizeLines": 174,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionMentionList.tsx",
+      "language": "typescript",
+      "sizeLines": 253,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionMessageSources.tsx",
+      "language": "typescript",
+      "sizeLines": 111,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionMessages.test.tsx",
+      "language": "typescript",
+      "sizeLines": 148,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionMessages.tsx",
+      "language": "typescript",
+      "sizeLines": 255,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionModal.tsx",
+      "language": "typescript",
+      "sizeLines": 309,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionsPanel.tsx",
+      "language": "typescript",
+      "sizeLines": 271,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/FrozenContextInspector.tsx",
+      "language": "typescript",
+      "sizeLines": 125,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/discussionContextModel.test.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/discussionContextModel.ts",
+      "language": "typescript",
+      "sizeLines": 99,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/discussionCreationFailure.ts",
+      "language": "typescript",
+      "sizeLines": 115,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/discussionListModel.ts",
+      "language": "typescript",
+      "sizeLines": 125,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/discussionMention.test.ts",
+      "language": "typescript",
+      "sizeLines": 126,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/discussionMention.ts",
+      "language": "typescript",
+      "sizeLines": 290,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/discussionMentionAnalytics.ts",
+      "language": "typescript",
+      "sizeLines": 107,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/discussionModel.ts",
+      "language": "typescript",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/discussionSourceCatalog.ts",
+      "language": "typescript",
+      "sizeLines": 54,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/index.ts",
+      "language": "typescript",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/useAutoGrowTextarea.ts",
+      "language": "typescript",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/useDiscussionContextSelection.ts",
+      "language": "typescript",
+      "sizeLines": 405,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/useDiscussionLifecycle.test.tsx",
+      "language": "typescript",
+      "sizeLines": 236,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/useDiscussionLifecycle.ts",
+      "language": "typescript",
+      "sizeLines": 1087,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/useDiscussionVisibility.ts",
+      "language": "typescript",
+      "sizeLines": 128,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/useProjectDiscussions.ts",
+      "language": "typescript",
+      "sizeLines": 494,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/documents/DocumentContextSelectionPanel.tsx",
+      "language": "typescript",
+      "sizeLines": 219,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/documents/DocumentInspectionPanel.tsx",
+      "language": "typescript",
+      "sizeLines": 324,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/documents/DocumentsPanel.test.tsx",
+      "language": "typescript",
+      "sizeLines": 159,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/documents/DocumentsPanel.tsx",
+      "language": "typescript",
+      "sizeLines": 596,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/documents/documentAnalytics.ts",
+      "language": "typescript",
+      "sizeLines": 145,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/documents/documentContextSelectionTypes.ts",
+      "language": "typescript",
+      "sizeLines": 45,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/documents/documentPresentation.ts",
+      "language": "typescript",
+      "sizeLines": 76,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/documents/documentTestFixtures.ts",
+      "language": "typescript",
+      "sizeLines": 74,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/documents/documentUploadPreflight.test.ts",
+      "language": "typescript",
+      "sizeLines": 75,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/documents/documentUploadPreflight.ts",
+      "language": "typescript",
+      "sizeLines": 135,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/documents/index.ts",
+      "language": "typescript",
+      "sizeLines": 9,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/documents/useDocumentLibrary.test.tsx",
+      "language": "typescript",
+      "sizeLines": 240,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/documents/useDocumentLibrary.ts",
+      "language": "typescript",
+      "sizeLines": 886,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/documents/useDocumentMultiSelection.ts",
+      "language": "typescript",
+      "sizeLines": 229,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/index.css",
+      "language": "css",
+      "sizeLines": 77,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "frontend/src/knowledge-extraction/KnowledgeExtractionDiscardDialog.tsx",
+      "language": "typescript",
+      "sizeLines": 90,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/knowledge-extraction/KnowledgeExtractionProposalReview.tsx",
+      "language": "typescript",
+      "sizeLines": 467,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/knowledge-extraction/KnowledgeExtractionSourceActions.tsx",
+      "language": "typescript",
+      "sizeLines": 104,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx",
+      "language": "typescript",
+      "sizeLines": 211,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx",
+      "language": "typescript",
+      "sizeLines": 548,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/knowledge-extraction/index.ts",
+      "language": "typescript",
+      "sizeLines": 9,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/knowledge-extraction/knowledgeExtractionAnalytics.ts",
+      "language": "typescript",
+      "sizeLines": 132,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/knowledge-extraction/knowledgeExtractionSources.ts",
+      "language": "typescript",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "language": "typescript",
+      "sizeLines": 540,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/knowledge-extraction/knowledgeExtractionTargetSelection.ts",
+      "language": "typescript",
+      "sizeLines": 12,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "language": "typescript",
+      "sizeLines": 1006,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/main.tsx",
+      "language": "typescript",
+      "sizeLines": 10,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/projects/CreateProjectDialog.documents.test.tsx",
+      "language": "typescript",
+      "sizeLines": 58,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/projects/CreateProjectDialog.tsx",
+      "language": "typescript",
+      "sizeLines": 464,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/projects/ProjectDescriptionEditor.tsx",
+      "language": "typescript",
+      "sizeLines": 334,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/ui/RichResponse.test.tsx",
+      "language": "typescript",
+      "sizeLines": 122,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/ui/RichResponse.tsx",
+      "language": "typescript",
+      "sizeLines": 408,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/ui/focusRing.ts",
+      "language": "typescript",
+      "sizeLines": 2,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/ui/markdownToPlainText.test.ts",
+      "language": "typescript",
+      "sizeLines": 43,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/ui/markdownToPlainText.ts",
+      "language": "typescript",
+      "sizeLines": 56,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/ui/useFieldValidity.ts",
+      "language": "typescript",
+      "sizeLines": 63,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/ui/useModalShell.ts",
+      "language": "typescript",
+      "sizeLines": 161,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/utils/date/formatUpdatedAt.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/utils/date/index.ts",
+      "language": "typescript",
+      "sizeLines": 1,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/utils/routing/index.ts",
+      "language": "typescript",
+      "sizeLines": 3,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/utils/routing/navigate.ts",
+      "language": "typescript",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/utils/routing/resolveRoute.ts",
+      "language": "typescript",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/workspace/ProjectCanvasRoute.tsx",
+      "language": "typescript",
+      "sizeLines": 248,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/workspace/ProjectWorkspace.documents.test.tsx",
+      "language": "typescript",
+      "sizeLines": 53,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/workspace/ProjectWorkspace.tsx",
+      "language": "typescript",
+      "sizeLines": 1385,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/workspace/currentProjectDescription.ts",
+      "language": "typescript",
+      "sizeLines": 28,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/workspace/panelModel.ts",
+      "language": "typescript",
+      "sizeLines": 9,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/workspace/projectSourceCatalog.test.ts",
+      "language": "typescript",
+      "sizeLines": 142,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/workspace/projectSourceCatalog.ts",
+      "language": "typescript",
+      "sizeLines": 62,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/BubbleCanvasJourney.test.tsx",
+      "language": "typescript",
+      "sizeLines": 678,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/BubbleCard.test.tsx",
+      "language": "typescript",
+      "sizeLines": 143,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/BubbleInspector.test.tsx",
+      "language": "typescript",
+      "sizeLines": 598,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/CanvasSurface.test.tsx",
+      "language": "typescript",
+      "sizeLines": 1382,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/CreateBubbleDialog.test.tsx",
+      "language": "typescript",
+      "sizeLines": 225,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/CreateProjectDialog.test.tsx",
+      "language": "typescript",
+      "sizeLines": 357,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/DiscussionComposerAutoGrow.test.tsx",
+      "language": "typescript",
+      "sizeLines": 108,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/DiscussionExperience.test.tsx",
+      "language": "typescript",
+      "sizeLines": 1982,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/DiscussionModal.test.tsx",
+      "language": "typescript",
+      "sizeLines": 111,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/DiscussionsPanelLifecycle.test.tsx",
+      "language": "typescript",
+      "sizeLines": 510,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/DocumentsPanel.test.tsx",
+      "language": "typescript",
+      "sizeLines": 322,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/ProjectCreationJourney.test.tsx",
+      "language": "typescript",
+      "sizeLines": 345,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/ProjectDescriptionEditor.test.tsx",
+      "language": "typescript",
+      "sizeLines": 364,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/ProjectWorkspaceAnalytics.test.tsx",
+      "language": "typescript",
+      "sizeLines": 247,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/ProjectWorkspaceIntegration.test.tsx",
+      "language": "typescript",
+      "sizeLines": 1735,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/aiApi.test.ts",
+      "language": "typescript",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/bubbleResponse.test.ts",
+      "language": "typescript",
+      "sizeLines": 79,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/bubblesApi.test.ts",
+      "language": "typescript",
+      "sizeLines": 222,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/compactLayout.test.ts",
+      "language": "typescript",
+      "sizeLines": 93,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/discussionContextSelection.test.ts",
+      "language": "typescript",
+      "sizeLines": 179,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/discussionCreationFailure.test.ts",
+      "language": "typescript",
+      "sizeLines": 96,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/discussionListModel.test.ts",
+      "language": "typescript",
+      "sizeLines": 101,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/discussionMentionAnalytics.test.ts",
+      "language": "typescript",
+      "sizeLines": 56,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/discussionVisibility.test.ts",
+      "language": "typescript",
+      "sizeLines": 74,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/discussionsApi.test.ts",
+      "language": "typescript",
+      "sizeLines": 393,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/documentAnalytics.test.ts",
+      "language": "typescript",
+      "sizeLines": 51,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/documentContextSelection.test.ts",
+      "language": "typescript",
+      "sizeLines": 139,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/documentUploadPreflight.test.ts",
+      "language": "typescript",
+      "sizeLines": 87,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/documentsApi.test.ts",
+      "language": "typescript",
+      "sizeLines": 264,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/knowledgeExtractionStateMachine.test.ts",
+      "language": "typescript",
+      "sizeLines": 378,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/knowledgeExtractionsApi.test.ts",
+      "language": "typescript",
+      "sizeLines": 331,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/projectsApi.test.ts",
+      "language": "typescript",
+      "sizeLines": 170,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/useDocumentLibrary.test.ts",
+      "language": "typescript",
+      "sizeLines": 417,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/useFieldValidity.test.tsx",
+      "language": "typescript",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/useKnowledgeExtraction.test.ts",
+      "language": "typescript",
+      "sizeLines": 729,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/useProjectBubbles.test.ts",
+      "language": "typescript",
+      "sizeLines": 172,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/useProjectDiscussions.test.ts",
+      "language": "typescript",
+      "sizeLines": 281,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tsconfig.app.json",
+      "language": "json",
+      "sizeLines": 30,
+      "fileCategory": "config"
+    },
+    {
+      "path": "frontend/tsconfig.json",
+      "language": "json",
+      "sizeLines": 8,
+      "fileCategory": "config"
+    },
+    {
+      "path": "frontend/tsconfig.node.json",
+      "language": "json",
+      "sizeLines": 24,
+      "fileCategory": "config"
+    },
+    {
+      "path": "frontend/tsconfig.test.json",
+      "language": "json",
+      "sizeLines": 8,
+      "fileCategory": "config"
+    },
+    {
+      "path": "frontend/vite.config.ts",
+      "language": "typescript",
+      "sizeLines": 17,
+      "fileCategory": "code"
+    },
+    {
+      "path": "package.json",
+      "language": "json",
+      "sizeLines": 26,
+      "fileCategory": "config"
+    },
+    {
+      "path": "shared/PRD/PRD_0.md",
+      "language": "markdown",
+      "sizeLines": 84,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "shared/PRD/PRD_01.md",
+      "language": "markdown",
+      "sizeLines": 130,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "shared/PRD/PRD_02.md",
+      "language": "markdown",
+      "sizeLines": 189,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "shared/PRD/PRD_03.md",
+      "language": "markdown",
+      "sizeLines": 295,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "shared/PRD/PRD_04.md",
+      "language": "markdown",
+      "sizeLines": 337,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "shared/PRD/PRD_05.md",
+      "language": "markdown",
+      "sizeLines": 726,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "shared/PRD/PRD_06.md",
+      "language": "markdown",
+      "sizeLines": 437,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "shared/PRD/PRD_07.md",
+      "language": "markdown",
+      "sizeLines": 181,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "shared/PRD/PRD_08.md",
+      "language": "markdown",
+      "sizeLines": 272,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "shared/PRD/PRD_09.md",
+      "language": "markdown",
+      "sizeLines": 290,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "shared/package.json",
+      "language": "json",
+      "sizeLines": 24,
+      "fileCategory": "config"
+    },
+    {
+      "path": "shared/src/index.ts",
+      "language": "typescript",
+      "sizeLines": 411,
+      "fileCategory": "code"
+    },
+    {
+      "path": "shared/src/validation-limits.ts",
+      "language": "typescript",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    },
+    {
+      "path": "shared/tsconfig.json",
+      "language": "json",
+      "sizeLines": 17,
+      "fileCategory": "config"
+    }
+  ],
+  "totalFiles": 300,
+  "filteredByIgnore": 0,
+  "estimatedComplexity": "large",
+  "importMap": {
+    ".ua/.understandignore": [],
+    ".ua/config.json": [],
+    "AGENTS.md": [],
+    "CLAUDE.md": [],
+    "backend/DOCUMENT_OPERATIONS.md": [],
+    "backend/README.md": [],
+    "backend/eslint.config.mjs": [],
+    "backend/nest-cli.json": [],
+    "backend/package.json": [],
+    "backend/src/ai/ai-capabilities.controller.ts": [
+      "backend/src/ai/ai-capabilities.ts"
+    ],
+    "backend/src/ai/ai-capabilities.spec.ts": [
+      "backend/src/ai/ai-capabilities.ts"
+    ],
+    "backend/src/ai/ai-capabilities.ts": [
+      "backend/src/config/configuration.ts"
+    ],
+    "backend/src/ai/ai.module.ts": [
+      "backend/src/ai/ai-capabilities.controller.ts",
+      "backend/src/ai/ai-capabilities.ts",
+      "backend/src/ai/fake-model.client.ts",
+      "backend/src/ai/frozen-context.formatter.ts",
+      "backend/src/ai/input-token-estimator.ts",
+      "backend/src/ai/model-client.ts",
+      "backend/src/ai/model-input-budget.ts",
+      "backend/src/ai/openai-model.client.ts",
+      "backend/src/config/configuration.ts"
+    ],
+    "backend/src/ai/answer-instructions.ts": [
+      "backend/src/ai/model-client.ts"
+    ],
+    "backend/src/ai/fake-model.client.spec.ts": [
+      "backend/src/ai/ai.module.ts",
+      "backend/src/ai/fake-model.client.ts",
+      "backend/src/ai/model-client.ts",
+      "backend/src/config/configuration.ts"
+    ],
+    "backend/src/ai/fake-model.client.ts": [
+      "backend/src/ai/model-client.ts"
+    ],
+    "backend/src/ai/frozen-context.formatter.spec.ts": [
+      "backend/src/ai/frozen-context.formatter.ts"
+    ],
+    "backend/src/ai/frozen-context.formatter.ts": [],
+    "backend/src/ai/input-token-estimator.spec.ts": [
+      "backend/src/ai/input-token-estimator.ts"
+    ],
+    "backend/src/ai/input-token-estimator.ts": [],
+    "backend/src/ai/model-client.ts": [],
+    "backend/src/ai/model-input-budget.spec.ts": [
+      "backend/src/ai/answer-instructions.ts",
+      "backend/src/ai/input-token-estimator.ts",
+      "backend/src/ai/model-input-budget.ts"
+    ],
+    "backend/src/ai/model-input-budget.ts": [
+      "backend/src/ai/answer-instructions.ts",
+      "backend/src/ai/input-token-estimator.ts",
+      "backend/src/ai/model-client.ts",
+      "backend/src/config/configuration.ts"
+    ],
+    "backend/src/ai/openai-model.client.spec.ts": [
+      "backend/src/ai/openai-model.client.ts",
+      "backend/src/config/configuration.ts"
+    ],
+    "backend/src/ai/openai-model.client.ts": [
+      "backend/src/ai/answer-instructions.ts",
+      "backend/src/ai/model-client.ts",
+      "backend/src/config/configuration.ts"
+    ],
+    "backend/src/app.controller.spec.ts": [
+      "backend/src/app.controller.ts"
+    ],
+    "backend/src/app.controller.ts": [],
+    "backend/src/app.module.ts": [
+      "backend/src/ai/ai.module.ts",
+      "backend/src/app.controller.ts",
+      "backend/src/app.service.ts",
+      "backend/src/bubbles/bubbles.module.ts",
+      "backend/src/config/configuration.ts",
+      "backend/src/database/database.module.ts",
+      "backend/src/discussions/discussions.module.ts",
+      "backend/src/documents/documents.module.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.module.ts",
+      "backend/src/projects/projects.module.ts"
+    ],
+    "backend/src/app.service.ts": [],
+    "backend/src/bubbles/bubble-links.controller.ts": [
+      "backend/src/bubbles/bubble-links.service.ts",
+      "backend/src/bubbles/bubble.types.ts"
+    ],
+    "backend/src/bubbles/bubble-links.service.spec.ts": [
+      "backend/src/bubbles/bubble-links.service.ts",
+      "backend/src/bubbles/bubbles.service.ts",
+      "backend/src/bubbles/sqlite-bubble.repository.ts",
+      "backend/src/database/database.provider.ts",
+      "backend/src/projects/projects.service.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/bubbles/bubble-links.service.ts": [
+      "backend/src/bubbles/bubble.types.ts",
+      "backend/src/bubbles/bubbles.service.ts",
+      "backend/src/projects/projects.service.ts"
+    ],
+    "backend/src/bubbles/bubble-placement.service.spec.ts": [
+      "backend/src/bubbles/bubble-placement.service.ts",
+      "backend/src/bubbles/bubbles.service.ts",
+      "backend/src/bubbles/sqlite-bubble.repository.ts",
+      "backend/src/database/database.provider.ts",
+      "backend/src/projects/projects.service.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/bubbles/bubble-placement.service.ts": [
+      "backend/src/bubbles/bubble.types.ts",
+      "backend/src/projects/projects.service.ts"
+    ],
+    "backend/src/bubbles/bubble.types.ts": [],
+    "backend/src/bubbles/bubbles.controller.spec.ts": [
+      "backend/src/bubbles/bubble-placement.service.ts",
+      "backend/src/bubbles/bubbles.controller.ts",
+      "backend/src/bubbles/bubbles.service.ts",
+      "backend/src/bubbles/sqlite-bubble.repository.ts",
+      "backend/src/database/database.provider.ts",
+      "backend/src/projects/projects.service.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/bubbles/bubbles.controller.ts": [
+      "backend/src/bubbles/bubble-placement.service.ts",
+      "backend/src/bubbles/bubble.types.ts",
+      "backend/src/bubbles/bubbles.service.ts"
+    ],
+    "backend/src/bubbles/bubbles.module.ts": [
+      "backend/src/bubbles/bubble-links.controller.ts",
+      "backend/src/bubbles/bubble-links.service.ts",
+      "backend/src/bubbles/bubble-placement.service.ts",
+      "backend/src/bubbles/bubble.types.ts",
+      "backend/src/bubbles/bubbles.controller.ts",
+      "backend/src/bubbles/bubbles.service.ts",
+      "backend/src/bubbles/sqlite-bubble.repository.ts",
+      "backend/src/projects/projects.module.ts"
+    ],
+    "backend/src/bubbles/bubbles.service.spec.ts": [
+      "backend/src/bubbles/bubble.types.ts",
+      "backend/src/bubbles/bubbles.service.ts",
+      "backend/src/bubbles/sqlite-bubble.repository.ts",
+      "backend/src/database/database.provider.ts",
+      "backend/src/projects/projects.service.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/bubbles/bubbles.service.ts": [
+      "backend/src/bubbles/bubble.types.ts",
+      "backend/src/projects/projects.service.ts"
+    ],
+    "backend/src/bubbles/migrations/002-create-bubbles.ts": [],
+    "backend/src/bubbles/migrations/003-create-bubble-links.ts": [],
+    "backend/src/bubbles/migrations/007-complete-discussion-extraction-provenance.ts": [],
+    "backend/src/bubbles/sqlite-bubble.repository.spec.ts": [
+      "backend/src/bubbles/bubble.types.ts",
+      "backend/src/bubbles/bubbles.service.ts",
+      "backend/src/bubbles/sqlite-bubble.repository.ts",
+      "backend/src/database/database.provider.ts",
+      "backend/src/projects/projects.service.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/bubbles/sqlite-bubble.repository.ts": [
+      "backend/src/bubbles/bubble.types.ts",
+      "backend/src/database/database.provider.ts"
+    ],
+    "backend/src/config/configuration.spec.ts": [
+      "backend/src/config/configuration.ts"
+    ],
+    "backend/src/config/configuration.ts": [],
+    "backend/src/database/database-transaction.ts": [
+      "backend/src/database/database.provider.ts"
+    ],
+    "backend/src/database/database.migrations.spec.ts": [
+      "backend/src/database/database.migrations.ts"
+    ],
+    "backend/src/database/database.migrations.ts": [
+      "backend/src/bubbles/migrations/002-create-bubbles.ts",
+      "backend/src/bubbles/migrations/003-create-bubble-links.ts",
+      "backend/src/bubbles/migrations/007-complete-discussion-extraction-provenance.ts",
+      "backend/src/discussions/migrations/004-create-discussions.ts",
+      "backend/src/discussions/migrations/005-create-discussion-messages.ts",
+      "backend/src/discussions/migrations/006-persist-discussion-context-items.ts",
+      "backend/src/discussions/migrations/010-persist-discussion-search-attribution.ts",
+      "backend/src/documents/migrations/009-create-documents.ts",
+      "backend/src/knowledge-extraction/migrations/008-create-knowledge-extraction-attempts.ts",
+      "backend/src/knowledge-extraction/migrations/011-persist-extraction-intent.ts",
+      "backend/src/projects/migrations/001-create-projects.ts",
+      "backend/src/projects/migrations/012-widen-project-description.ts",
+      "backend/src/projects/migrations/013-repair-project-foreign-keys.ts"
+    ],
+    "backend/src/database/database.module.ts": [
+      "backend/src/database/database-transaction.ts",
+      "backend/src/database/database.provider.ts"
+    ],
+    "backend/src/database/database.provider.spec.ts": [
+      "backend/src/bubbles/sqlite-bubble.repository.ts",
+      "backend/src/database/database.provider.ts",
+      "backend/src/discussions/sqlite-discussion.repository.ts",
+      "backend/src/documents/sqlite-document.repository.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/database/database.provider.ts": [
+      "backend/src/config/configuration.ts",
+      "backend/src/database/database.migrations.ts"
+    ],
+    "backend/src/discussion-context/discussion-context.assembler.spec.ts": [
+      "backend/src/bubbles/bubbles.service.ts",
+      "backend/src/bubbles/sqlite-bubble.repository.ts",
+      "backend/src/database/database.provider.ts",
+      "backend/src/discussion-context/discussion-context.assembler.ts",
+      "backend/src/discussion-context/discussion-context.types.ts",
+      "backend/src/projects/projects.service.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/discussion-context/discussion-context.assembler.ts": [
+      "backend/src/bubbles/bubble.types.ts",
+      "backend/src/discussion-context/discussion-context.types.ts",
+      "backend/src/projects/projects.service.ts"
+    ],
+    "backend/src/discussion-context/discussion-context.module.ts": [
+      "backend/src/bubbles/bubbles.module.ts",
+      "backend/src/discussion-context/discussion-context.assembler.ts",
+      "backend/src/documents/documents.module.ts",
+      "backend/src/projects/projects.module.ts"
+    ],
+    "backend/src/discussion-context/discussion-context.types.ts": [],
+    "backend/src/discussions/discussion.types.ts": [],
+    "backend/src/discussions/discussions.controller.ts": [
+      "backend/src/discussions/discussions.service.ts"
+    ],
+    "backend/src/discussions/discussions.module.ts": [
+      "backend/src/ai/ai.module.ts",
+      "backend/src/bubbles/bubbles.module.ts",
+      "backend/src/discussion-context/discussion-context.module.ts",
+      "backend/src/discussions/discussion.types.ts",
+      "backend/src/discussions/discussions.controller.ts",
+      "backend/src/discussions/discussions.service.ts",
+      "backend/src/discussions/sqlite-discussion.repository.ts",
+      "backend/src/projects/projects.module.ts"
+    ],
+    "backend/src/discussions/discussions.service.spec.ts": [
+      "backend/src/ai/frozen-context.formatter.ts",
+      "backend/src/ai/input-token-estimator.ts",
+      "backend/src/ai/model-client.ts",
+      "backend/src/ai/model-input-budget.ts",
+      "backend/src/bubbles/bubbles.service.ts",
+      "backend/src/bubbles/sqlite-bubble.repository.ts",
+      "backend/src/database/database-transaction.ts",
+      "backend/src/database/database.provider.ts",
+      "backend/src/discussion-context/discussion-context.assembler.ts",
+      "backend/src/discussion-context/discussion-context.types.ts",
+      "backend/src/discussions/discussions.service.ts",
+      "backend/src/discussions/sqlite-discussion.repository.ts",
+      "backend/src/projects/projects.service.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/discussions/discussions.service.ts": [
+      "backend/src/ai/ai-capabilities.ts",
+      "backend/src/ai/frozen-context.formatter.ts",
+      "backend/src/ai/model-client.ts",
+      "backend/src/ai/model-input-budget.ts",
+      "backend/src/bubbles/bubble.types.ts",
+      "backend/src/database/database-transaction.ts",
+      "backend/src/discussion-context/discussion-context.assembler.ts",
+      "backend/src/discussion-context/discussion-context.types.ts",
+      "backend/src/discussions/discussion.types.ts",
+      "backend/src/projects/projects.service.ts"
+    ],
+    "backend/src/discussions/migrations/004-create-discussions.ts": [],
+    "backend/src/discussions/migrations/005-create-discussion-messages.ts": [],
+    "backend/src/discussions/migrations/006-persist-discussion-context-items.ts": [],
+    "backend/src/discussions/migrations/010-persist-discussion-search-attribution.ts": [],
+    "backend/src/discussions/sqlite-discussion.repository.spec.ts": [
+      "backend/src/database/database.provider.ts",
+      "backend/src/discussions/discussion.types.ts",
+      "backend/src/discussions/sqlite-discussion.repository.ts",
+      "backend/src/projects/project.types.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/discussions/sqlite-discussion.repository.ts": [
+      "backend/src/database/database.provider.ts",
+      "backend/src/discussions/discussion.types.ts"
+    ],
+    "backend/src/documents/clamav-document-malware.scanner.ts": [
+      "backend/src/config/configuration.ts",
+      "backend/src/documents/document.types.ts"
+    ],
+    "backend/src/documents/deterministic-document-malware.scanner.ts": [
+      "backend/src/documents/document.types.ts"
+    ],
+    "backend/src/documents/document-malware.scanner.spec.ts": [
+      "backend/src/documents/clamav-document-malware.scanner.ts",
+      "backend/src/documents/deterministic-document-malware.scanner.ts",
+      "backend/src/documents/document.types.ts"
+    ],
+    "backend/src/documents/document-processing.coordinator.spec.ts": [
+      "backend/src/config/configuration.ts",
+      "backend/src/database/database.provider.ts",
+      "backend/src/documents/document-processing.coordinator.ts",
+      "backend/src/documents/document-text.normalizer.ts",
+      "backend/src/documents/document.types.ts",
+      "backend/src/documents/pdfjs-document-text.extractor.ts",
+      "backend/src/documents/sqlite-document.repository.ts",
+      "backend/src/documents/utf8-document-text.extractors.ts",
+      "backend/src/projects/projects.service.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/documents/document-processing.coordinator.ts": [
+      "backend/src/config/configuration.ts",
+      "backend/src/documents/document.telemetry.ts",
+      "backend/src/documents/document.types.ts",
+      "backend/src/documents/pdfjs-document-text.extractor.ts",
+      "backend/src/documents/utf8-document-text.extractors.ts"
+    ],
+    "backend/src/documents/document-text.normalizer.spec.ts": [
+      "backend/src/documents/document-text.normalizer.ts",
+      "backend/src/documents/document.types.ts",
+      "backend/src/documents/utf8-document-text.extractors.ts"
+    ],
+    "backend/src/documents/document-text.normalizer.ts": [
+      "backend/src/documents/document.types.ts"
+    ],
+    "backend/src/documents/document-upload.interceptor.ts": [
+      "backend/src/config/configuration.ts"
+    ],
+    "backend/src/documents/document-upload.validator.spec.ts": [
+      "backend/src/config/configuration.ts",
+      "backend/src/documents/document-upload.validator.ts",
+      "backend/src/documents/document.types.ts"
+    ],
+    "backend/src/documents/document-upload.validator.ts": [
+      "backend/src/config/configuration.ts",
+      "backend/src/documents/document.types.ts"
+    ],
+    "backend/src/documents/document.telemetry.spec.ts": [
+      "backend/src/documents/document.telemetry.ts"
+    ],
+    "backend/src/documents/document.telemetry.ts": [],
+    "backend/src/documents/document.types.ts": [],
+    "backend/src/documents/documents.controller.ts": [
+      "backend/src/documents/document-upload.interceptor.ts",
+      "backend/src/documents/documents.service.ts"
+    ],
+    "backend/src/documents/documents.module.ts": [
+      "backend/src/config/configuration.ts",
+      "backend/src/discussion-context/discussion-context.types.ts",
+      "backend/src/documents/clamav-document-malware.scanner.ts",
+      "backend/src/documents/deterministic-document-malware.scanner.ts",
+      "backend/src/documents/document-processing.coordinator.ts",
+      "backend/src/documents/document-text.normalizer.ts",
+      "backend/src/documents/document-upload.interceptor.ts",
+      "backend/src/documents/document-upload.validator.ts",
+      "backend/src/documents/document.telemetry.ts",
+      "backend/src/documents/document.types.ts",
+      "backend/src/documents/documents.controller.ts",
+      "backend/src/documents/documents.service.ts",
+      "backend/src/documents/pdfjs-document-text.extractor.ts",
+      "backend/src/documents/pdfjs-upload.inspector.ts",
+      "backend/src/documents/private-document-file.storage.ts",
+      "backend/src/documents/sqlite-document.repository.ts",
+      "backend/src/documents/utf8-document-text.extractors.ts",
+      "backend/src/projects/projects.module.ts"
+    ],
+    "backend/src/documents/documents.service.spec.ts": [
+      "backend/src/config/configuration.ts",
+      "backend/src/database/database.provider.ts",
+      "backend/src/documents/document-upload.validator.ts",
+      "backend/src/documents/document.types.ts",
+      "backend/src/documents/documents.service.ts",
+      "backend/src/documents/sqlite-document.repository.ts",
+      "backend/src/projects/projects.service.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/documents/documents.service.ts": [
+      "backend/src/config/configuration.ts",
+      "backend/src/discussion-context/discussion-context.types.ts",
+      "backend/src/documents/document-upload.validator.ts",
+      "backend/src/documents/document.telemetry.ts",
+      "backend/src/documents/document.types.ts",
+      "backend/src/projects/projects.service.ts"
+    ],
+    "backend/src/documents/migrations/009-create-documents.ts": [],
+    "backend/src/documents/pdfjs-adapters.spec.ts": [
+      "backend/src/documents/document-text.normalizer.ts",
+      "backend/src/documents/pdfjs-document-text.extractor.ts",
+      "backend/src/documents/pdfjs-upload.inspector.ts"
+    ],
+    "backend/src/documents/pdfjs-document-text.extractor.spec.ts": [
+      "backend/src/documents/document-text.normalizer.ts",
+      "backend/src/documents/pdfjs-document-text.extractor.ts"
+    ],
+    "backend/src/documents/pdfjs-document-text.extractor.ts": [
+      "backend/src/documents/document-text.normalizer.ts",
+      "backend/src/documents/document.types.ts"
+    ],
+    "backend/src/documents/pdfjs-upload.inspector.ts": [
+      "backend/src/documents/document.types.ts"
+    ],
+    "backend/src/documents/private-document-file.storage.spec.ts": [
+      "backend/src/documents/document.types.ts",
+      "backend/src/documents/private-document-file.storage.ts"
+    ],
+    "backend/src/documents/private-document-file.storage.ts": [
+      "backend/src/config/configuration.ts",
+      "backend/src/documents/document.types.ts"
+    ],
+    "backend/src/documents/sqlite-document.repository.spec.ts": [
+      "backend/src/database/database.provider.ts",
+      "backend/src/documents/document.types.ts",
+      "backend/src/documents/sqlite-document.repository.ts",
+      "backend/src/projects/projects.service.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/documents/sqlite-document.repository.ts": [
+      "backend/src/database/database.provider.ts",
+      "backend/src/documents/document.types.ts"
+    ],
+    "backend/src/documents/utf8-document-text.extractors.ts": [
+      "backend/src/documents/document-text.normalizer.ts",
+      "backend/src/documents/document.types.ts"
+    ],
+    "backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts": [
+      "backend/src/bubbles/bubble-placement.service.ts",
+      "backend/src/bubbles/bubble.types.ts",
+      "backend/src/database/database-transaction.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.prompt.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.types.ts",
+      "backend/src/projects/projects.service.ts"
+    ],
+    "backend/src/knowledge-extraction/knowledge-extraction.controller.ts": [
+      "backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.service.ts"
+    ],
+    "backend/src/knowledge-extraction/knowledge-extraction.module.ts": [
+      "backend/src/ai/ai.module.ts",
+      "backend/src/bubbles/bubbles.module.ts",
+      "backend/src/discussions/discussions.module.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.controller.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.service.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.types.ts",
+      "backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.ts",
+      "backend/src/projects/projects.module.ts"
+    ],
+    "backend/src/knowledge-extraction/knowledge-extraction.prompt.spec.ts": [
+      "backend/src/knowledge-extraction/knowledge-extraction.prompt.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.types.ts"
+    ],
+    "backend/src/knowledge-extraction/knowledge-extraction.prompt.ts": [
+      "backend/src/ai/model-client.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.types.ts"
+    ],
+    "backend/src/knowledge-extraction/knowledge-extraction.service.spec.ts": [
+      "backend/src/ai/fake-model.client.ts",
+      "backend/src/ai/input-token-estimator.ts",
+      "backend/src/ai/model-client.ts",
+      "backend/src/ai/model-input-budget.ts",
+      "backend/src/bubbles/bubble-links.service.ts",
+      "backend/src/bubbles/bubble-placement.service.ts",
+      "backend/src/bubbles/bubbles.service.ts",
+      "backend/src/bubbles/sqlite-bubble.repository.ts",
+      "backend/src/database/database-transaction.ts",
+      "backend/src/database/database.provider.ts",
+      "backend/src/discussions/discussion.types.ts",
+      "backend/src/discussions/sqlite-discussion.repository.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.service.ts",
+      "backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.ts",
+      "backend/src/projects/projects.service.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/knowledge-extraction/knowledge-extraction.service.ts": [
+      "backend/src/ai/model-client.ts",
+      "backend/src/ai/model-input-budget.ts",
+      "backend/src/discussions/discussion.types.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.prompt.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.types.ts",
+      "backend/src/projects/projects.service.ts"
+    ],
+    "backend/src/knowledge-extraction/knowledge-extraction.types.ts": [],
+    "backend/src/knowledge-extraction/migrations/008-create-knowledge-extraction-attempts.ts": [],
+    "backend/src/knowledge-extraction/migrations/011-persist-extraction-intent.ts": [
+      "backend/src/knowledge-extraction/knowledge-extraction.types.ts"
+    ],
+    "backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.spec.ts": [
+      "backend/src/database/database.provider.ts",
+      "backend/src/discussions/discussion.types.ts",
+      "backend/src/discussions/sqlite-discussion.repository.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.types.ts",
+      "backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.ts",
+      "backend/src/projects/project.types.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.ts": [
+      "backend/src/database/database.provider.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.prompt.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.types.ts"
+    ],
+    "backend/src/main.ts": [
+      "backend/src/app.module.ts",
+      "backend/src/config/configuration.ts"
+    ],
+    "backend/src/projects/migrations/001-create-projects.ts": [],
+    "backend/src/projects/migrations/012-widen-project-description.ts": [],
+    "backend/src/projects/migrations/013-repair-project-foreign-keys.ts": [],
+    "backend/src/projects/project.types.ts": [],
+    "backend/src/projects/projects.controller.spec.ts": [
+      "backend/src/database/database.provider.ts",
+      "backend/src/projects/projects.controller.ts",
+      "backend/src/projects/projects.service.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/projects/projects.controller.ts": [
+      "backend/src/projects/project.types.ts",
+      "backend/src/projects/projects.service.ts"
+    ],
+    "backend/src/projects/projects.module.ts": [
+      "backend/src/projects/project.types.ts",
+      "backend/src/projects/projects.controller.ts",
+      "backend/src/projects/projects.service.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/projects/projects.service.spec.ts": [
+      "backend/src/database/database.provider.ts",
+      "backend/src/projects/projects.service.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/projects/projects.service.ts": [
+      "backend/src/projects/project.types.ts"
+    ],
+    "backend/src/projects/sqlite-project.repository.ts": [
+      "backend/src/database/database.provider.ts",
+      "backend/src/projects/project.types.ts"
+    ],
+    "backend/test/app.e2e-spec.ts": [
+      "backend/src/app.module.ts"
+    ],
+    "backend/test/bubble-canvas.e2e-spec.ts": [
+      "backend/src/app.module.ts"
+    ],
+    "backend/test/bubble-links.e2e-spec.ts": [
+      "backend/src/app.module.ts"
+    ],
+    "backend/test/discussions.e2e-spec.ts": [
+      "backend/src/ai/ai-capabilities.ts",
+      "backend/src/ai/fake-model.client.ts",
+      "backend/src/app.module.ts"
+    ],
+    "backend/test/documents.e2e-spec.ts": [
+      "backend/src/app.module.ts",
+      "backend/src/database/database.provider.ts",
+      "backend/src/documents/document-processing.coordinator.ts",
+      "backend/src/documents/document.types.ts",
+      "backend/test/fixtures/document-files.ts"
+    ],
+    "backend/test/fixtures/document-files.ts": [],
+    "backend/test/jest-e2e.json": [],
+    "backend/test/knowledge-extraction.e2e-spec.ts": [
+      "backend/src/ai/fake-model.client.ts",
+      "backend/src/ai/model-client.ts",
+      "backend/src/app.module.ts"
+    ],
+    "backend/test/projects.e2e-spec.ts": [
+      "backend/src/app.module.ts"
+    ],
+    "backend/tsconfig.build.json": [],
+    "backend/tsconfig.json": [],
+    "design/README.md": [],
+    "design/project/Discussion Context Flow.html": [],
+    "frontend/README.md": [],
+    "frontend/eslint.config.js": [],
+    "frontend/index.html": [],
+    "frontend/package.json": [],
+    "frontend/src/App.tsx": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/projects/CreateProjectDialog.tsx",
+      "frontend/src/ui/focusRing.ts",
+      "frontend/src/utils/date/index.ts",
+      "frontend/src/utils/routing/index.ts",
+      "frontend/src/workspace/ProjectCanvasRoute.tsx"
+    ],
+    "frontend/src/analytics.ts": [],
+    "frontend/src/api/ai.ts": [
+      "frontend/src/api/client.ts"
+    ],
+    "frontend/src/api/bubbles.ts": [
+      "frontend/src/api/client.ts"
+    ],
+    "frontend/src/api/client.ts": [],
+    "frontend/src/api/discussionResponse.test.ts": [
+      "frontend/src/api/discussionResponse.ts"
+    ],
+    "frontend/src/api/discussionResponse.ts": [],
+    "frontend/src/api/discussions.ts": [
+      "frontend/src/api/client.ts",
+      "frontend/src/api/discussionResponse.ts"
+    ],
+    "frontend/src/api/documents.ts": [
+      "frontend/src/api/client.ts"
+    ],
+    "frontend/src/api/index.ts": [],
+    "frontend/src/api/knowledgeExtractions.ts": [
+      "frontend/src/api/bubbles.ts",
+      "frontend/src/api/client.ts"
+    ],
+    "frontend/src/api/projects.ts": [
+      "frontend/src/api/client.ts"
+    ],
+    "frontend/src/bubbles/BubbleInspector.tsx": [
+      "frontend/src/bubbles/BubbleReaderModal.tsx",
+      "frontend/src/bubbles/bubbleInspectorTypes.ts",
+      "frontend/src/bubbles/bubbleReadingModel.ts",
+      "frontend/src/bubbles/useBubbleInspector.ts",
+      "frontend/src/ui/RichResponse.tsx",
+      "frontend/src/ui/focusRing.ts",
+      "frontend/src/ui/useFieldValidity.ts"
+    ],
+    "frontend/src/bubbles/BubbleReaderModal.tsx": [
+      "frontend/src/api/index.ts",
+      "frontend/src/bubbles/bubbleReadingModel.ts",
+      "frontend/src/ui/RichResponse.tsx",
+      "frontend/src/ui/focusRing.ts",
+      "frontend/src/ui/useModalShell.ts"
+    ],
+    "frontend/src/bubbles/CreateBubbleDialog.tsx": [
+      "frontend/src/api/index.ts",
+      "frontend/src/ui/focusRing.ts",
+      "frontend/src/ui/useFieldValidity.ts",
+      "frontend/src/ui/useModalShell.ts"
+    ],
+    "frontend/src/bubbles/bubbleInspectorTypes.ts": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts"
+    ],
+    "frontend/src/bubbles/bubbleReadingModel.ts": [
+      "frontend/src/api/index.ts"
+    ],
+    "frontend/src/bubbles/useBubbleInspector.ts": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/bubbles/bubbleInspectorTypes.ts",
+      "frontend/src/ui/useModalShell.ts"
+    ],
+    "frontend/src/canvas/BubbleCard.tsx": [
+      "frontend/src/api/index.ts",
+      "frontend/src/canvas/bubbleCardPreview.ts",
+      "frontend/src/canvas/compactLayout.ts",
+      "frontend/src/utils/date/index.ts"
+    ],
+    "frontend/src/canvas/CanvasOverlays.tsx": [
+      "frontend/src/canvas/canvasModel.ts",
+      "frontend/src/ui/focusRing.ts"
+    ],
+    "frontend/src/canvas/CanvasSurface.tsx": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/bubbles/CreateBubbleDialog.tsx",
+      "frontend/src/canvas/BubbleCard.tsx",
+      "frontend/src/canvas/CanvasOverlays.tsx",
+      "frontend/src/canvas/canvasModel.ts",
+      "frontend/src/canvas/canvasTypes.ts",
+      "frontend/src/canvas/compactLayout.ts",
+      "frontend/src/canvas/useBubbleDrag.ts",
+      "frontend/src/canvas/useMultiSelection.ts",
+      "frontend/src/canvas/useProjectBubbles.ts",
+      "frontend/src/canvas/useViewportPersistence.ts"
+    ],
+    "frontend/src/canvas/bubbleCardPreview.ts": [
+      "frontend/src/api/index.ts",
+      "frontend/src/ui/markdownToPlainText.ts"
+    ],
+    "frontend/src/canvas/canvasModel.ts": [
+      "frontend/src/api/index.ts",
+      "frontend/src/canvas/canvasTypes.ts"
+    ],
+    "frontend/src/canvas/canvasTypes.ts": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/bubbles/CreateBubbleDialog.tsx"
+    ],
+    "frontend/src/canvas/compactLayout.ts": [
+      "frontend/src/api/index.ts"
+    ],
+    "frontend/src/canvas/useBubbleDrag.ts": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/canvas/canvasTypes.ts"
+    ],
+    "frontend/src/canvas/useMultiSelection.ts": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/canvas/canvasTypes.ts"
+    ],
+    "frontend/src/canvas/useProjectBubbles.ts": [
+      "frontend/src/api/index.ts",
+      "frontend/src/canvas/canvasModel.ts",
+      "frontend/src/canvas/canvasTypes.ts"
+    ],
+    "frontend/src/canvas/useViewportPersistence.ts": [
+      "frontend/src/analytics.ts",
+      "frontend/src/canvas/canvasModel.ts",
+      "frontend/src/canvas/canvasTypes.ts"
+    ],
+    "frontend/src/discussions/DiscussionComposer.test.tsx": [
+      "frontend/src/analytics.ts",
+      "frontend/src/discussions/DiscussionComposer.tsx",
+      "frontend/src/discussions/discussionSourceCatalog.ts"
+    ],
+    "frontend/src/discussions/DiscussionComposer.tsx": [
+      "frontend/src/analytics.ts",
+      "frontend/src/discussions/DiscussionMentionChips.tsx",
+      "frontend/src/discussions/DiscussionMentionList.tsx",
+      "frontend/src/discussions/discussionCreationFailure.ts",
+      "frontend/src/discussions/discussionMention.ts",
+      "frontend/src/discussions/discussionMentionAnalytics.ts",
+      "frontend/src/discussions/discussionSourceCatalog.ts",
+      "frontend/src/discussions/useAutoGrowTextarea.ts",
+      "frontend/src/ui/focusRing.ts"
+    ],
+    "frontend/src/discussions/DiscussionContextBadges.tsx": [
+      "frontend/src/discussions/discussionContextModel.ts"
+    ],
+    "frontend/src/discussions/DiscussionDeleteDialog.tsx": [
+      "frontend/src/ui/focusRing.ts",
+      "frontend/src/ui/useModalShell.ts"
+    ],
+    "frontend/src/discussions/DiscussionExperience.tsx": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/DiscussionComposer.tsx",
+      "frontend/src/discussions/DiscussionContextBadges.tsx",
+      "frontend/src/discussions/DiscussionDeleteDialog.tsx",
+      "frontend/src/discussions/DiscussionKnowledgeAction.tsx",
+      "frontend/src/discussions/DiscussionMessages.tsx",
+      "frontend/src/discussions/DiscussionModal.tsx",
+      "frontend/src/discussions/FrozenContextInspector.tsx",
+      "frontend/src/discussions/discussionContextModel.ts",
+      "frontend/src/discussions/discussionModel.ts",
+      "frontend/src/discussions/discussionSourceCatalog.ts",
+      "frontend/src/discussions/useDiscussionContextSelection.ts",
+      "frontend/src/discussions/useDiscussionLifecycle.ts",
+      "frontend/src/discussions/useDiscussionVisibility.ts",
+      "frontend/src/knowledge-extraction/index.ts"
+    ],
+    "frontend/src/discussions/DiscussionKnowledgeAction.tsx": [
+      "frontend/src/ui/focusRing.ts"
+    ],
+    "frontend/src/discussions/DiscussionMentionChips.tsx": [
+      "frontend/src/discussions/discussionCreationFailure.ts",
+      "frontend/src/discussions/discussionMention.ts",
+      "frontend/src/discussions/discussionSourceCatalog.ts",
+      "frontend/src/ui/focusRing.ts"
+    ],
+    "frontend/src/discussions/DiscussionMentionList.tsx": [
+      "frontend/src/discussions/discussionMention.ts",
+      "frontend/src/discussions/discussionSourceCatalog.ts",
+      "frontend/src/ui/focusRing.ts"
+    ],
+    "frontend/src/discussions/DiscussionMessageSources.tsx": [
+      "frontend/src/api/index.ts"
+    ],
+    "frontend/src/discussions/DiscussionMessages.test.tsx": [
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/DiscussionMessages.tsx",
+      "frontend/src/discussions/useDiscussionLifecycle.ts"
+    ],
+    "frontend/src/discussions/DiscussionMessages.tsx": [
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/DiscussionKnowledgeAction.tsx",
+      "frontend/src/discussions/DiscussionMessageSources.tsx",
+      "frontend/src/discussions/useDiscussionLifecycle.ts",
+      "frontend/src/ui/RichResponse.tsx"
+    ],
+    "frontend/src/discussions/DiscussionModal.tsx": [
+      "frontend/src/discussions/discussionModel.ts",
+      "frontend/src/discussions/useDiscussionVisibility.ts",
+      "frontend/src/ui/focusRing.ts",
+      "frontend/src/ui/useModalShell.ts"
+    ],
+    "frontend/src/discussions/DiscussionsPanel.tsx": [
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/discussionModel.ts",
+      "frontend/src/discussions/useProjectDiscussions.ts",
+      "frontend/src/ui/focusRing.ts",
+      "frontend/src/utils/date/index.ts"
+    ],
+    "frontend/src/discussions/FrozenContextInspector.tsx": [
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/discussionContextModel.ts"
+    ],
+    "frontend/src/discussions/discussionContextModel.test.ts": [
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/discussionContextModel.ts"
+    ],
+    "frontend/src/discussions/discussionContextModel.ts": [
+      "frontend/src/api/index.ts"
+    ],
+    "frontend/src/discussions/discussionCreationFailure.ts": [
+      "frontend/src/api/index.ts"
+    ],
+    "frontend/src/discussions/discussionListModel.ts": [
+      "frontend/src/api/index.ts"
+    ],
+    "frontend/src/discussions/discussionMention.test.ts": [
+      "frontend/src/discussions/discussionMention.ts",
+      "frontend/src/discussions/discussionSourceCatalog.ts"
+    ],
+    "frontend/src/discussions/discussionMention.ts": [
+      "frontend/src/discussions/discussionSourceCatalog.ts"
+    ],
+    "frontend/src/discussions/discussionMentionAnalytics.ts": [
+      "frontend/src/analytics.ts"
+    ],
+    "frontend/src/discussions/discussionModel.ts": [],
+    "frontend/src/discussions/discussionSourceCatalog.ts": [],
+    "frontend/src/discussions/index.ts": [],
+    "frontend/src/discussions/useAutoGrowTextarea.ts": [],
+    "frontend/src/discussions/useDiscussionContextSelection.ts": [
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/discussionCreationFailure.ts"
+    ],
+    "frontend/src/discussions/useDiscussionLifecycle.test.tsx": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/useDiscussionLifecycle.ts"
+    ],
+    "frontend/src/discussions/useDiscussionLifecycle.ts": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/discussionCreationFailure.ts",
+      "frontend/src/discussions/discussionMentionAnalytics.ts",
+      "frontend/src/discussions/discussionModel.ts",
+      "frontend/src/discussions/useDiscussionVisibility.ts"
+    ],
+    "frontend/src/discussions/useDiscussionVisibility.ts": [
+      "frontend/src/discussions/discussionModel.ts"
+    ],
+    "frontend/src/discussions/useProjectDiscussions.ts": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/discussionListModel.ts",
+      "frontend/src/discussions/discussionModel.ts"
+    ],
+    "frontend/src/documents/DocumentContextSelectionPanel.tsx": [
+      "frontend/src/documents/documentContextSelectionTypes.ts",
+      "frontend/src/ui/focusRing.ts"
+    ],
+    "frontend/src/documents/DocumentInspectionPanel.tsx": [
+      "frontend/src/api/index.ts",
+      "frontend/src/documents/documentPresentation.ts",
+      "frontend/src/ui/focusRing.ts"
+    ],
+    "frontend/src/documents/DocumentsPanel.test.tsx": [
+      "frontend/src/documents/DocumentsPanel.tsx",
+      "frontend/src/documents/documentTestFixtures.ts",
+      "frontend/src/documents/useDocumentLibrary.ts"
+    ],
+    "frontend/src/documents/DocumentsPanel.tsx": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/documents/DocumentInspectionPanel.tsx",
+      "frontend/src/documents/documentAnalytics.ts",
+      "frontend/src/documents/documentPresentation.ts",
+      "frontend/src/documents/useDocumentLibrary.ts",
+      "frontend/src/ui/focusRing.ts"
+    ],
+    "frontend/src/documents/documentAnalytics.ts": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts"
+    ],
+    "frontend/src/documents/documentContextSelectionTypes.ts": [],
+    "frontend/src/documents/documentPresentation.ts": [
+      "frontend/src/api/index.ts"
+    ],
+    "frontend/src/documents/documentTestFixtures.ts": [
+      "frontend/src/api/index.ts"
+    ],
+    "frontend/src/documents/documentUploadPreflight.test.ts": [
+      "frontend/src/documents/documentTestFixtures.ts",
+      "frontend/src/documents/documentUploadPreflight.ts"
+    ],
+    "frontend/src/documents/documentUploadPreflight.ts": [
+      "frontend/src/api/index.ts"
+    ],
+    "frontend/src/documents/index.ts": [],
+    "frontend/src/documents/useDocumentLibrary.test.tsx": [
+      "frontend/src/analytics.ts",
+      "frontend/src/documents/documentTestFixtures.ts",
+      "frontend/src/documents/useDocumentLibrary.ts"
+    ],
+    "frontend/src/documents/useDocumentLibrary.ts": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/documents/documentAnalytics.ts",
+      "frontend/src/documents/documentUploadPreflight.ts"
+    ],
+    "frontend/src/documents/useDocumentMultiSelection.ts": [
+      "frontend/src/documents/documentContextSelectionTypes.ts"
+    ],
+    "frontend/src/index.css": [],
+    "frontend/src/knowledge-extraction/KnowledgeExtractionDiscardDialog.tsx": [
+      "frontend/src/ui/focusRing.ts",
+      "frontend/src/ui/useModalShell.ts"
+    ],
+    "frontend/src/knowledge-extraction/KnowledgeExtractionProposalReview.tsx": [
+      "frontend/src/api/index.ts",
+      "frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "frontend/src/ui/RichResponse.tsx",
+      "frontend/src/ui/focusRing.ts",
+      "frontend/src/ui/markdownToPlainText.ts",
+      "frontend/src/ui/useFieldValidity.ts"
+    ],
+    "frontend/src/knowledge-extraction/KnowledgeExtractionSourceActions.tsx": [
+      "frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "frontend/src/ui/focusRing.ts"
+    ],
+    "frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx": [
+      "frontend/src/api/index.ts",
+      "frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "frontend/src/ui/focusRing.ts"
+    ],
+    "frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx": [
+      "frontend/src/api/index.ts",
+      "frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx",
+      "frontend/src/knowledge-extraction/knowledgeExtractionSources.ts",
+      "frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "frontend/src/ui/focusRing.ts"
+    ],
+    "frontend/src/knowledge-extraction/index.ts": [],
+    "frontend/src/knowledge-extraction/knowledgeExtractionAnalytics.ts": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/knowledge-extraction/knowledgeExtractionSources.ts",
+      "frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts"
+    ],
+    "frontend/src/knowledge-extraction/knowledgeExtractionSources.ts": [
+      "frontend/src/api/index.ts",
+      "frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts"
+    ],
+    "frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts": [
+      "frontend/src/api/index.ts"
+    ],
+    "frontend/src/knowledge-extraction/knowledgeExtractionTargetSelection.ts": [
+      "frontend/src/api/index.ts"
+    ],
+    "frontend/src/knowledge-extraction/useKnowledgeExtraction.ts": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/knowledge-extraction/knowledgeExtractionAnalytics.ts",
+      "frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts"
+    ],
+    "frontend/src/main.tsx": [
+      "frontend/src/App.tsx",
+      "frontend/src/index.css"
+    ],
+    "frontend/src/projects/CreateProjectDialog.documents.test.tsx": [
+      "frontend/src/documents/documentTestFixtures.ts",
+      "frontend/src/projects/CreateProjectDialog.tsx"
+    ],
+    "frontend/src/projects/CreateProjectDialog.tsx": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/documents/index.ts",
+      "frontend/src/ui/focusRing.ts",
+      "frontend/src/ui/useFieldValidity.ts",
+      "frontend/src/ui/useModalShell.ts"
+    ],
+    "frontend/src/projects/ProjectDescriptionEditor.tsx": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/ui/focusRing.ts",
+      "frontend/src/ui/useFieldValidity.ts"
+    ],
+    "frontend/src/ui/RichResponse.test.tsx": [
+      "frontend/src/ui/RichResponse.tsx"
+    ],
+    "frontend/src/ui/RichResponse.tsx": [],
+    "frontend/src/ui/focusRing.ts": [],
+    "frontend/src/ui/markdownToPlainText.test.ts": [
+      "frontend/src/ui/markdownToPlainText.ts"
+    ],
+    "frontend/src/ui/markdownToPlainText.ts": [],
+    "frontend/src/ui/useFieldValidity.ts": [],
+    "frontend/src/ui/useModalShell.ts": [],
+    "frontend/src/utils/date/formatUpdatedAt.ts": [],
+    "frontend/src/utils/date/index.ts": [],
+    "frontend/src/utils/routing/index.ts": [],
+    "frontend/src/utils/routing/navigate.ts": [],
+    "frontend/src/utils/routing/resolveRoute.ts": [],
+    "frontend/src/workspace/ProjectCanvasRoute.tsx": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/bubbles/BubbleInspector.tsx",
+      "frontend/src/bubbles/CreateBubbleDialog.tsx",
+      "frontend/src/canvas/CanvasSurface.tsx",
+      "frontend/src/documents/index.ts",
+      "frontend/src/ui/focusRing.ts",
+      "frontend/src/utils/routing/index.ts",
+      "frontend/src/workspace/ProjectWorkspace.tsx"
+    ],
+    "frontend/src/workspace/ProjectWorkspace.documents.test.tsx": [
+      "frontend/src/documents/documentTestFixtures.ts",
+      "frontend/src/workspace/ProjectWorkspace.tsx"
+    ],
+    "frontend/src/workspace/ProjectWorkspace.tsx": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/bubbles/BubbleInspector.tsx",
+      "frontend/src/bubbles/CreateBubbleDialog.tsx",
+      "frontend/src/canvas/CanvasSurface.tsx",
+      "frontend/src/canvas/useProjectBubbles.ts",
+      "frontend/src/discussions/index.ts",
+      "frontend/src/documents/index.ts",
+      "frontend/src/knowledge-extraction/index.ts",
+      "frontend/src/projects/ProjectDescriptionEditor.tsx",
+      "frontend/src/ui/focusRing.ts",
+      "frontend/src/utils/routing/index.ts",
+      "frontend/src/workspace/currentProjectDescription.ts",
+      "frontend/src/workspace/panelModel.ts",
+      "frontend/src/workspace/projectSourceCatalog.ts"
+    ],
+    "frontend/src/workspace/currentProjectDescription.ts": [],
+    "frontend/src/workspace/panelModel.ts": [],
+    "frontend/src/workspace/projectSourceCatalog.test.ts": [
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/discussionSourceCatalog.ts",
+      "frontend/src/documents/documentTestFixtures.ts",
+      "frontend/src/workspace/projectSourceCatalog.ts"
+    ],
+    "frontend/src/workspace/projectSourceCatalog.ts": [
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/discussionSourceCatalog.ts",
+      "frontend/src/documents/documentPresentation.ts"
+    ],
+    "frontend/tests/BubbleCanvasJourney.test.tsx": [
+      "frontend/src/App.tsx",
+      "frontend/src/api/index.ts",
+      "frontend/src/canvas/compactLayout.ts",
+      "frontend/src/workspace/ProjectWorkspace.tsx"
+    ],
+    "frontend/tests/BubbleCard.test.tsx": [
+      "frontend/src/api/index.ts",
+      "frontend/src/canvas/BubbleCard.tsx",
+      "frontend/src/canvas/bubbleCardPreview.ts"
+    ],
+    "frontend/tests/BubbleInspector.test.tsx": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/bubbles/BubbleInspector.tsx"
+    ],
+    "frontend/tests/CanvasSurface.test.tsx": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/canvas/CanvasSurface.tsx"
+    ],
+    "frontend/tests/CreateBubbleDialog.test.tsx": [
+      "frontend/src/api/index.ts",
+      "frontend/src/bubbles/CreateBubbleDialog.tsx"
+    ],
+    "frontend/tests/CreateProjectDialog.test.tsx": [
+      "frontend/src/App.tsx",
+      "frontend/src/api/index.ts",
+      "frontend/src/projects/CreateProjectDialog.tsx"
+    ],
+    "frontend/tests/DiscussionComposerAutoGrow.test.tsx": [
+      "frontend/src/discussions/index.ts"
+    ],
+    "frontend/tests/DiscussionExperience.test.tsx": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/index.ts",
+      "frontend/src/knowledge-extraction/index.ts"
+    ],
+    "frontend/tests/DiscussionModal.test.tsx": [
+      "frontend/src/discussions/index.ts"
+    ],
+    "frontend/tests/DiscussionsPanelLifecycle.test.tsx": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/workspace/ProjectWorkspace.tsx"
+    ],
+    "frontend/tests/DocumentsPanel.test.tsx": [
+      "frontend/src/api/index.ts",
+      "frontend/src/documents/index.ts"
+    ],
+    "frontend/tests/ProjectCreationJourney.test.tsx": [
+      "frontend/src/App.tsx",
+      "frontend/src/api/index.ts"
+    ],
+    "frontend/tests/ProjectDescriptionEditor.test.tsx": [
+      "frontend/src/App.tsx",
+      "frontend/src/api/index.ts",
+      "frontend/src/projects/ProjectDescriptionEditor.tsx",
+      "frontend/src/workspace/ProjectWorkspace.tsx",
+      "frontend/src/workspace/currentProjectDescription.ts"
+    ],
+    "frontend/tests/ProjectWorkspaceAnalytics.test.tsx": [
+      "frontend/src/App.tsx",
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/projects/ProjectDescriptionEditor.tsx",
+      "frontend/src/workspace/ProjectCanvasRoute.tsx",
+      "frontend/src/workspace/ProjectWorkspace.tsx"
+    ],
+    "frontend/tests/ProjectWorkspaceIntegration.test.tsx": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/workspace/ProjectWorkspace.tsx"
+    ],
+    "frontend/tests/aiApi.test.ts": [
+      "frontend/src/api/ai.ts"
+    ],
+    "frontend/tests/bubbleResponse.test.ts": [
+      "frontend/src/api/index.ts"
+    ],
+    "frontend/tests/bubblesApi.test.ts": [
+      "frontend/src/api/bubbles.ts"
+    ],
+    "frontend/tests/compactLayout.test.ts": [
+      "frontend/src/api/index.ts",
+      "frontend/src/canvas/compactLayout.ts"
+    ],
+    "frontend/tests/discussionContextSelection.test.ts": [
+      "frontend/src/discussions/index.ts"
+    ],
+    "frontend/tests/discussionCreationFailure.test.ts": [
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/index.ts"
+    ],
+    "frontend/tests/discussionListModel.test.ts": [
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/index.ts"
+    ],
+    "frontend/tests/discussionMentionAnalytics.test.ts": [
+      "frontend/src/analytics.ts",
+      "frontend/src/discussions/index.ts"
+    ],
+    "frontend/tests/discussionVisibility.test.ts": [
+      "frontend/src/discussions/index.ts"
+    ],
+    "frontend/tests/discussionsApi.test.ts": [
+      "frontend/src/api/discussions.ts"
+    ],
+    "frontend/tests/documentAnalytics.test.ts": [
+      "frontend/src/analytics.ts",
+      "frontend/src/documents/index.ts"
+    ],
+    "frontend/tests/documentContextSelection.test.ts": [
+      "frontend/src/documents/index.ts"
+    ],
+    "frontend/tests/documentUploadPreflight.test.ts": [
+      "frontend/src/documents/index.ts"
+    ],
+    "frontend/tests/documentsApi.test.ts": [
+      "frontend/src/api/documents.ts"
+    ],
+    "frontend/tests/knowledgeExtractionStateMachine.test.ts": [
+      "frontend/src/knowledge-extraction/index.ts"
+    ],
+    "frontend/tests/knowledgeExtractionsApi.test.ts": [
+      "frontend/src/api/knowledgeExtractions.ts"
+    ],
+    "frontend/tests/projectsApi.test.ts": [
+      "frontend/src/api/projects.ts"
+    ],
+    "frontend/tests/useDocumentLibrary.test.ts": [
+      "frontend/src/documents/index.ts"
+    ],
+    "frontend/tests/useFieldValidity.test.tsx": [
+      "frontend/src/ui/useFieldValidity.ts"
+    ],
+    "frontend/tests/useKnowledgeExtraction.test.ts": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/knowledge-extraction/index.ts"
+    ],
+    "frontend/tests/useProjectBubbles.test.ts": [
+      "frontend/src/api/index.ts",
+      "frontend/src/canvas/useProjectBubbles.ts"
+    ],
+    "frontend/tests/useProjectDiscussions.test.ts": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/index.ts"
+    ],
+    "frontend/tsconfig.app.json": [],
+    "frontend/tsconfig.json": [],
+    "frontend/tsconfig.node.json": [],
+    "frontend/tsconfig.test.json": [],
+    "frontend/vite.config.ts": [],
+    "package.json": [],
+    "shared/PRD/PRD_0.md": [],
+    "shared/PRD/PRD_01.md": [],
+    "shared/PRD/PRD_02.md": [],
+    "shared/PRD/PRD_03.md": [],
+    "shared/PRD/PRD_04.md": [],
+    "shared/PRD/PRD_05.md": [],
+    "shared/PRD/PRD_06.md": [],
+    "shared/PRD/PRD_07.md": [],
+    "shared/PRD/PRD_08.md": [],
+    "shared/PRD/PRD_09.md": [],
+    "shared/package.json": [],
+    "shared/src/index.ts": [],
+    "shared/src/validation-limits.ts": [],
+    "shared/tsconfig.json": []
+  }
+}

@@ -1,0 +1,864 @@
+{
+  "nodes": [
+    {
+      "id": "file:backend/src/discussion-context/discussion-context.module.ts",
+      "type": "file",
+      "name": "discussion-context.module.ts",
+      "filePath": "backend/src/discussion-context/discussion-context.module.ts",
+      "summary": "NestJS module wiring the DiscussionContextAssembler, importing the Projects, Bubbles, and Documents modules so the assembler can read live project sources through their narrow capability ports.",
+      "tags": [
+        "module",
+        "dependency-injection",
+        "nestjs",
+        "context-assembly",
+        "boundary"
+      ],
+      "complexity": "simple",
+      "languageNotes": "The module exports only the assembler, keeping the source-reading ports it consumes internal to the feature."
+    },
+    {
+      "id": "file:backend/src/discussion-context/discussion-context.types.ts",
+      "type": "file",
+      "name": "discussion-context.types.ts",
+      "filePath": "backend/src/discussion-context/discussion-context.types.ts",
+      "summary": "Declares the consumer-side DocumentContextSourceReader port, its available/unavailable read result, source-issue reasons, and the DiscussionContextSourceError raised when selected sources cannot be frozen.",
+      "tags": [
+        "type-definition",
+        "port",
+        "capability-boundary",
+        "validation",
+        "context-assembly"
+      ],
+      "complexity": "simple",
+      "languageNotes": "A discriminated union (`status: available | unavailable`) plus a Symbol DI token expresses the port without Discussion Context ever touching document storage."
+    },
+    {
+      "id": "file:backend/src/discussions/discussion.types.ts",
+      "type": "file",
+      "name": "discussion.types.ts",
+      "filePath": "backend/src/discussions/discussion.types.ts",
+      "summary": "Backend-side discussion contracts: persisted discussion and message shapes (legacy vs versioned frozen-context metadata), the DiscussionRepository, DiscussionMessageRepository, and DiscussionExtractionSourceReader ports, DI tokens, and integrity errors.",
+      "tags": [
+        "type-definition",
+        "port",
+        "repository-interface",
+        "data-model",
+        "frozen-context"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Legacy and versioned persisted discussions are modelled as a discriminated union so migration-era rows stay type-safe alongside FrozenContextV1 rows."
+    },
+    {
+      "id": "file:backend/src/discussions/discussions.controller.ts",
+      "type": "file",
+      "name": "discussions.controller.ts",
+      "filePath": "backend/src/discussions/discussions.controller.ts",
+      "summary": "REST controller for project-nested discussions, exposing create, list, get, record-open, send-message, generate-title, and delete routes that delegate straight to DiscussionsService.",
+      "tags": [
+        "api-handler",
+        "controller",
+        "rest",
+        "nestjs",
+        "routing"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/src/discussions/discussions.module.ts",
+      "type": "file",
+      "name": "discussions.module.ts",
+      "filePath": "backend/src/discussions/discussions.module.ts",
+      "summary": "NestJS module for the discussions feature, binding DISCUSSION_REPOSITORY, DISCUSSION_MESSAGE_REPOSITORY, and DISCUSSION_EXTRACTION_SOURCE_READER to a single SqliteDiscussionRepository instance and exporting the extraction-source reader capability.",
+      "tags": [
+        "module",
+        "dependency-injection",
+        "nestjs",
+        "repository-binding",
+        "boundary"
+      ],
+      "complexity": "simple",
+      "languageNotes": "`useExisting` binds three distinct ports to one repository instance, so consumers depend on narrow capabilities rather than the concrete class."
+    },
+    {
+      "id": "file:backend/src/discussions/discussions.service.spec.ts",
+      "type": "file",
+      "name": "discussions.service.spec.ts",
+      "filePath": "backend/src/discussions/discussions.service.spec.ts",
+      "summary": "Extensive unit suite for DiscussionsService covering creation idempotency, frozen-context assembly and persistence, model-input budgeting, web-search gating, retry of failed turns, title generation, and soft deletion, using fakes for the document context-source reader and model client.",
+      "tags": [
+        "test",
+        "unit-test",
+        "discussions",
+        "frozen-context",
+        "idempotency"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:backend/src/discussions/discussions.service.ts",
+      "type": "file",
+      "name": "discussions.service.ts",
+      "filePath": "backend/src/discussions/discussions.service.ts",
+      "summary": "Owns the discussion workflow: validates and normalizes input, assembles and atomically persists the frozen context with the first turn, enforces per-turn idempotency and web-search capability gating, calls the model client, and persists only valid assistant output.",
+      "tags": [
+        "service",
+        "workflow",
+        "validation",
+        "idempotency",
+        "frozen-context"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Frozen context is treated as opaque: the service guards transport size and object shape, then forwards it to the formatter without interpreting source semantics."
+    },
+    {
+      "id": "file:backend/src/discussions/sqlite-discussion.repository.spec.ts",
+      "type": "file",
+      "name": "sqlite-discussion.repository.spec.ts",
+      "filePath": "backend/src/discussions/sqlite-discussion.repository.spec.ts",
+      "summary": "Integration-style tests for SqliteDiscussionRepository against a real in-memory SQLite database, exercising atomic creation with the first message, context-item persistence, corrupt-row integrity errors, message status transitions, and extraction-source reads.",
+      "tags": [
+        "test",
+        "integration-test",
+        "sqlite",
+        "persistence",
+        "repository"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:backend/src/discussions/sqlite-discussion.repository.ts",
+      "type": "file",
+      "name": "sqlite-discussion.repository.ts",
+      "filePath": "backend/src/discussions/sqlite-discussion.repository.ts",
+      "summary": "SQLite implementation satisfying the discussion repository, message repository, and extraction-source reader ports; persists discussions with their frozen-context items transactionally, parses legacy context shapes, and validates every read against integrity invariants.",
+      "tags": [
+        "repository",
+        "sqlite",
+        "persistence",
+        "validation",
+        "frozen-context"
+      ],
+      "complexity": "complex",
+      "languageNotes": "One class implements three interfaces, each row is re-validated on read (isRecord/isIsoTimestamp guards) so corrupt persisted values surface as controlled repository failures."
+    },
+    {
+      "id": "file:backend/src/documents/sqlite-document.repository.spec.ts",
+      "type": "file",
+      "name": "sqlite-document.repository.spec.ts",
+      "filePath": "backend/src/documents/sqlite-document.repository.spec.ts",
+      "summary": "Tests for SqliteDocumentRepository against in-memory SQLite, covering document record creation, processing status/lease and generation guards, integrity errors on corrupt rows, and project-scoped context-source reads.",
+      "tags": [
+        "test",
+        "integration-test",
+        "sqlite",
+        "documents",
+        "persistence"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:backend/src/discussion-context/discussion-context.module.ts:DiscussionContextModule",
+      "type": "class",
+      "name": "DiscussionContextModule",
+      "filePath": "backend/src/discussion-context/discussion-context.module.ts",
+      "lineRange": [
+        12,
+        12
+      ],
+      "summary": "Module definition that provides and exports DiscussionContextAssembler while importing the project, bubble, and document modules it reads sources from.",
+      "tags": [
+        "module",
+        "nestjs",
+        "dependency-injection"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/src/discussion-context/discussion-context.types.ts:DiscussionContextSourceError",
+      "type": "class",
+      "name": "DiscussionContextSourceError",
+      "filePath": "backend/src/discussion-context/discussion-context.types.ts",
+      "lineRange": [
+        50,
+        57
+      ],
+      "summary": "Error carrying the list of context-source issues (missing, inaccessible, cross-project, processing, failed) that prevented a frozen-context snapshot from being assembled.",
+      "tags": [
+        "error",
+        "validation",
+        "context-assembly"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/src/discussions/discussion.types.ts:DiscussionContextIntegrityError",
+      "type": "class",
+      "name": "DiscussionContextIntegrityError",
+      "filePath": "backend/src/discussions/discussion.types.ts",
+      "lineRange": [
+        188,
+        197
+      ],
+      "summary": "Raised when a persisted discussion context is incomplete or corrupt, so a bad snapshot fails loudly instead of reaching the model.",
+      "tags": [
+        "error",
+        "integrity",
+        "frozen-context"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/src/discussions/discussion.types.ts:DiscussionMessageIntegrityError",
+      "type": "class",
+      "name": "DiscussionMessageIntegrityError",
+      "filePath": "backend/src/discussions/discussion.types.ts",
+      "lineRange": [
+        199,
+        206
+      ],
+      "summary": "Raised when a persisted discussion message row fails validation on read, converting corrupt storage into a controlled repository failure.",
+      "tags": [
+        "error",
+        "integrity",
+        "persistence"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/src/discussions/discussions.controller.ts:DiscussionsController",
+      "type": "class",
+      "name": "DiscussionsController",
+      "filePath": "backend/src/discussions/discussions.controller.ts",
+      "lineRange": [
+        20,
+        80
+      ],
+      "summary": "HTTP boundary for `projects/:projectId/discussions`, defining route methods, status codes, and parameter binding while delegating all workflow to DiscussionsService.",
+      "tags": [
+        "api-handler",
+        "controller",
+        "rest",
+        "nestjs"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/src/discussions/discussions.module.ts:DiscussionsModule",
+      "type": "class",
+      "name": "DiscussionsModule",
+      "filePath": "backend/src/discussions/discussions.module.ts",
+      "lineRange": [
+        36,
+        36
+      ],
+      "summary": "Module definition binding the three discussion ports to SqliteDiscussionRepository and exporting DiscussionsService plus the extraction-source reader token.",
+      "tags": [
+        "module",
+        "nestjs",
+        "dependency-injection"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/src/discussions/discussions.service.spec.ts:FakeDocumentContextSourceReader",
+      "type": "class",
+      "name": "FakeDocumentContextSourceReader",
+      "filePath": "backend/src/discussions/discussions.service.spec.ts",
+      "lineRange": [
+        34,
+        48
+      ],
+      "summary": "Test double for the DocumentContextSourceReader port, returning scripted available/unavailable results so context-assembly failures can be exercised without document storage.",
+      "tags": [
+        "test",
+        "fake",
+        "port",
+        "context-assembly"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/src/discussions/discussions.service.spec.ts:ControllableModelClient",
+      "type": "class",
+      "name": "ControllableModelClient",
+      "filePath": "backend/src/discussions/discussions.service.spec.ts",
+      "lineRange": [
+        50,
+        90
+      ],
+      "summary": "Test double for the ModelClient port with controllable answer and title generation, used to drive success, failure, and pending-turn branches deterministically.",
+      "tags": [
+        "test",
+        "fake",
+        "port",
+        "ai"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/src/discussions/discussions.service.ts:DiscussionsService",
+      "type": "class",
+      "name": "DiscussionsService",
+      "filePath": "backend/src/discussions/discussions.service.ts",
+      "lineRange": [
+        74,
+        1067
+      ],
+      "summary": "Central discussion workflow service: validates requests, assembles and freezes context on creation, enforces idempotency keys and creation-request fingerprints, budgets model input, gates web search on AI capabilities, and persists immutable messages.",
+      "tags": [
+        "service",
+        "workflow",
+        "validation",
+        "idempotency",
+        "frozen-context"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:backend/src/discussions/sqlite-discussion.repository.ts:SqliteDiscussionRepository",
+      "type": "class",
+      "name": "SqliteDiscussionRepository",
+      "filePath": "backend/src/discussions/sqlite-discussion.repository.ts",
+      "lineRange": [
+        81,
+        1186
+      ],
+      "summary": "Single SQLite class implementing DiscussionRepository, DiscussionMessageRepository, and DiscussionExtractionSourceReader; writes discussion, context-item, and message rows transactionally and re-validates every row it reads back.",
+      "tags": [
+        "repository",
+        "sqlite",
+        "persistence",
+        "validation",
+        "multi-port"
+      ],
+      "complexity": "complex"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:backend/src/discussion-context/discussion-context.module.ts",
+      "target": "file:backend/src/bubbles/bubbles.module.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussion-context/discussion-context.module.ts",
+      "target": "file:backend/src/discussion-context/discussion-context.assembler.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussion-context/discussion-context.module.ts",
+      "target": "file:backend/src/documents/documents.module.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussion-context/discussion-context.module.ts",
+      "target": "file:backend/src/projects/projects.module.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.controller.ts",
+      "target": "file:backend/src/discussions/discussions.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.module.ts",
+      "target": "file:backend/src/ai/ai.module.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.module.ts",
+      "target": "file:backend/src/bubbles/bubbles.module.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.module.ts",
+      "target": "file:backend/src/discussion-context/discussion-context.module.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.module.ts",
+      "target": "file:backend/src/discussions/discussion.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.module.ts",
+      "target": "file:backend/src/discussions/discussions.controller.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.module.ts",
+      "target": "file:backend/src/discussions/discussions.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.module.ts",
+      "target": "file:backend/src/discussions/sqlite-discussion.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.module.ts",
+      "target": "file:backend/src/projects/projects.module.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.spec.ts",
+      "target": "file:backend/src/ai/frozen-context.formatter.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.spec.ts",
+      "target": "file:backend/src/ai/input-token-estimator.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.spec.ts",
+      "target": "file:backend/src/ai/model-client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.spec.ts",
+      "target": "file:backend/src/ai/model-input-budget.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.spec.ts",
+      "target": "file:backend/src/bubbles/bubbles.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.spec.ts",
+      "target": "file:backend/src/bubbles/sqlite-bubble.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.spec.ts",
+      "target": "file:backend/src/database/database-transaction.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.spec.ts",
+      "target": "file:backend/src/database/database.provider.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.spec.ts",
+      "target": "file:backend/src/discussion-context/discussion-context.assembler.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.spec.ts",
+      "target": "file:backend/src/discussion-context/discussion-context.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.spec.ts",
+      "target": "file:backend/src/discussions/discussions.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.spec.ts",
+      "target": "file:backend/src/discussions/sqlite-discussion.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.spec.ts",
+      "target": "file:backend/src/projects/projects.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.spec.ts",
+      "target": "file:backend/src/projects/sqlite-project.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.ts",
+      "target": "file:backend/src/ai/ai-capabilities.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.ts",
+      "target": "file:backend/src/ai/frozen-context.formatter.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.ts",
+      "target": "file:backend/src/ai/model-client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.ts",
+      "target": "file:backend/src/ai/model-input-budget.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.ts",
+      "target": "file:backend/src/bubbles/bubble.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.ts",
+      "target": "file:backend/src/database/database-transaction.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.ts",
+      "target": "file:backend/src/discussion-context/discussion-context.assembler.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.ts",
+      "target": "file:backend/src/discussion-context/discussion-context.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.ts",
+      "target": "file:backend/src/discussions/discussion.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.ts",
+      "target": "file:backend/src/projects/projects.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/sqlite-discussion.repository.spec.ts",
+      "target": "file:backend/src/database/database.provider.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/sqlite-discussion.repository.spec.ts",
+      "target": "file:backend/src/discussions/discussion.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/sqlite-discussion.repository.spec.ts",
+      "target": "file:backend/src/discussions/sqlite-discussion.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/sqlite-discussion.repository.spec.ts",
+      "target": "file:backend/src/projects/project.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/sqlite-discussion.repository.spec.ts",
+      "target": "file:backend/src/projects/sqlite-project.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/sqlite-discussion.repository.ts",
+      "target": "file:backend/src/database/database.provider.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussions/sqlite-discussion.repository.ts",
+      "target": "file:backend/src/discussions/discussion.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/sqlite-document.repository.spec.ts",
+      "target": "file:backend/src/database/database.provider.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/sqlite-document.repository.spec.ts",
+      "target": "file:backend/src/documents/document.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/sqlite-document.repository.spec.ts",
+      "target": "file:backend/src/documents/sqlite-document.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/sqlite-document.repository.spec.ts",
+      "target": "file:backend/src/projects/projects.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/documents/sqlite-document.repository.spec.ts",
+      "target": "file:backend/src/projects/sqlite-project.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussion-context/discussion-context.module.ts",
+      "target": "class:backend/src/discussion-context/discussion-context.module.ts:DiscussionContextModule",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/discussion-context/discussion-context.module.ts",
+      "target": "class:backend/src/discussion-context/discussion-context.module.ts:DiscussionContextModule",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/discussion-context/discussion-context.types.ts",
+      "target": "class:backend/src/discussion-context/discussion-context.types.ts:DiscussionContextSourceError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/discussion-context/discussion-context.types.ts",
+      "target": "class:backend/src/discussion-context/discussion-context.types.ts:DiscussionContextSourceError",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/discussions/discussion.types.ts",
+      "target": "class:backend/src/discussions/discussion.types.ts:DiscussionContextIntegrityError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/discussions/discussion.types.ts",
+      "target": "class:backend/src/discussions/discussion.types.ts:DiscussionContextIntegrityError",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/discussions/discussion.types.ts",
+      "target": "class:backend/src/discussions/discussion.types.ts:DiscussionMessageIntegrityError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/discussions/discussion.types.ts",
+      "target": "class:backend/src/discussions/discussion.types.ts:DiscussionMessageIntegrityError",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.controller.ts",
+      "target": "class:backend/src/discussions/discussions.controller.ts:DiscussionsController",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.controller.ts",
+      "target": "class:backend/src/discussions/discussions.controller.ts:DiscussionsController",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.module.ts",
+      "target": "class:backend/src/discussions/discussions.module.ts:DiscussionsModule",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.module.ts",
+      "target": "class:backend/src/discussions/discussions.module.ts:DiscussionsModule",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.spec.ts",
+      "target": "class:backend/src/discussions/discussions.service.spec.ts:FakeDocumentContextSourceReader",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.spec.ts",
+      "target": "class:backend/src/discussions/discussions.service.spec.ts:ControllableModelClient",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.ts",
+      "target": "class:backend/src/discussions/discussions.service.ts:DiscussionsService",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.ts",
+      "target": "class:backend/src/discussions/discussions.service.ts:DiscussionsService",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/discussions/sqlite-discussion.repository.ts",
+      "target": "class:backend/src/discussions/sqlite-discussion.repository.ts:SqliteDiscussionRepository",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/discussions/sqlite-discussion.repository.ts",
+      "target": "class:backend/src/discussions/sqlite-discussion.repository.ts:SqliteDiscussionRepository",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:backend/src/discussions/sqlite-discussion.repository.ts:SqliteDiscussionRepository",
+      "target": "file:backend/src/discussions/discussion.types.ts",
+      "type": "implements",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "class:backend/src/discussions/discussions.controller.ts:DiscussionsController",
+      "target": "class:backend/src/discussions/discussions.service.ts:DiscussionsService",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:backend/src/discussions/discussions.service.ts:DiscussionsService",
+      "target": "class:backend/src/projects/projects.service.ts:ProjectsService",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:backend/src/discussions/discussions.service.ts:DiscussionsService",
+      "target": "class:backend/src/discussion-context/discussion-context.assembler.ts:DiscussionContextAssembler",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:backend/src/discussions/sqlite-discussion.repository.ts:SqliteDiscussionRepository",
+      "target": "class:backend/src/database/database.provider.ts:DatabaseProvider",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:backend/src/discussions/discussions.service.ts",
+      "target": "file:backend/src/discussions/discussions.service.spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/src/discussions/sqlite-discussion.repository.ts",
+      "target": "file:backend/src/discussions/sqlite-discussion.repository.spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/src/documents/sqlite-document.repository.spec.ts",
+      "target": "file:backend/src/documents/sqlite-document.repository.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

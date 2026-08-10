@@ -1,0 +1,2573 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 21,
+  "filesSkipped": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 21,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 21,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "backend/src/ai/frozen-context.formatter.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 72,
+      "nonEmptyLines": 66,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/ai/frozen-context.formatter.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 110,
+      "nonEmptyLines": 93,
+      "functions": [
+        {
+          "name": "isContextItem",
+          "startLine": 20,
+          "endLine": 36,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isVersionedContext",
+          "startLine": 38,
+          "endLine": 46,
+          "params": [
+            "frozenContext"
+          ]
+        },
+        {
+          "name": "stableJsonValue",
+          "startLine": 48,
+          "endLine": 62,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "serializeJson",
+          "startLine": 64,
+          "endLine": 72,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "formatItem",
+          "startLine": 74,
+          "endLine": 83,
+          "params": [
+            "item"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "CanonicalFrozenContextFormatter",
+          "startLine": 86,
+          "endLine": 110,
+          "methods": [
+            "format"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "FROZEN_CONTEXT_FORMATTER",
+          "line": 18,
+          "isDefault": false
+        },
+        {
+          "name": "CanonicalFrozenContextFormatter",
+          "line": 85,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "isContextItem",
+          "callee": "Array.isArray",
+          "lineNumber": 21
+        },
+        {
+          "caller": "isContextItem",
+          "callee": "Number.isInteger",
+          "lineNumber": 33
+        },
+        {
+          "caller": "isVersionedContext",
+          "callee": "Array.isArray",
+          "lineNumber": 43
+        },
+        {
+          "caller": "isVersionedContext",
+          "callee": "frozenContext.items.every",
+          "lineNumber": 44
+        },
+        {
+          "caller": "stableJsonValue",
+          "callee": "Array.isArray",
+          "lineNumber": 49
+        },
+        {
+          "caller": "stableJsonValue",
+          "callee": "value.map",
+          "lineNumber": 50
+        },
+        {
+          "caller": "stableJsonValue",
+          "callee": "Object.fromEntries",
+          "lineNumber": 57
+        },
+        {
+          "caller": "stableJsonValue",
+          "callee": "Object.entries(value)\n      .sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0))\n      .map",
+          "lineNumber": 58
+        },
+        {
+          "caller": "stableJsonValue",
+          "callee": "Object.entries(value)\n      .sort",
+          "lineNumber": 58
+        },
+        {
+          "caller": "stableJsonValue",
+          "callee": "Object.entries",
+          "lineNumber": 58
+        },
+        {
+          "caller": "stableJsonValue",
+          "callee": "stableJsonValue",
+          "lineNumber": 60
+        },
+        {
+          "caller": "serializeJson",
+          "callee": "JSON.stringify",
+          "lineNumber": 65
+        },
+        {
+          "caller": "serializeJson",
+          "callee": "stableJsonValue",
+          "lineNumber": 65
+        },
+        {
+          "caller": "formatItem",
+          "callee": "[\n    'BEGIN_FROZEN_CONTEXT_ITEM',\n    `display_order=${item.display_order}`,\n    `source_kind=${item.source_kind}`,\n    `source_title_json=${JSON.stringify(item.source_title)}`,\n    `frozen_content_json=${JSON.stringify(item.frozen_content)}`,\n    'END_FROZEN_CONTEXT_ITEM',\n  ].join",
+          "lineNumber": 75
+        },
+        {
+          "caller": "formatItem",
+          "callee": "JSON.stringify",
+          "lineNumber": 79
+        },
+        {
+          "caller": "formatItem",
+          "callee": "JSON.stringify",
+          "lineNumber": 80
+        },
+        {
+          "caller": "format",
+          "callee": "isVersionedContext",
+          "lineNumber": 88
+        },
+        {
+          "caller": "format",
+          "callee": "[\n        'FROZEN_DISCUSSION_CONTEXT_LEGACY',\n        ...REFERENCE_DATA_NOTICE,\n        'BEGIN_LEGACY_FROZEN_CONTEXT_JSON',\n        serializeJson(frozenContext),\n        'END_LEGACY_FROZEN_CONTEXT_JSON',\n      ].join",
+          "lineNumber": 89
+        },
+        {
+          "caller": "format",
+          "callee": "serializeJson",
+          "lineNumber": 93
+        },
+        {
+          "caller": "format",
+          "callee": "[...frozenContext.items].sort",
+          "lineNumber": 98
+        },
+        {
+          "caller": "format",
+          "callee": "[\n      'FROZEN_DISCUSSION_CONTEXT_V1',\n      ...REFERENCE_DATA_NOTICE,\n      'BEGIN_FROZEN_CONTEXT_ITEMS',\n      ...items.map(formatItem),\n      'END_FROZEN_CONTEXT_ITEMS',\n    ].join",
+          "lineNumber": 102
+        },
+        {
+          "caller": "format",
+          "callee": "items.map",
+          "lineNumber": 106
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 5,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/bubbles/bubble-links.controller.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 40,
+      "nonEmptyLines": 36,
+      "classes": [
+        {
+          "name": "BubbleLinksController",
+          "startLine": 15,
+          "endLine": 40,
+          "methods": [
+            "constructor",
+            "list",
+            "create",
+            "delete"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "BubbleLinksController",
+          "line": 14,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "list",
+          "callee": "Param",
+          "lineNumber": 19
+        },
+        {
+          "caller": "list",
+          "callee": "this.links.list",
+          "lineNumber": 20
+        },
+        {
+          "caller": "create",
+          "callee": "Param",
+          "lineNumber": 25
+        },
+        {
+          "caller": "create",
+          "callee": "Body",
+          "lineNumber": 26
+        },
+        {
+          "caller": "create",
+          "callee": "this.links.create",
+          "lineNumber": 28
+        },
+        {
+          "caller": "delete",
+          "callee": "Param",
+          "lineNumber": 34
+        },
+        {
+          "caller": "delete",
+          "callee": "Param",
+          "lineNumber": 35
+        },
+        {
+          "caller": "delete",
+          "callee": "Param",
+          "lineNumber": 36
+        },
+        {
+          "caller": "delete",
+          "callee": "this.links.delete",
+          "lineNumber": 38
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/bubbles/bubble-links.service.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 146,
+      "nonEmptyLines": 128,
+      "callGraph": [
+        {
+          "caller": "createProject",
+          "callee": "projects.create",
+          "lineNumber": 43
+        }
+      ],
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/bubbles/bubble-links.service.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 110,
+      "nonEmptyLines": 94,
+      "classes": [
+        {
+          "name": "BubbleLinksService",
+          "startLine": 18,
+          "endLine": 110,
+          "methods": [
+            "constructor",
+            "list",
+            "create",
+            "delete",
+            "validatePair",
+            "requiredId",
+            "validationError"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "BubbleLinksService",
+          "line": 17,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 22
+        },
+        {
+          "caller": "list",
+          "callee": "this.projects.get",
+          "lineNumber": 27
+        },
+        {
+          "caller": "list",
+          "callee": "this.links.findAllLinksByProjectId",
+          "lineNumber": 28
+        },
+        {
+          "caller": "create",
+          "callee": "this.validatePair",
+          "lineNumber": 32
+        },
+        {
+          "caller": "create",
+          "callee": "this.bubbles.get",
+          "lineNumber": 34
+        },
+        {
+          "caller": "create",
+          "callee": "this.bubbles.get",
+          "lineNumber": 35
+        },
+        {
+          "caller": "create",
+          "callee": "this.links.findLink",
+          "lineNumber": 37
+        },
+        {
+          "caller": "create",
+          "callee": "this.links.createLink",
+          "lineNumber": 43
+        },
+        {
+          "caller": "create",
+          "callee": "randomUUID",
+          "lineNumber": 44
+        },
+        {
+          "caller": "create",
+          "callee": "new Date().toISOString",
+          "lineNumber": 48
+        },
+        {
+          "caller": "delete",
+          "callee": "this.validatePair",
+          "lineNumber": 57
+        },
+        {
+          "caller": "delete",
+          "callee": "this.bubbles.get",
+          "lineNumber": 62
+        },
+        {
+          "caller": "delete",
+          "callee": "this.bubbles.get",
+          "lineNumber": 63
+        },
+        {
+          "caller": "delete",
+          "callee": "this.links.deleteLink",
+          "lineNumber": 65
+        },
+        {
+          "caller": "validatePair",
+          "callee": "this.requiredId",
+          "lineNumber": 74
+        },
+        {
+          "caller": "validatePair",
+          "callee": "this.requiredId",
+          "lineNumber": 75
+        },
+        {
+          "caller": "validatePair",
+          "callee": "this.validationError",
+          "lineNumber": 78
+        },
+        {
+          "caller": "requiredId",
+          "callee": "value.trim",
+          "lineNumber": 92
+        },
+        {
+          "caller": "requiredId",
+          "callee": "this.validationError",
+          "lineNumber": 93
+        },
+        {
+          "caller": "requiredId",
+          "callee": "value.trim",
+          "lineNumber": 98
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/bubbles/bubble-placement.service.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 146,
+      "nonEmptyLines": 134,
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/bubbles/bubble-placement.service.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 241,
+      "nonEmptyLines": 199,
+      "functions": [
+        {
+          "name": "overlapsExisting",
+          "startLine": 27,
+          "endLine": 39,
+          "params": [
+            "candidate",
+            "bubbles"
+          ]
+        },
+        {
+          "name": "compareOffsets",
+          "startLine": 41,
+          "endLine": 55,
+          "params": [
+            "first",
+            "second"
+          ]
+        },
+        {
+          "name": "ringOffsets",
+          "startLine": 57,
+          "endLine": 73,
+          "params": [
+            "radius"
+          ]
+        },
+        {
+          "name": "clamp",
+          "startLine": 75,
+          "endLine": 77,
+          "params": [
+            "value",
+            "minimum",
+            "maximum"
+          ]
+        },
+        {
+          "name": "findCandidate",
+          "startLine": 79,
+          "endLine": 123,
+          "params": [
+            "anchor",
+            "bubbles",
+            "bounds"
+          ]
+        },
+        {
+          "name": "findAvailableBubblePosition",
+          "startLine": 125,
+          "endLine": 145,
+          "params": [
+            "anchor",
+            "bubbles",
+            "bounds"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "BubblePlacementService",
+          "startLine": 148,
+          "endLine": 241,
+          "methods": [
+            "constructor",
+            "place",
+            "placeNearCluster",
+            "requiredFiniteNumber",
+            "requiredPositiveNumber",
+            "validationError"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "BUBBLE_CARD_WIDTH",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "BUBBLE_CARD_HEIGHT",
+          "line": 12,
+          "isDefault": false
+        },
+        {
+          "name": "BUBBLE_PLACEMENT_GAP",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "findAvailableBubblePosition",
+          "line": 125,
+          "isDefault": false
+        },
+        {
+          "name": "BubblePlacementService",
+          "line": 147,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "overlapsExisting",
+          "callee": "bubbles.some",
+          "lineNumber": 28
+        },
+        {
+          "caller": "angle",
+          "callee": "Math.atan2",
+          "lineNumber": 50
+        },
+        {
+          "caller": "compareOffsets",
+          "callee": "angle",
+          "lineNumber": 54
+        },
+        {
+          "caller": "compareOffsets",
+          "callee": "angle",
+          "lineNumber": 54
+        },
+        {
+          "caller": "ringOffsets",
+          "callee": "Math.max",
+          "lineNumber": 66
+        },
+        {
+          "caller": "ringOffsets",
+          "callee": "Math.abs",
+          "lineNumber": 66
+        },
+        {
+          "caller": "ringOffsets",
+          "callee": "Math.abs",
+          "lineNumber": 66
+        },
+        {
+          "caller": "ringOffsets",
+          "callee": "offsets.push",
+          "lineNumber": 67
+        },
+        {
+          "caller": "ringOffsets",
+          "callee": "offsets.sort",
+          "lineNumber": 72
+        },
+        {
+          "caller": "clamp",
+          "callee": "Math.min",
+          "lineNumber": 76
+        },
+        {
+          "caller": "clamp",
+          "callee": "Math.max",
+          "lineNumber": 76
+        },
+        {
+          "caller": "findCandidate",
+          "callee": "Math.ceil",
+          "lineNumber": 82
+        },
+        {
+          "caller": "findCandidate",
+          "callee": "Math.ceil",
+          "lineNumber": 83
+        },
+        {
+          "caller": "findCandidate",
+          "callee": "Math.max",
+          "lineNumber": 85
+        },
+        {
+          "caller": "findCandidate",
+          "callee": "ringOffsets",
+          "lineNumber": 90
+        },
+        {
+          "caller": "findCandidate",
+          "callee": "clamp",
+          "lineNumber": 99
+        },
+        {
+          "caller": "findCandidate",
+          "callee": "clamp",
+          "lineNumber": 103
+        },
+        {
+          "caller": "findCandidate",
+          "callee": "seen.has",
+          "lineNumber": 110
+        },
+        {
+          "caller": "findCandidate",
+          "callee": "seen.add",
+          "lineNumber": 114
+        },
+        {
+          "caller": "findCandidate",
+          "callee": "overlapsExisting",
+          "lineNumber": 116
+        },
+        {
+          "caller": "findAvailableBubblePosition",
+          "callee": "findCandidate",
+          "lineNumber": 130
+        },
+        {
+          "caller": "findAvailableBubblePosition",
+          "callee": "findCandidate",
+          "lineNumber": 139
+        },
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 151
+        },
+        {
+          "caller": "place",
+          "callee": "this.projects.get",
+          "lineNumber": 156
+        },
+        {
+          "caller": "place",
+          "callee": "this.bubbles.findAllByProjectId",
+          "lineNumber": 157
+        },
+        {
+          "caller": "place",
+          "callee": "this.placeNearCluster",
+          "lineNumber": 160
+        },
+        {
+          "caller": "place",
+          "callee": "this.validationError",
+          "lineNumber": 164
+        },
+        {
+          "caller": "place",
+          "callee": "this.requiredFiniteNumber",
+          "lineNumber": 170
+        },
+        {
+          "caller": "place",
+          "callee": "this.requiredFiniteNumber",
+          "lineNumber": 171
+        },
+        {
+          "caller": "place",
+          "callee": "this.requiredPositiveNumber",
+          "lineNumber": 172
+        },
+        {
+          "caller": "place",
+          "callee": "this.requiredPositiveNumber",
+          "lineNumber": 176
+        },
+        {
+          "caller": "place",
+          "callee": "findAvailableBubblePosition",
+          "lineNumber": 186
+        },
+        {
+          "caller": "placeNearCluster",
+          "callee": "Math.min",
+          "lineNumber": 194
+        },
+        {
+          "caller": "placeNearCluster",
+          "callee": "bubbles.map",
+          "lineNumber": 194
+        },
+        {
+          "caller": "placeNearCluster",
+          "callee": "Math.max",
+          "lineNumber": 195
+        },
+        {
+          "caller": "placeNearCluster",
+          "callee": "bubbles.map",
+          "lineNumber": 196
+        },
+        {
+          "caller": "placeNearCluster",
+          "callee": "Math.min",
+          "lineNumber": 198
+        },
+        {
+          "caller": "placeNearCluster",
+          "callee": "bubbles.map",
+          "lineNumber": 198
+        },
+        {
+          "caller": "placeNearCluster",
+          "callee": "Math.max",
+          "lineNumber": 199
+        },
+        {
+          "caller": "placeNearCluster",
+          "callee": "bubbles.map",
+          "lineNumber": 200
+        },
+        {
+          "caller": "placeNearCluster",
+          "callee": "findAvailableBubblePosition",
+          "lineNumber": 207
+        },
+        {
+          "caller": "requiredFiniteNumber",
+          "callee": "Number.isFinite",
+          "lineNumber": 211
+        },
+        {
+          "caller": "requiredFiniteNumber",
+          "callee": "this.validationError",
+          "lineNumber": 212
+        },
+        {
+          "caller": "requiredPositiveNumber",
+          "callee": "this.requiredFiniteNumber",
+          "lineNumber": 221
+        },
+        {
+          "caller": "requiredPositiveNumber",
+          "callee": "this.validationError",
+          "lineNumber": 224
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 5,
+        "functionCount": 6,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/bubbles/bubble.types.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 175,
+      "nonEmptyLines": 159,
+      "classes": [
+        {
+          "name": "BubbleProvenanceIntegrityError",
+          "startLine": 160,
+          "endLine": 165,
+          "methods": [
+            "constructor"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "BatchRepositionBubblesInput",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "Bubble",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "BubbleLink",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "BubblePlacement",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "BubblePlacementStrategy",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "BubblePositionUpdate",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "BubbleSourceKind",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "CreateBubbleInput",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "CreateBubbleLinkInput",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "PlaceBubbleInput",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "RepositionBubbleInput",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "UpdateBubbleInput",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "BubbleProvenanceIntegrityError",
+          "line": 160,
+          "isDefault": false
+        },
+        {
+          "name": "BUBBLE_REPOSITORY",
+          "line": 167,
+          "isDefault": false
+        },
+        {
+          "name": "BUBBLE_LINK_REPOSITORY",
+          "line": 168,
+          "isDefault": false
+        },
+        {
+          "name": "BUBBLE_CONTEXT_SOURCE_READER",
+          "line": 169,
+          "isDefault": false
+        },
+        {
+          "name": "BUBBLE_EXTRACTION_WRITER",
+          "line": 172,
+          "isDefault": false
+        },
+        {
+          "name": "BUBBLE_DISCUSSION_PROVENANCE_WRITER",
+          "line": 173,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "constructor",
+          "callee": "super",
+          "lineNumber": 162
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 18,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/bubbles/bubbles.controller.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 197,
+      "nonEmptyLines": 176,
+      "metrics": {
+        "importCount": 7,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/bubbles/bubbles.controller.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 94,
+      "nonEmptyLines": 85,
+      "classes": [
+        {
+          "name": "BubblesController",
+          "startLine": 25,
+          "endLine": 94,
+          "methods": [
+            "constructor",
+            "create",
+            "list",
+            "place",
+            "repositionMany",
+            "get",
+            "update",
+            "reposition",
+            "delete"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "BubblesController",
+          "line": 24,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "create",
+          "callee": "Param",
+          "lineNumber": 33
+        },
+        {
+          "caller": "create",
+          "callee": "Body",
+          "lineNumber": 34
+        },
+        {
+          "caller": "create",
+          "callee": "this.bubbles.create",
+          "lineNumber": 36
+        },
+        {
+          "caller": "list",
+          "callee": "Param",
+          "lineNumber": 40
+        },
+        {
+          "caller": "list",
+          "callee": "this.bubbles.list",
+          "lineNumber": 41
+        },
+        {
+          "caller": "place",
+          "callee": "Param",
+          "lineNumber": 46
+        },
+        {
+          "caller": "place",
+          "callee": "Body",
+          "lineNumber": 47
+        },
+        {
+          "caller": "place",
+          "callee": "this.placements.place",
+          "lineNumber": 49
+        },
+        {
+          "caller": "repositionMany",
+          "callee": "Param",
+          "lineNumber": 54
+        },
+        {
+          "caller": "repositionMany",
+          "callee": "Body",
+          "lineNumber": 55
+        },
+        {
+          "caller": "repositionMany",
+          "callee": "this.bubbles.repositionMany",
+          "lineNumber": 57
+        },
+        {
+          "caller": "get",
+          "callee": "Param",
+          "lineNumber": 62
+        },
+        {
+          "caller": "get",
+          "callee": "Param",
+          "lineNumber": 63
+        },
+        {
+          "caller": "get",
+          "callee": "this.bubbles.get",
+          "lineNumber": 65
+        },
+        {
+          "caller": "update",
+          "callee": "Param",
+          "lineNumber": 70
+        },
+        {
+          "caller": "update",
+          "callee": "Param",
+          "lineNumber": 71
+        },
+        {
+          "caller": "update",
+          "callee": "Body",
+          "lineNumber": 72
+        },
+        {
+          "caller": "update",
+          "callee": "this.bubbles.update",
+          "lineNumber": 74
+        },
+        {
+          "caller": "reposition",
+          "callee": "Param",
+          "lineNumber": 79
+        },
+        {
+          "caller": "reposition",
+          "callee": "Param",
+          "lineNumber": 80
+        },
+        {
+          "caller": "reposition",
+          "callee": "Body",
+          "lineNumber": 81
+        },
+        {
+          "caller": "reposition",
+          "callee": "this.bubbles.reposition",
+          "lineNumber": 83
+        },
+        {
+          "caller": "delete",
+          "callee": "Param",
+          "lineNumber": 89
+        },
+        {
+          "caller": "delete",
+          "callee": "Param",
+          "lineNumber": 90
+        },
+        {
+          "caller": "delete",
+          "callee": "this.bubbles.delete",
+          "lineNumber": 92
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/bubbles/bubbles.module.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 55,
+      "nonEmptyLines": 54,
+      "classes": [
+        {
+          "name": "BubblesModule",
+          "startLine": 55,
+          "endLine": 55,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "BubblesModule",
+          "line": 17,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 8,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/bubbles/bubbles.service.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 612,
+      "nonEmptyLines": 553,
+      "callGraph": [
+        {
+          "caller": "createProject",
+          "callee": "projects.create",
+          "lineNumber": 43
+        }
+      ],
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/bubbles/bubbles.service.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 562,
+      "nonEmptyLines": 486,
+      "classes": [
+        {
+          "name": "BubblesService",
+          "startLine": 49,
+          "endLine": 562,
+          "methods": [
+            "constructor",
+            "create",
+            "findByDiscussionExtraction",
+            "createFromDiscussionExtraction",
+            "updateFromDiscussionExtraction",
+            "list",
+            "get",
+            "readContextSource",
+            "update",
+            "reposition",
+            "repositionMany",
+            "delete",
+            "requiredText",
+            "optionalSummary",
+            "optionalCoordinate",
+            "requiredCoordinate",
+            "normalizeExtractionInput",
+            "identifierList",
+            "requiredIdentifier",
+            "matchesExtractionCreate",
+            "matchesExtractionContent",
+            "sameIdentifiers",
+            "hasOwn",
+            "nextTimestamp",
+            "validationError",
+            "notFound"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "BubblesService",
+          "line": 48,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 54
+        },
+        {
+          "caller": "create",
+          "callee": "this.projects.get",
+          "lineNumber": 59
+        },
+        {
+          "caller": "create",
+          "callee": "new Date().toISOString",
+          "lineNumber": 61
+        },
+        {
+          "caller": "create",
+          "callee": "randomUUID",
+          "lineNumber": 63
+        },
+        {
+          "caller": "create",
+          "callee": "this.requiredText",
+          "lineNumber": 65
+        },
+        {
+          "caller": "create",
+          "callee": "this.optionalSummary",
+          "lineNumber": 66
+        },
+        {
+          "caller": "create",
+          "callee": "this.requiredText",
+          "lineNumber": 67
+        },
+        {
+          "caller": "create",
+          "callee": "this.optionalCoordinate",
+          "lineNumber": 68
+        },
+        {
+          "caller": "create",
+          "callee": "this.optionalCoordinate",
+          "lineNumber": 69
+        },
+        {
+          "caller": "create",
+          "callee": "this.bubbles.create",
+          "lineNumber": 81
+        },
+        {
+          "caller": "findByDiscussionExtraction",
+          "callee": "this.bubbles.findByLatestExtractionId",
+          "lineNumber": 88
+        },
+        {
+          "caller": "findByDiscussionExtraction",
+          "callee": "this.requiredIdentifier",
+          "lineNumber": 89
+        },
+        {
+          "caller": "createFromDiscussionExtraction",
+          "callee": "this.normalizeExtractionInput",
+          "lineNumber": 99
+        },
+        {
+          "caller": "createFromDiscussionExtraction",
+          "callee": "this.requiredCoordinate",
+          "lineNumber": 100
+        },
+        {
+          "caller": "createFromDiscussionExtraction",
+          "callee": "this.requiredCoordinate",
+          "lineNumber": 101
+        },
+        {
+          "caller": "createFromDiscussionExtraction",
+          "callee": "this.projects.get",
+          "lineNumber": 103
+        },
+        {
+          "caller": "createFromDiscussionExtraction",
+          "callee": "this.bubbles.findByLatestExtractionId",
+          "lineNumber": 104
+        },
+        {
+          "caller": "createFromDiscussionExtraction",
+          "callee": "this.matchesExtractionCreate",
+          "lineNumber": 110
+        },
+        {
+          "caller": "createFromDiscussionExtraction",
+          "callee": "new Date().toISOString",
+          "lineNumber": 117
+        },
+        {
+          "caller": "createFromDiscussionExtraction",
+          "callee": "randomUUID",
+          "lineNumber": 119
+        },
+        {
+          "caller": "createFromDiscussionExtraction",
+          "callee": "this.bubbles.create",
+          "lineNumber": 137
+        },
+        {
+          "caller": "updateFromDiscussionExtraction",
+          "callee": "this.normalizeExtractionInput",
+          "lineNumber": 143
+        },
+        {
+          "caller": "updateFromDiscussionExtraction",
+          "callee": "this.projects.get",
+          "lineNumber": 144
+        },
+        {
+          "caller": "updateFromDiscussionExtraction",
+          "callee": "this.requiredIdentifier",
+          "lineNumber": 145
+        },
+        {
+          "caller": "updateFromDiscussionExtraction",
+          "callee": "this.requiredIdentifier",
+          "lineNumber": 146
+        },
+        {
+          "caller": "updateFromDiscussionExtraction",
+          "callee": "this.bubbles.findByLatestExtractionId",
+          "lineNumber": 150
+        },
+        {
+          "caller": "updateFromDiscussionExtraction",
+          "callee": "this.matchesExtractionContent",
+          "lineNumber": 158
+        },
+        {
+          "caller": "updateFromDiscussionExtraction",
+          "callee": "this.bubbles.findByProjectAndId",
+          "lineNumber": 165
+        },
+        {
+          "caller": "updateFromDiscussionExtraction",
+          "callee": "this.bubbles.updateFromDiscussionExtraction",
+          "lineNumber": 178
+        },
+        {
+          "caller": "updateFromDiscussionExtraction",
+          "callee": "this.nextTimestamp",
+          "lineNumber": 186
+        },
+        {
+          "caller": "updateFromDiscussionExtraction",
+          "callee": "this.bubbles.findByProjectAndId",
+          "lineNumber": 202
+        },
+        {
+          "caller": "list",
+          "callee": "this.projects.get",
+          "lineNumber": 208
+        },
+        {
+          "caller": "list",
+          "callee": "this.bubbles.findAllByProjectId",
+          "lineNumber": 209
+        },
+        {
+          "caller": "get",
+          "callee": "this.projects.get",
+          "lineNumber": 213
+        },
+        {
+          "caller": "get",
+          "callee": "this.bubbles.findByProjectAndId",
+          "lineNumber": 215
+        },
+        {
+          "caller": "get",
+          "callee": "this.notFound",
+          "lineNumber": 218
+        },
+        {
+          "caller": "readContextSource",
+          "callee": "this.bubbles.findProjectIdById",
+          "lineNumber": 228
+        },
+        {
+          "caller": "readContextSource",
+          "callee": "this.bubbles.findByProjectAndId",
+          "lineNumber": 238
+        },
+        {
+          "caller": "update",
+          "callee": "this.get",
+          "lineNumber": 260
+        },
+        {
+          "caller": "update",
+          "callee": "this.hasOwn",
+          "lineNumber": 261
+        },
+        {
+          "caller": "update",
+          "callee": "this.hasOwn",
+          "lineNumber": 262
+        },
+        {
+          "caller": "update",
+          "callee": "this.hasOwn",
+          "lineNumber": 263
+        },
+        {
+          "caller": "update",
+          "callee": "this.validationError",
+          "lineNumber": 266
+        },
+        {
+          "caller": "update",
+          "callee": "this.bubbles.updateContent",
+          "lineNumber": 271
+        },
+        {
+          "caller": "update",
+          "callee": "this.requiredText",
+          "lineNumber": 273
+        },
+        {
+          "caller": "update",
+          "callee": "this.optionalSummary",
+          "lineNumber": 276
+        },
+        {
+          "caller": "update",
+          "callee": "this.requiredText",
+          "lineNumber": 279
+        },
+        {
+          "caller": "update",
+          "callee": "this.nextTimestamp",
+          "lineNumber": 281
+        },
+        {
+          "caller": "update",
+          "callee": "this.notFound",
+          "lineNumber": 285
+        },
+        {
+          "caller": "reposition",
+          "callee": "this.get",
+          "lineNumber": 296
+        },
+        {
+          "caller": "reposition",
+          "callee": "this.requiredCoordinate",
+          "lineNumber": 298
+        },
+        {
+          "caller": "reposition",
+          "callee": "this.requiredCoordinate",
+          "lineNumber": 299
+        },
+        {
+          "caller": "reposition",
+          "callee": "this.bubbles.updatePosition",
+          "lineNumber": 300
+        },
+        {
+          "caller": "reposition",
+          "callee": "this.notFound",
+          "lineNumber": 308
+        },
+        {
+          "caller": "repositionMany",
+          "callee": "this.projects.get",
+          "lineNumber": 318
+        },
+        {
+          "caller": "repositionMany",
+          "callee": "Array.isArray",
+          "lineNumber": 320
+        },
+        {
+          "caller": "repositionMany",
+          "callee": "this.validationError",
+          "lineNumber": 321
+        },
+        {
+          "caller": "repositionMany",
+          "callee": "input.positions.map",
+          "lineNumber": 327
+        },
+        {
+          "caller": "repositionMany",
+          "callee": "bubbleId.trim",
+          "lineNumber": 331
+        },
+        {
+          "caller": "repositionMany",
+          "callee": "this.validationError",
+          "lineNumber": 332
+        },
+        {
+          "caller": "repositionMany",
+          "callee": "bubbleIds.has",
+          "lineNumber": 337
+        },
+        {
+          "caller": "repositionMany",
+          "callee": "this.validationError",
+          "lineNumber": 338
+        },
+        {
+          "caller": "repositionMany",
+          "callee": "bubbleIds.add",
+          "lineNumber": 344
+        },
+        {
+          "caller": "repositionMany",
+          "callee": "this.requiredCoordinate",
+          "lineNumber": 348
+        },
+        {
+          "caller": "repositionMany",
+          "callee": "this.requiredCoordinate",
+          "lineNumber": 352
+        },
+        {
+          "caller": "repositionMany",
+          "callee": "this.bubbles.findByProjectAndId",
+          "lineNumber": 361
+        },
+        {
+          "caller": "repositionMany",
+          "callee": "this.notFound",
+          "lineNumber": 362
+        },
+        {
+          "caller": "repositionMany",
+          "callee": "this.bubbles.updatePositions",
+          "lineNumber": 366
+        },
+        {
+          "caller": "delete",
+          "callee": "this.get",
+          "lineNumber": 370
+        },
+        {
+          "caller": "delete",
+          "callee": "this.bubbles.delete",
+          "lineNumber": 372
+        },
+        {
+          "caller": "delete",
+          "callee": "this.notFound",
+          "lineNumber": 373
+        },
+        {
+          "caller": "requiredText",
+          "callee": "value.trim",
+          "lineNumber": 378
+        },
+        {
+          "caller": "requiredText",
+          "callee": "this.validationError",
+          "lineNumber": 379
+        },
+        {
+          "caller": "requiredText",
+          "callee": "value.trim",
+          "lineNumber": 384
+        },
+        {
+          "caller": "optionalSummary",
+          "callee": "this.validationError",
+          "lineNumber": 393
+        },
+        {
+          "caller": "optionalSummary",
+          "callee": "value.trim",
+          "lineNumber": 396
+        },
+        {
+          "caller": "optionalSummary",
+          "callee": "value.trim",
+          "lineNumber": 396
+        },
+        {
+          "caller": "optionalCoordinate",
+          "callee": "this.requiredCoordinate",
+          "lineNumber": 403
+        },
+        {
+          "caller": "requiredCoordinate",
+          "callee": "Number.isFinite",
+          "lineNumber": 410
+        },
+        {
+          "caller": "requiredCoordinate",
+          "callee": "this.validationError",
+          "lineNumber": 411
+        },
+        {
+          "caller": "normalizeExtractionInput",
+          "callee": "this.identifierList",
+          "lineNumber": 424
+        },
+        {
+          "caller": "normalizeExtractionInput",
+          "callee": "this.identifierList",
+          "lineNumber": 428
+        },
+        {
+          "caller": "normalizeExtractionInput",
+          "callee": "this.validationError",
+          "lineNumber": 434
+        },
+        {
+          "caller": "normalizeExtractionInput",
+          "callee": "this.requiredIdentifier",
+          "lineNumber": 441
+        },
+        {
+          "caller": "normalizeExtractionInput",
+          "callee": "this.requiredIdentifier",
+          "lineNumber": 442
+        },
+        {
+          "caller": "normalizeExtractionInput",
+          "callee": "this.requiredText",
+          "lineNumber": 446
+        },
+        {
+          "caller": "normalizeExtractionInput",
+          "callee": "this.optionalSummary",
+          "lineNumber": 447
+        },
+        {
+          "caller": "normalizeExtractionInput",
+          "callee": "this.requiredText",
+          "lineNumber": 448
+        },
+        {
+          "caller": "normalizeExtractionInput",
+          "callee": "this.requiredIdentifier",
+          "lineNumber": 449
+        },
+        {
+          "caller": "normalizeExtractionInput",
+          "callee": "this.requiredIdentifier",
+          "lineNumber": 453
+        },
+        {
+          "caller": "identifierList",
+          "callee": "Array.isArray",
+          "lineNumber": 463
+        },
+        {
+          "caller": "identifierList",
+          "callee": "this.validationError",
+          "lineNumber": 464
+        },
+        {
+          "caller": "identifierList",
+          "callee": "value.map",
+          "lineNumber": 469
+        },
+        {
+          "caller": "identifierList",
+          "callee": "this.requiredIdentifier",
+          "lineNumber": 470
+        },
+        {
+          "caller": "identifierList",
+          "callee": "this.validationError",
+          "lineNumber": 474
+        },
+        {
+          "caller": "requiredIdentifier",
+          "callee": "value.trim",
+          "lineNumber": 483
+        },
+        {
+          "caller": "requiredIdentifier",
+          "callee": "this.validationError",
+          "lineNumber": 484
+        },
+        {
+          "caller": "requiredIdentifier",
+          "callee": "value.trim",
+          "lineNumber": 487
+        },
+        {
+          "caller": "matchesExtractionCreate",
+          "callee": "this.matchesExtractionContent",
+          "lineNumber": 495
+        },
+        {
+          "caller": "matchesExtractionContent",
+          "callee": "this.sameIdentifiers",
+          "lineNumber": 513
+        },
+        {
+          "caller": "matchesExtractionContent",
+          "callee": "this.sameIdentifiers",
+          "lineNumber": 517
+        },
+        {
+          "caller": "sameIdentifiers",
+          "callee": "first.every",
+          "lineNumber": 527
+        },
+        {
+          "caller": "hasOwn",
+          "callee": "Object.prototype.hasOwnProperty.call",
+          "lineNumber": 535
+        },
+        {
+          "caller": "nextTimestamp",
+          "callee": "Date.now",
+          "lineNumber": 540
+        },
+        {
+          "caller": "nextTimestamp",
+          "callee": "new Date(previousTimestamp).getTime",
+          "lineNumber": 541
+        },
+        {
+          "caller": "nextTimestamp",
+          "callee": "new Date(Math.max(currentTime, previousTime + 1)).toISOString",
+          "lineNumber": 543
+        },
+        {
+          "caller": "nextTimestamp",
+          "callee": "Math.max",
+          "lineNumber": 543
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/bubbles/sqlite-bubble.repository.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 183,
+      "nonEmptyLines": 169,
+      "callGraph": [
+        {
+          "caller": "createManualBubble",
+          "callee": "projects.create",
+          "lineNumber": 36
+        },
+        {
+          "caller": "createManualBubble",
+          "callee": "service.create",
+          "lineNumber": 40
+        },
+        {
+          "caller": "createManualBubble",
+          "callee": "databaseProvider.connection.exec",
+          "lineNumber": 45
+        }
+      ],
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/bubbles/sqlite-bubble.repository.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 511,
+      "nonEmptyLines": 459,
+      "classes": [
+        {
+          "name": "SqliteBubbleRepository",
+          "startLine": 43,
+          "endLine": 511,
+          "methods": [
+            "constructor",
+            "create",
+            "findAllByProjectId",
+            "findProjectIdById",
+            "findByProjectAndId",
+            "findByLatestExtractionId",
+            "updateContent",
+            "updatePosition",
+            "updateFromDiscussionExtraction",
+            "updatePositions",
+            "markSourceDiscussionDeleted",
+            "delete",
+            "createLink",
+            "findAllLinksByProjectId",
+            "findLink",
+            "deleteLink",
+            "toBubble",
+            "parseIdentifierArray",
+            "toPublicBubble",
+            "isNonEmptyString",
+            "isIsoTimestamp"
+          ],
+          "properties": [
+            "database"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "SqliteBubbleRepository",
+          "line": 42,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "create",
+          "callee": "this.database\n      .prepare(\n        `\n          INSERT INTO bubbles (\n            id,\n            project_id,\n            title,\n            summary,\n            content,\n            position_x,\n            position_y,\n            created_at,\n            updated_at,\n            source_kind,\n            source_discussion_id,\n            source_discussion_title,\n            source_discussion_deleted_at,\n            source_message_ids,\n            source_context_item_ids,\n            latest_extraction_id\n          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n        `,\n      )\n      .run",
+          "lineNumber": 56
+        },
+        {
+          "caller": "create",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 56
+        },
+        {
+          "caller": "create",
+          "callee": "JSON.stringify",
+          "lineNumber": 93
+        },
+        {
+          "caller": "create",
+          "callee": "JSON.stringify",
+          "lineNumber": 94
+        },
+        {
+          "caller": "create",
+          "callee": "this.toPublicBubble",
+          "lineNumber": 98
+        },
+        {
+          "caller": "findAllByProjectId",
+          "callee": "this.database\n      .prepare(\n        `\n          SELECT *\n          FROM bubbles\n          WHERE project_id = ?\n          ORDER BY created_at ASC, id ASC\n        `,\n      )\n      .all",
+          "lineNumber": 102
+        },
+        {
+          "caller": "findAllByProjectId",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 102
+        },
+        {
+          "caller": "findAllByProjectId",
+          "callee": "rows.map",
+          "lineNumber": 113
+        },
+        {
+          "caller": "findAllByProjectId",
+          "callee": "this.toBubble",
+          "lineNumber": 113
+        },
+        {
+          "caller": "findProjectIdById",
+          "callee": "this.database\n      .prepare('SELECT project_id FROM bubbles WHERE id = ?')\n      .get",
+          "lineNumber": 117
+        },
+        {
+          "caller": "findProjectIdById",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 117
+        },
+        {
+          "caller": "findByProjectAndId",
+          "callee": "this.database\n      .prepare(\n        `\n          SELECT *\n          FROM bubbles\n          WHERE project_id = ? AND id = ?\n        `,\n      )\n      .get",
+          "lineNumber": 125
+        },
+        {
+          "caller": "findByProjectAndId",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 125
+        },
+        {
+          "caller": "findByProjectAndId",
+          "callee": "this.toBubble",
+          "lineNumber": 135
+        },
+        {
+          "caller": "findByLatestExtractionId",
+          "callee": "this.database\n      .prepare(\n        `\n          SELECT *\n          FROM bubbles\n          WHERE latest_extraction_id = ?\n        `,\n      )\n      .get",
+          "lineNumber": 139
+        },
+        {
+          "caller": "findByLatestExtractionId",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 139
+        },
+        {
+          "caller": "findByLatestExtractionId",
+          "callee": "this.toBubble",
+          "lineNumber": 149
+        },
+        {
+          "caller": "updateContent",
+          "callee": "this.database\n      .prepare(\n        `\n          UPDATE bubbles\n          SET title = ?, summary = ?, content = ?, updated_at = ?\n          WHERE project_id = ? AND id = ?\n        `,\n      )\n      .run",
+          "lineNumber": 157
+        },
+        {
+          "caller": "updateContent",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 157
+        },
+        {
+          "caller": "updateContent",
+          "callee": "this.findByProjectAndId",
+          "lineNumber": 176
+        },
+        {
+          "caller": "updatePosition",
+          "callee": "this.database\n      .prepare(\n        `\n          UPDATE bubbles\n          SET position_x = ?, position_y = ?\n          WHERE project_id = ? AND id = ?\n        `,\n      )\n      .run",
+          "lineNumber": 185
+        },
+        {
+          "caller": "updatePosition",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 185
+        },
+        {
+          "caller": "updatePosition",
+          "callee": "this.findByProjectAndId",
+          "lineNumber": 197
+        },
+        {
+          "caller": "updateFromDiscussionExtraction",
+          "callee": "this.database\n      .prepare(\n        `\n          UPDATE bubbles\n          SET\n            title = ?,\n            summary = ?,\n            content = ?,\n            updated_at = ?,\n            source_kind = ?,\n            source_discussion_id = ?,\n            source_discussion_title = ?,\n            source_discussion_deleted_at = ?,\n            source_message_ids = ?,\n            source_context_item_ids = ?,\n            latest_extraction_id = ?\n          WHERE project_id = ? AND id = ? AND updated_at = ?\n        `,\n      )\n      .run",
+          "lineNumber": 219
+        },
+        {
+          "caller": "updateFromDiscussionExtraction",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 219
+        },
+        {
+          "caller": "updateFromDiscussionExtraction",
+          "callee": "JSON.stringify",
+          "lineNumber": 247
+        },
+        {
+          "caller": "updateFromDiscussionExtraction",
+          "callee": "JSON.stringify",
+          "lineNumber": 248
+        },
+        {
+          "caller": "updateFromDiscussionExtraction",
+          "callee": "this.findByProjectAndId",
+          "lineNumber": 257
+        },
+        {
+          "caller": "updatePositions",
+          "callee": "this.database.prepare",
+          "lineNumber": 264
+        },
+        {
+          "caller": "updatePositions",
+          "callee": "this.database.exec",
+          "lineNumber": 272
+        },
+        {
+          "caller": "updatePositions",
+          "callee": "statement.run",
+          "lineNumber": 276
+        },
+        {
+          "caller": "updatePositions",
+          "callee": "this.database.exec",
+          "lineNumber": 290
+        },
+        {
+          "caller": "updatePositions",
+          "callee": "this.database.exec",
+          "lineNumber": 292
+        },
+        {
+          "caller": "updatePositions",
+          "callee": "positions.map",
+          "lineNumber": 296
+        },
+        {
+          "caller": "updatePositions",
+          "callee": "this.findByProjectAndId",
+          "lineNumber": 297
+        },
+        {
+          "caller": "markSourceDiscussionDeleted",
+          "callee": "this.database\n      .prepare(\n        `\n          UPDATE bubbles\n          SET source_discussion_deleted_at = ?\n          WHERE\n            project_id = ?\n            AND source_kind = 'discussion'\n            AND source_discussion_id = ?\n            AND source_discussion_deleted_at IS NULL\n        `,\n      )\n      .run",
+          "lineNumber": 314
+        },
+        {
+          "caller": "markSourceDiscussionDeleted",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 314
+        },
+        {
+          "caller": "markSourceDiscussionDeleted",
+          "callee": "Number",
+          "lineNumber": 328
+        },
+        {
+          "caller": "delete",
+          "callee": "this.database\n      .prepare('DELETE FROM bubbles WHERE project_id = ? AND id = ?')\n      .run",
+          "lineNumber": 332
+        },
+        {
+          "caller": "delete",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 332
+        },
+        {
+          "caller": "createLink",
+          "callee": "this.database\n      .prepare(\n        `\n          INSERT INTO bubble_links (\n            id,\n            project_id,\n            bubble_a_id,\n            bubble_b_id,\n            created_at\n          ) VALUES (?, ?, ?, ?, ?)\n          ON CONFLICT (project_id, bubble_a_id, bubble_b_id) DO NOTHING\n        `,\n      )\n      .run",
+          "lineNumber": 340
+        },
+        {
+          "caller": "createLink",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 340
+        },
+        {
+          "caller": "createLink",
+          "callee": "this.findLink",
+          "lineNumber": 362
+        },
+        {
+          "caller": "findAllLinksByProjectId",
+          "callee": "this.database\n      .prepare(\n        `\n          SELECT *\n          FROM bubble_links\n          WHERE project_id = ?\n          ORDER BY created_at ASC, id ASC\n        `,\n      )\n      .all",
+          "lineNumber": 367
+        },
+        {
+          "caller": "findAllLinksByProjectId",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 367
+        },
+        {
+          "caller": "findLink",
+          "callee": "this.database\n      .prepare(\n        `\n          SELECT *\n          FROM bubble_links\n          WHERE project_id = ? AND bubble_a_id = ? AND bubble_b_id = ?\n        `,\n      )\n      .get",
+          "lineNumber": 384
+        },
+        {
+          "caller": "findLink",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 384
+        },
+        {
+          "caller": "deleteLink",
+          "callee": "this.database\n      .prepare(\n        `\n          DELETE FROM bubble_links\n          WHERE project_id = ? AND bubble_a_id = ? AND bubble_b_id = ?\n        `,\n      )\n      .run",
+          "lineNumber": 397
+        },
+        {
+          "caller": "deleteLink",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 397
+        },
+        {
+          "caller": "toBubble",
+          "callee": "this.parseIdentifierArray",
+          "lineNumber": 410
+        },
+        {
+          "caller": "toBubble",
+          "callee": "this.parseIdentifierArray",
+          "lineNumber": 414
+        },
+        {
+          "caller": "toBubble",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 428
+        },
+        {
+          "caller": "toBubble",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 429
+        },
+        {
+          "caller": "toBubble",
+          "callee": "this.isIsoTimestamp",
+          "lineNumber": 431
+        },
+        {
+          "caller": "toBubble",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 432
+        },
+        {
+          "caller": "parseIdentifierArray",
+          "callee": "JSON.parse",
+          "lineNumber": 467
+        },
+        {
+          "caller": "parseIdentifierArray",
+          "callee": "Array.isArray",
+          "lineNumber": 470
+        },
+        {
+          "caller": "parseIdentifierArray",
+          "callee": "parsed.some",
+          "lineNumber": 471
+        },
+        {
+          "caller": "parseIdentifierArray",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 471
+        },
+        {
+          "caller": "isNonEmptyString",
+          "callee": "value.trim",
+          "lineNumber": 496
+        },
+        {
+          "caller": "isIsoTimestamp",
+          "callee": "Date.parse",
+          "lineNumber": 504
+        },
+        {
+          "caller": "isIsoTimestamp",
+          "callee": "Number.isFinite",
+          "lineNumber": 507
+        },
+        {
+          "caller": "isIsoTimestamp",
+          "callee": "new Date(milliseconds).toISOString",
+          "lineNumber": 508
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/database/database-transaction.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 25,
+      "nonEmptyLines": 21,
+      "classes": [
+        {
+          "name": "DatabaseTransaction",
+          "startLine": 5,
+          "endLine": 25,
+          "methods": [
+            "constructor",
+            "run"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "DatabaseTransaction",
+          "line": 4,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "run",
+          "callee": "this.databaseProvider.connection.exec",
+          "lineNumber": 9
+        },
+        {
+          "caller": "run",
+          "callee": "operation",
+          "lineNumber": 12
+        },
+        {
+          "caller": "run",
+          "callee": "this.databaseProvider.connection.exec",
+          "lineNumber": 13
+        },
+        {
+          "caller": "run",
+          "callee": "this.databaseProvider.connection.exec",
+          "lineNumber": 17
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/database/database.module.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 10,
+      "nonEmptyLines": 9,
+      "classes": [
+        {
+          "name": "DatabaseModule",
+          "startLine": 10,
+          "endLine": 10,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "DatabaseModule",
+          "line": 5,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/database/database.provider.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 74,
+      "nonEmptyLines": 65,
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/database/database.provider.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 47,
+      "nonEmptyLines": 40,
+      "classes": [
+        {
+          "name": "DatabaseProvider",
+          "startLine": 10,
+          "endLine": 47,
+          "methods": [
+            "constructor",
+            "onModuleDestroy"
+          ],
+          "properties": [
+            "connection"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DatabaseProvider",
+          "line": 9,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 14
+        },
+        {
+          "caller": "constructor",
+          "callee": "join",
+          "lineNumber": 17
+        },
+        {
+          "caller": "constructor",
+          "callee": "mkdirSync",
+          "lineNumber": 27
+        },
+        {
+          "caller": "constructor",
+          "callee": "dirname",
+          "lineNumber": 27
+        },
+        {
+          "caller": "constructor",
+          "callee": "connection.exec",
+          "lineNumber": 33
+        },
+        {
+          "caller": "constructor",
+          "callee": "connection.exec",
+          "lineNumber": 34
+        },
+        {
+          "caller": "constructor",
+          "callee": "runDatabaseMigrations",
+          "lineNumber": 35
+        },
+        {
+          "caller": "constructor",
+          "callee": "connection.close",
+          "lineNumber": 37
+        },
+        {
+          "caller": "onModuleDestroy",
+          "callee": "this.connection.close",
+          "lineNumber": 45
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/discussion-context/discussion-context.assembler.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 406,
+      "nonEmptyLines": 383,
+      "classes": [
+        {
+          "name": "FakeDocumentContextSourceReader",
+          "startLine": 13,
+          "endLine": 30,
+          "methods": [
+            "readContextSource"
+          ],
+          "properties": [
+            "results",
+            "reads"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "readContextSource",
+          "callee": "this.reads.push",
+          "lineNumber": 21
+        },
+        {
+          "caller": "readContextSource",
+          "callee": "this.results.get",
+          "lineNumber": 24
+        },
+        {
+          "caller": "createProject",
+          "callee": "projects.create",
+          "lineNumber": 60
+        }
+      ],
+      "metrics": {
+        "importCount": 7,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/discussion-context/discussion-context.assembler.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 235,
+      "nonEmptyLines": 206,
+      "classes": [
+        {
+          "name": "DiscussionContextAssembler",
+          "startLine": 35,
+          "endLine": 235,
+          "methods": [
+            "constructor",
+            "assemble",
+            "readBubbles",
+            "readDocuments",
+            "deduplicate",
+            "isNonEmptyString"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "DiscussionContextAssembler",
+          "line": 34,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 38
+        },
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 40
+        },
+        {
+          "caller": "assemble",
+          "callee": "this.projects.get",
+          "lineNumber": 48
+        },
+        {
+          "caller": "assemble",
+          "callee": "this.deduplicate",
+          "lineNumber": 49
+        },
+        {
+          "caller": "assemble",
+          "callee": "this.deduplicate",
+          "lineNumber": 50
+        },
+        {
+          "caller": "assemble",
+          "callee": "this.readBubbles",
+          "lineNumber": 52
+        },
+        {
+          "caller": "assemble",
+          "callee": "this.readDocuments",
+          "lineNumber": 53
+        },
+        {
+          "caller": "assemble",
+          "callee": "new Date().toISOString",
+          "lineNumber": 59
+        },
+        {
+          "caller": "assemble",
+          "callee": "randomUUID",
+          "lineNumber": 62
+        },
+        {
+          "caller": "assemble",
+          "callee": "items.push",
+          "lineNumber": 73
+        },
+        {
+          "caller": "assemble",
+          "callee": "randomUUID",
+          "lineNumber": 74
+        },
+        {
+          "caller": "assemble",
+          "callee": "items.push",
+          "lineNumber": 85
+        },
+        {
+          "caller": "assemble",
+          "callee": "randomUUID",
+          "lineNumber": 86
+        },
+        {
+          "caller": "readBubbles",
+          "callee": "this.bubbles.readContextSource",
+          "lineNumber": 107
+        },
+        {
+          "caller": "readBubbles",
+          "callee": "issues.push",
+          "lineNumber": 110
+        },
+        {
+          "caller": "readBubbles",
+          "callee": "issues.push",
+          "lineNumber": 119
+        },
+        {
+          "caller": "readBubbles",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 129
+        },
+        {
+          "caller": "readBubbles",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 130
+        },
+        {
+          "caller": "readBubbles",
+          "callee": "issues.push",
+          "lineNumber": 132
+        },
+        {
+          "caller": "readBubbles",
+          "callee": "sources.push",
+          "lineNumber": 140
+        },
+        {
+          "caller": "readDocuments",
+          "callee": "this.documents.readContextSource",
+          "lineNumber": 154
+        },
+        {
+          "caller": "readDocuments",
+          "callee": "issues.push",
+          "lineNumber": 157
+        },
+        {
+          "caller": "readDocuments",
+          "callee": "issues.push",
+          "lineNumber": 166
+        },
+        {
+          "caller": "readDocuments",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 176
+        },
+        {
+          "caller": "readDocuments",
+          "callee": "issues.push",
+          "lineNumber": 178
+        },
+        {
+          "caller": "readDocuments",
+          "callee": "issues.push",
+          "lineNumber": 189
+        },
+        {
+          "caller": "readDocuments",
+          "callee": "issues.push",
+          "lineNumber": 198
+        },
+        {
+          "caller": "readDocuments",
+          "callee": "result.source.processed_text.trim",
+          "lineNumber": 208
+        },
+        {
+          "caller": "readDocuments",
+          "callee": "issues.push",
+          "lineNumber": 210
+        },
+        {
+          "caller": "readDocuments",
+          "callee": "sources.push",
+          "lineNumber": 218
+        },
+        {
+          "caller": "isNonEmptyString",
+          "callee": "value.trim",
+          "lineNumber": 233
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    }
+  ]
+}

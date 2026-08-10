@@ -1,0 +1,2194 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 13,
+  "filesSkipped": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 13,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 13,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "frontend/src/documents/DocumentInspectionPanel.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 324,
+      "nonEmptyLines": 304,
+      "functions": [
+        {
+          "name": "requestErrorMessage",
+          "startLine": 43,
+          "endLine": 47,
+          "params": [
+            "error"
+          ]
+        },
+        {
+          "name": "DocumentMetadata",
+          "startLine": 49,
+          "endLine": 68,
+          "params": [
+            "{ document }"
+          ]
+        },
+        {
+          "name": "InspectionStatus",
+          "startLine": 70,
+          "endLine": 149,
+          "params": [
+            "{\n  document,\n  onRetryProcessing,\n  processingRetryError,\n  retryingProcessing,\n}"
+          ]
+        },
+        {
+          "name": "DocumentInspectionPanel",
+          "startLine": 151,
+          "endLine": 324,
+          "params": [
+            "{\n  document,\n  onBack,\n  onRetryProcessing,\n  processingRetryError = null,\n  projectId,\n  requestDocument = getDocument,\n  retryingProcessing = false,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DocumentInspectionPanel",
+          "line": 151,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "requestErrorMessage",
+          "callee": "error.message.trim",
+          "lineNumber": 44
+        },
+        {
+          "caller": "DocumentMetadata",
+          "callee": "formatDocumentSize",
+          "lineNumber": 58
+        },
+        {
+          "caller": "DocumentMetadata",
+          "callee": "formatDocumentUploadTime",
+          "lineNumber": 63
+        },
+        {
+          "caller": "InspectionStatus",
+          "callee": "documentProcessingFailureMessage",
+          "lineNumber": 108
+        },
+        {
+          "caller": "InspectionStatus",
+          "callee": "onRetryProcessing",
+          "lineNumber": 120
+        },
+        {
+          "caller": "DocumentInspectionPanel",
+          "callee": "useState",
+          "lineNumber": 160
+        },
+        {
+          "caller": "DocumentInspectionPanel",
+          "callee": "useState",
+          "lineNumber": 161
+        },
+        {
+          "caller": "DocumentInspectionPanel",
+          "callee": "useRef",
+          "lineNumber": 166
+        },
+        {
+          "caller": "DocumentInspectionPanel",
+          "callee": "useEffect",
+          "lineNumber": 169
+        },
+        {
+          "caller": "DocumentInspectionPanel",
+          "callee": "headingRef.current?.focus",
+          "lineNumber": 170
+        },
+        {
+          "caller": "DocumentInspectionPanel",
+          "callee": "useEffect",
+          "lineNumber": 173
+        },
+        {
+          "caller": "DocumentInspectionPanel",
+          "callee": "requestDocument(projectId, document.id, controller.signal)\n      .then((response) => {\n        if (controller.signal.aborted) {\n          return;\n        }\n\n        setState({\n          detail: assertDocumentDetailResponse(\n            response,\n            projectId,\n            document.id,\n          ),\n          error: null,\n          status: 'ready',\n        });\n      })\n      .catch",
+          "lineNumber": 176
+        },
+        {
+          "caller": "DocumentInspectionPanel",
+          "callee": "requestDocument(projectId, document.id, controller.signal)\n      .then",
+          "lineNumber": 176
+        },
+        {
+          "caller": "DocumentInspectionPanel",
+          "callee": "requestDocument",
+          "lineNumber": 176
+        },
+        {
+          "caller": "DocumentInspectionPanel",
+          "callee": "setState",
+          "lineNumber": 182
+        },
+        {
+          "caller": "DocumentInspectionPanel",
+          "callee": "assertDocumentDetailResponse",
+          "lineNumber": 183
+        },
+        {
+          "caller": "DocumentInspectionPanel",
+          "callee": "setState",
+          "lineNumber": 200
+        },
+        {
+          "caller": "DocumentInspectionPanel",
+          "callee": "requestErrorMessage",
+          "lineNumber": 202
+        },
+        {
+          "caller": "DocumentInspectionPanel",
+          "callee": "controller.abort",
+          "lineNumber": 207
+        },
+        {
+          "caller": "DocumentInspectionPanel",
+          "callee": "documentStatusLabels[\n                displayedDocument.processing_status\n              ].toUpperCase",
+          "lineNumber": 234
+        },
+        {
+          "caller": "DocumentInspectionPanel",
+          "callee": "setState",
+          "lineNumber": 276
+        },
+        {
+          "caller": "DocumentInspectionPanel",
+          "callee": "setRequestKey",
+          "lineNumber": 277
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/documents/DocumentsPanel.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 159,
+      "nonEmptyLines": 150,
+      "functions": [
+        {
+          "name": "controllerFixture",
+          "startLine": 13,
+          "endLine": 35,
+          "params": [
+            "overrides"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "controllerFixture",
+          "callee": "vi.fn",
+          "lineNumber": 17
+        },
+        {
+          "caller": "controllerFixture",
+          "callee": "vi.fn",
+          "lineNumber": 18
+        },
+        {
+          "caller": "controllerFixture",
+          "callee": "vi.fn",
+          "lineNumber": 25
+        },
+        {
+          "caller": "controllerFixture",
+          "callee": "vi.fn",
+          "lineNumber": 26
+        },
+        {
+          "caller": "controllerFixture",
+          "callee": "vi.fn",
+          "lineNumber": 27
+        },
+        {
+          "caller": "controllerFixture",
+          "callee": "vi.fn",
+          "lineNumber": 28
+        },
+        {
+          "caller": "controllerFixture",
+          "callee": "vi.fn",
+          "lineNumber": 32
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/documents/DocumentsPanel.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 596,
+      "nonEmptyLines": 568,
+      "functions": [
+        {
+          "name": "setRefValue",
+          "startLine": 50,
+          "endLine": 56,
+          "params": [
+            "ref",
+            "value"
+          ]
+        },
+        {
+          "name": "StatusMark",
+          "startLine": 58,
+          "endLine": 80,
+          "params": [
+            "{ status }"
+          ]
+        },
+        {
+          "name": "TransferItem",
+          "startLine": 82,
+          "endLine": 158,
+          "params": [
+            "{\n  onDismiss,\n  onRetry,\n  transfer,\n}"
+          ]
+        },
+        {
+          "name": "DocumentItem",
+          "startLine": 160,
+          "endLine": 259,
+          "params": [
+            "{\n  document,\n  inspectButtonRef,\n  onInspect,\n  onRetryProcessing,\n  processingError,\n  retryingProcessing,\n}"
+          ]
+        },
+        {
+          "name": "DocumentsPanel",
+          "startLine": 261,
+          "endLine": 596,
+          "params": [
+            "{\n  analyticsClient = analytics,\n  controller,\n  projectId,\n  requestDocument,\n  uploadInputRef,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DocumentsPanel",
+          "line": 261,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "setRefValue",
+          "callee": "ref",
+          "lineNumber": 52
+        },
+        {
+          "caller": "TransferItem",
+          "callee": "transfer.id.replace",
+          "lineNumber": 92
+        },
+        {
+          "caller": "TransferItem",
+          "callee": "formatDocumentSize",
+          "lineNumber": 124
+        },
+        {
+          "caller": "TransferItem",
+          "callee": "onRetry",
+          "lineNumber": 141
+        },
+        {
+          "caller": "TransferItem",
+          "callee": "onDismiss",
+          "lineNumber": 148
+        },
+        {
+          "caller": "DocumentItem",
+          "callee": "onInspect",
+          "lineNumber": 185
+        },
+        {
+          "caller": "DocumentItem",
+          "callee": "documentStatusLabels[document.processing_status].toUpperCase",
+          "lineNumber": 202
+        },
+        {
+          "caller": "DocumentItem",
+          "callee": "formatDocumentSize",
+          "lineNumber": 209
+        },
+        {
+          "caller": "DocumentItem",
+          "callee": "formatDocumentUploadTime",
+          "lineNumber": 211
+        },
+        {
+          "caller": "DocumentItem",
+          "callee": "documentProcessingFailureMessage",
+          "lineNumber": 216
+        },
+        {
+          "caller": "DocumentItem",
+          "callee": "onRetryProcessing",
+          "lineNumber": 229
+        },
+        {
+          "caller": "DocumentsPanel",
+          "callee": "useId",
+          "lineNumber": 268
+        },
+        {
+          "caller": "DocumentsPanel",
+          "callee": "useId",
+          "lineNumber": 269
+        },
+        {
+          "caller": "DocumentsPanel",
+          "callee": "useRef",
+          "lineNumber": 270
+        },
+        {
+          "caller": "DocumentsPanel",
+          "callee": "useRef",
+          "lineNumber": 271
+        },
+        {
+          "caller": "DocumentsPanel",
+          "callee": "useState",
+          "lineNumber": 272
+        },
+        {
+          "caller": "DocumentsPanel",
+          "callee": "controller.documents.find",
+          "lineNumber": 275
+        },
+        {
+          "caller": "DocumentsPanel",
+          "callee": "useMemo",
+          "lineNumber": 277
+        },
+        {
+          "caller": "DocumentsPanel",
+          "callee": "documentPolicyExtensions",
+          "lineNumber": 278
+        },
+        {
+          "caller": "DocumentsPanel",
+          "callee": "policyExtensions.join",
+          "lineNumber": 281
+        },
+        {
+          "caller": "DocumentsPanel",
+          "callee": "useMemo",
+          "lineNumber": 290
+        },
+        {
+          "caller": "DocumentsPanel",
+          "callee": "controller.documents.filter",
+          "lineNumber": 291
+        },
+        {
+          "caller": "DocumentsPanel",
+          "callee": "controller.documents.filter",
+          "lineNumber": 294
+        },
+        {
+          "caller": "DocumentsPanel",
+          "callee": "controller.transfers.filter",
+          "lineNumber": 299
+        },
+        {
+          "caller": "DocumentsPanel",
+          "callee": "controller.transfers.filter",
+          "lineNumber": 300
+        },
+        {
+          "caller": "DocumentsPanel",
+          "callee": "useCallback",
+          "lineNumber": 307
+        },
+        {
+          "caller": "DocumentsPanel",
+          "callee": "setRefValue",
+          "lineNumber": 310
+        },
+        {
+          "caller": "handleFilesSelected",
+          "callee": "Array.from",
+          "lineNumber": 316
+        },
+        {
+          "caller": "handleFilesSelected",
+          "callee": "controller.uploadFile",
+          "lineNumber": 320
+        },
+        {
+          "caller": "inspectDocument",
+          "callee": "trackDocumentAnalytics",
+          "lineNumber": 325
+        },
+        {
+          "caller": "inspectDocument",
+          "callee": "documentSizeBand",
+          "lineNumber": 329
+        },
+        {
+          "caller": "inspectDocument",
+          "callee": "controller.clearProcessingError",
+          "lineNumber": 332
+        },
+        {
+          "caller": "inspectDocument",
+          "callee": "setSelection",
+          "lineNumber": 333
+        },
+        {
+          "caller": "returnToList",
+          "callee": "setSelection",
+          "lineNumber": 338
+        },
+        {
+          "caller": "returnToList",
+          "callee": "window.setTimeout",
+          "lineNumber": 339
+        },
+        {
+          "caller": "returnToList",
+          "callee": "inspectButtonsRef.current.get(documentId)?.focus",
+          "lineNumber": 341
+        },
+        {
+          "caller": "returnToList",
+          "callee": "inspectButtonsRef.current.get",
+          "lineNumber": 341
+        },
+        {
+          "caller": "retryProcessing",
+          "callee": "controller.clearProcessingError",
+          "lineNumber": 347
+        },
+        {
+          "caller": "retryProcessing",
+          "callee": "controller.retryProcessing",
+          "lineNumber": 348
+        },
+        {
+          "caller": "DocumentsPanel",
+          "callee": "controller.retryingDocumentIds.has",
+          "lineNumber": 392
+        },
+        {
+          "caller": "DocumentsPanel",
+          "callee": "internalUploadInputRef.current?.click",
+          "lineNumber": 423
+        },
+        {
+          "caller": "DocumentsPanel",
+          "callee": "documentPolicyDescription",
+          "lineNumber": 433
+        },
+        {
+          "caller": "DocumentsPanel",
+          "callee": "internalUploadInputRef.current?.click",
+          "lineNumber": 516
+        },
+        {
+          "caller": "DocumentsPanel",
+          "callee": "controller.transfers.map",
+          "lineNumber": 556
+        },
+        {
+          "caller": "DocumentsPanel",
+          "callee": "controller.documents.map",
+          "lineNumber": 569
+        },
+        {
+          "caller": "DocumentsPanel",
+          "callee": "inspectButtonsRef.current.set",
+          "lineNumber": 574
+        },
+        {
+          "caller": "DocumentsPanel",
+          "callee": "inspectButtonsRef.current.delete",
+          "lineNumber": 576
+        },
+        {
+          "caller": "DocumentsPanel",
+          "callee": "controller.retryingDocumentIds.has",
+          "lineNumber": 585
+        }
+      ],
+      "metrics": {
+        "importCount": 7,
+        "exportCount": 1,
+        "functionCount": 5,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/documents/documentAnalytics.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 145,
+      "nonEmptyLines": 133,
+      "functions": [
+        {
+          "name": "documentSizeBand",
+          "startLine": 58,
+          "endLine": 63,
+          "params": [
+            "sizeBytes"
+          ]
+        },
+        {
+          "name": "configuredDocumentFormat",
+          "startLine": 65,
+          "endLine": 82,
+          "params": [
+            "filename",
+            "formats"
+          ]
+        },
+        {
+          "name": "documentProcessingDurationMs",
+          "startLine": 84,
+          "endLine": 94,
+          "params": [
+            "document"
+          ]
+        },
+        {
+          "name": "assertPrivacySafeDocumentAnalytics",
+          "startLine": 97,
+          "endLine": 134,
+          "params": [
+            "event",
+            "properties"
+          ]
+        },
+        {
+          "name": "trackDocumentAnalytics",
+          "startLine": 136,
+          "endLine": 145,
+          "params": [
+            "analyticsClient",
+            "event",
+            "properties"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "documentSizeBand",
+          "line": 58,
+          "isDefault": false
+        },
+        {
+          "name": "configuredDocumentFormat",
+          "line": 65,
+          "isDefault": false
+        },
+        {
+          "name": "documentProcessingDurationMs",
+          "line": 84,
+          "isDefault": false
+        },
+        {
+          "name": "assertPrivacySafeDocumentAnalytics",
+          "line": 97,
+          "isDefault": false
+        },
+        {
+          "name": "trackDocumentAnalytics",
+          "line": 136,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "configuredDocumentFormat",
+          "callee": "filename.lastIndexOf",
+          "lineNumber": 72
+        },
+        {
+          "caller": "configuredDocumentFormat",
+          "callee": "filename.slice(dot).toLowerCase",
+          "lineNumber": 73
+        },
+        {
+          "caller": "configuredDocumentFormat",
+          "callee": "filename.slice",
+          "lineNumber": 73
+        },
+        {
+          "caller": "configuredDocumentFormat",
+          "callee": "formats.find",
+          "lineNumber": 76
+        },
+        {
+          "caller": "configuredDocumentFormat",
+          "callee": "format.extensions.some",
+          "lineNumber": 77
+        },
+        {
+          "caller": "configuredDocumentFormat",
+          "callee": "configured.toLowerCase",
+          "lineNumber": 78
+        },
+        {
+          "caller": "documentProcessingDurationMs",
+          "callee": "Date.parse",
+          "lineNumber": 89
+        },
+        {
+          "caller": "documentProcessingDurationMs",
+          "callee": "Date.parse",
+          "lineNumber": 90
+        },
+        {
+          "caller": "documentProcessingDurationMs",
+          "callee": "Number.isFinite",
+          "lineNumber": 91
+        },
+        {
+          "caller": "documentProcessingDurationMs",
+          "callee": "Number.isFinite",
+          "lineNumber": 91
+        },
+        {
+          "caller": "documentProcessingDurationMs",
+          "callee": "Math.max",
+          "lineNumber": 92
+        },
+        {
+          "caller": "assertPrivacySafeDocumentAnalytics",
+          "callee": "Array.isArray",
+          "lineNumber": 104
+        },
+        {
+          "caller": "assertPrivacySafeDocumentAnalytics",
+          "callee": "Object.keys(properties).sort",
+          "lineNumber": 109
+        },
+        {
+          "caller": "assertPrivacySafeDocumentAnalytics",
+          "callee": "Object.keys",
+          "lineNumber": 109
+        },
+        {
+          "caller": "assertPrivacySafeDocumentAnalytics",
+          "callee": "[...allowedKeys[event]].sort",
+          "lineNumber": 110
+        },
+        {
+          "caller": "assertPrivacySafeDocumentAnalytics",
+          "callee": "actual.some",
+          "lineNumber": 113
+        },
+        {
+          "caller": "assertPrivacySafeDocumentAnalytics",
+          "callee": "Object.values",
+          "lineNumber": 120
+        },
+        {
+          "caller": "assertPrivacySafeDocumentAnalytics",
+          "callee": "Number.isFinite",
+          "lineNumber": 124
+        },
+        {
+          "caller": "assertPrivacySafeDocumentAnalytics",
+          "callee": "Array.isArray",
+          "lineNumber": 126
+        },
+        {
+          "caller": "assertPrivacySafeDocumentAnalytics",
+          "callee": "value.every",
+          "lineNumber": 126
+        },
+        {
+          "caller": "trackDocumentAnalytics",
+          "callee": "assertPrivacySafeDocumentAnalytics",
+          "lineNumber": 143
+        },
+        {
+          "caller": "trackDocumentAnalytics",
+          "callee": "trackAnalytics",
+          "lineNumber": 144
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 5,
+        "functionCount": 5,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/documents/documentPresentation.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 76,
+      "nonEmptyLines": 66,
+      "functions": [
+        {
+          "name": "documentProcessingFailureMessage",
+          "startLine": 31,
+          "endLine": 35,
+          "params": [
+            "code"
+          ]
+        },
+        {
+          "name": "formatDocumentSize",
+          "startLine": 37,
+          "endLine": 47,
+          "params": [
+            "bytes"
+          ]
+        },
+        {
+          "name": "formatDocumentUploadTime",
+          "startLine": 49,
+          "endLine": 54,
+          "params": [
+            "timestamp"
+          ]
+        },
+        {
+          "name": "documentPolicyExtensions",
+          "startLine": 56,
+          "endLine": 66,
+          "params": [
+            "policy"
+          ]
+        },
+        {
+          "name": "documentPolicyDescription",
+          "startLine": 68,
+          "endLine": 76,
+          "params": [
+            "policy"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "documentStatusLabels",
+          "line": 22,
+          "isDefault": false
+        },
+        {
+          "name": "documentProcessingFailureMessage",
+          "line": 31,
+          "isDefault": false
+        },
+        {
+          "name": "formatDocumentSize",
+          "line": 37,
+          "isDefault": false
+        },
+        {
+          "name": "formatDocumentUploadTime",
+          "line": 49,
+          "isDefault": false
+        },
+        {
+          "name": "documentPolicyExtensions",
+          "line": 56,
+          "isDefault": false
+        },
+        {
+          "name": "documentPolicyDescription",
+          "line": 68,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "formatDocumentSize",
+          "callee": "Number",
+          "lineNumber": 43
+        },
+        {
+          "caller": "formatDocumentSize",
+          "callee": "(bytes / 1024).toFixed",
+          "lineNumber": 43
+        },
+        {
+          "caller": "formatDocumentSize",
+          "callee": "Number",
+          "lineNumber": 46
+        },
+        {
+          "caller": "formatDocumentSize",
+          "callee": "(bytes / (1024 * 1024)).toFixed",
+          "lineNumber": 46
+        },
+        {
+          "caller": "formatDocumentUploadTime",
+          "callee": "new Intl.DateTimeFormat(undefined, {\n    dateStyle: 'medium',\n    timeStyle: 'medium',\n  }).format",
+          "lineNumber": 50
+        },
+        {
+          "caller": "documentPolicyExtensions",
+          "callee": "policy.supported_formats.flatMap",
+          "lineNumber": 61
+        },
+        {
+          "caller": "documentPolicyExtensions",
+          "callee": "extensions.map",
+          "lineNumber": 62
+        },
+        {
+          "caller": "documentPolicyExtensions",
+          "callee": "extension.toLowerCase",
+          "lineNumber": 62
+        },
+        {
+          "caller": "documentPolicyDescription",
+          "callee": "documentPolicyExtensions(policy)\n    .map((extension) => extension.slice(1).toUpperCase())\n    .join",
+          "lineNumber": 71
+        },
+        {
+          "caller": "documentPolicyDescription",
+          "callee": "documentPolicyExtensions(policy)\n    .map",
+          "lineNumber": 71
+        },
+        {
+          "caller": "documentPolicyDescription",
+          "callee": "documentPolicyExtensions",
+          "lineNumber": 71
+        },
+        {
+          "caller": "documentPolicyDescription",
+          "callee": "extension.slice(1).toUpperCase",
+          "lineNumber": 72
+        },
+        {
+          "caller": "documentPolicyDescription",
+          "callee": "extension.slice",
+          "lineNumber": 72
+        },
+        {
+          "caller": "documentPolicyDescription",
+          "callee": "formatDocumentSize",
+          "lineNumber": 75
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 6,
+        "functionCount": 5,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/documents/documentTestFixtures.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 74,
+      "nonEmptyLines": 68,
+      "functions": [
+        {
+          "name": "documentSummaryFixture",
+          "startLine": 31,
+          "endLine": 61,
+          "params": [
+            "overrides"
+          ]
+        },
+        {
+          "name": "documentDetailFixture",
+          "startLine": 63,
+          "endLine": 74,
+          "params": [
+            "overrides"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "documentUploadPolicyFixture",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "documentSummaryFixture",
+          "line": 31,
+          "isDefault": false
+        },
+        {
+          "name": "documentDetailFixture",
+          "line": 63,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "documentDetailFixture",
+          "callee": "documentSummaryFixture",
+          "lineNumber": 66
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 3,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/documents/documentUploadPreflight.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 75,
+      "nonEmptyLines": 68,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/documents/documentUploadPreflight.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 135,
+      "nonEmptyLines": 117,
+      "functions": [
+        {
+          "name": "extensionOf",
+          "startLine": 29,
+          "endLine": 33,
+          "params": [
+            "filename"
+          ]
+        },
+        {
+          "name": "matchingFormat",
+          "startLine": 35,
+          "endLine": 45,
+          "params": [
+            "extension",
+            "formats"
+          ]
+        },
+        {
+          "name": "readableSize",
+          "startLine": 47,
+          "endLine": 57,
+          "params": [
+            "bytes"
+          ]
+        },
+        {
+          "name": "preflightDocumentUpload",
+          "startLine": 63,
+          "endLine": 135,
+          "params": [
+            "file",
+            "policy"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "preflightDocumentUpload",
+          "line": 63,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "extensionOf",
+          "callee": "filename.lastIndexOf",
+          "lineNumber": 30
+        },
+        {
+          "caller": "extensionOf",
+          "callee": "filename.slice(dotIndex).toLowerCase",
+          "lineNumber": 32
+        },
+        {
+          "caller": "extensionOf",
+          "callee": "filename.slice",
+          "lineNumber": 32
+        },
+        {
+          "caller": "matchingFormat",
+          "callee": "formats.find",
+          "lineNumber": 39
+        },
+        {
+          "caller": "matchingFormat",
+          "callee": "format.extensions.some",
+          "lineNumber": 40
+        },
+        {
+          "caller": "matchingFormat",
+          "callee": "configuredExtension.toLowerCase",
+          "lineNumber": 42
+        },
+        {
+          "caller": "readableSize",
+          "callee": "Number",
+          "lineNumber": 55
+        },
+        {
+          "caller": "readableSize",
+          "callee": "mebibytes.toFixed",
+          "lineNumber": 55
+        },
+        {
+          "caller": "readableSize",
+          "callee": "Math.ceil",
+          "lineNumber": 56
+        },
+        {
+          "caller": "preflightDocumentUpload",
+          "callee": "readableSize",
+          "lineNumber": 81
+        },
+        {
+          "caller": "preflightDocumentUpload",
+          "callee": "extensionOf",
+          "lineNumber": 87
+        },
+        {
+          "caller": "preflightDocumentUpload",
+          "callee": "matchingFormat",
+          "lineNumber": 88
+        },
+        {
+          "caller": "preflightDocumentUpload",
+          "callee": "policy.supported_formats\n      .flatMap(({ extensions: configuredExtensions }) => configuredExtensions)\n      .join",
+          "lineNumber": 91
+        },
+        {
+          "caller": "preflightDocumentUpload",
+          "callee": "policy.supported_formats\n      .flatMap",
+          "lineNumber": 91
+        },
+        {
+          "caller": "preflightDocumentUpload",
+          "callee": "file.type.trim().toLowerCase",
+          "lineNumber": 104
+        },
+        {
+          "caller": "preflightDocumentUpload",
+          "callee": "file.type.trim",
+          "lineNumber": 104
+        },
+        {
+          "caller": "preflightDocumentUpload",
+          "callee": "format.mime_types.some",
+          "lineNumber": 108
+        },
+        {
+          "caller": "preflightDocumentUpload",
+          "callee": "mimeType.toLowerCase",
+          "lineNumber": 109
+        },
+        {
+          "caller": "preflightDocumentUpload",
+          "callee": "file.slice(0, 1).arrayBuffer",
+          "lineNumber": 123
+        },
+        {
+          "caller": "preflightDocumentUpload",
+          "callee": "file.slice",
+          "lineNumber": 123
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/documents/useDocumentLibrary.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 240,
+      "nonEmptyLines": 222,
+      "functions": [
+        {
+          "name": "analyticsFixture",
+          "startLine": 12,
+          "endLine": 14,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "analyticsFixture",
+          "callee": "vi.fn",
+          "lineNumber": 13
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/documents/useDocumentLibrary.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 886,
+      "nonEmptyLines": 802,
+      "functions": [
+        {
+          "name": "defaultCreateUploadId",
+          "startLine": 120,
+          "endLine": 122,
+          "params": []
+        },
+        {
+          "name": "isAbort",
+          "startLine": 124,
+          "endLine": 126,
+          "params": [
+            "error"
+          ]
+        },
+        {
+          "name": "errorMessage",
+          "startLine": 128,
+          "endLine": 132,
+          "params": [
+            "error",
+            "fallback"
+          ]
+        },
+        {
+          "name": "compareDocuments",
+          "startLine": 134,
+          "endLine": 139,
+          "params": [
+            "first",
+            "second"
+          ]
+        },
+        {
+          "name": "mergeDocuments",
+          "startLine": 141,
+          "endLine": 153,
+          "params": [
+            "...collections"
+          ]
+        },
+        {
+          "name": "publicTransfer",
+          "startLine": 155,
+          "endLine": 163,
+          "params": [
+            "record"
+          ]
+        },
+        {
+          "name": "useDocumentLibrary",
+          "startLine": 165,
+          "endLine": 886,
+          "params": [
+            "{\n  analyticsClient = analytics,\n  createUploadId = defaultCreateUploadId,\n  enabled = true,\n  pollIntervalMs = 2_000,\n  projectId,\n  requests,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "useDocumentLibrary",
+          "line": 165,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "defaultCreateUploadId",
+          "callee": "globalThis.crypto.randomUUID",
+          "lineNumber": 121
+        },
+        {
+          "caller": "errorMessage",
+          "callee": "error.message.trim",
+          "lineNumber": 129
+        },
+        {
+          "caller": "compareDocuments",
+          "callee": "Date.parse",
+          "lineNumber": 136
+        },
+        {
+          "caller": "compareDocuments",
+          "callee": "Date.parse",
+          "lineNumber": 136
+        },
+        {
+          "caller": "compareDocuments",
+          "callee": "first.id.localeCompare",
+          "lineNumber": 138
+        },
+        {
+          "caller": "mergeDocuments",
+          "callee": "byId.set",
+          "lineNumber": 148
+        },
+        {
+          "caller": "mergeDocuments",
+          "callee": "[...byId.values()].sort",
+          "lineNumber": 152
+        },
+        {
+          "caller": "mergeDocuments",
+          "callee": "byId.values",
+          "lineNumber": 152
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useState",
+          "lineNumber": 178
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useState",
+          "lineNumber": 184
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useState",
+          "lineNumber": 189
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useState",
+          "lineNumber": 194
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useState",
+          "lineNumber": 199
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useState",
+          "lineNumber": 200
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useState",
+          "lineNumber": 201
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useRef",
+          "lineNumber": 202
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useRef",
+          "lineNumber": 205
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useRef",
+          "lineNumber": 206
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useRef",
+          "lineNumber": 207
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useRef",
+          "lineNumber": 208
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useRef",
+          "lineNumber": 209
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useRef",
+          "lineNumber": 210
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useRef",
+          "lineNumber": 211
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useRef",
+          "lineNumber": 212
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useRef",
+          "lineNumber": 213
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useRef",
+          "lineNumber": 216
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useRef",
+          "lineNumber": 217
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useCallback",
+          "lineNumber": 235
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "update",
+          "lineNumber": 244
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "setTransferStore",
+          "lineNumber": 246
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useCallback",
+          "lineNumber": 251
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "mergeDocuments",
+          "lineNumber": 258
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "setStore",
+          "lineNumber": 260
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useEffect",
+          "lineNumber": 274
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "setStore",
+          "lineNumber": 294
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "listRequest(projectId, controller.signal)\n      .then((response) => {\n        if (\n          controller.signal.aborted ||\n          operation !== listOperationRef.current ||\n          activeProjectIdRef.current !== projectId\n        ) {\n          return;\n        }\n\n        const loaded = assertDocumentListResponse(response, projectId);\n        const documents =\n          mutationRevision === mutationRevisionRef.current\n            ? [...loaded]\n            : mergeDocuments(loaded, documentsRef.current);\n        documentsRef.current = documents;\n        setStore({\n          documents,\n          error: null,\n          projectId,\n          status: 'ready',\n        });\n      })\n      .catch((error: unknown) => {\n        if (\n          controller.signal.aborted ||\n          operation !== listOperationRef.current ||\n          activeProjectIdRef.current !== projectId ||\n          isAbort(error)\n        ) {\n          return;\n        }\n\n        setStore((current) => ({\n          documents:\n            current.projectId === projectId ? current.documents : [],\n          error: errorMessage(\n            error,\n            'The documents could not be loaded. Please retry.',\n          ),\n          projectId,\n          status: 'error',\n        }));\n      })\n      .finally",
+          "lineNumber": 303
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "listRequest(projectId, controller.signal)\n      .then((response) => {\n        if (\n          controller.signal.aborted ||\n          operation !== listOperationRef.current ||\n          activeProjectIdRef.current !== projectId\n        ) {\n          return;\n        }\n\n        const loaded = assertDocumentListResponse(response, projectId);\n        const documents =\n          mutationRevision === mutationRevisionRef.current\n            ? [...loaded]\n            : mergeDocuments(loaded, documentsRef.current);\n        documentsRef.current = documents;\n        setStore({\n          documents,\n          error: null,\n          projectId,\n          status: 'ready',\n        });\n      })\n      .catch",
+          "lineNumber": 303
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "listRequest(projectId, controller.signal)\n      .then",
+          "lineNumber": 303
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "listRequest",
+          "lineNumber": 303
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "assertDocumentListResponse",
+          "lineNumber": 313
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "mergeDocuments",
+          "lineNumber": 317
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "setStore",
+          "lineNumber": 319
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "isAbort",
+          "lineNumber": 331
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "setStore",
+          "lineNumber": 336
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "errorMessage",
+          "lineNumber": 339
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "setListSettledKey",
+          "lineNumber": 353
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "controller.abort",
+          "lineNumber": 357
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useEffect",
+          "lineNumber": 360
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "setPolicyStore",
+          "lineNumber": 368
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "policyRequest(controller.signal)\n      .then((response) => {\n        if (\n          controller.signal.aborted ||\n          operation !== policyOperationRef.current\n        ) {\n          return;\n        }\n\n        const policy = assertDocumentUploadPolicyResponse(response);\n        setPolicyStore({ error: null, policy, status: 'ready' });\n      })\n      .catch",
+          "lineNumber": 374
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "policyRequest(controller.signal)\n      .then",
+          "lineNumber": 374
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "policyRequest",
+          "lineNumber": 374
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "assertDocumentUploadPolicyResponse",
+          "lineNumber": 383
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "setPolicyStore",
+          "lineNumber": 384
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "isAbort",
+          "lineNumber": 390
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "setPolicyStore",
+          "lineNumber": 395
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "errorMessage",
+          "lineNumber": 396
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "controller.abort",
+          "lineNumber": 405
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useEffect",
+          "lineNumber": 408
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "uploadControllers.forEach",
+          "lineNumber": 413
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "controller.abort",
+          "lineNumber": 413
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "uploadControllers.clear",
+          "lineNumber": 414
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "processingRetryControllers.forEach",
+          "lineNumber": 415
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "controller.abort",
+          "lineNumber": 415
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "processingRetryControllers.clear",
+          "lineNumber": 416
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "setTransferStore",
+          "lineNumber": 418
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "setProcessingRetryStore",
+          "lineNumber": 419
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "uploadControllers.forEach",
+          "lineNumber": 422
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "controller.abort",
+          "lineNumber": 422
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "processingRetryControllers.forEach",
+          "lineNumber": 423
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "controller.abort",
+          "lineNumber": 423
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useEffect",
+          "lineNumber": 427
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "observedProcessingStatesRef.current.get",
+          "lineNumber": 432
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "observedProcessingStatesRef.current.set",
+          "lineNumber": 436
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "trackDocumentAnalytics",
+          "lineNumber": 437
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "documentSizeBand",
+          "lineNumber": 441
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "documentProcessingDurationMs",
+          "lineNumber": 443
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useEffect",
+          "lineNumber": 449
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "currentStore.documents.some",
+          "lineNumber": 453
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "window.setTimeout",
+          "lineNumber": 460
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "setListRequestKey",
+          "lineNumber": 462
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "Math.max",
+          "lineNumber": 463
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "window.clearTimeout",
+          "lineNumber": 465
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useCallback",
+          "lineNumber": 474
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "setListRequestKey",
+          "lineNumber": 480
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useCallback",
+          "lineNumber": 483
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "setPolicyRequestKey",
+          "lineNumber": 485
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useCallback",
+          "lineNumber": 489
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "commitTransferRecords",
+          "lineNumber": 496
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "records.map",
+          "lineNumber": 497
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "trackDocumentAnalytics",
+          "lineNumber": 508
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "documentSizeBand",
+          "lineNumber": 513
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "preflightDocumentUpload",
+          "lineNumber": 520
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "transferRecordsRef.current.find",
+          "lineNumber": 524
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "commitTransferRecords",
+          "lineNumber": 536
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "records.map",
+          "lineNumber": 537
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "trackDocumentAnalytics",
+          "lineNumber": 547
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "documentSizeBand",
+          "lineNumber": 552
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "uploadControllersRef.current.get(initialRecord.id)?.abort",
+          "lineNumber": 560
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "uploadControllersRef.current.get",
+          "lineNumber": 560
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "uploadControllersRef.current.set",
+          "lineNumber": 561
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "uploadRequest",
+          "lineNumber": 568
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "transferRecordsRef.current.find",
+          "lineNumber": 577
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "assertDocumentSummaryResponse",
+          "lineNumber": 584
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "trackDocumentAnalytics",
+          "lineNumber": 588
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "documentSizeBand",
+          "lineNumber": 593
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "commitDocument",
+          "lineNumber": 597
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "commitTransferRecords",
+          "lineNumber": 598
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "records.filter",
+          "lineNumber": 599
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "isAbort",
+          "lineNumber": 605
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "commitTransferRecords",
+          "lineNumber": 610
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "records.map",
+          "lineNumber": 611
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "errorMessage",
+          "lineNumber": 615
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "trackDocumentAnalytics",
+          "lineNumber": 624
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "documentSizeBand",
+          "lineNumber": 629
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "uploadControllersRef.current.get",
+          "lineNumber": 635
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "uploadControllersRef.current.delete",
+          "lineNumber": 637
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useCallback",
+          "lineNumber": 650
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "createUploadId",
+          "lineNumber": 652
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "configuredDocumentFormat",
+          "lineNumber": 658
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "commitTransferRecords",
+          "lineNumber": 670
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "runTransfer",
+          "lineNumber": 671
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useCallback",
+          "lineNumber": 677
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "transferRecordsRef.current.find",
+          "lineNumber": 679
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "trackDocumentAnalytics",
+          "lineNumber": 694
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "documentSizeBand",
+          "lineNumber": 698
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "commitTransferRecords",
+          "lineNumber": 700
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "records.map",
+          "lineNumber": 701
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "runTransfer",
+          "lineNumber": 703
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useCallback",
+          "lineNumber": 708
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "transferRecordsRef.current.find",
+          "lineNumber": 710
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "uploadControllersRef.current.get(transferId)?.abort",
+          "lineNumber": 718
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "uploadControllersRef.current.get",
+          "lineNumber": 718
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "commitTransferRecords",
+          "lineNumber": 719
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "records.filter",
+          "lineNumber": 720
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useCallback",
+          "lineNumber": 726
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "documentsRef.current.find",
+          "lineNumber": 728
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "processingRetryControllersRef.current.get(documentId)?.abort",
+          "lineNumber": 742
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "processingRetryControllersRef.current.get",
+          "lineNumber": 742
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "processingRetryControllersRef.current.set",
+          "lineNumber": 744
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "setProcessingRetryStore",
+          "lineNumber": 745
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "Object.fromEntries",
+          "lineNumber": 748
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "Object.entries(current.errors).filter",
+          "lineNumber": 749
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "Object.entries",
+          "lineNumber": 749
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "processingRetryRequest",
+          "lineNumber": 764
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "assertDocumentSummaryResponse",
+          "lineNumber": 777
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "trackDocumentAnalytics",
+          "lineNumber": 782
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "documentSizeBand",
+          "lineNumber": 786
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "commitDocument",
+          "lineNumber": 790
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "isAbort",
+          "lineNumber": 796
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "setProcessingRetryStore",
+          "lineNumber": 801
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "errorMessage",
+          "lineNumber": 805
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "trackDocumentAnalytics",
+          "lineNumber": 812
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "documentSizeBand",
+          "lineNumber": 816
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "processingRetryControllersRef.current.get",
+          "lineNumber": 823
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "processingRetryControllersRef.current.delete",
+          "lineNumber": 825
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "setProcessingRetryStore",
+          "lineNumber": 826
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "current.retryingIds.filter",
+          "lineNumber": 830
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useCallback",
+          "lineNumber": 839
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "setProcessingRetryStore",
+          "lineNumber": 841
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "Object.fromEntries",
+          "lineNumber": 845
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "Object.entries(current.errors).filter",
+          "lineNumber": 846
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "Object.entries",
+          "lineNumber": 846
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useMemo",
+          "lineNumber": 856
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "(transferStore.projectId === projectId ? transferStore.records : []).map",
+          "lineNumber": 858
+        },
+        {
+          "caller": "useDocumentLibrary",
+          "callee": "useMemo",
+          "lineNumber": 863
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 1,
+        "functionCount": 7,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/workspace/ProjectWorkspace.documents.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 53,
+      "nonEmptyLines": 49,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/workspace/projectSourceCatalog.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 142,
+      "nonEmptyLines": 137,
+      "functions": [
+        {
+          "name": "bubbleFixture",
+          "startLine": 7,
+          "endLine": 26,
+          "params": [
+            "overrides"
+          ]
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/workspace/projectSourceCatalog.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 62,
+      "nonEmptyLines": 56,
+      "functions": [
+        {
+          "name": "bubbleSecondaryLine",
+          "startLine": 14,
+          "endLine": 22,
+          "params": [
+            "bubble"
+          ]
+        },
+        {
+          "name": "documentReadiness",
+          "startLine": 24,
+          "endLine": 33,
+          "params": [
+            "document"
+          ]
+        },
+        {
+          "name": "createProjectSourceCatalog",
+          "startLine": 35,
+          "endLine": 62,
+          "params": [
+            "{\n  bubbles,\n  documents,\n  projectId,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "createProjectSourceCatalog",
+          "line": 35,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "bubbleSecondaryLine",
+          "callee": "bubble.summary?.trim",
+          "lineNumber": 15
+        },
+        {
+          "caller": "createProjectSourceCatalog",
+          "callee": "bubbles\n        .filter((bubble) => bubble.project_id === projectId)\n        .map",
+          "lineNumber": 43
+        },
+        {
+          "caller": "createProjectSourceCatalog",
+          "callee": "bubbles\n        .filter",
+          "lineNumber": 43
+        },
+        {
+          "caller": "createProjectSourceCatalog",
+          "callee": "bubbleSecondaryLine",
+          "lineNumber": 48
+        },
+        {
+          "caller": "createProjectSourceCatalog",
+          "callee": "documents\n        .filter((document) => document.project_id === projectId)\n        .map",
+          "lineNumber": 51
+        },
+        {
+          "caller": "createProjectSourceCatalog",
+          "callee": "documents\n        .filter",
+          "lineNumber": 51
+        },
+        {
+          "caller": "createProjectSourceCatalog",
+          "callee": "documentReadiness",
+          "lineNumber": 56
+        },
+        {
+          "caller": "createProjectSourceCatalog",
+          "callee": "formatDocumentSize",
+          "lineNumber": 57
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    }
+  ]
+}

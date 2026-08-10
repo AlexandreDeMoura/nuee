@@ -1,0 +1,1344 @@
+{
+  "nodes": [
+    {
+      "id": "file:backend/src/ai/ai-capabilities.controller.ts",
+      "type": "file",
+      "name": "ai-capabilities.controller.ts",
+      "filePath": "backend/src/ai/ai-capabilities.controller.ts",
+      "summary": "Exposes the read-only `GET /ai-capabilities` endpoint that returns the neutral capability descriptor injected under the AI_CAPABILITIES token. Pure delegation: it holds no discovery logic of its own.",
+      "tags": [
+        "api-handler",
+        "controller",
+        "capability-discovery",
+        "nestjs",
+        "ai"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/src/ai/ai-capabilities.spec.ts",
+      "type": "file",
+      "name": "ai-capabilities.spec.ts",
+      "filePath": "backend/src/ai/ai-capabilities.spec.ts",
+      "summary": "Unit test covering `createAiCapabilities`, asserting that web search is advertised only when the provider is OpenAI and the feature flag is enabled.",
+      "tags": [
+        "test",
+        "unit-test",
+        "capability-discovery",
+        "ai"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/src/ai/ai-capabilities.ts",
+      "type": "file",
+      "name": "ai-capabilities.ts",
+      "filePath": "backend/src/ai/ai-capabilities.ts",
+      "summary": "Derives the provider-neutral `AiCapabilities` descriptor from AI configuration and declares the AI_CAPABILITIES injection token. It is the single place where provider identity is collapsed into a capability flag consumers can gate on.",
+      "tags": [
+        "capability-discovery",
+        "ai",
+        "configuration",
+        "injection-token"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Uses a `Symbol` as a NestJS injection token, keeping the provider contract nominal rather than string-keyed."
+    },
+    {
+      "id": "file:backend/src/ai/ai.module.ts",
+      "type": "file",
+      "name": "ai.module.ts",
+      "filePath": "backend/src/ai/ai.module.ts",
+      "summary": "NestJS module wiring the cross-cutting AI feature: it binds capabilities, the frozen-context formatter, the token estimator, the input budget, and selects the ModelClient implementation (deterministic fake in test, OpenAI adapter otherwise) behind exported tokens.",
+      "tags": [
+        "module",
+        "dependency-injection",
+        "ai",
+        "port-adapter",
+        "composition-root"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "The `useFactory` for MODEL_CLIENT is the seam that keeps the port/adapter split invisible to consumers — they only ever see the MODEL_CLIENT token."
+    },
+    {
+      "id": "file:backend/src/ai/answer-instructions.ts",
+      "type": "file",
+      "name": "answer-instructions.ts",
+      "filePath": "backend/src/ai/answer-instructions.ts",
+      "summary": "Holds the provider-neutral system instruction text: the fixed title-generation directive and a builder for the focused-answer instructions parameterised by a soft word budget.",
+      "tags": [
+        "prompt",
+        "ai",
+        "utility",
+        "instructions"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/src/ai/fake-model.client.spec.ts",
+      "type": "file",
+      "name": "fake-model.client.spec.ts",
+      "filePath": "backend/src/ai/fake-model.client.spec.ts",
+      "summary": "Unit tests pinning the deterministic FakeModelClient's contract: echoed answers, title truncation at the shared max length, web-search citation emission, and the fixed structured proposal.",
+      "tags": [
+        "test",
+        "unit-test",
+        "ai",
+        "test-double"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/src/ai/fake-model.client.ts",
+      "type": "file",
+      "name": "fake-model.client.ts",
+      "filePath": "backend/src/ai/fake-model.client.ts",
+      "summary": "Deterministic in-process ModelClient implementation used in test mode: it echoes the last user prompt as an answer, derives a truncated title from the first prompt, and returns a fixed structured proposal plus stable web-search citations.",
+      "tags": [
+        "test-double",
+        "ai",
+        "port-adapter",
+        "deterministic",
+        "service"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Exports its fixtures (FAKE_MODEL_ID, FAKE_WEB_SEARCH_CITATIONS, FAKE_STRUCTURED_PROPOSAL) so e2e suites can assert against the same constants the fake produces."
+    },
+    {
+      "id": "file:backend/src/ai/input-token-estimator.spec.ts",
+      "type": "file",
+      "name": "input-token-estimator.spec.ts",
+      "filePath": "backend/src/ai/input-token-estimator.spec.ts",
+      "summary": "Unit test verifying that the conservative estimator converts UTF-8 byte length into a rounded-up token count.",
+      "tags": [
+        "test",
+        "unit-test",
+        "ai",
+        "token-estimation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/src/ai/input-token-estimator.ts",
+      "type": "file",
+      "name": "input-token-estimator.ts",
+      "filePath": "backend/src/ai/input-token-estimator.ts",
+      "summary": "Defines the InputTokenEstimator port and a conservative implementation that over-estimates tokens at three UTF-8 bytes per token, deliberately erring toward rejecting oversized inputs.",
+      "tags": [
+        "token-estimation",
+        "ai",
+        "port-adapter",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/src/ai/model-client.ts",
+      "type": "file",
+      "name": "model-client.ts",
+      "filePath": "backend/src/ai/model-client.ts",
+      "summary": "The provider-neutral ModelClient port: message, generation, structured-output, and citation contracts plus the ModelGenerationError taxonomy and the MODEL_CLIENT injection token. Contains no provider names or transport details.",
+      "tags": [
+        "type-definition",
+        "port-adapter",
+        "ai",
+        "contract",
+        "injection-token"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "The `ModelGenerationErrorReason` union ('provider' | 'timeout' | 'invalid_response') is what lets callers branch on failure kind without knowing which provider failed."
+    },
+    {
+      "id": "file:backend/src/ai/model-input-budget.spec.ts",
+      "type": "file",
+      "name": "model-input-budget.spec.ts",
+      "filePath": "backend/src/ai/model-input-budget.spec.ts",
+      "summary": "Unit tests for the configured input budget, using a character-counting estimator stub to assert which texts are measured and how the fits/limit/margin arithmetic behaves for answers and structured output.",
+      "tags": [
+        "test",
+        "unit-test",
+        "ai",
+        "token-budget"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/src/ai/model-input-budget.ts",
+      "type": "file",
+      "name": "model-input-budget.ts",
+      "filePath": "backend/src/ai/model-input-budget.ts",
+      "summary": "Defines the ModelInputBudget port and its configured implementation, which estimates the token cost of instructions, frozen context, and transcript messages against the configured limit minus reserved output tokens and a safety margin.",
+      "tags": [
+        "token-budget",
+        "ai",
+        "validation",
+        "port-adapter",
+        "service"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Per-request and per-message overhead constants are added on top of estimated text so the budget stays pessimistic relative to real provider accounting."
+    },
+    {
+      "id": "file:backend/src/ai/openai-model.client.spec.ts",
+      "type": "file",
+      "name": "openai-model.client.spec.ts",
+      "filePath": "backend/src/ai/openai-model.client.spec.ts",
+      "summary": "Unit tests driving the OpenAI adapter through an injected fake responses client: request shaping, web-search tool opt-in, timeout and provider error mapping, citation extraction, and structured-output parsing.",
+      "tags": [
+        "test",
+        "unit-test",
+        "ai",
+        "provider-adapter"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:backend/src/ai/openai-model.client.ts",
+      "type": "file",
+      "name": "openai-model.client.ts",
+      "filePath": "backend/src/ai/openai-model.client.ts",
+      "summary": "The provider adapter implementing ModelClient against the OpenAI Responses API: it shapes requests, attaches the web-search tool only for answer generation, applies per-call timeouts, and maps provider output items, annotations, and failures back onto the neutral contracts.",
+      "tags": [
+        "provider-adapter",
+        "ai",
+        "port-adapter",
+        "http-client",
+        "error-mapping"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Provider specifics — tool names, response annotation shapes, SDK types — are confined to this file; everything crossing the module boundary is re-expressed as ModelGeneration/MessageCitation."
+    },
+    {
+      "id": "file:backend/src/app.controller.spec.ts",
+      "type": "file",
+      "name": "app.controller.spec.ts",
+      "filePath": "backend/src/app.controller.spec.ts",
+      "summary": "Unit test instantiating AppController and asserting the shape of the root and health responses.",
+      "tags": [
+        "test",
+        "unit-test",
+        "health-check"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/src/app.controller.ts",
+      "type": "file",
+      "name": "app.controller.ts",
+      "filePath": "backend/src/app.controller.ts",
+      "summary": "Root HTTP controller serving the service banner at `/` and a lightweight liveness payload at `/health`.",
+      "tags": [
+        "api-handler",
+        "controller",
+        "health-check",
+        "nestjs"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/src/app.module.ts",
+      "type": "file",
+      "name": "app.module.ts",
+      "filePath": "backend/src/app.module.ts",
+      "summary": "Root NestJS module composing the monolith: configuration, database, and every feature module (projects, bubbles, discussions, documents, knowledge extraction, AI) plus the root controller and service.",
+      "tags": [
+        "module",
+        "entry-point",
+        "composition-root",
+        "nestjs",
+        "dependency-injection"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/src/app.service.ts",
+      "type": "file",
+      "name": "app.service.ts",
+      "filePath": "backend/src/app.service.ts",
+      "summary": "Minimal root service providing a greeting string; a scaffolding remnant with no feature responsibility.",
+      "tags": [
+        "service",
+        "scaffolding",
+        "nestjs"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/src/main.ts",
+      "type": "file",
+      "name": "main.ts",
+      "filePath": "backend/src/main.ts",
+      "summary": "Process entry point: creates the Nest application from AppModule, reads validated app configuration, enables CORS for the configured frontend origin, and listens on the configured port.",
+      "tags": [
+        "entry-point",
+        "bootstrap",
+        "nestjs",
+        "configuration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/test/app.e2e-spec.ts",
+      "type": "file",
+      "name": "app.e2e-spec.ts",
+      "filePath": "backend/test/app.e2e-spec.ts",
+      "summary": "End-to-end smoke test booting the full application and asserting the root and health endpoints respond over HTTP.",
+      "tags": [
+        "test",
+        "e2e-test",
+        "health-check",
+        "smoke-test"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/test/bubble-canvas.e2e-spec.ts",
+      "type": "file",
+      "name": "bubble-canvas.e2e-spec.ts",
+      "filePath": "backend/test/bubble-canvas.e2e-spec.ts",
+      "summary": "End-to-end HTTP journey covering bubble placement on the canvas: creation with positions, batch position updates, viewport persistence, and the associated validation failures.",
+      "tags": [
+        "test",
+        "e2e-test",
+        "canvas",
+        "bubbles"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:backend/test/bubble-links.e2e-spec.ts",
+      "type": "file",
+      "name": "bubble-links.e2e-spec.ts",
+      "filePath": "backend/test/bubble-links.e2e-spec.ts",
+      "summary": "End-to-end HTTP journey for manual bubble links: creating and deleting links, project scoping, and rejection of self-links, duplicates, and cross-project references.",
+      "tags": [
+        "test",
+        "e2e-test",
+        "bubbles",
+        "links"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:backend/test/discussions.e2e-spec.ts",
+      "type": "file",
+      "name": "discussions.e2e-spec.ts",
+      "filePath": "backend/test/discussions.e2e-spec.ts",
+      "summary": "End-to-end HTTP journey for the discussion lifecycle: creation with a first turn and frozen context, idempotent follow-up turns, failed-turn retry, title generation, soft deletion, and per-turn web-search opt-in gated on overridden AI capabilities.",
+      "tags": [
+        "test",
+        "e2e-test",
+        "discussions",
+        "ai",
+        "web-search"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Overrides the AI_CAPABILITIES provider in the testing module so the web-search gate can be exercised without a real provider."
+    },
+    {
+      "id": "file:backend/test/knowledge-extraction.e2e-spec.ts",
+      "type": "file",
+      "name": "knowledge-extraction.e2e-spec.ts",
+      "filePath": "backend/test/knowledge-extraction.e2e-spec.ts",
+      "summary": "End-to-end HTTP journey for knowledge extraction, overriding MODEL_CLIENT with the deterministic fake to exercise source and target selection, proposal generation, resolution into bubbles, and failure handling.",
+      "tags": [
+        "test",
+        "e2e-test",
+        "knowledge-extraction",
+        "ai"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Overriding MODEL_CLIENT rather than stubbing the service keeps the test on the public port boundary the AI module exports."
+    },
+    {
+      "id": "file:backend/test/projects.e2e-spec.ts",
+      "type": "file",
+      "name": "projects.e2e-spec.ts",
+      "filePath": "backend/test/projects.e2e-spec.ts",
+      "summary": "End-to-end HTTP journey for project lifecycle: creation, listing, retrieval, metadata updates, deletion, and boundary validation on title and description.",
+      "tags": [
+        "test",
+        "e2e-test",
+        "projects",
+        "crud"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/src/ai/ai-capabilities.controller.ts:AiCapabilitiesController",
+      "type": "class",
+      "name": "AiCapabilitiesController",
+      "filePath": "backend/src/ai/ai-capabilities.controller.ts",
+      "lineRange": [
+        6,
+        16
+      ],
+      "summary": "Controller for `/ai-capabilities` that returns the injected capability descriptor verbatim on GET.",
+      "tags": [
+        "api-handler",
+        "controller",
+        "capability-discovery",
+        "nestjs"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/src/ai/ai-capabilities.ts:createAiCapabilities",
+      "type": "function",
+      "name": "createAiCapabilities",
+      "filePath": "backend/src/ai/ai-capabilities.ts",
+      "lineRange": [
+        6,
+        10
+      ],
+      "summary": "Maps AI configuration onto the neutral capability descriptor, enabling web search only when the provider is OpenAI and the flag is set.",
+      "tags": [
+        "factory",
+        "capability-discovery",
+        "configuration",
+        "ai"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/src/ai/ai.module.ts:AiModule",
+      "type": "class",
+      "name": "AiModule",
+      "filePath": "backend/src/ai/ai.module.ts",
+      "lineRange": [
+        23,
+        66
+      ],
+      "summary": "Module class whose decorator metadata registers the AI providers and exports AI_CAPABILITIES, FROZEN_CONTEXT_FORMATTER, MODEL_INPUT_BUDGET, and MODEL_CLIENT as the feature's narrow public surface.",
+      "tags": [
+        "module",
+        "dependency-injection",
+        "port-adapter",
+        "nestjs"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/src/ai/answer-instructions.ts:buildFocusedResponseInstructions",
+      "type": "function",
+      "name": "buildFocusedResponseInstructions",
+      "filePath": "backend/src/ai/answer-instructions.ts",
+      "lineRange": [
+        5,
+        12
+      ],
+      "summary": "Composes the focused-answer system instruction, embedding a soft word budget while explicitly permitting longer responses when correctness requires it.",
+      "tags": [
+        "prompt",
+        "ai",
+        "utility",
+        "instructions"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/src/ai/fake-model.client.ts:FakeModelClient",
+      "type": "class",
+      "name": "FakeModelClient",
+      "filePath": "backend/src/ai/fake-model.client.ts",
+      "lineRange": [
+        54,
+        94
+      ],
+      "summary": "Deterministic ModelClient used in test mode: echoes the last user prompt as the answer, truncates the first prompt into a title, and returns a fixed structured proposal without any network call.",
+      "tags": [
+        "test-double",
+        "ai",
+        "port-adapter",
+        "deterministic"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/src/ai/input-token-estimator.ts:ConservativeInputTokenEstimator",
+      "type": "class",
+      "name": "ConservativeInputTokenEstimator",
+      "filePath": "backend/src/ai/input-token-estimator.ts",
+      "lineRange": [
+        12,
+        18
+      ],
+      "summary": "Estimates token counts by dividing UTF-8 byte length by a conservative bytes-per-token constant and rounding up.",
+      "tags": [
+        "token-estimation",
+        "ai",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/src/ai/model-client.ts:ModelGenerationError",
+      "type": "class",
+      "name": "ModelGenerationError",
+      "filePath": "backend/src/ai/model-client.ts",
+      "lineRange": [
+        49,
+        57
+      ],
+      "summary": "Neutral error type carrying a provider/timeout/invalid_response reason, so callers can branch on failure kind without learning which provider failed.",
+      "tags": [
+        "error-handling",
+        "ai",
+        "contract",
+        "type-definition"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/src/ai/model-input-budget.ts:ConfiguredModelInputBudget",
+      "type": "class",
+      "name": "ConfiguredModelInputBudget",
+      "filePath": "backend/src/ai/model-input-budget.ts",
+      "lineRange": [
+        38,
+        102
+      ],
+      "summary": "Evaluates whether an answer or structured-output request fits the configured input token limit, summing estimated instruction, context, and message tokens plus fixed overheads against reserved output tokens and a safety margin.",
+      "tags": [
+        "token-budget",
+        "ai",
+        "validation",
+        "service"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/src/ai/openai-model.client.ts:mapResponseOutput",
+      "type": "function",
+      "name": "mapResponseOutput",
+      "filePath": "backend/src/ai/openai-model.client.ts",
+      "lineRange": [
+        101,
+        131
+      ],
+      "summary": "Defensively narrows the OpenAI SDK's loosely typed response output items and their content annotations into the adapter's internal shape.",
+      "tags": [
+        "provider-adapter",
+        "serialization",
+        "validation",
+        "ai"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/src/ai/openai-model.client.ts:mapCitations",
+      "type": "function",
+      "name": "mapCitations",
+      "filePath": "backend/src/ai/openai-model.client.ts",
+      "lineRange": [
+        137,
+        166
+      ],
+      "summary": "Extracts URL citation annotations from provider output and converts them into neutral MessageCitation objects, skipping malformed entries.",
+      "tags": [
+        "provider-adapter",
+        "serialization",
+        "web-search",
+        "ai"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/src/ai/openai-model.client.ts:createResponsesClient",
+      "type": "function",
+      "name": "createResponsesClient",
+      "filePath": "backend/src/ai/openai-model.client.ts",
+      "lineRange": [
+        168,
+        189
+      ],
+      "summary": "Builds the default OpenAI Responses client from AI configuration and adapts its call signature to the narrow OpenAiResponsesClient interface the adapter depends on.",
+      "tags": [
+        "factory",
+        "provider-adapter",
+        "http-client",
+        "ai"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Wrapping the SDK behind a two-method interface is what lets the unit tests inject a fake client instead of mocking the module."
+    },
+    {
+      "id": "class:backend/src/ai/openai-model.client.ts:OpenAiModelClient",
+      "type": "class",
+      "name": "OpenAiModelClient",
+      "filePath": "backend/src/ai/openai-model.client.ts",
+      "lineRange": [
+        191,
+        311
+      ],
+      "summary": "ModelClient implementation over the OpenAI Responses API, sharing one private generate routine across answer, title, and structured-output calls while attaching the web-search tool and its longer timeout only to answer generation.",
+      "tags": [
+        "provider-adapter",
+        "ai",
+        "port-adapter",
+        "error-handling",
+        "web-search"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:backend/src/app.controller.ts:AppController",
+      "type": "class",
+      "name": "AppController",
+      "filePath": "backend/src/app.controller.ts",
+      "lineRange": [
+        4,
+        20
+      ],
+      "summary": "Root controller returning a static service banner and a timestamped health payload.",
+      "tags": [
+        "api-handler",
+        "controller",
+        "health-check",
+        "nestjs"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/src/app.module.ts:AppModule",
+      "type": "class",
+      "name": "AppModule",
+      "filePath": "backend/src/app.module.ts",
+      "lineRange": [
+        19,
+        38
+      ],
+      "summary": "Root module whose decorator metadata imports configuration, database, and all feature modules to assemble the deployable monolith.",
+      "tags": [
+        "module",
+        "composition-root",
+        "nestjs",
+        "dependency-injection"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/src/app.service.ts:AppService",
+      "type": "class",
+      "name": "AppService",
+      "filePath": "backend/src/app.service.ts",
+      "lineRange": [
+        4,
+        8
+      ],
+      "summary": "Trivial injectable service returning a greeting string; scaffolding with no domain behavior.",
+      "tags": [
+        "service",
+        "scaffolding",
+        "nestjs"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/src/main.ts:bootstrap",
+      "type": "function",
+      "name": "bootstrap",
+      "filePath": "backend/src/main.ts",
+      "lineRange": [
+        6,
+        15
+      ],
+      "summary": "Creates the Nest application, resolves validated app configuration, enables CORS for the configured frontend origin, and starts listening.",
+      "tags": [
+        "entry-point",
+        "bootstrap",
+        "nestjs",
+        "configuration"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:backend/src/ai/ai-capabilities.controller.ts",
+      "target": "file:backend/src/ai/ai-capabilities.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/ai-capabilities.spec.ts",
+      "target": "file:backend/src/ai/ai-capabilities.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/ai-capabilities.ts",
+      "target": "file:backend/src/config/configuration.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/ai.module.ts",
+      "target": "file:backend/src/ai/ai-capabilities.controller.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/ai.module.ts",
+      "target": "file:backend/src/ai/ai-capabilities.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/ai.module.ts",
+      "target": "file:backend/src/ai/fake-model.client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/ai.module.ts",
+      "target": "file:backend/src/ai/frozen-context.formatter.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/ai.module.ts",
+      "target": "file:backend/src/ai/input-token-estimator.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/ai.module.ts",
+      "target": "file:backend/src/ai/model-client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/ai.module.ts",
+      "target": "file:backend/src/ai/model-input-budget.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/ai.module.ts",
+      "target": "file:backend/src/ai/openai-model.client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/ai.module.ts",
+      "target": "file:backend/src/config/configuration.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/answer-instructions.ts",
+      "target": "file:backend/src/ai/model-client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/fake-model.client.spec.ts",
+      "target": "file:backend/src/ai/ai.module.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/fake-model.client.spec.ts",
+      "target": "file:backend/src/ai/fake-model.client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/fake-model.client.spec.ts",
+      "target": "file:backend/src/ai/model-client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/fake-model.client.spec.ts",
+      "target": "file:backend/src/config/configuration.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/fake-model.client.ts",
+      "target": "file:backend/src/ai/model-client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/input-token-estimator.spec.ts",
+      "target": "file:backend/src/ai/input-token-estimator.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/model-input-budget.spec.ts",
+      "target": "file:backend/src/ai/answer-instructions.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/model-input-budget.spec.ts",
+      "target": "file:backend/src/ai/input-token-estimator.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/model-input-budget.spec.ts",
+      "target": "file:backend/src/ai/model-input-budget.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/model-input-budget.ts",
+      "target": "file:backend/src/ai/answer-instructions.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/model-input-budget.ts",
+      "target": "file:backend/src/ai/input-token-estimator.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/model-input-budget.ts",
+      "target": "file:backend/src/ai/model-client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/model-input-budget.ts",
+      "target": "file:backend/src/config/configuration.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/openai-model.client.spec.ts",
+      "target": "file:backend/src/ai/openai-model.client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/openai-model.client.spec.ts",
+      "target": "file:backend/src/config/configuration.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/openai-model.client.ts",
+      "target": "file:backend/src/ai/answer-instructions.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/openai-model.client.ts",
+      "target": "file:backend/src/ai/model-client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/openai-model.client.ts",
+      "target": "file:backend/src/config/configuration.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/app.controller.spec.ts",
+      "target": "file:backend/src/app.controller.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/app.module.ts",
+      "target": "file:backend/src/ai/ai.module.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/app.module.ts",
+      "target": "file:backend/src/app.controller.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/app.module.ts",
+      "target": "file:backend/src/app.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/app.module.ts",
+      "target": "file:backend/src/bubbles/bubbles.module.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/app.module.ts",
+      "target": "file:backend/src/config/configuration.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/app.module.ts",
+      "target": "file:backend/src/database/database.module.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/app.module.ts",
+      "target": "file:backend/src/discussions/discussions.module.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/app.module.ts",
+      "target": "file:backend/src/documents/documents.module.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/app.module.ts",
+      "target": "file:backend/src/knowledge-extraction/knowledge-extraction.module.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/app.module.ts",
+      "target": "file:backend/src/projects/projects.module.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/main.ts",
+      "target": "file:backend/src/app.module.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/main.ts",
+      "target": "file:backend/src/config/configuration.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/test/app.e2e-spec.ts",
+      "target": "file:backend/src/app.module.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/test/bubble-canvas.e2e-spec.ts",
+      "target": "file:backend/src/app.module.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/test/bubble-links.e2e-spec.ts",
+      "target": "file:backend/src/app.module.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/test/discussions.e2e-spec.ts",
+      "target": "file:backend/src/ai/ai-capabilities.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/test/discussions.e2e-spec.ts",
+      "target": "file:backend/src/ai/fake-model.client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/test/discussions.e2e-spec.ts",
+      "target": "file:backend/src/app.module.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/test/knowledge-extraction.e2e-spec.ts",
+      "target": "file:backend/src/ai/fake-model.client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/test/knowledge-extraction.e2e-spec.ts",
+      "target": "file:backend/src/ai/model-client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/test/knowledge-extraction.e2e-spec.ts",
+      "target": "file:backend/src/app.module.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/test/projects.e2e-spec.ts",
+      "target": "file:backend/src/app.module.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/ai/ai-capabilities.controller.ts",
+      "target": "class:backend/src/ai/ai-capabilities.controller.ts:AiCapabilitiesController",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/ai/ai-capabilities.controller.ts",
+      "target": "class:backend/src/ai/ai-capabilities.controller.ts:AiCapabilitiesController",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/ai/ai-capabilities.ts",
+      "target": "function:backend/src/ai/ai-capabilities.ts:createAiCapabilities",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/ai/ai-capabilities.ts",
+      "target": "function:backend/src/ai/ai-capabilities.ts:createAiCapabilities",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/ai/ai.module.ts",
+      "target": "class:backend/src/ai/ai.module.ts:AiModule",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/ai/ai.module.ts",
+      "target": "class:backend/src/ai/ai.module.ts:AiModule",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/ai/answer-instructions.ts",
+      "target": "function:backend/src/ai/answer-instructions.ts:buildFocusedResponseInstructions",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/ai/answer-instructions.ts",
+      "target": "function:backend/src/ai/answer-instructions.ts:buildFocusedResponseInstructions",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/ai/fake-model.client.ts",
+      "target": "class:backend/src/ai/fake-model.client.ts:FakeModelClient",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/ai/fake-model.client.ts",
+      "target": "class:backend/src/ai/fake-model.client.ts:FakeModelClient",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/ai/input-token-estimator.ts",
+      "target": "class:backend/src/ai/input-token-estimator.ts:ConservativeInputTokenEstimator",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/ai/input-token-estimator.ts",
+      "target": "class:backend/src/ai/input-token-estimator.ts:ConservativeInputTokenEstimator",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/ai/model-client.ts",
+      "target": "class:backend/src/ai/model-client.ts:ModelGenerationError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/ai/model-client.ts",
+      "target": "class:backend/src/ai/model-client.ts:ModelGenerationError",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/ai/model-input-budget.ts",
+      "target": "class:backend/src/ai/model-input-budget.ts:ConfiguredModelInputBudget",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/ai/model-input-budget.ts",
+      "target": "class:backend/src/ai/model-input-budget.ts:ConfiguredModelInputBudget",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/ai/openai-model.client.ts",
+      "target": "function:backend/src/ai/openai-model.client.ts:mapResponseOutput",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/ai/openai-model.client.ts",
+      "target": "function:backend/src/ai/openai-model.client.ts:mapCitations",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/ai/openai-model.client.ts",
+      "target": "function:backend/src/ai/openai-model.client.ts:createResponsesClient",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/ai/openai-model.client.ts",
+      "target": "class:backend/src/ai/openai-model.client.ts:OpenAiModelClient",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/ai/openai-model.client.ts",
+      "target": "class:backend/src/ai/openai-model.client.ts:OpenAiModelClient",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/app.controller.ts",
+      "target": "class:backend/src/app.controller.ts:AppController",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/app.controller.ts",
+      "target": "class:backend/src/app.controller.ts:AppController",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/app.module.ts",
+      "target": "class:backend/src/app.module.ts:AppModule",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/app.module.ts",
+      "target": "class:backend/src/app.module.ts:AppModule",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/app.service.ts",
+      "target": "class:backend/src/app.service.ts:AppService",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/app.service.ts",
+      "target": "class:backend/src/app.service.ts:AppService",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/main.ts",
+      "target": "function:backend/src/main.ts:bootstrap",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "class:backend/src/ai/model-input-budget.ts:ConfiguredModelInputBudget",
+      "target": "function:backend/src/ai/answer-instructions.ts:buildFocusedResponseInstructions",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:backend/src/ai/openai-model.client.ts:OpenAiModelClient",
+      "target": "function:backend/src/ai/answer-instructions.ts:buildFocusedResponseInstructions",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:backend/src/ai/ai.module.ts:AiModule",
+      "target": "function:backend/src/ai/ai-capabilities.ts:createAiCapabilities",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:backend/src/ai/openai-model.client.ts:createResponsesClient",
+      "target": "function:backend/src/ai/openai-model.client.ts:mapResponseOutput",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/ai/ai-capabilities.ts",
+      "target": "file:backend/src/ai/ai-capabilities.spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/src/ai/fake-model.client.ts",
+      "target": "file:backend/src/ai/fake-model.client.spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/src/ai/input-token-estimator.ts",
+      "target": "file:backend/src/ai/input-token-estimator.spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/src/ai/model-input-budget.ts",
+      "target": "file:backend/src/ai/model-input-budget.spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/src/ai/openai-model.client.ts",
+      "target": "file:backend/src/ai/openai-model.client.spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/src/app.controller.ts",
+      "target": "file:backend/src/app.controller.spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/src/app.module.ts",
+      "target": "file:backend/test/app.e2e-spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/src/app.module.ts",
+      "target": "file:backend/test/bubble-canvas.e2e-spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/src/app.module.ts",
+      "target": "file:backend/test/bubble-links.e2e-spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/src/app.module.ts",
+      "target": "file:backend/test/discussions.e2e-spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/src/app.module.ts",
+      "target": "file:backend/test/knowledge-extraction.e2e-spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/src/app.module.ts",
+      "target": "file:backend/test/projects.e2e-spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

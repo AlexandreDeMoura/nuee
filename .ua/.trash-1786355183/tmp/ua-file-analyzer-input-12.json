@@ -1,0 +1,91 @@
+{
+  "projectRoot": "/Users/alexandredemoura/Desktop/dev/nuee",
+  "batchFiles": [
+    {
+      "path": "frontend/src/discussions/index.ts",
+      "language": "typescript",
+      "sizeLines": 21,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/DiscussionComposerAutoGrow.test.tsx",
+      "language": "typescript",
+      "sizeLines": 108,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/DiscussionModal.test.tsx",
+      "language": "typescript",
+      "sizeLines": 111,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/discussionContextSelection.test.ts",
+      "language": "typescript",
+      "sizeLines": 179,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/discussionCreationFailure.test.ts",
+      "language": "typescript",
+      "sizeLines": 96,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/discussionListModel.test.ts",
+      "language": "typescript",
+      "sizeLines": 101,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/discussionMentionAnalytics.test.ts",
+      "language": "typescript",
+      "sizeLines": 56,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/discussionVisibility.test.ts",
+      "language": "typescript",
+      "sizeLines": 74,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/tests/useProjectDiscussions.test.ts",
+      "language": "typescript",
+      "sizeLines": 281,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "frontend/src/discussions/index.ts": [],
+    "frontend/tests/DiscussionComposerAutoGrow.test.tsx": [
+      "frontend/src/discussions/index.ts"
+    ],
+    "frontend/tests/DiscussionModal.test.tsx": [
+      "frontend/src/discussions/index.ts"
+    ],
+    "frontend/tests/discussionContextSelection.test.ts": [
+      "frontend/src/discussions/index.ts"
+    ],
+    "frontend/tests/discussionCreationFailure.test.ts": [
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/index.ts"
+    ],
+    "frontend/tests/discussionListModel.test.ts": [
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/index.ts"
+    ],
+    "frontend/tests/discussionMentionAnalytics.test.ts": [
+      "frontend/src/analytics.ts",
+      "frontend/src/discussions/index.ts"
+    ],
+    "frontend/tests/discussionVisibility.test.ts": [
+      "frontend/src/discussions/index.ts"
+    ],
+    "frontend/tests/useProjectDiscussions.test.ts": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/index.ts"
+    ]
+  }
+}

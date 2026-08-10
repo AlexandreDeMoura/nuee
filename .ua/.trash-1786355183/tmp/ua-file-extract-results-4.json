@@ -1,0 +1,1261 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 25,
+  "filesSkipped": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 25,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 25,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "backend/src/ai/ai-capabilities.controller.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 16,
+      "nonEmptyLines": 14,
+      "classes": [
+        {
+          "name": "AiCapabilitiesController",
+          "startLine": 6,
+          "endLine": 16,
+          "methods": [
+            "constructor",
+            "get"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "AiCapabilitiesController",
+          "line": 5,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 8
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/ai/ai-capabilities.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 12,
+      "nonEmptyLines": 11,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/ai/ai-capabilities.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 12,
+      "nonEmptyLines": 9,
+      "functions": [
+        {
+          "name": "createAiCapabilities",
+          "startLine": 6,
+          "endLine": 10,
+          "params": [
+            "config"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "createAiCapabilities",
+          "line": 6,
+          "isDefault": false
+        },
+        {
+          "name": "AI_CAPABILITIES",
+          "line": 12,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/ai/ai.module.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 66,
+      "nonEmptyLines": 65,
+      "classes": [
+        {
+          "name": "AiModule",
+          "startLine": 66,
+          "endLine": 66,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "AiModule",
+          "line": 23,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 9,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/ai/answer-instructions.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 12,
+      "nonEmptyLines": 10,
+      "functions": [
+        {
+          "name": "buildFocusedResponseInstructions",
+          "startLine": 5,
+          "endLine": 12,
+          "params": [
+            "wordBudget"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "TITLE_INSTRUCTIONS",
+          "line": 3,
+          "isDefault": false
+        },
+        {
+          "name": "buildFocusedResponseInstructions",
+          "line": 5,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "buildFocusedResponseInstructions",
+          "callee": "[\n    \"Answer the user's current question directly and keep the discussion focused on its narrow line of inquiry.\",\n    `Aim for a response readable in about one minute (roughly ${wordBudget} words) by default.`,\n    'This is a soft budget, not a hard limit. Use more detail, tables, numbered steps, code, citations, caveats, or open questions when the request requires them for correctness.',\n    'Do not force a fixed response template or include empty sections.',\n  ].join",
+          "lineNumber": 6
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/ai/fake-model.client.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 154,
+      "nonEmptyLines": 140,
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/ai/fake-model.client.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 94,
+      "nonEmptyLines": 81,
+      "functions": [
+        {
+          "name": "normalizeWhitespace",
+          "startLine": 29,
+          "endLine": 31,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "lastUserMessage",
+          "startLine": 33,
+          "endLine": 37,
+          "params": [
+            "messages"
+          ]
+        },
+        {
+          "name": "firstUserMessage",
+          "startLine": 39,
+          "endLine": 43,
+          "params": [
+            "messages"
+          ]
+        },
+        {
+          "name": "truncateTitle",
+          "startLine": 45,
+          "endLine": 51,
+          "params": [
+            "value"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "FakeModelClient",
+          "startLine": 54,
+          "endLine": 94,
+          "methods": [
+            "generateAnswer",
+            "generateTitle",
+            "generateStructuredOutput"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "FAKE_MODEL_ID",
+          "line": 13,
+          "isDefault": false
+        },
+        {
+          "name": "FAKE_TITLE_MAX_LENGTH",
+          "line": 14,
+          "isDefault": false
+        },
+        {
+          "name": "FAKE_WEB_SEARCH_CITATIONS",
+          "line": 15,
+          "isDefault": false
+        },
+        {
+          "name": "FAKE_STRUCTURED_PROPOSAL",
+          "line": 22,
+          "isDefault": false
+        },
+        {
+          "name": "FakeModelClient",
+          "line": 53,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "normalizeWhitespace",
+          "callee": "value.trim().replace",
+          "lineNumber": 30
+        },
+        {
+          "caller": "normalizeWhitespace",
+          "callee": "value.trim",
+          "lineNumber": 30
+        },
+        {
+          "caller": "lastUserMessage",
+          "callee": "messages.findLast",
+          "lineNumber": 36
+        },
+        {
+          "caller": "firstUserMessage",
+          "callee": "messages.find",
+          "lineNumber": 42
+        },
+        {
+          "caller": "truncateTitle",
+          "callee": "value.slice(0, FAKE_TITLE_MAX_LENGTH - 1).trimEnd",
+          "lineNumber": 50
+        },
+        {
+          "caller": "truncateTitle",
+          "callee": "value.slice",
+          "lineNumber": 50
+        },
+        {
+          "caller": "generateAnswer",
+          "callee": "normalizeWhitespace",
+          "lineNumber": 56
+        },
+        {
+          "caller": "generateAnswer",
+          "callee": "lastUserMessage",
+          "lineNumber": 56
+        },
+        {
+          "caller": "generateAnswer",
+          "callee": "FAKE_WEB_SEARCH_CITATIONS.map",
+          "lineNumber": 68
+        },
+        {
+          "caller": "generateAnswer",
+          "callee": "Promise.resolve",
+          "lineNumber": 73
+        },
+        {
+          "caller": "generateTitle",
+          "callee": "normalizeWhitespace",
+          "lineNumber": 77
+        },
+        {
+          "caller": "generateTitle",
+          "callee": "firstUserMessage",
+          "lineNumber": 78
+        },
+        {
+          "caller": "generateTitle",
+          "callee": "truncateTitle",
+          "lineNumber": 80
+        },
+        {
+          "caller": "generateTitle",
+          "callee": "Promise.resolve",
+          "lineNumber": 82
+        },
+        {
+          "caller": "generateStructuredOutput",
+          "callee": "Promise.resolve",
+          "lineNumber": 89
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 5,
+        "functionCount": 4,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/ai/input-token-estimator.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 12,
+      "nonEmptyLines": 10,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/ai/input-token-estimator.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 18,
+      "nonEmptyLines": 14,
+      "classes": [
+        {
+          "name": "ConservativeInputTokenEstimator",
+          "startLine": 12,
+          "endLine": 18,
+          "methods": [
+            "estimateText"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "INPUT_TOKEN_ESTIMATOR",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "ConservativeInputTokenEstimator",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "estimateText",
+          "callee": "Math.ceil",
+          "lineNumber": 14
+        },
+        {
+          "caller": "estimateText",
+          "callee": "Buffer.byteLength",
+          "lineNumber": 15
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/ai/model-client.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 68,
+      "nonEmptyLines": 57,
+      "classes": [
+        {
+          "name": "ModelGenerationError",
+          "startLine": 49,
+          "endLine": 57,
+          "methods": [
+            "constructor"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "ModelGenerationError",
+          "line": 49,
+          "isDefault": false
+        },
+        {
+          "name": "GENERATED_TITLE_MAX_LENGTH",
+          "line": 67,
+          "isDefault": false
+        },
+        {
+          "name": "MODEL_CLIENT",
+          "line": 68,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "constructor",
+          "callee": "super",
+          "lineNumber": 54
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/ai/model-input-budget.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 136,
+      "nonEmptyLines": 126,
+      "classes": [
+        {
+          "name": "CharacterCountingEstimator",
+          "startLine": 5,
+          "endLine": 12,
+          "methods": [
+            "estimateText"
+          ],
+          "properties": [
+            "inputs"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "estimateText",
+          "callee": "this.inputs.push",
+          "lineNumber": 9
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/ai/model-input-budget.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 102,
+      "nonEmptyLines": 91,
+      "classes": [
+        {
+          "name": "ConfiguredModelInputBudget",
+          "startLine": 38,
+          "endLine": 102,
+          "methods": [
+            "constructor",
+            "evaluateAnswer",
+            "evaluateStructuredOutput",
+            "evaluate"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "MODEL_INPUT_BUDGET",
+          "line": 28,
+          "isDefault": false
+        },
+        {
+          "name": "ConfiguredModelInputBudget",
+          "line": 38,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "evaluateAnswer",
+          "callee": "buildFocusedResponseInstructions",
+          "lineNumber": 45
+        },
+        {
+          "caller": "evaluateAnswer",
+          "callee": "this.evaluate",
+          "lineNumber": 49
+        },
+        {
+          "caller": "evaluateStructuredOutput",
+          "callee": "this.evaluate",
+          "lineNumber": 60
+        },
+        {
+          "caller": "evaluateStructuredOutput",
+          "callee": "JSON.stringify",
+          "lineNumber": 63
+        },
+        {
+          "caller": "evaluate",
+          "callee": "this.estimator.estimateText",
+          "lineNumber": 73
+        },
+        {
+          "caller": "evaluate",
+          "callee": "extraTexts.reduce",
+          "lineNumber": 74
+        },
+        {
+          "caller": "evaluate",
+          "callee": "this.estimator.estimateText",
+          "lineNumber": 75
+        },
+        {
+          "caller": "evaluate",
+          "callee": "messages.reduce",
+          "lineNumber": 78
+        },
+        {
+          "caller": "evaluate",
+          "callee": "this.estimator.estimateText",
+          "lineNumber": 82
+        },
+        {
+          "caller": "evaluate",
+          "callee": "this.estimator.estimateText",
+          "lineNumber": 83
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 2,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/ai/openai-model.client.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 383,
+      "nonEmptyLines": 357,
+      "callGraph": [
+        {
+          "caller": "create",
+          "callee": "Promise.resolve",
+          "lineNumber": 30
+        },
+        {
+          "caller": "create",
+          "callee": "Promise.resolve",
+          "lineNumber": 87
+        },
+        {
+          "caller": "create",
+          "callee": "Promise.resolve",
+          "lineNumber": 154
+        },
+        {
+          "caller": "create",
+          "callee": "Promise.resolve",
+          "lineNumber": 210
+        },
+        {
+          "caller": "create",
+          "callee": "Promise.resolve",
+          "lineNumber": 249
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/ai/openai-model.client.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 311,
+      "nonEmptyLines": 271,
+      "functions": [
+        {
+          "name": "frozenContextMessage",
+          "startLine": 79,
+          "endLine": 86,
+          "params": [
+            "formattedContext"
+          ]
+        },
+        {
+          "name": "transcriptMessages",
+          "startLine": 88,
+          "endLine": 92,
+          "params": [
+            "messages"
+          ]
+        },
+        {
+          "name": "isTimeout",
+          "startLine": 94,
+          "endLine": 99,
+          "params": [
+            "error"
+          ]
+        },
+        {
+          "name": "mapResponseOutput",
+          "startLine": 101,
+          "endLine": 131,
+          "params": [
+            "output"
+          ]
+        },
+        {
+          "name": "hasWebSearchCall",
+          "startLine": 133,
+          "endLine": 135,
+          "params": [
+            "output"
+          ]
+        },
+        {
+          "name": "mapCitations",
+          "startLine": 137,
+          "endLine": 166,
+          "params": [
+            "output"
+          ]
+        },
+        {
+          "name": "createResponsesClient",
+          "startLine": 168,
+          "endLine": 189,
+          "params": [
+            "config"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "OpenAiModelClient",
+          "startLine": 191,
+          "endLine": 311,
+          "methods": [
+            "constructor",
+            "generateAnswer",
+            "generateTitle",
+            "generateStructuredOutput",
+            "generate"
+          ],
+          "properties": [
+            "responsesClient"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "buildFocusedResponseInstructions",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "ModelProviderError",
+          "line": 20,
+          "isDefault": false
+        },
+        {
+          "name": "OpenAiModelClient",
+          "line": 191,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "transcriptMessages",
+          "callee": "messages.map",
+          "lineNumber": 91
+        },
+        {
+          "caller": "mapResponseOutput",
+          "callee": "output.map",
+          "lineNumber": 104
+        },
+        {
+          "caller": "mapResponseOutput",
+          "callee": "item.content.map",
+          "lineNumber": 111
+        },
+        {
+          "caller": "mapResponseOutput",
+          "callee": "content.annotations.map",
+          "lineNumber": 118
+        },
+        {
+          "caller": "hasWebSearchCall",
+          "callee": "output.some",
+          "lineNumber": 134
+        },
+        {
+          "caller": "mapCitations",
+          "callee": "citations.push",
+          "lineNumber": 156
+        },
+        {
+          "caller": "create",
+          "callee": "client.responses.create",
+          "lineNumber": 177
+        },
+        {
+          "caller": "create",
+          "callee": "mapResponseOutput",
+          "lineNumber": 181
+        },
+        {
+          "caller": "constructor",
+          "callee": "createResponsesClient",
+          "lineNumber": 198
+        },
+        {
+          "caller": "generateAnswer",
+          "callee": "this.generate",
+          "lineNumber": 202
+        },
+        {
+          "caller": "generateAnswer",
+          "callee": "buildFocusedResponseInstructions",
+          "lineNumber": 205
+        },
+        {
+          "caller": "generateAnswer",
+          "callee": "frozenContextMessage",
+          "lineNumber": 209
+        },
+        {
+          "caller": "generateAnswer",
+          "callee": "transcriptMessages",
+          "lineNumber": 210
+        },
+        {
+          "caller": "generateTitle",
+          "callee": "this.generate",
+          "lineNumber": 222
+        },
+        {
+          "caller": "generateTitle",
+          "callee": "transcriptMessages",
+          "lineNumber": 225
+        },
+        {
+          "caller": "generateStructuredOutput",
+          "callee": "this.generate",
+          "lineNumber": 232
+        },
+        {
+          "caller": "generateStructuredOutput",
+          "callee": "transcriptMessages",
+          "lineNumber": 235
+        },
+        {
+          "caller": "generateStructuredOutput",
+          "callee": "JSON.parse",
+          "lineNumber": 249
+        },
+        {
+          "caller": "generate",
+          "callee": "this.responsesClient.create",
+          "lineNumber": 270
+        },
+        {
+          "caller": "generate",
+          "callee": "isTimeout",
+          "lineNumber": 276
+        },
+        {
+          "caller": "generate",
+          "callee": "response.outputText.trim",
+          "lineNumber": 281
+        },
+        {
+          "caller": "generate",
+          "callee": "mapCitations",
+          "lineNumber": 299
+        },
+        {
+          "caller": "generate",
+          "callee": "hasWebSearchCall",
+          "lineNumber": 301
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 3,
+        "functionCount": 7,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/app.controller.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 23,
+      "nonEmptyLines": 19,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/app.controller.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 20,
+      "nonEmptyLines": 18,
+      "classes": [
+        {
+          "name": "AppController",
+          "startLine": 4,
+          "endLine": 20,
+          "methods": [
+            "getRoot",
+            "getHealth"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "AppController",
+          "line": 3,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "getHealth",
+          "callee": "new Date().toISOString",
+          "lineNumber": 17
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/app.module.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 38,
+      "nonEmptyLines": 37,
+      "classes": [
+        {
+          "name": "AppModule",
+          "startLine": 38,
+          "endLine": 38,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "AppModule",
+          "line": 19,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 10,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/app.service.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 8,
+      "nonEmptyLines": 7,
+      "classes": [
+        {
+          "name": "AppService",
+          "startLine": 4,
+          "endLine": 8,
+          "methods": [
+            "getHello"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "AppService",
+          "line": 3,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/main.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 17,
+      "nonEmptyLines": 13,
+      "functions": [
+        {
+          "name": "bootstrap",
+          "startLine": 6,
+          "endLine": 15,
+          "params": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "bootstrap",
+          "callee": "NestFactory.create",
+          "lineNumber": 7
+        },
+        {
+          "caller": "bootstrap",
+          "callee": "app.get",
+          "lineNumber": 8
+        },
+        {
+          "caller": "bootstrap",
+          "callee": "app.enableCors",
+          "lineNumber": 10
+        },
+        {
+          "caller": "bootstrap",
+          "callee": "app.listen",
+          "lineNumber": 14
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/test/app.e2e-spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 29,
+      "nonEmptyLines": 24,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/test/bubble-canvas.e2e-spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 278,
+      "nonEmptyLines": 250,
+      "callGraph": [
+        {
+          "caller": "startApplication",
+          "callee": "Test.createTestingModule({\n      imports: [AppModule],\n    }).compile",
+          "lineNumber": 57
+        },
+        {
+          "caller": "startApplication",
+          "callee": "Test.createTestingModule",
+          "lineNumber": 57
+        },
+        {
+          "caller": "startApplication",
+          "callee": "moduleFixture.createNestApplication",
+          "lineNumber": 60
+        },
+        {
+          "caller": "startApplication",
+          "callee": "application.init",
+          "lineNumber": 61
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/test/bubble-links.e2e-spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 276,
+      "nonEmptyLines": 246,
+      "callGraph": [
+        {
+          "caller": "startApplication",
+          "callee": "Test.createTestingModule({\n      imports: [AppModule],\n    }).compile",
+          "lineNumber": 20
+        },
+        {
+          "caller": "startApplication",
+          "callee": "Test.createTestingModule",
+          "lineNumber": 20
+        },
+        {
+          "caller": "startApplication",
+          "callee": "moduleFixture.createNestApplication",
+          "lineNumber": 23
+        },
+        {
+          "caller": "startApplication",
+          "callee": "application.init",
+          "lineNumber": 24
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/test/discussions.e2e-spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 639,
+      "nonEmptyLines": 589,
+      "callGraph": [
+        {
+          "caller": "startApplication",
+          "callee": "Test.createTestingModule",
+          "lineNumber": 32
+        },
+        {
+          "caller": "startApplication",
+          "callee": "builder.overrideProvider(AI_CAPABILITIES).useValue",
+          "lineNumber": 37
+        },
+        {
+          "caller": "startApplication",
+          "callee": "builder.overrideProvider",
+          "lineNumber": 37
+        },
+        {
+          "caller": "startApplication",
+          "callee": "builder.compile",
+          "lineNumber": 40
+        },
+        {
+          "caller": "startApplication",
+          "callee": "moduleFixture.createNestApplication",
+          "lineNumber": 41
+        },
+        {
+          "caller": "startApplication",
+          "callee": "application.init",
+          "lineNumber": 42
+        },
+        {
+          "caller": "createProject",
+          "callee": "request(app!.getHttpServer())\n      .post('/projects')\n      .send({\n        title,\n        description: `Description for ${title}.`,\n      })\n      .expect",
+          "lineNumber": 47
+        },
+        {
+          "caller": "createProject",
+          "callee": "request(app!.getHttpServer())\n      .post('/projects')\n      .send",
+          "lineNumber": 47
+        },
+        {
+          "caller": "createProject",
+          "callee": "request(app!.getHttpServer())\n      .post",
+          "lineNumber": 47
+        },
+        {
+          "caller": "createProject",
+          "callee": "request",
+          "lineNumber": 47
+        },
+        {
+          "caller": "createProject",
+          "callee": "app!.getHttpServer",
+          "lineNumber": 47
+        },
+        {
+          "caller": "createDiscussion",
+          "callee": "request(app!.getHttpServer())\n      .post(`/projects/${project.id}/discussions`)\n      .send({\n        project_id: project.id,\n        first_prompt: prompt,\n        idempotency_key: idempotencyKey,\n        bubble_ids: bubbleIds,\n        document_ids: documentIds,\n        ...(webSearch ? { web_search: true } : {}),\n      })\n      .expect",
+          "lineNumber": 73
+        },
+        {
+          "caller": "createDiscussion",
+          "callee": "request(app!.getHttpServer())\n      .post(`/projects/${project.id}/discussions`)\n      .send",
+          "lineNumber": 73
+        },
+        {
+          "caller": "createDiscussion",
+          "callee": "request(app!.getHttpServer())\n      .post",
+          "lineNumber": 73
+        },
+        {
+          "caller": "createDiscussion",
+          "callee": "request",
+          "lineNumber": 73
+        },
+        {
+          "caller": "createDiscussion",
+          "callee": "app!.getHttpServer",
+          "lineNumber": 73
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/test/knowledge-extraction.e2e-spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 810,
+      "nonEmptyLines": 765,
+      "callGraph": [
+        {
+          "caller": "startApplication",
+          "callee": "Test.createTestingModule",
+          "lineNumber": 35
+        },
+        {
+          "caller": "startApplication",
+          "callee": "moduleBuilder.overrideProvider(MODEL_CLIENT).useValue",
+          "lineNumber": 40
+        },
+        {
+          "caller": "startApplication",
+          "callee": "moduleBuilder.overrideProvider",
+          "lineNumber": 40
+        },
+        {
+          "caller": "startApplication",
+          "callee": "moduleBuilder.compile",
+          "lineNumber": 43
+        },
+        {
+          "caller": "startApplication",
+          "callee": "moduleFixture.createNestApplication",
+          "lineNumber": 44
+        },
+        {
+          "caller": "startApplication",
+          "callee": "application.init",
+          "lineNumber": 45
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/test/projects.e2e-spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 149,
+      "nonEmptyLines": 128,
+      "callGraph": [
+        {
+          "caller": "startApplication",
+          "callee": "Test.createTestingModule({\n      imports: [AppModule],\n    }).compile",
+          "lineNumber": 21
+        },
+        {
+          "caller": "startApplication",
+          "callee": "Test.createTestingModule",
+          "lineNumber": 21
+        },
+        {
+          "caller": "startApplication",
+          "callee": "moduleFixture.createNestApplication",
+          "lineNumber": 24
+        },
+        {
+          "caller": "startApplication",
+          "callee": "application.init",
+          "lineNumber": 25
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    }
+  ]
+}

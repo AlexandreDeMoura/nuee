@@ -1,0 +1,4758 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 25,
+  "filesSkipped": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 25,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 25,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "frontend/src/discussions/DiscussionComposer.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 488,
+      "nonEmptyLines": 436,
+      "functions": [
+        {
+          "name": "renderComposer",
+          "startLine": 42,
+          "endLine": 57,
+          "params": [
+            "overrides"
+          ]
+        },
+        {
+          "name": "typeAtCaret",
+          "startLine": 59,
+          "endLine": 67,
+          "params": [
+            "textarea",
+            "value",
+            "caret"
+          ]
+        },
+        {
+          "name": "ControlledComposer",
+          "startLine": 69,
+          "endLine": 82,
+          "params": []
+        },
+        {
+          "name": "ControlledComposerWithAnalytics",
+          "startLine": 84,
+          "endLine": 102,
+          "params": [
+            "{\n  track,\n}"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "renderComposer",
+          "callee": "vi.fn",
+          "lineNumber": 48
+        },
+        {
+          "caller": "renderComposer",
+          "callee": "vi.fn",
+          "lineNumber": 49
+        },
+        {
+          "caller": "renderComposer",
+          "callee": "render",
+          "lineNumber": 55
+        },
+        {
+          "caller": "typeAtCaret",
+          "callee": "fireEvent.change",
+          "lineNumber": 64
+        },
+        {
+          "caller": "ControlledComposer",
+          "callee": "useState",
+          "lineNumber": 70
+        },
+        {
+          "caller": "ControlledComposer",
+          "callee": "vi.fn",
+          "lineNumber": 77
+        },
+        {
+          "caller": "ControlledComposerWithAnalytics",
+          "callee": "useState",
+          "lineNumber": 89
+        },
+        {
+          "caller": "ControlledComposerWithAnalytics",
+          "callee": "vi.fn",
+          "lineNumber": 97
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionComposer.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 853,
+      "nonEmptyLines": 796,
+      "functions": [
+        {
+          "name": "DiscussionMentionMirror",
+          "startLine": 53,
+          "endLine": 97,
+          "params": [
+            "{\n  disabled,\n  draft,\n  mirrorRef,\n}"
+          ]
+        },
+        {
+          "name": "DiscussionComposer",
+          "startLine": 123,
+          "endLine": 853,
+          "params": [
+            "{\n  analyticsClient = analytics,\n  contextSources = EMPTY_CONTEXT_SOURCES,\n  contextFrozenAt,\n  disabled = false,\n  error,\n  isInitialPrompt = false,\n  isSubmitting,\n  onChange,\n  onCreateBubble,\n  onContextSourcesChange,\n  onMentionSourceSelect,\n  onSubmit,\n  onUploadDocument,\n  onWebSearchChange,\n  sourceCatalog,\n  sourceIssues,\n  value,\n  webSearchEnabled = false,\n  webSearchSupported = false,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DiscussionComposer",
+          "line": 123,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "DiscussionMentionMirror",
+          "callee": "[...draft.tokens].sort",
+          "lineNumber": 62
+        },
+        {
+          "caller": "DiscussionMentionMirror",
+          "callee": "content.push",
+          "lineNumber": 69
+        },
+        {
+          "caller": "DiscussionMentionMirror",
+          "callee": "draft.value.slice",
+          "lineNumber": 69
+        },
+        {
+          "caller": "DiscussionMentionMirror",
+          "callee": "content.push",
+          "lineNumber": 70
+        },
+        {
+          "caller": "DiscussionMentionMirror",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 73
+        },
+        {
+          "caller": "DiscussionMentionMirror",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 74
+        },
+        {
+          "caller": "DiscussionMentionMirror",
+          "callee": "draft.value.slice",
+          "lineNumber": 76
+        },
+        {
+          "caller": "DiscussionMentionMirror",
+          "callee": "content.push",
+          "lineNumber": 82
+        },
+        {
+          "caller": "DiscussionMentionMirror",
+          "callee": "draft.value.slice",
+          "lineNumber": 82
+        },
+        {
+          "caller": "DiscussionMentionMirror",
+          "callee": "draft.value.endsWith",
+          "lineNumber": 94
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "useId",
+          "lineNumber": 144
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "useId",
+          "lineNumber": 145
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "useId",
+          "lineNumber": 146
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "useId",
+          "lineNumber": 147
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "useId",
+          "lineNumber": 148
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "useState",
+          "lineNumber": 149
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "useState",
+          "lineNumber": 150
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "useState",
+          "lineNumber": 151
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "useState",
+          "lineNumber": 152
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "createDiscussionMentionDraft",
+          "lineNumber": 153
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "useState",
+          "lineNumber": 156
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "useState",
+          "lineNumber": 157
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "useRef",
+          "lineNumber": 160
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "useRef",
+          "lineNumber": 164
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "useRef",
+          "lineNumber": 165
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "useRef",
+          "lineNumber": 166
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "useRef",
+          "lineNumber": 167
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "useRef",
+          "lineNumber": 168
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "displayedValue.trim",
+          "lineNumber": 171
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "useAutoGrowTextarea",
+          "lineNumber": 172
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "useMemo",
+          "lineNumber": 178
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "filterDiscussionSourceCatalog",
+          "lineNumber": 181
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "mentionResults.some",
+          "lineNumber": 185
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 186
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 190
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "mentionResults.findIndex",
+          "lineNumber": 192
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 193
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "[\n    error || isSubmitting ? statusId : null,\n    mention ? mentionStatusId : null,\n  ]\n    .filter(Boolean)\n    .join",
+          "lineNumber": 199
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "[\n    error || isSubmitting ? statusId : null,\n    mention ? mentionStatusId : null,\n  ]\n    .filter",
+          "lineNumber": 199
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "useEffect",
+          "lineNumber": 206
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "setMentionDraft",
+          "lineNumber": 212
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "updateDiscussionMentionDraft",
+          "lineNumber": 213
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "useEffect",
+          "lineNumber": 217
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "mentionResults.filter",
+          "lineNumber": 228
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "trackDiscussionMentionAnalytics",
+          "lineNumber": 232
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "trackDiscussionMentionAnalytics",
+          "lineNumber": 244
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "setControlledContextSources",
+          "lineNumber": 253
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "setMentionDraft",
+          "lineNumber": 254
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "replaceDiscussionMentionSources",
+          "lineNumber": 255
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "useEffect",
+          "lineNumber": 259
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "exitTimersRef.current.forEach",
+          "lineNumber": 261
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "window.clearTimeout",
+          "lineNumber": 261
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "useLayoutEffect",
+          "lineNumber": 266
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "textarea.setSelectionRange",
+          "lineNumber": 275
+        },
+        {
+          "caller": "showExitingChip",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 279
+        },
+        {
+          "caller": "showExitingChip",
+          "callee": "exitTimersRef.current.get",
+          "lineNumber": 280
+        },
+        {
+          "caller": "showExitingChip",
+          "callee": "window.clearTimeout",
+          "lineNumber": 282
+        },
+        {
+          "caller": "showExitingChip",
+          "callee": "setExitingSources",
+          "lineNumber": 285
+        },
+        {
+          "caller": "showExitingChip",
+          "callee": "current.some",
+          "lineNumber": 286
+        },
+        {
+          "caller": "showExitingChip",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 288
+        },
+        {
+          "caller": "showExitingChip",
+          "callee": "window.matchMedia",
+          "lineNumber": 296
+        },
+        {
+          "caller": "showExitingChip",
+          "callee": "window.setTimeout",
+          "lineNumber": 297
+        },
+        {
+          "caller": "showExitingChip",
+          "callee": "setExitingSources",
+          "lineNumber": 299
+        },
+        {
+          "caller": "showExitingChip",
+          "callee": "current.filter",
+          "lineNumber": 300
+        },
+        {
+          "caller": "showExitingChip",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 302
+        },
+        {
+          "caller": "showExitingChip",
+          "callee": "exitTimersRef.current.get",
+          "lineNumber": 305
+        },
+        {
+          "caller": "showExitingChip",
+          "callee": "exitTimersRef.current.delete",
+          "lineNumber": 306
+        },
+        {
+          "caller": "showExitingChip",
+          "callee": "exitTimersRef.current.set",
+          "lineNumber": 311
+        },
+        {
+          "caller": "cancelExitingChip",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 315
+        },
+        {
+          "caller": "cancelExitingChip",
+          "callee": "exitTimersRef.current.get",
+          "lineNumber": 316
+        },
+        {
+          "caller": "cancelExitingChip",
+          "callee": "window.clearTimeout",
+          "lineNumber": 318
+        },
+        {
+          "caller": "cancelExitingChip",
+          "callee": "exitTimersRef.current.delete",
+          "lineNumber": 319
+        },
+        {
+          "caller": "cancelExitingChip",
+          "callee": "setExitingSources",
+          "lineNumber": 321
+        },
+        {
+          "caller": "cancelExitingChip",
+          "callee": "current.filter",
+          "lineNumber": 322
+        },
+        {
+          "caller": "cancelExitingChip",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 324
+        },
+        {
+          "caller": "commitMentionDraft",
+          "callee": "nextDraft.sources.map",
+          "lineNumber": 335
+        },
+        {
+          "caller": "commitMentionDraft",
+          "callee": "mentionDraft.sources.some",
+          "lineNumber": 339
+        },
+        {
+          "caller": "commitMentionDraft",
+          "callee": "nextSourceKeys.has",
+          "lineNumber": 341
+        },
+        {
+          "caller": "commitMentionDraft",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 341
+        },
+        {
+          "caller": "commitMentionDraft",
+          "callee": "mentionDraft.sources.filter",
+          "lineNumber": 343
+        },
+        {
+          "caller": "commitMentionDraft",
+          "callee": "nextSourceKeys.has",
+          "lineNumber": 345
+        },
+        {
+          "caller": "commitMentionDraft",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 345
+        },
+        {
+          "caller": "commitMentionDraft",
+          "callee": "removedSources.forEach",
+          "lineNumber": 347
+        },
+        {
+          "caller": "commitMentionDraft",
+          "callee": "nextSourceKeys.has",
+          "lineNumber": 348
+        },
+        {
+          "caller": "commitMentionDraft",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 348
+        },
+        {
+          "caller": "commitMentionDraft",
+          "callee": "showExitingChip",
+          "lineNumber": 349
+        },
+        {
+          "caller": "commitMentionDraft",
+          "callee": "removedSources.forEach",
+          "lineNumber": 354
+        },
+        {
+          "caller": "commitMentionDraft",
+          "callee": "trackDiscussionMentionAnalytics",
+          "lineNumber": 356
+        },
+        {
+          "caller": "commitMentionDraft",
+          "callee": "setMentionAnnouncement",
+          "lineNumber": 370
+        },
+        {
+          "caller": "commitMentionDraft",
+          "callee": "setMentionAnnouncement",
+          "lineNumber": 374
+        },
+        {
+          "caller": "commitMentionDraft",
+          "callee": "setMentionDraft",
+          "lineNumber": 385
+        },
+        {
+          "caller": "commitMentionDraft",
+          "callee": "onChange",
+          "lineNumber": 386
+        },
+        {
+          "caller": "commitMentionDraft",
+          "callee": "onContextSourcesChange",
+          "lineNumber": 388
+        },
+        {
+          "caller": "closeMention",
+          "callee": "setMention",
+          "lineNumber": 393
+        },
+        {
+          "caller": "closeMention",
+          "callee": "setActiveSourceKey",
+          "lineNumber": 394
+        },
+        {
+          "caller": "updateMentionAtCaret",
+          "callee": "closeMention",
+          "lineNumber": 402
+        },
+        {
+          "caller": "updateMentionAtCaret",
+          "callee": "findDiscussionMentionQuery",
+          "lineNumber": 406
+        },
+        {
+          "caller": "updateMentionAtCaret",
+          "callee": "closeMention",
+          "lineNumber": 413
+        },
+        {
+          "caller": "updateMentionAtCaret",
+          "callee": "setMention",
+          "lineNumber": 417
+        },
+        {
+          "caller": "updateMentionAtCaret",
+          "callee": "setActiveSourceKey",
+          "lineNumber": 420
+        },
+        {
+          "caller": "updateMentionAtCaret",
+          "callee": "filterDiscussionSourceCatalog(\n      sourceCatalog,\n      nextMention.query,\n    ).find",
+          "lineNumber": 424
+        },
+        {
+          "caller": "updateMentionAtCaret",
+          "callee": "filterDiscussionSourceCatalog",
+          "lineNumber": 424
+        },
+        {
+          "caller": "updateMentionAtCaret",
+          "callee": "setActiveSourceKey",
+          "lineNumber": 428
+        },
+        {
+          "caller": "updateMentionAtCaret",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 429
+        },
+        {
+          "caller": "submit",
+          "callee": "event.preventDefault",
+          "lineNumber": 434
+        },
+        {
+          "caller": "submit",
+          "callee": "closeMention",
+          "lineNumber": 437
+        },
+        {
+          "caller": "submit",
+          "callee": "onSubmit",
+          "lineNumber": 438
+        },
+        {
+          "caller": "selectSource",
+          "callee": "isDiscussionMentionSourceAttachable",
+          "lineNumber": 450
+        },
+        {
+          "caller": "selectSource",
+          "callee": "trackDiscussionMentionAnalytics",
+          "lineNumber": 456
+        },
+        {
+          "caller": "selectSource",
+          "callee": "setMentionAnnouncement",
+          "lineNumber": 468
+        },
+        {
+          "caller": "selectSource",
+          "callee": "attachDiscussionMentionSource",
+          "lineNumber": 474
+        },
+        {
+          "caller": "selectSource",
+          "callee": "closeMention",
+          "lineNumber": 479
+        },
+        {
+          "caller": "selectSource",
+          "callee": "cancelExitingChip",
+          "lineNumber": 482
+        },
+        {
+          "caller": "selectSource",
+          "callee": "commitMentionDraft",
+          "lineNumber": 483
+        },
+        {
+          "caller": "selectSource",
+          "callee": "onMentionSourceSelect",
+          "lineNumber": 484
+        },
+        {
+          "caller": "selectSource",
+          "callee": "trackDiscussionMentionAnalytics",
+          "lineNumber": 486
+        },
+        {
+          "caller": "selectSource",
+          "callee": "setMentionAnnouncement",
+          "lineNumber": 497
+        },
+        {
+          "caller": "selectSource",
+          "callee": "setMentionAnnouncement",
+          "lineNumber": 501
+        },
+        {
+          "caller": "selectSource",
+          "callee": "textareaRef.current?.focus",
+          "lineNumber": 506
+        },
+        {
+          "caller": "moveActiveSource",
+          "callee": "mentionResults.findIndex",
+          "lineNumber": 514
+        },
+        {
+          "caller": "moveActiveSource",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 516
+        },
+        {
+          "caller": "moveActiveSource",
+          "callee": "setActiveSourceKey",
+          "lineNumber": 521
+        },
+        {
+          "caller": "moveActiveSource",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 522
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "event.preventDefault",
+          "lineNumber": 529
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "moveActiveSource",
+          "lineNumber": 530
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "event.preventDefault",
+          "lineNumber": 535
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "closeMention",
+          "lineNumber": 540
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "event.currentTarget.focus",
+          "lineNumber": 541
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "event.preventDefault",
+          "lineNumber": 546
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "mentionResults.find",
+          "lineNumber": 547
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 549
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "selectSource",
+          "lineNumber": 552
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "deleteDiscussionMentionTokenAtEdge",
+          "lineNumber": 562
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "event.preventDefault",
+          "lineNumber": 570
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "closeMention",
+          "lineNumber": 571
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "commitMentionDraft",
+          "lineNumber": 572
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "event.preventDefault",
+          "lineNumber": 589
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "event.currentTarget.form?.requestSubmit",
+          "lineNumber": 590
+        },
+        {
+          "caller": "handleCaretActivity",
+          "callee": "updateMentionAtCaret",
+          "lineNumber": 594
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "frozenContextTimeFormatter.format",
+          "lineNumber": 604
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "removeDiscussionMentionToken",
+          "lineNumber": 638
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "commitMentionDraft",
+          "lineNumber": 643
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "textareaRef.current?.focus",
+          "lineNumber": 648
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "closeMention",
+          "lineNumber": 664
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "trackDiscussionMentionAnalytics",
+          "lineNumber": 666
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "onCreateBubble",
+          "lineNumber": 675
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "closeMention",
+          "lineNumber": 679
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "trackDiscussionMentionAnalytics",
+          "lineNumber": 681
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "onUploadDocument",
+          "lineNumber": 690
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "updateDiscussionMentionDraft",
+          "lineNumber": 741
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "commitMentionDraft",
+          "lineNumber": 745
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "onChange",
+          "lineNumber": 751
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "updateMentionAtCaret",
+          "lineNumber": 754
+        },
+        {
+          "caller": "DiscussionComposer",
+          "callee": "onWebSearchChange",
+          "lineNumber": 800
+        }
+      ],
+      "metrics": {
+        "importCount": 9,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionContextBadges.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 152,
+      "nonEmptyLines": 144,
+      "functions": [
+        {
+          "name": "DiscussionContextBadges",
+          "startLine": 36,
+          "endLine": 152,
+          "params": [
+            "{\n  badges,\n  discussionId,\n  onInspect,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DiscussionContextBadges",
+          "line": 36,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "DiscussionContextBadges",
+          "callee": "useId",
+          "lineNumber": 41
+        },
+        {
+          "caller": "DiscussionContextBadges",
+          "callee": "useState",
+          "lineNumber": 42
+        },
+        {
+          "caller": "DiscussionContextBadges",
+          "callee": "badges.slice",
+          "lineNumber": 51
+        },
+        {
+          "caller": "DiscussionContextBadges",
+          "callee": "visibleBadges.map",
+          "lineNumber": 73
+        },
+        {
+          "caller": "DiscussionContextBadges",
+          "callee": "onInspect",
+          "lineNumber": 95
+        },
+        {
+          "caller": "DiscussionContextBadges",
+          "callee": "setIsExpanded",
+          "lineNumber": 126
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionExperience.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 706,
+      "nonEmptyLines": 670,
+      "functions": [
+        {
+          "name": "DiscussionExperience",
+          "startLine": 74,
+          "endLine": 131,
+          "params": [
+            "{\n  analyticsClient,\n  contextSelection,\n  controller,\n  createExtractionAttemptId,\n  extractionRequests,\n  isObscured,\n  onExtractKnowledge,\n  onKnowledgeExtractionResolved,\n  onKnowledgeExtractionTargetSelectionChange,\n  onInspectContext,\n  onDiscussionChanged,\n  onDelete,\n  onCreateBubble,\n  onMinimize,\n  onUploadDocument,\n  projectId,\n  requests,\n  sourceCatalog,\n}"
+          ]
+        },
+        {
+          "name": "DiscussionExperienceModal",
+          "startLine": 133,
+          "endLine": 706,
+          "params": [
+            "{\n  analyticsClient,\n  contextSelection,\n  controller,\n  createExtractionAttemptId,\n  extractionRequests,\n  isObscured,\n  onExtractKnowledge,\n  onKnowledgeExtractionResolved,\n  onKnowledgeExtractionTargetSelectionChange,\n  onInspectContext,\n  onDiscussionChanged,\n  onDelete,\n  onCreateBubble,\n  onMinimize,\n  onUploadDocument,\n  projectId,\n  requests,\n  sourceCatalog,\n  visibleDiscussion,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DiscussionExperience",
+          "line": 74,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "useState",
+          "lineNumber": 158
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "useState",
+          "lineNumber": 162
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "useState",
+          "lineNumber": 164
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "useRef",
+          "lineNumber": 165
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "useRef",
+          "lineNumber": 166
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "useRef",
+          "lineNumber": 170
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "useCallback",
+          "lineNumber": 172
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "contextSelection?.complete",
+          "lineNumber": 178
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "controller.openDiscussion",
+          "lineNumber": 179
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "useDiscussionLifecycle",
+          "lineNumber": 183
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "useKnowledgeExtraction",
+          "lineNumber": 196
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "useEffect",
+          "lineNumber": 205
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "onKnowledgeExtractionTargetSelectionChange",
+          "lineNumber": 207
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "useMemo",
+          "lineNumber": 212
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "contextSelection.pendingSources.map",
+          "lineNumber": 219
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "sourceCatalog.sources.find",
+          "lineNumber": 220
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "useCallback",
+          "lineNumber": 246
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "contextSelection?.replaceSources",
+          "lineNumber": 248
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "sources.map",
+          "lineNumber": 249
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "useEffect",
+          "lineNumber": 260
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "contextSelection.submissionFailed",
+          "lineNumber": 266
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "useCallback",
+          "lineNumber": 273
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "setInspectedContextId",
+          "lineNumber": 279
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "onInspectContext",
+          "lineNumber": 280
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "trackAnalytics",
+          "lineNumber": 282
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "new Date().toISOString",
+          "lineNumber": 287
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "useCallback",
+          "lineNumber": 292
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "setInspectedContextId",
+          "lineNumber": 293
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "queueMicrotask",
+          "lineNumber": 295
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "inspectionTriggerRef.current.focus",
+          "lineNumber": 297
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "lifecycle.details?.messages.some",
+          "lineNumber": 302
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "getDiscussionContextBadges",
+          "lineNumber": 323
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "getDiscussionContextFrozenAt",
+          "lineNumber": 325
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "findFrozenContextItem",
+          "lineNumber": 327
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "hasEligibleKnowledgeExtractionSource",
+          "lineNumber": 347
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "useCallback",
+          "lineNumber": 348
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "hasEligibleKnowledgeExtractionSource",
+          "lineNumber": 358
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "details.messages.some",
+          "lineNumber": 365
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "message.content.trim",
+          "lineNumber": 369
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "extraction.start",
+          "lineNumber": 375
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "setInspectedContextId",
+          "lineNumber": 380
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "onExtractKnowledge",
+          "lineNumber": 381
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "trackAnalytics",
+          "lineNumber": 382
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "new Date().toISOString",
+          "lineNumber": 391
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "useCallback",
+          "lineNumber": 403
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "window.setTimeout",
+          "lineNumber": 404
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "launch.element.focus",
+          "lineNumber": 412
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "Array.from(\n        document.querySelectorAll<HTMLButtonElement>(\n          '[data-knowledge-extraction-entry]',\n        ),\n      ).find",
+          "lineNumber": 416
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "Array.from",
+          "lineNumber": 416
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "document.querySelectorAll",
+          "lineNumber": 417
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "restoredTrigger?.focus",
+          "lineNumber": 428
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "useCallback",
+          "lineNumber": 431
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "extraction.discard",
+          "lineNumber": 432
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "extraction.reset",
+          "lineNumber": 433
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "restoreExtractionTriggerFocus",
+          "lineNumber": 434
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "useCallback",
+          "lineNumber": 436
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "setIsRejectingExtraction",
+          "lineNumber": 442
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "extraction.reject",
+          "lineNumber": 445
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "extraction.reset",
+          "lineNumber": 451
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "restoreExtractionTriggerFocus",
+          "lineNumber": 452
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "setIsRejectingExtraction",
+          "lineNumber": 455
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "useCallback",
+          "lineNumber": 458
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "extraction.approveAsNewBubble",
+          "lineNumber": 459
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "extraction.reset",
+          "lineNumber": 465
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "restoreExtractionTriggerFocus",
+          "lineNumber": 466
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "useCallback",
+          "lineNumber": 468
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "extraction.beginUpdateTargetSelection",
+          "lineNumber": 473
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "onKnowledgeExtractionTargetSelectionChange",
+          "lineNumber": 474
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "extraction.cancelUpdateTargetSelection",
+          "lineNumber": 477
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "onKnowledgeExtractionTargetSelectionChange",
+          "lineNumber": 478
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "extraction.selectUpdateTarget",
+          "lineNumber": 485
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "onKnowledgeExtractionTargetSelectionChange",
+          "lineNumber": 486
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "useCallback",
+          "lineNumber": 495
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "extraction.approveBubbleUpdate",
+          "lineNumber": 496
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "extraction.reset",
+          "lineNumber": 502
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "restoreExtractionTriggerFocus",
+          "lineNumber": 503
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "useCallback",
+          "lineNumber": 506
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "setIsDiscardConfirmationOpen",
+          "lineNumber": 508
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "extraction.discard",
+          "lineNumber": 513
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "closeDiscussion",
+          "lineNumber": 516
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "useCallback",
+          "lineNumber": 522
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "setIsDiscardConfirmationOpen",
+          "lineNumber": 523
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "extraction.discard",
+          "lineNumber": 524
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "closeDiscussion",
+          "lineNumber": 525
+        },
+        {
+          "caller": "submit",
+          "callee": "contextSelection.beginSubmitting",
+          "lineNumber": 529
+        },
+        {
+          "caller": "submit",
+          "callee": "lifecycle.submit",
+          "lineNumber": 532
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "cancelExtraction",
+          "lineNumber": 571
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "closeDiscussion",
+          "lineNumber": 588
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "onCreateBubble",
+          "lineNumber": 589
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "closeDiscussion",
+          "lineNumber": 597
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "onUploadDocument",
+          "lineNumber": 598
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "onDelete",
+          "lineNumber": 679
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "cancelExtraction",
+          "lineNumber": 692
+        },
+        {
+          "caller": "DiscussionExperienceModal",
+          "callee": "setIsDiscardConfirmationOpen",
+          "lineNumber": 700
+        }
+      ],
+      "metrics": {
+        "importCount": 16,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionKnowledgeAction.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 63,
+      "nonEmptyLines": 58,
+      "functions": [
+        {
+          "name": "DiscussionKnowledgeAction",
+          "startLine": 22,
+          "endLine": 63,
+          "params": [
+            "{\n  disabled = false,\n  disabledReason,\n  onExtract,\n  source,\n  variant,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DiscussionKnowledgeAction",
+          "line": 22,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "DiscussionKnowledgeAction",
+          "callee": "onExtract",
+          "lineNumber": 53
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionMentionChips.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 174,
+      "nonEmptyLines": 166,
+      "functions": [
+        {
+          "name": "DiscussionMentionChips",
+          "startLine": 36,
+          "endLine": 174,
+          "params": [
+            "{\n  exitingSources = [],\n  onRemove,\n  sourceIssues = [],\n  sources,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DiscussionMentionChips",
+          "line": 36,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "DiscussionMentionChips",
+          "callee": "useId",
+          "lineNumber": 42
+        },
+        {
+          "caller": "DiscussionMentionChips",
+          "callee": "useState",
+          "lineNumber": 43
+        },
+        {
+          "caller": "DiscussionMentionChips",
+          "callee": "sources.slice",
+          "lineNumber": 47
+        },
+        {
+          "caller": "DiscussionMentionChips",
+          "callee": "visibleSources.map",
+          "lineNumber": 78
+        },
+        {
+          "caller": "DiscussionMentionChips",
+          "callee": "sourceIssues.find",
+          "lineNumber": 80
+        },
+        {
+          "caller": "DiscussionMentionChips",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 98
+        },
+        {
+          "caller": "DiscussionMentionChips",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 99
+        },
+        {
+          "caller": "DiscussionMentionChips",
+          "callee": "discussionCreationSourceIssueMessage",
+          "lineNumber": 114
+        },
+        {
+          "caller": "DiscussionMentionChips",
+          "callee": "onRemove",
+          "lineNumber": 120
+        },
+        {
+          "caller": "DiscussionMentionChips",
+          "callee": "exitingSources.map",
+          "lineNumber": 129
+        },
+        {
+          "caller": "DiscussionMentionChips",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 136
+        },
+        {
+          "caller": "DiscussionMentionChips",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 137
+        },
+        {
+          "caller": "DiscussionMentionChips",
+          "callee": "setIsExpanded",
+          "lineNumber": 156
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionMentionList.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 253,
+      "nonEmptyLines": 246,
+      "functions": [
+        {
+          "name": "documentAvailability",
+          "startLine": 33,
+          "endLine": 41,
+          "params": [
+            "source"
+          ]
+        },
+        {
+          "name": "MentionOption",
+          "startLine": 43,
+          "endLine": 111,
+          "params": [
+            "{\n  active,\n  id,\n  onSelect,\n  source,\n}"
+          ]
+        },
+        {
+          "name": "DiscussionMentionList",
+          "startLine": 113,
+          "endLine": 253,
+          "params": [
+            "{\n  activeSourceKey,\n  catalog,\n  listId,\n  onCreateBubble,\n  onSelect,\n  onUploadDocument,\n  optionIdPrefix,\n  query,\n  results,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DiscussionMentionList",
+          "line": 113,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "MentionOption",
+          "callee": "documentAvailability",
+          "lineNumber": 58
+        },
+        {
+          "caller": "MentionOption",
+          "callee": "onSelect",
+          "lineNumber": 73
+        },
+        {
+          "caller": "MentionOption",
+          "callee": "event.preventDefault",
+          "lineNumber": 74
+        },
+        {
+          "caller": "DiscussionMentionList",
+          "callee": "useId",
+          "lineNumber": 124
+        },
+        {
+          "caller": "DiscussionMentionList",
+          "callee": "useId",
+          "lineNumber": 125
+        },
+        {
+          "caller": "DiscussionMentionList",
+          "callee": "results.filter",
+          "lineNumber": 126
+        },
+        {
+          "caller": "DiscussionMentionList",
+          "callee": "results.filter",
+          "lineNumber": 127
+        },
+        {
+          "caller": "DiscussionMentionList",
+          "callee": "event.preventDefault",
+          "lineNumber": 165
+        },
+        {
+          "caller": "DiscussionMentionList",
+          "callee": "event.preventDefault",
+          "lineNumber": 174
+        },
+        {
+          "caller": "DiscussionMentionList",
+          "callee": "bubbleResults.map",
+          "lineNumber": 201
+        },
+        {
+          "caller": "DiscussionMentionList",
+          "callee": "results.indexOf",
+          "lineNumber": 202
+        },
+        {
+          "caller": "DiscussionMentionList",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 205
+        },
+        {
+          "caller": "DiscussionMentionList",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 207
+        },
+        {
+          "caller": "DiscussionMentionList",
+          "callee": "documentResults.map",
+          "lineNumber": 231
+        },
+        {
+          "caller": "DiscussionMentionList",
+          "callee": "results.indexOf",
+          "lineNumber": 232
+        },
+        {
+          "caller": "DiscussionMentionList",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 235
+        },
+        {
+          "caller": "DiscussionMentionList",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 237
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionMessageSources.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 111,
+      "nonEmptyLines": 99,
+      "functions": [
+        {
+          "name": "safeHttpUrl",
+          "startLine": 10,
+          "endLine": 22,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "safeMessageCitations",
+          "startLine": 24,
+          "endLine": 57,
+          "params": [
+            "citations"
+          ]
+        },
+        {
+          "name": "DiscussionMessageSources",
+          "startLine": 59,
+          "endLine": 111,
+          "params": [
+            "{\n  citations,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DiscussionMessageSources",
+          "line": 59,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "safeHttpUrl",
+          "callee": "value.trim",
+          "lineNumber": 16
+        },
+        {
+          "caller": "safeMessageCitations",
+          "callee": "Array.isArray",
+          "lineNumber": 27
+        },
+        {
+          "caller": "safeMessageCitations",
+          "callee": "citations.flatMap",
+          "lineNumber": 31
+        },
+        {
+          "caller": "safeMessageCitations",
+          "callee": "safeHttpUrl",
+          "lineNumber": 36
+        },
+        {
+          "caller": "safeMessageCitations",
+          "callee": "citation.title.trim",
+          "lineNumber": 43
+        },
+        {
+          "caller": "safeMessageCitations",
+          "callee": "citation.snippet.trim",
+          "lineNumber": 45
+        },
+        {
+          "caller": "safeMessageCitations",
+          "callee": "citation.snippet.trim",
+          "lineNumber": 46
+        },
+        {
+          "caller": "DiscussionMessageSources",
+          "callee": "safeMessageCitations",
+          "lineNumber": 64
+        },
+        {
+          "caller": "DiscussionMessageSources",
+          "callee": "safeCitations.map",
+          "lineNumber": 78
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionMessages.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 148,
+      "nonEmptyLines": 132,
+      "functions": [
+        {
+          "name": "detailsWith",
+          "startLine": 11,
+          "endLine": 22,
+          "params": [
+            "message"
+          ]
+        },
+        {
+          "name": "renderAssistant",
+          "startLine": 24,
+          "endLine": 43,
+          "params": [
+            "message"
+          ]
+        },
+        {
+          "name": "renderFailedTurn",
+          "startLine": 45,
+          "endLine": 62,
+          "params": [
+            "turn"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "renderAssistant",
+          "callee": "render",
+          "lineNumber": 25
+        },
+        {
+          "caller": "renderAssistant",
+          "callee": "detailsWith",
+          "lineNumber": 27
+        },
+        {
+          "caller": "renderAssistant",
+          "callee": "vi.fn",
+          "lineNumber": 39
+        },
+        {
+          "caller": "renderFailedTurn",
+          "callee": "render",
+          "lineNumber": 46
+        },
+        {
+          "caller": "renderFailedTurn",
+          "callee": "vi.fn",
+          "lineNumber": 51
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionMessages.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 255,
+      "nonEmptyLines": 241,
+      "functions": [
+        {
+          "name": "unansweredTurn",
+          "startLine": 20,
+          "endLine": 34,
+          "params": [
+            "message"
+          ]
+        },
+        {
+          "name": "ResponseStatus",
+          "startLine": 36,
+          "endLine": 95,
+          "params": [
+            "{\n  onRetry,\n  turn,\n}"
+          ]
+        },
+        {
+          "name": "Message",
+          "startLine": 97,
+          "endLine": 137,
+          "params": [
+            "{\n  message,\n  onExtractKnowledge,\n}"
+          ]
+        },
+        {
+          "name": "EmptyDiscussion",
+          "startLine": 139,
+          "endLine": 158,
+          "params": []
+        },
+        {
+          "name": "DiscussionMessages",
+          "startLine": 160,
+          "endLine": 255,
+          "params": [
+            "{\n  details,\n  loadError,\n  loadStatus,\n  onExtractKnowledge,\n  onRetry,\n  pendingTurn,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DiscussionMessages",
+          "line": 160,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "ResponseStatus",
+          "callee": "onRetry",
+          "lineNumber": 87
+        },
+        {
+          "caller": "DiscussionMessages",
+          "callee": "messages.some",
+          "lineNumber": 200
+        },
+        {
+          "caller": "DiscussionMessages",
+          "callee": "messages.map",
+          "lineNumber": 218
+        },
+        {
+          "caller": "DiscussionMessages",
+          "callee": "unansweredTurn",
+          "lineNumber": 219
+        },
+        {
+          "caller": "DiscussionMessages",
+          "callee": "new Date().toISOString",
+          "lineNumber": 244
+        }
+      ],
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 1,
+        "functionCount": 5,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionModal.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 309,
+      "nonEmptyLines": 297,
+      "functions": [
+        {
+          "name": "DiscussionModal",
+          "startLine": 39,
+          "endLine": 309,
+          "params": [
+            "{\n  actionsSlot,\n  composerSlot,\n  contextSlot,\n  inspectorSlot,\n  isObscured = false,\n  messagesSlot,\n  presentation = 'discussion',\n  presentationSubtitle,\n  presentationTitle,\n  onCloseInspector,\n  onDelete,\n  onDraftPromptChange,\n  onDraftSubmit,\n  onMinimize,\n  visibleDiscussion,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DiscussionModal",
+          "line": 39,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "DiscussionModal",
+          "callee": "useId",
+          "lineNumber": 56
+        },
+        {
+          "caller": "DiscussionModal",
+          "callee": "useId",
+          "lineNumber": 57
+        },
+        {
+          "caller": "DiscussionModal",
+          "callee": "useId",
+          "lineNumber": 58
+        },
+        {
+          "caller": "DiscussionModal",
+          "callee": "useRef",
+          "lineNumber": 59
+        },
+        {
+          "caller": "DiscussionModal",
+          "callee": "useRef",
+          "lineNumber": 60
+        },
+        {
+          "caller": "DiscussionModal",
+          "callee": "useRef",
+          "lineNumber": 61
+        },
+        {
+          "caller": "DiscussionModal",
+          "callee": "isTemporaryDiscussionTitle",
+          "lineNumber": 67
+        },
+        {
+          "caller": "DiscussionModal",
+          "callee": "visibleDiscussion.prompt.trim",
+          "lineNumber": 71
+        },
+        {
+          "caller": "DiscussionModal",
+          "callee": "useEffect",
+          "lineNumber": 73
+        },
+        {
+          "caller": "DiscussionModal",
+          "callee": "useEffect",
+          "lineNumber": 77
+        },
+        {
+          "caller": "DiscussionModal",
+          "callee": "useModalShell",
+          "lineNumber": 81
+        },
+        {
+          "caller": "DiscussionModal",
+          "callee": "onCloseInspectorRef.current",
+          "lineNumber": 84
+        },
+        {
+          "caller": "DiscussionModal",
+          "callee": "onMinimizeRef.current",
+          "lineNumber": 86
+        },
+        {
+          "caller": "DiscussionModal",
+          "callee": "dialog?.querySelector",
+          "lineNumber": 92
+        },
+        {
+          "caller": "submitDraft",
+          "callee": "event.preventDefault",
+          "lineNumber": 98
+        },
+        {
+          "caller": "submitDraft",
+          "callee": "visibleDiscussion.prompt.trim",
+          "lineNumber": 104
+        },
+        {
+          "caller": "submitDraft",
+          "callee": "onDraftSubmit",
+          "lineNumber": 107
+        },
+        {
+          "caller": "DiscussionModal",
+          "callee": "event.stopPropagation",
+          "lineNumber": 117
+        },
+        {
+          "caller": "DiscussionModal",
+          "callee": "event.stopPropagation",
+          "lineNumber": 118
+        },
+        {
+          "caller": "DiscussionModal",
+          "callee": "onDraftPromptChange",
+          "lineNumber": 282
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/discussions/FrozenContextInspector.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 125,
+      "nonEmptyLines": 116,
+      "functions": [
+        {
+          "name": "formatCapturedAt",
+          "startLine": 30,
+          "endLine": 35,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "FrozenContextInspector",
+          "startLine": 37,
+          "endLine": 125,
+          "params": [
+            "{\n  item,\n  onClose,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "FrozenContextInspector",
+          "line": 37,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "formatCapturedAt",
+          "callee": "new Intl.DateTimeFormat(undefined, {\n    dateStyle: 'medium',\n    timeStyle: 'short',\n  }).format",
+          "lineNumber": 31
+        },
+        {
+          "caller": "FrozenContextInspector",
+          "callee": "useId",
+          "lineNumber": 41
+        },
+        {
+          "caller": "FrozenContextInspector",
+          "callee": "useId",
+          "lineNumber": 42
+        },
+        {
+          "caller": "FrozenContextInspector",
+          "callee": "useRef",
+          "lineNumber": 43
+        },
+        {
+          "caller": "FrozenContextInspector",
+          "callee": "useEffect",
+          "lineNumber": 46
+        },
+        {
+          "caller": "FrozenContextInspector",
+          "callee": "closeButtonRef.current?.focus",
+          "lineNumber": 47
+        },
+        {
+          "caller": "FrozenContextInspector",
+          "callee": "formatCapturedAt",
+          "lineNumber": 107
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/discussions/discussionContextModel.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 41,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/discussions/discussionContextModel.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 99,
+      "nonEmptyLines": 88,
+      "functions": [
+        {
+          "name": "getDiscussionContextBadges",
+          "startLine": 28,
+          "endLine": 49,
+          "params": [
+            "discussion"
+          ]
+        },
+        {
+          "name": "getDiscussionContextFrozenAt",
+          "startLine": 57,
+          "endLine": 71,
+          "params": [
+            "discussion"
+          ]
+        },
+        {
+          "name": "findFrozenContextItem",
+          "startLine": 80,
+          "endLine": 99,
+          "params": [
+            "discussion",
+            "contextId"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "getDiscussionContextBadges",
+          "line": 28,
+          "isDefault": false
+        },
+        {
+          "name": "getDiscussionContextFrozenAt",
+          "line": 57,
+          "isDefault": false
+        },
+        {
+          "name": "defaultDiscussionContextBadges",
+          "line": 77,
+          "isDefault": false
+        },
+        {
+          "name": "findFrozenContextItem",
+          "line": 80,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "getDiscussionContextBadges",
+          "callee": "isFrozenContextV1",
+          "lineNumber": 32
+        },
+        {
+          "caller": "getDiscussionContextBadges",
+          "callee": "discussion.frozen_context.items.map",
+          "lineNumber": 40
+        },
+        {
+          "caller": "getDiscussionContextFrozenAt",
+          "callee": "isFrozenContextV1",
+          "lineNumber": 62
+        },
+        {
+          "caller": "findFrozenContextItem",
+          "callee": "isFrozenContextV1",
+          "lineNumber": 87
+        },
+        {
+          "caller": "findFrozenContextItem",
+          "callee": "discussion.frozen_context.items.find",
+          "lineNumber": 96
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 4,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/discussions/discussionCreationFailure.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 115,
+      "nonEmptyLines": 99,
+      "functions": [
+        {
+          "name": "isRecord",
+          "startLine": 32,
+          "endLine": 34,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "normalizeSourceIssues",
+          "startLine": 36,
+          "endLine": 77,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "normalizeDiscussionCreationFailure",
+          "startLine": 79,
+          "endLine": 98,
+          "params": [
+            "error"
+          ]
+        },
+        {
+          "name": "discussionCreationSourceIssueMessage",
+          "startLine": 100,
+          "endLine": 115,
+          "params": [
+            "issue"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "normalizeDiscussionCreationFailure",
+          "line": 79,
+          "isDefault": false
+        },
+        {
+          "name": "discussionCreationSourceIssueMessage",
+          "line": 100,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "isRecord",
+          "callee": "Array.isArray",
+          "lineNumber": 33
+        },
+        {
+          "caller": "normalizeSourceIssues",
+          "callee": "Array.isArray",
+          "lineNumber": 39
+        },
+        {
+          "caller": "normalizeSourceIssues",
+          "callee": "isRecord",
+          "lineNumber": 48
+        },
+        {
+          "caller": "normalizeSourceIssues",
+          "callee": "candidate.source_id.trim",
+          "lineNumber": 52
+        },
+        {
+          "caller": "normalizeSourceIssues",
+          "callee": "sourceIssueReasons.has",
+          "lineNumber": 54
+        },
+        {
+          "caller": "normalizeSourceIssues",
+          "callee": "candidate.source_id.trim",
+          "lineNumber": 61
+        },
+        {
+          "caller": "normalizeSourceIssues",
+          "callee": "seenSources.has",
+          "lineNumber": 64
+        },
+        {
+          "caller": "normalizeSourceIssues",
+          "callee": "seenSources.add",
+          "lineNumber": 68
+        },
+        {
+          "caller": "normalizeSourceIssues",
+          "callee": "issues.push",
+          "lineNumber": 69
+        },
+        {
+          "caller": "normalizeDiscussionCreationFailure",
+          "callee": "error.message.trim",
+          "lineNumber": 83
+        },
+        {
+          "caller": "normalizeDiscussionCreationFailure",
+          "callee": "normalizeSourceIssues",
+          "lineNumber": 90
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/discussions/discussionMention.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 126,
+      "nonEmptyLines": 113,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/discussions/discussionMention.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 290,
+      "nonEmptyLines": 250,
+      "functions": [
+        {
+          "name": "isDiscussionMentionSourceAttachable",
+          "startLine": 32,
+          "endLine": 36,
+          "params": [
+            "source"
+          ]
+        },
+        {
+          "name": "discussionMentionSourceKey",
+          "startLine": 38,
+          "endLine": 42,
+          "params": [
+            "source"
+          ]
+        },
+        {
+          "name": "createDiscussionMentionDraft",
+          "startLine": 44,
+          "endLine": 49,
+          "params": [
+            "value",
+            "sources"
+          ]
+        },
+        {
+          "name": "deduplicateSources",
+          "startLine": 51,
+          "endLine": 70,
+          "params": [
+            "sources"
+          ]
+        },
+        {
+          "name": "replaceDiscussionMentionSources",
+          "startLine": 72,
+          "endLine": 92,
+          "params": [
+            "draft",
+            "sources"
+          ]
+        },
+        {
+          "name": "updateDiscussionMentionDraft",
+          "startLine": 100,
+          "endLine": 156,
+          "params": [
+            "draft",
+            "nextValue"
+          ]
+        },
+        {
+          "name": "attachDiscussionMentionSource",
+          "startLine": 158,
+          "endLine": 200,
+          "params": [
+            "draft",
+            "source",
+            "mention"
+          ]
+        },
+        {
+          "name": "removeDiscussionMentionToken",
+          "startLine": 202,
+          "endLine": 226,
+          "params": [
+            "draft",
+            "source"
+          ]
+        },
+        {
+          "name": "deleteDiscussionMentionTokenAtEdge",
+          "startLine": 232,
+          "endLine": 257,
+          "params": [
+            "draft",
+            "key",
+            "selectionStart",
+            "selectionEnd"
+          ]
+        },
+        {
+          "name": "findDiscussionMentionQuery",
+          "startLine": 264,
+          "endLine": 290,
+          "params": [
+            "value",
+            "caretPosition"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "isDiscussionMentionSourceAttachable",
+          "line": 32,
+          "isDefault": false
+        },
+        {
+          "name": "discussionMentionSourceKey",
+          "line": 38,
+          "isDefault": false
+        },
+        {
+          "name": "createDiscussionMentionDraft",
+          "line": 44,
+          "isDefault": false
+        },
+        {
+          "name": "replaceDiscussionMentionSources",
+          "line": 72,
+          "isDefault": false
+        },
+        {
+          "name": "updateDiscussionMentionDraft",
+          "line": 100,
+          "isDefault": false
+        },
+        {
+          "name": "attachDiscussionMentionSource",
+          "line": 158,
+          "isDefault": false
+        },
+        {
+          "name": "removeDiscussionMentionToken",
+          "line": 202,
+          "isDefault": false
+        },
+        {
+          "name": "deleteDiscussionMentionTokenAtEdge",
+          "line": 232,
+          "isDefault": false
+        },
+        {
+          "name": "findDiscussionMentionQuery",
+          "line": 264,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "createDiscussionMentionDraft",
+          "callee": "deduplicateSources",
+          "lineNumber": 48
+        },
+        {
+          "caller": "deduplicateSources",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 58
+        },
+        {
+          "caller": "deduplicateSources",
+          "callee": "indicesByKey.get",
+          "lineNumber": 59
+        },
+        {
+          "caller": "deduplicateSources",
+          "callee": "indicesByKey.set",
+          "lineNumber": 62
+        },
+        {
+          "caller": "deduplicateSources",
+          "callee": "result.push",
+          "lineNumber": 63
+        },
+        {
+          "caller": "replaceDiscussionMentionSources",
+          "callee": "deduplicateSources",
+          "lineNumber": 76
+        },
+        {
+          "caller": "replaceDiscussionMentionSources",
+          "callee": "normalizedSources.map",
+          "lineNumber": 78
+        },
+        {
+          "caller": "replaceDiscussionMentionSources",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 79
+        },
+        {
+          "caller": "replaceDiscussionMentionSources",
+          "callee": "draft.tokens.flatMap",
+          "lineNumber": 83
+        },
+        {
+          "caller": "replaceDiscussionMentionSources",
+          "callee": "sourcesByKey.get",
+          "lineNumber": 84
+        },
+        {
+          "caller": "replaceDiscussionMentionSources",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 85
+        },
+        {
+          "caller": "updateDiscussionMentionDraft",
+          "callee": "Math.min",
+          "lineNumber": 108
+        },
+        {
+          "caller": "updateDiscussionMentionDraft",
+          "callee": "draft.tokens.flatMap",
+          "lineNumber": 131
+        },
+        {
+          "caller": "updateDiscussionMentionDraft",
+          "callee": "removedSourceKeys.add",
+          "lineNumber": 144
+        },
+        {
+          "caller": "updateDiscussionMentionDraft",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 144
+        },
+        {
+          "caller": "updateDiscussionMentionDraft",
+          "callee": "draft.sources.filter",
+          "lineNumber": 149
+        },
+        {
+          "caller": "updateDiscussionMentionDraft",
+          "callee": "removedSourceKeys.has",
+          "lineNumber": 151
+        },
+        {
+          "caller": "updateDiscussionMentionDraft",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 151
+        },
+        {
+          "caller": "attachDiscussionMentionSource",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 163
+        },
+        {
+          "caller": "attachDiscussionMentionSource",
+          "callee": "isDiscussionMentionSourceAttachable",
+          "lineNumber": 167
+        },
+        {
+          "caller": "attachDiscussionMentionSource",
+          "callee": "draft.sources.some",
+          "lineNumber": 168
+        },
+        {
+          "caller": "attachDiscussionMentionSource",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 169
+        },
+        {
+          "caller": "attachDiscussionMentionSource",
+          "callee": "Math.min",
+          "lineNumber": 176
+        },
+        {
+          "caller": "attachDiscussionMentionSource",
+          "callee": "draft.value.slice",
+          "lineNumber": 181
+        },
+        {
+          "caller": "attachDiscussionMentionSource",
+          "callee": "/^\\s/u.test",
+          "lineNumber": 182
+        },
+        {
+          "caller": "attachDiscussionMentionSource",
+          "callee": "draft.value.slice",
+          "lineNumber": 183
+        },
+        {
+          "caller": "attachDiscussionMentionSource",
+          "callee": "updateDiscussionMentionDraft",
+          "lineNumber": 184
+        },
+        {
+          "caller": "removeDiscussionMentionToken",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 206
+        },
+        {
+          "caller": "removeDiscussionMentionToken",
+          "callee": "draft.tokens.find",
+          "lineNumber": 207
+        },
+        {
+          "caller": "removeDiscussionMentionToken",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 209
+        },
+        {
+          "caller": "removeDiscussionMentionToken",
+          "callee": "draft.sources.filter",
+          "lineNumber": 213
+        },
+        {
+          "caller": "removeDiscussionMentionToken",
+          "callee": "discussionMentionSourceKey",
+          "lineNumber": 214
+        },
+        {
+          "caller": "removeDiscussionMentionToken",
+          "callee": "updateDiscussionMentionDraft",
+          "lineNumber": 222
+        },
+        {
+          "caller": "removeDiscussionMentionToken",
+          "callee": "draft.value.slice",
+          "lineNumber": 224
+        },
+        {
+          "caller": "removeDiscussionMentionToken",
+          "callee": "draft.value.slice",
+          "lineNumber": 224
+        },
+        {
+          "caller": "deleteDiscussionMentionTokenAtEdge",
+          "callee": "draft.tokens.find",
+          "lineNumber": 242
+        },
+        {
+          "caller": "deleteDiscussionMentionTokenAtEdge",
+          "callee": "removeDiscussionMentionToken",
+          "lineNumber": 254
+        },
+        {
+          "caller": "findDiscussionMentionQuery",
+          "callee": "Math.max",
+          "lineNumber": 272
+        },
+        {
+          "caller": "findDiscussionMentionQuery",
+          "callee": "Math.min",
+          "lineNumber": 272
+        },
+        {
+          "caller": "findDiscussionMentionQuery",
+          "callee": "value.lastIndexOf",
+          "lineNumber": 273
+        },
+        {
+          "caller": "findDiscussionMentionQuery",
+          "callee": "/[\\p{L}\\p{N}_]/u.test",
+          "lineNumber": 280
+        },
+        {
+          "caller": "findDiscussionMentionQuery",
+          "callee": "value.slice",
+          "lineNumber": 284
+        },
+        {
+          "caller": "findDiscussionMentionQuery",
+          "callee": "query.includes",
+          "lineNumber": 285
+        },
+        {
+          "caller": "findDiscussionMentionQuery",
+          "callee": "/[\\r\\n]/u.test",
+          "lineNumber": 285
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 9,
+        "functionCount": 10,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/discussions/discussionMentionAnalytics.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 107,
+      "nonEmptyLines": 100,
+      "functions": [
+        {
+          "name": "assertPrivacySafeDiscussionMentionAnalytics",
+          "startLine": 62,
+          "endLine": 96,
+          "params": [
+            "event",
+            "properties"
+          ]
+        },
+        {
+          "name": "trackDiscussionMentionAnalytics",
+          "startLine": 98,
+          "endLine": 107,
+          "params": [
+            "analyticsClient",
+            "event",
+            "properties"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "assertPrivacySafeDiscussionMentionAnalytics",
+          "line": 62,
+          "isDefault": false
+        },
+        {
+          "name": "trackDiscussionMentionAnalytics",
+          "line": 98,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "assertPrivacySafeDiscussionMentionAnalytics",
+          "callee": "Array.isArray",
+          "lineNumber": 69
+        },
+        {
+          "caller": "assertPrivacySafeDiscussionMentionAnalytics",
+          "callee": "Object.keys(properties).sort",
+          "lineNumber": 74
+        },
+        {
+          "caller": "assertPrivacySafeDiscussionMentionAnalytics",
+          "callee": "Object.keys",
+          "lineNumber": 74
+        },
+        {
+          "caller": "assertPrivacySafeDiscussionMentionAnalytics",
+          "callee": "[...allowedKeys[event]].sort",
+          "lineNumber": 75
+        },
+        {
+          "caller": "assertPrivacySafeDiscussionMentionAnalytics",
+          "callee": "actual.some",
+          "lineNumber": 78
+        },
+        {
+          "caller": "assertPrivacySafeDiscussionMentionAnalytics",
+          "callee": "Object.values",
+          "lineNumber": 85
+        },
+        {
+          "caller": "assertPrivacySafeDiscussionMentionAnalytics",
+          "callee": "Number.isFinite",
+          "lineNumber": 88
+        },
+        {
+          "caller": "trackDiscussionMentionAnalytics",
+          "callee": "assertPrivacySafeDiscussionMentionAnalytics",
+          "lineNumber": 105
+        },
+        {
+          "caller": "trackDiscussionMentionAnalytics",
+          "callee": "trackAnalytics",
+          "lineNumber": 106
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 2,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/discussions/discussionModel.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 29,
+      "nonEmptyLines": 24,
+      "functions": [
+        {
+          "name": "isDiscussionGenerationFailureCode",
+          "startLine": 19,
+          "endLine": 25,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isTemporaryDiscussionTitle",
+          "startLine": 27,
+          "endLine": 29,
+          "params": [
+            "title"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "assertDiscussionDetails",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "isDiscussionDetails",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "isFrozenContextV1",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "TEMPORARY_DISCUSSION_TITLE",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "isDiscussionGenerationFailureCode",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "isTemporaryDiscussionTitle",
+          "line": 27,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 6,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/discussions/discussionSourceCatalog.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 54,
+      "nonEmptyLines": 46,
+      "functions": [
+        {
+          "name": "searchableText",
+          "startLine": 37,
+          "endLine": 39,
+          "params": [
+            "source"
+          ]
+        },
+        {
+          "name": "filterDiscussionSourceCatalog",
+          "startLine": 41,
+          "endLine": 54,
+          "params": [
+            "catalog",
+            "query"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "filterDiscussionSourceCatalog",
+          "line": 41,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "searchableText",
+          "callee": "`${source.title} ${source.secondaryLine}`.toLocaleLowerCase",
+          "lineNumber": 38
+        },
+        {
+          "caller": "filterDiscussionSourceCatalog",
+          "callee": "query.trim().toLocaleLowerCase",
+          "lineNumber": 45
+        },
+        {
+          "caller": "filterDiscussionSourceCatalog",
+          "callee": "query.trim",
+          "lineNumber": 45
+        },
+        {
+          "caller": "filterDiscussionSourceCatalog",
+          "callee": "catalog.sources.filter",
+          "lineNumber": 51
+        },
+        {
+          "caller": "filterDiscussionSourceCatalog",
+          "callee": "searchableText(source).includes",
+          "lineNumber": 52
+        },
+        {
+          "caller": "filterDiscussionSourceCatalog",
+          "callee": "searchableText",
+          "lineNumber": 52
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/discussions/useAutoGrowTextarea.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 39,
+      "nonEmptyLines": 32,
+      "functions": [
+        {
+          "name": "useAutoGrowTextarea",
+          "startLine": 7,
+          "endLine": 39,
+          "params": [
+            "value",
+            "maxRows"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "useAutoGrowTextarea",
+          "line": 7,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useAutoGrowTextarea",
+          "callee": "useRef",
+          "lineNumber": 11
+        },
+        {
+          "caller": "useAutoGrowTextarea",
+          "callee": "useLayoutEffect",
+          "lineNumber": 13
+        },
+        {
+          "caller": "useAutoGrowTextarea",
+          "callee": "window.getComputedStyle",
+          "lineNumber": 20
+        },
+        {
+          "caller": "useAutoGrowTextarea",
+          "callee": "Number.parseFloat",
+          "lineNumber": 21
+        },
+        {
+          "caller": "useAutoGrowTextarea",
+          "callee": "Number.parseFloat",
+          "lineNumber": 23
+        },
+        {
+          "caller": "useAutoGrowTextarea",
+          "callee": "Number.parseFloat",
+          "lineNumber": 24
+        },
+        {
+          "caller": "useAutoGrowTextarea",
+          "callee": "Number.isFinite",
+          "lineNumber": 26
+        },
+        {
+          "caller": "useAutoGrowTextarea",
+          "callee": "Number.isFinite",
+          "lineNumber": 26
+        },
+        {
+          "caller": "useAutoGrowTextarea",
+          "callee": "Math.min",
+          "lineNumber": 34
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/discussions/useDiscussionContextSelection.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 405,
+      "nonEmptyLines": 362,
+      "functions": [
+        {
+          "name": "emptyState",
+          "startLine": 65,
+          "endLine": 76,
+          "params": [
+            "projectId"
+          ]
+        },
+        {
+          "name": "sourceIds",
+          "startLine": 78,
+          "endLine": 82,
+          "params": [
+            "sources"
+          ]
+        },
+        {
+          "name": "haveSameSourceIds",
+          "startLine": 84,
+          "endLine": 95,
+          "params": [
+            "first",
+            "second"
+          ]
+        },
+        {
+          "name": "haveSameSources",
+          "startLine": 97,
+          "endLine": 112,
+          "params": [
+            "first",
+            "second"
+          ]
+        },
+        {
+          "name": "asFailure",
+          "startLine": 114,
+          "endLine": 120,
+          "params": [
+            "failure"
+          ]
+        },
+        {
+          "name": "normalizeCandidates",
+          "startLine": 122,
+          "endLine": 155,
+          "params": [
+            "projectId",
+            "kind",
+            "candidates"
+          ]
+        },
+        {
+          "name": "failureForSources",
+          "startLine": 157,
+          "endLine": 173,
+          "params": [
+            "failure",
+            "sources"
+          ]
+        },
+        {
+          "name": "useDiscussionContextSelection",
+          "startLine": 180,
+          "endLine": 405,
+          "params": [
+            "projectId"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "useDiscussionContextSelection",
+          "line": 180,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "sourceIds",
+          "callee": "sources.map",
+          "lineNumber": 81
+        },
+        {
+          "caller": "haveSameSourceIds",
+          "callee": "sourceIds",
+          "lineNumber": 88
+        },
+        {
+          "caller": "haveSameSourceIds",
+          "callee": "sourceIds",
+          "lineNumber": 89
+        },
+        {
+          "caller": "haveSameSourceIds",
+          "callee": "firstIds.every",
+          "lineNumber": 93
+        },
+        {
+          "caller": "haveSameSources",
+          "callee": "first.every",
+          "lineNumber": 103
+        },
+        {
+          "caller": "normalizeCandidates",
+          "callee": "candidate.id.trim",
+          "lineNumber": 131
+        },
+        {
+          "caller": "normalizeCandidates",
+          "callee": "candidate.title.trim",
+          "lineNumber": 132
+        },
+        {
+          "caller": "normalizeCandidates",
+          "callee": "indicesById.get",
+          "lineNumber": 143
+        },
+        {
+          "caller": "normalizeCandidates",
+          "callee": "indicesById.set",
+          "lineNumber": 147
+        },
+        {
+          "caller": "normalizeCandidates",
+          "callee": "normalized.push",
+          "lineNumber": 148
+        },
+        {
+          "caller": "failureForSources",
+          "callee": "sources.map",
+          "lineNumber": 166
+        },
+        {
+          "caller": "failureForSources",
+          "callee": "failure.sourceIssues.filter",
+          "lineNumber": 168
+        },
+        {
+          "caller": "failureForSources",
+          "callee": "sourceKeys.has",
+          "lineNumber": 169
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "useState",
+          "lineNumber": 183
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "emptyState",
+          "lineNumber": 185
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "emptyState",
+          "lineNumber": 189
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "setStoredState",
+          "lineNumber": 192
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "useCallback",
+          "lineNumber": 195
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "setStoredState",
+          "lineNumber": 200
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "emptyState",
+          "lineNumber": 201
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "normalizeCandidates",
+          "lineNumber": 202
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "normalizeCandidates",
+          "lineNumber": 207
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "useCallback",
+          "lineNumber": 218
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "setStoredState",
+          "lineNumber": 220
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "emptyState",
+          "lineNumber": 222
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "normalizeCandidates",
+          "lineNumber": 223
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "normalizeCandidates",
+          "lineNumber": 228
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "haveSameSourceIds",
+          "lineNumber": 234
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "haveSameSourceIds",
+          "lineNumber": 235
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "haveSameSources",
+          "lineNumber": 239
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "haveSameSources",
+          "lineNumber": 240
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "failureForSources",
+          "lineNumber": 252
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "useCallback",
+          "lineNumber": 271
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "setStoredState",
+          "lineNumber": 273
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "[\n          ...current.bubbleSources,\n          ...current.documentSources,\n        ].filter",
+          "lineNumber": 278
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "failureForSources",
+          "lineNumber": 292
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "sources.filter",
+          "lineNumber": 296
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "sources.filter",
+          "lineNumber": 297
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "useCallback",
+          "lineNumber": 308
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "setStoredState",
+          "lineNumber": 309
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "useCallback",
+          "lineNumber": 321
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "asFailure",
+          "lineNumber": 323
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "setStoredState",
+          "lineNumber": 325
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "useCallback",
+          "lineNumber": 339
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "setStoredState",
+          "lineNumber": 340
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "useCallback",
+          "lineNumber": 352
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "setStoredState",
+          "lineNumber": 353
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "emptyState",
+          "lineNumber": 353
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "useMemo",
+          "lineNumber": 357
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "useMemo",
+          "lineNumber": 361
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "state.bubbleSources.map",
+          "lineNumber": 363
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "state.documentSources.map",
+          "lineNumber": 364
+        },
+        {
+          "caller": "useDiscussionContextSelection",
+          "callee": "useMemo",
+          "lineNumber": 369
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 8,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/discussions/useDiscussionLifecycle.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 236,
+      "nonEmptyLines": 219,
+      "functions": [
+        {
+          "name": "discussion",
+          "startLine": 16,
+          "endLine": 29,
+          "params": [
+            "messages"
+          ]
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/discussions/useDiscussionLifecycle.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 1087,
+      "nonEmptyLines": 993,
+      "functions": [
+        {
+          "name": "errorMessage",
+          "startLine": 100,
+          "endLine": 104,
+          "params": [
+            "error",
+            "fallback"
+          ]
+        },
+        {
+          "name": "isAbort",
+          "startLine": 106,
+          "endLine": 108,
+          "params": [
+            "error"
+          ]
+        },
+        {
+          "name": "recoveryIdentifiers",
+          "startLine": 110,
+          "endLine": 131,
+          "params": [
+            "error"
+          ]
+        },
+        {
+          "name": "trackFrozenContextSourceCounts",
+          "startLine": 133,
+          "endLine": 155,
+          "params": [
+            "analyticsClient",
+            "projectId",
+            "discussionId",
+            "selection"
+          ]
+        },
+        {
+          "name": "generationFailureCode",
+          "startLine": 157,
+          "endLine": 164,
+          "params": [
+            "error"
+          ]
+        },
+        {
+          "name": "createRequestId",
+          "startLine": 166,
+          "endLine": 168,
+          "params": []
+        },
+        {
+          "name": "normalizeSelection",
+          "startLine": 175,
+          "endLine": 182,
+          "params": [
+            "selection"
+          ]
+        },
+        {
+          "name": "selectionFingerprint",
+          "startLine": 184,
+          "endLine": 191,
+          "params": [
+            "selection"
+          ]
+        },
+        {
+          "name": "occurredAt",
+          "startLine": 193,
+          "endLine": 195,
+          "params": []
+        },
+        {
+          "name": "elapsedMilliseconds",
+          "startLine": 197,
+          "endLine": 199,
+          "params": [
+            "startedAt"
+          ]
+        },
+        {
+          "name": "firstUserMessage",
+          "startLine": 201,
+          "endLine": 203,
+          "params": [
+            "discussion"
+          ]
+        },
+        {
+          "name": "completedResponse",
+          "startLine": 205,
+          "endLine": 228,
+          "params": [
+            "discussion",
+            "requestId"
+          ]
+        },
+        {
+          "name": "responseSearchAnalytics",
+          "startLine": 230,
+          "endLine": 241,
+          "params": [
+            "response",
+            "webSearchRequested"
+          ]
+        },
+        {
+          "name": "hasCompletedExchange",
+          "startLine": 243,
+          "endLine": 254,
+          "params": [
+            "discussion"
+          ]
+        },
+        {
+          "name": "useDiscussionLifecycle",
+          "startLine": 256,
+          "endLine": 1087,
+          "params": [
+            "{\n  analyticsClient = analytics,\n  onDiscussionCreated,\n  onDiscussionChanged,\n  onDraftPromptChange,\n  projectId,\n  requests,\n  visibleDiscussion,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "useDiscussionLifecycle",
+          "line": 256,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "errorMessage",
+          "callee": "error.message.trim",
+          "lineNumber": 101
+        },
+        {
+          "caller": "recoveryIdentifiers",
+          "callee": "isDiscussionGenerationFailureCode",
+          "lineNumber": 117
+        },
+        {
+          "caller": "trackFrozenContextSourceCounts",
+          "callee": "trackDiscussionMentionAnalytics",
+          "lineNumber": 143
+        },
+        {
+          "caller": "generationFailureCode",
+          "callee": "isDiscussionGenerationFailureCode",
+          "lineNumber": 161
+        },
+        {
+          "caller": "createRequestId",
+          "callee": "crypto.randomUUID",
+          "lineNumber": 167
+        },
+        {
+          "caller": "selectionFingerprint",
+          "callee": "JSON.stringify",
+          "lineNumber": 187
+        },
+        {
+          "caller": "occurredAt",
+          "callee": "new Date().toISOString",
+          "lineNumber": 194
+        },
+        {
+          "caller": "elapsedMilliseconds",
+          "callee": "Math.max",
+          "lineNumber": 198
+        },
+        {
+          "caller": "elapsedMilliseconds",
+          "callee": "Math.round",
+          "lineNumber": 198
+        },
+        {
+          "caller": "elapsedMilliseconds",
+          "callee": "performance.now",
+          "lineNumber": 198
+        },
+        {
+          "caller": "firstUserMessage",
+          "callee": "discussion.messages.find",
+          "lineNumber": 202
+        },
+        {
+          "caller": "completedResponse",
+          "callee": "discussion.messages.findIndex",
+          "lineNumber": 209
+        },
+        {
+          "caller": "completedResponse",
+          "callee": "discussion.messages\n      .slice(userMessageIndex + 1)\n      .find",
+          "lineNumber": 221
+        },
+        {
+          "caller": "completedResponse",
+          "callee": "discussion.messages\n      .slice",
+          "lineNumber": 221
+        },
+        {
+          "caller": "responseSearchAnalytics",
+          "callee": "Array.isArray",
+          "lineNumber": 235
+        },
+        {
+          "caller": "hasCompletedExchange",
+          "callee": "discussion.messages.some",
+          "lineNumber": 245
+        },
+        {
+          "caller": "hasCompletedExchange",
+          "callee": "discussion.messages.some",
+          "lineNumber": 249
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useState",
+          "lineNumber": 272
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useState",
+          "lineNumber": 273
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useState",
+          "lineNumber": 276
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useState",
+          "lineNumber": 277
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useState",
+          "lineNumber": 278
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useState",
+          "lineNumber": 280
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useState",
+          "lineNumber": 282
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useState",
+          "lineNumber": 283
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useState",
+          "lineNumber": 284
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useState",
+          "lineNumber": 285
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useRef",
+          "lineNumber": 286
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useRef",
+          "lineNumber": 287
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useRef",
+          "lineNumber": 288
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useRef",
+          "lineNumber": 289
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useRef",
+          "lineNumber": 290
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useRef",
+          "lineNumber": 291
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useRef",
+          "lineNumber": 292
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useRef",
+          "lineNumber": 293
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useRef",
+          "lineNumber": 300
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useEffect",
+          "lineNumber": 314
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "capabilitiesRequest(controller.signal)\n      .then((capabilities) => {\n        if (controller.signal.aborted) {\n          return;\n        }\n\n        setWebSearchSupported(capabilities.web_search);\n\n        if (!capabilities.web_search) {\n          setWebSearchEnabledState(false);\n        }\n      })\n      .catch",
+          "lineNumber": 318
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "capabilitiesRequest(controller.signal)\n      .then",
+          "lineNumber": 318
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "capabilitiesRequest",
+          "lineNumber": 318
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "setWebSearchSupported",
+          "lineNumber": 324
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "setWebSearchEnabledState",
+          "lineNumber": 327
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "setWebSearchSupported",
+          "lineNumber": 332
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "setWebSearchEnabledState",
+          "lineNumber": 333
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "controller.abort",
+          "lineNumber": 337
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useCallback",
+          "lineNumber": 340
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "setWebSearchEnabledState",
+          "lineNumber": 342
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "setComposerError",
+          "lineNumber": 343
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "setCreationFailure",
+          "lineNumber": 344
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useCallback",
+          "lineNumber": 349
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "setDetails",
+          "lineNumber": 351
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useCallback",
+          "lineNumber": 354
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "setPendingTurn",
+          "lineNumber": 356
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useCallback",
+          "lineNumber": 361
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "isTemporaryDiscussionTitle",
+          "lineNumber": 364
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "hasCompletedExchange",
+          "lineNumber": 365
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "titleControllerRef.current?.abort",
+          "lineNumber": 371
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "performance.now",
+          "lineNumber": 374
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "generateTitleRequest(projectId, discussionId, controller.signal)\n        .then((response) => {\n          if (\n            controller.signal.aborted ||\n            titleAttemptRef.current !== discussionId\n          ) {\n            return;\n          }\n\n          const titled = assertDiscussionDetails(\n            response,\n            projectId,\n            discussionId,\n          );\n\n          if (detailsRef.current?.id !== discussionId) {\n            return;\n          }\n\n          updateDetails(titled);\n          onDiscussionChanged?.(titled);\n          trackAnalytics(analyticsClient, 'discussion_title_generated', {\n            project_id: projectId,\n            discussion_id: discussionId,\n            occurred_at: occurredAt(),\n            latency_ms: elapsedMilliseconds(startedAt),\n          });\n        })\n        .catch(() => {\n          if (!controller.signal.aborted) {\n            trackAnalytics(\n              analyticsClient,\n              'discussion_title_generation_failed',\n              {\n                project_id: projectId,\n                discussion_id: discussionId,\n                occurred_at: occurredAt(),\n                latency_ms: elapsedMilliseconds(startedAt),\n              },\n            );\n          }\n\n          // Title generation is intentionally non-blocking. The deterministic\n          // placeholder remains visible and a later load/message can retry.\n        })\n        .finally",
+          "lineNumber": 378
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "generateTitleRequest(projectId, discussionId, controller.signal)\n        .then((response) => {\n          if (\n            controller.signal.aborted ||\n            titleAttemptRef.current !== discussionId\n          ) {\n            return;\n          }\n\n          const titled = assertDiscussionDetails(\n            response,\n            projectId,\n            discussionId,\n          );\n\n          if (detailsRef.current?.id !== discussionId) {\n            return;\n          }\n\n          updateDetails(titled);\n          onDiscussionChanged?.(titled);\n          trackAnalytics(analyticsClient, 'discussion_title_generated', {\n            project_id: projectId,\n            discussion_id: discussionId,\n            occurred_at: occurredAt(),\n            latency_ms: elapsedMilliseconds(startedAt),\n          });\n        })\n        .catch",
+          "lineNumber": 378
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "generateTitleRequest(projectId, discussionId, controller.signal)\n        .then",
+          "lineNumber": 378
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "generateTitleRequest",
+          "lineNumber": 378
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "assertDiscussionDetails",
+          "lineNumber": 387
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "updateDetails",
+          "lineNumber": 397
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "onDiscussionChanged",
+          "lineNumber": 398
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "trackAnalytics",
+          "lineNumber": 399
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "occurredAt",
+          "lineNumber": 402
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "elapsedMilliseconds",
+          "lineNumber": 403
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "trackAnalytics",
+          "lineNumber": 408
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "occurredAt",
+          "lineNumber": 414
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "elapsedMilliseconds",
+          "lineNumber": 415
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useEffect",
+          "lineNumber": 438
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "getRequest(projectId, persistedDiscussionId, controller.signal)\n      .then((response) => {\n        if (\n          controller.signal.aborted ||\n          operation !== operationRef.current\n        ) {\n          return;\n        }\n\n        const next = assertDiscussionDetails(\n          response,\n          projectId,\n          persistedDiscussionId,\n        );\n        updateDetails(next);\n        onDiscussionChanged?.(next);\n        const recoveredMessage = recoveredTurn\n          ? next.messages.find(\n              (message) =>\n                message.role === 'user' &&\n                message.request_id === recoveredTurn.requestId &&\n                message.status === 'failed',\n            )\n          : undefined;\n\n        if (recoveredMessage && recoveredTurn) {\n          updatePendingTurn({\n            content: recoveredMessage.content,\n            discussionId: persistedDiscussionId,\n            failureCode: recoveredTurn.failureCode,\n            requestId: recoveredTurn.requestId,\n            status: 'failed',\n            webSearch: recoveredTurn.webSearch,\n          });\n        }\n\n        setLoadStatus('ready');\n        setLoadError(null);\n        generateTitleIfNeeded(next);\n      })\n      .catch",
+          "lineNumber": 448
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "getRequest(projectId, persistedDiscussionId, controller.signal)\n      .then",
+          "lineNumber": 448
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "getRequest",
+          "lineNumber": 448
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "assertDiscussionDetails",
+          "lineNumber": 457
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "updateDetails",
+          "lineNumber": 462
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "onDiscussionChanged",
+          "lineNumber": 463
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "next.messages.find",
+          "lineNumber": 465
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "updatePendingTurn",
+          "lineNumber": 474
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "setLoadStatus",
+          "lineNumber": 484
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "setLoadError",
+          "lineNumber": 485
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "generateTitleIfNeeded",
+          "lineNumber": 486
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "isAbort",
+          "lineNumber": 492
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "updateDetails",
+          "lineNumber": 497
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "setLoadStatus",
+          "lineNumber": 498
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "setLoadError",
+          "lineNumber": 499
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "errorMessage",
+          "lineNumber": 500
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "controller.abort",
+          "lineNumber": 504
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useEffect",
+          "lineNumber": 516
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "requestControllerRef.current?.abort",
+          "lineNumber": 519
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "capabilitiesControllerRef.current?.abort",
+          "lineNumber": 520
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "titleControllerRef.current?.abort",
+          "lineNumber": 521
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useCallback",
+          "lineNumber": 526
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "setComposerError",
+          "lineNumber": 528
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "setCreationFailure",
+          "lineNumber": 529
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "value.trim",
+          "lineNumber": 533
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "value.trim",
+          "lineNumber": 541
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "onDraftPromptChange",
+          "lineNumber": 546
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "setComposerValue",
+          "lineNumber": 548
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useCallback",
+          "lineNumber": 554
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "setIsSubmitting",
+          "lineNumber": 556
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "setComposerError",
+          "lineNumber": 557
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "requestControllerRef.current?.abort",
+          "lineNumber": 558
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useCallback",
+          "lineNumber": 565
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "setIsSubmitting",
+          "lineNumber": 571
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useCallback",
+          "lineNumber": 575
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "normalizeSelection",
+          "lineNumber": 582
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "selectionFingerprint",
+          "lineNumber": 583
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "createRequestId",
+          "lineNumber": 592
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "setCreationFailure",
+          "lineNumber": 607
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "performance.now",
+          "lineNumber": 608
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "beginRequest",
+          "lineNumber": 609
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "updatePendingTurn",
+          "lineNumber": 617
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "createRequest",
+          "lineNumber": 620
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "finishRequest",
+          "lineNumber": 626
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "assertDiscussionDetails",
+          "lineNumber": 630
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "firstUserMessage",
+          "lineNumber": 636
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "trackAnalytics",
+          "lineNumber": 638
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "trackFrozenContextSourceCounts",
+          "lineNumber": 643
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "trackAnalytics",
+          "lineNumber": 651
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "completedResponse",
+          "lineNumber": 662
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "trackAnalytics",
+          "lineNumber": 668
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "elapsedMilliseconds",
+          "lineNumber": 676
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "responseSearchAnalytics",
+          "lineNumber": 677
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "updateDetails",
+          "lineNumber": 683
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "onDiscussionChanged",
+          "lineNumber": 684
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "updatePendingTurn",
+          "lineNumber": 685
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "setLoadStatus",
+          "lineNumber": 686
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "onDiscussionCreated",
+          "lineNumber": 687
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "isAbort",
+          "lineNumber": 692
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "finishRequest",
+          "lineNumber": 697
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "recoveryIdentifiers",
+          "lineNumber": 698
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "occurredAt",
+          "lineNumber": 702
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "trackAnalytics",
+          "lineNumber": 703
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "trackFrozenContextSourceCounts",
+          "lineNumber": 708
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "trackAnalytics",
+          "lineNumber": 714
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "trackAnalytics",
+          "lineNumber": 724
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "elapsedMilliseconds",
+          "lineNumber": 732
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "updatePendingTurn",
+          "lineNumber": 738
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "setComposerValue",
+          "lineNumber": 746
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "onDiscussionCreated",
+          "lineNumber": 747
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "updatePendingTurn",
+          "lineNumber": 759
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "normalizeDiscussionCreationFailure",
+          "lineNumber": 760
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "setCreationFailure",
+          "lineNumber": 761
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "setComposerError",
+          "lineNumber": 762
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useCallback",
+          "lineNumber": 778
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "createRequestId",
+          "lineNumber": 790
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "performance.now",
+          "lineNumber": 792
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "beginRequest",
+          "lineNumber": 793
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "updatePendingTurn",
+          "lineNumber": 794
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "sendRequest",
+          "lineNumber": 803
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "finishRequest",
+          "lineNumber": 814
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "assertDiscussionDetails",
+          "lineNumber": 818
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "updateDetails",
+          "lineNumber": 824
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "onDiscussionChanged",
+          "lineNumber": 825
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "updatePendingTurn",
+          "lineNumber": 826
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "setComposerValue",
+          "lineNumber": 827
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "setWebSearchEnabledState",
+          "lineNumber": 828
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "completedResponse",
+          "lineNumber": 829
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "trackAnalytics",
+          "lineNumber": 832
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "elapsedMilliseconds",
+          "lineNumber": 840
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "responseSearchAnalytics",
+          "lineNumber": 841
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "generateTitleIfNeeded",
+          "lineNumber": 846
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "isAbort",
+          "lineNumber": 851
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "finishRequest",
+          "lineNumber": 856
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "generationFailureCode",
+          "lineNumber": 858
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "updatePendingTurn",
+          "lineNumber": 862
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "setComposerValue",
+          "lineNumber": 870
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "trackAnalytics",
+          "lineNumber": 871
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "occurredAt",
+          "lineNumber": 875
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "elapsedMilliseconds",
+          "lineNumber": 876
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "updatePendingTurn",
+          "lineNumber": 884
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "setComposerError",
+          "lineNumber": 885
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "errorMessage",
+          "lineNumber": 886
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useCallback",
+          "lineNumber": 904
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "value.trim",
+          "lineNumber": 917
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "submitDraft",
+          "lineNumber": 924
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "submitMessage",
+          "lineNumber": 931
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useCallback",
+          "lineNumber": 943
+        },
+        {
+          "caller": "retry",
+          "callee": "performance.now",
+          "lineNumber": 955
+        },
+        {
+          "caller": "retry",
+          "callee": "beginRequest",
+          "lineNumber": 956
+        },
+        {
+          "caller": "retry",
+          "callee": "updatePendingTurn",
+          "lineNumber": 957
+        },
+        {
+          "caller": "retry",
+          "callee": "retryRequest",
+          "lineNumber": 960
+        },
+        {
+          "caller": "retry",
+          "callee": "finishRequest",
+          "lineNumber": 971
+        },
+        {
+          "caller": "retry",
+          "callee": "assertDiscussionDetails",
+          "lineNumber": 975
+        },
+        {
+          "caller": "retry",
+          "callee": "updateDetails",
+          "lineNumber": 980
+        },
+        {
+          "caller": "retry",
+          "callee": "onDiscussionChanged",
+          "lineNumber": 981
+        },
+        {
+          "caller": "retry",
+          "callee": "updatePendingTurn",
+          "lineNumber": 982
+        },
+        {
+          "caller": "retry",
+          "callee": "setWebSearchEnabledState",
+          "lineNumber": 983
+        },
+        {
+          "caller": "retry",
+          "callee": "completedResponse",
+          "lineNumber": 984
+        },
+        {
+          "caller": "retry",
+          "callee": "trackAnalytics",
+          "lineNumber": 987
+        },
+        {
+          "caller": "retry",
+          "callee": "elapsedMilliseconds",
+          "lineNumber": 995
+        },
+        {
+          "caller": "retry",
+          "callee": "responseSearchAnalytics",
+          "lineNumber": 996
+        },
+        {
+          "caller": "retry",
+          "callee": "generateTitleIfNeeded",
+          "lineNumber": 1004
+        },
+        {
+          "caller": "retry",
+          "callee": "isAbort",
+          "lineNumber": 1009
+        },
+        {
+          "caller": "retry",
+          "callee": "finishRequest",
+          "lineNumber": 1014
+        },
+        {
+          "caller": "retry",
+          "callee": "updatePendingTurn",
+          "lineNumber": 1015
+        },
+        {
+          "caller": "retry",
+          "callee": "generationFailureCode",
+          "lineNumber": 1017
+        },
+        {
+          "caller": "retry",
+          "callee": "trackAnalytics",
+          "lineNumber": 1020
+        },
+        {
+          "caller": "retry",
+          "callee": "occurredAt",
+          "lineNumber": 1024
+        },
+        {
+          "caller": "retry",
+          "callee": "elapsedMilliseconds",
+          "lineNumber": 1025
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "retry",
+          "lineNumber": 1033
+        },
+        {
+          "caller": "useDiscussionLifecycle",
+          "callee": "useMemo",
+          "lineNumber": 1049
+        }
+      ],
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 1,
+        "functionCount": 15,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/discussions/useDiscussionVisibility.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 128,
+      "nonEmptyLines": 114,
+      "functions": [
+        {
+          "name": "useDiscussionVisibility",
+          "startLine": 47,
+          "endLine": 128,
+          "params": [
+            "projectId"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "useDiscussionVisibility",
+          "line": 47,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useDiscussionVisibility",
+          "callee": "useState",
+          "lineNumber": 50
+        },
+        {
+          "caller": "useDiscussionVisibility",
+          "callee": "useRef",
+          "lineNumber": 54
+        },
+        {
+          "caller": "useDiscussionVisibility",
+          "callee": "setVisibility",
+          "lineNumber": 59
+        },
+        {
+          "caller": "useDiscussionVisibility",
+          "callee": "useCallback",
+          "lineNumber": 62
+        },
+        {
+          "caller": "useDiscussionVisibility",
+          "callee": "setVisibility",
+          "lineNumber": 64
+        },
+        {
+          "caller": "useDiscussionVisibility",
+          "callee": "useCallback",
+          "lineNumber": 75
+        },
+        {
+          "caller": "useDiscussionVisibility",
+          "callee": "setVisibility",
+          "lineNumber": 77
+        },
+        {
+          "caller": "useDiscussionVisibility",
+          "callee": "useCallback",
+          "lineNumber": 90
+        },
+        {
+          "caller": "useDiscussionVisibility",
+          "callee": "setVisibility",
+          "lineNumber": 92
+        },
+        {
+          "caller": "useDiscussionVisibility",
+          "callee": "useCallback",
+          "lineNumber": 112
+        },
+        {
+          "caller": "useDiscussionVisibility",
+          "callee": "setVisibility",
+          "lineNumber": 113
+        },
+        {
+          "caller": "useDiscussionVisibility",
+          "callee": "useMemo",
+          "lineNumber": 118
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    }
+  ]
+}

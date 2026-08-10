@@ -1,0 +1,33 @@
+{
+  "projectRoot": "/Users/alexandredemoura/Desktop/dev/nuee",
+  "batchFiles": [
+    {
+      "path": "frontend/src/documents/DocumentContextSelectionPanel.tsx",
+      "language": "typescript",
+      "sizeLines": 219,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/documents/documentContextSelectionTypes.ts",
+      "language": "typescript",
+      "sizeLines": 45,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/documents/useDocumentMultiSelection.ts",
+      "language": "typescript",
+      "sizeLines": 229,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "frontend/src/documents/DocumentContextSelectionPanel.tsx": [
+      "frontend/src/documents/documentContextSelectionTypes.ts",
+      "frontend/src/ui/focusRing.ts"
+    ],
+    "frontend/src/documents/documentContextSelectionTypes.ts": [],
+    "frontend/src/documents/useDocumentMultiSelection.ts": [
+      "frontend/src/documents/documentContextSelectionTypes.ts"
+    ]
+  }
+}

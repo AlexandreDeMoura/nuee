@@ -1,0 +1,636 @@
+{
+  "nodes": [
+    {
+      "id": "file:backend/src/bubbles/bubbles.service.spec.ts",
+      "type": "file",
+      "name": "bubbles.service.spec.ts",
+      "filePath": "backend/src/bubbles/bubbles.service.spec.ts",
+      "summary": "Large unit-test suite for BubblesService covering creation and update validation, project scoping, context-source reads, batch repositioning, and the discussion-extraction create/update idempotency paths.",
+      "tags": [
+        "test",
+        "unit-test",
+        "bubbles",
+        "validation",
+        "sqlite"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:backend/src/bubbles/bubbles.service.ts",
+      "type": "file",
+      "name": "bubbles.service.ts",
+      "filePath": "backend/src/bubbles/bubbles.service.ts",
+      "summary": "Core bubble workflow service: validates and normalises bubble input, owns IDs, timestamps and project scoping, and implements the context-source reader and extraction-writer capabilities other features consume.",
+      "tags": [
+        "service",
+        "bubbles",
+        "validation",
+        "workflow",
+        "capability-port"
+      ],
+      "complexity": "complex",
+      "languageNotes": "The class implements two narrow capability interfaces (BubbleContextSourceReader, BubbleExtractionWriter) so discussion-context and knowledge-extraction depend on behaviour, not on the whole service."
+    },
+    {
+      "id": "file:backend/src/bubbles/sqlite-bubble.repository.spec.ts",
+      "type": "file",
+      "name": "sqlite-bubble.repository.spec.ts",
+      "filePath": "backend/src/bubbles/sqlite-bubble.repository.spec.ts",
+      "summary": "Unit tests for SqliteBubbleRepository against an in-memory SQLite database, covering row mapping, provenance integrity failures, link persistence, and position batch updates.",
+      "tags": [
+        "test",
+        "unit-test",
+        "repository",
+        "sqlite",
+        "persistence"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/src/bubbles/sqlite-bubble.repository.ts",
+      "type": "file",
+      "name": "sqlite-bubble.repository.ts",
+      "filePath": "backend/src/bubbles/sqlite-bubble.repository.ts",
+      "summary": "SQLite implementation of the bubble, bubble-link, and discussion-provenance repository ports, holding all explicit parameterized SQL and the row-to-domain mapping with provenance validation.",
+      "tags": [
+        "repository",
+        "persistence",
+        "sqlite",
+        "bubbles",
+        "sql"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Row mapping is defensive: corrupt persisted provenance raises a controlled BubbleProvenanceIntegrityError rather than leaking malformed rows to services."
+    },
+    {
+      "id": "file:backend/src/database/database-transaction.ts",
+      "type": "file",
+      "name": "database-transaction.ts",
+      "filePath": "backend/src/database/database-transaction.ts",
+      "summary": "Thin injectable wrapper running a synchronous operation inside a SQLite BEGIN IMMEDIATE transaction, committing on success and rolling back on failure while preserving the original workflow error.",
+      "tags": [
+        "database",
+        "transaction",
+        "infrastructure",
+        "sqlite",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/src/database/database.module.ts",
+      "type": "file",
+      "name": "database.module.ts",
+      "filePath": "backend/src/database/database.module.ts",
+      "summary": "Global NestJS module providing and exporting the shared DatabaseProvider connection and the DatabaseTransaction helper to every feature module.",
+      "tags": [
+        "module",
+        "database",
+        "dependency-injection",
+        "infrastructure",
+        "wiring"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/src/database/database.provider.spec.ts",
+      "type": "file",
+      "name": "database.provider.spec.ts",
+      "filePath": "backend/src/database/database.provider.spec.ts",
+      "summary": "Unit tests asserting that the database provider applies its pragmas, runs migrations once before repositories are constructed, and that repository schemas are usable afterwards.",
+      "tags": [
+        "test",
+        "unit-test",
+        "database",
+        "migration",
+        "sqlite"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/src/database/database.provider.ts",
+      "type": "file",
+      "name": "database.provider.ts",
+      "filePath": "backend/src/database/database.provider.ts",
+      "summary": "Owns the single application-scoped node:sqlite connection: resolves the configured database path, enables foreign keys and a 5s busy timeout, runs migrations at construction, and closes on shutdown.",
+      "tags": [
+        "database",
+        "infrastructure",
+        "sqlite",
+        "migration",
+        "lifecycle"
+      ],
+      "complexity": "simple",
+      "languageNotes": "Constructor-time migration plus OnModuleDestroy close makes the connection lifecycle match the Nest container, so repositories can never observe an unmigrated schema."
+    },
+    {
+      "id": "file:backend/src/discussion-context/discussion-context.assembler.spec.ts",
+      "type": "file",
+      "name": "discussion-context.assembler.spec.ts",
+      "filePath": "backend/src/discussion-context/discussion-context.assembler.spec.ts",
+      "summary": "Unit tests for DiscussionContextAssembler covering deduplication, ordering, cross-project rejection, unavailable and non-ready source issues, and the aggregated DiscussionContextSourceError.",
+      "tags": [
+        "test",
+        "unit-test",
+        "discussion-context",
+        "validation",
+        "frozen-context"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:backend/src/discussion-context/discussion-context.assembler.ts",
+      "type": "file",
+      "name": "discussion-context.assembler.ts",
+      "filePath": "backend/src/discussion-context/discussion-context.assembler.ts",
+      "summary": "Assembles the immutable FrozenContextV1 package for a new discussion by copying the project description plus selected bubble and ready-document text through narrow project-scoped reader ports.",
+      "tags": [
+        "service",
+        "discussion-context",
+        "frozen-context",
+        "aggregation",
+        "validation"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Source issues are accumulated across all selections and thrown once as a single DiscussionContextSourceError, so the client sees every invalid selection in one response instead of failing on the first."
+    },
+    {
+      "id": "class:backend/src/bubbles/bubbles.service.ts:BubblesService",
+      "type": "class",
+      "name": "BubblesService",
+      "filePath": "backend/src/bubbles/bubbles.service.ts",
+      "lineRange": [
+        49,
+        562
+      ],
+      "summary": "Owns bubble lifecycle workflow — validation, normalisation, ID and timestamp generation, project scoping — and implements the context-source reader and discussion-extraction writer capabilities.",
+      "tags": [
+        "service",
+        "bubbles",
+        "workflow",
+        "validation",
+        "capability-port"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:backend/src/bubbles/sqlite-bubble.repository.ts:SqliteBubbleRepository",
+      "type": "class",
+      "name": "SqliteBubbleRepository",
+      "filePath": "backend/src/bubbles/sqlite-bubble.repository.ts",
+      "lineRange": [
+        43,
+        511
+      ],
+      "summary": "Single SQLite class implementing the bubble repository, bubble-link repository, and discussion-provenance writer ports with explicit parameterized SQL and defensive row mapping.",
+      "tags": [
+        "repository",
+        "persistence",
+        "sqlite",
+        "sql"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:backend/src/database/database-transaction.ts:DatabaseTransaction",
+      "type": "class",
+      "name": "DatabaseTransaction",
+      "filePath": "backend/src/database/database-transaction.ts",
+      "lineRange": [
+        5,
+        25
+      ],
+      "summary": "Runs a synchronous callback inside BEGIN IMMEDIATE / COMMIT, rolling back on error while rethrowing the original workflow failure.",
+      "tags": [
+        "database",
+        "transaction",
+        "sqlite",
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/src/database/database.provider.ts:DatabaseProvider",
+      "type": "class",
+      "name": "DatabaseProvider",
+      "filePath": "backend/src/database/database.provider.ts",
+      "lineRange": [
+        10,
+        47
+      ],
+      "summary": "Application-scoped holder of the shared node:sqlite DatabaseSync connection; configures pragmas, runs migrations on construction, and closes the connection on module destroy.",
+      "tags": [
+        "database",
+        "infrastructure",
+        "sqlite",
+        "lifecycle"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/src/discussion-context/discussion-context.assembler.ts:DiscussionContextAssembler",
+      "type": "class",
+      "name": "DiscussionContextAssembler",
+      "filePath": "backend/src/discussion-context/discussion-context.assembler.ts",
+      "lineRange": [
+        35,
+        235
+      ],
+      "summary": "Builds a FrozenContextV1 snapshot from the project description and the selected bubbles and ready documents, collecting every invalid selection into one aggregated source error.",
+      "tags": [
+        "service",
+        "discussion-context",
+        "frozen-context",
+        "aggregation"
+      ],
+      "complexity": "complex"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:backend/src/bubbles/bubbles.service.ts",
+      "target": "class:backend/src/bubbles/bubbles.service.ts:BubblesService",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/bubbles/bubbles.service.ts",
+      "target": "class:backend/src/bubbles/bubbles.service.ts:BubblesService",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/bubbles/sqlite-bubble.repository.ts",
+      "target": "class:backend/src/bubbles/sqlite-bubble.repository.ts:SqliteBubbleRepository",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/bubbles/sqlite-bubble.repository.ts",
+      "target": "class:backend/src/bubbles/sqlite-bubble.repository.ts:SqliteBubbleRepository",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/database/database-transaction.ts",
+      "target": "class:backend/src/database/database-transaction.ts:DatabaseTransaction",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/database/database-transaction.ts",
+      "target": "class:backend/src/database/database-transaction.ts:DatabaseTransaction",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/database/database.provider.ts",
+      "target": "class:backend/src/database/database.provider.ts:DatabaseProvider",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/database/database.provider.ts",
+      "target": "class:backend/src/database/database.provider.ts:DatabaseProvider",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/discussion-context/discussion-context.assembler.ts",
+      "target": "class:backend/src/discussion-context/discussion-context.assembler.ts:DiscussionContextAssembler",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/discussion-context/discussion-context.assembler.ts",
+      "target": "class:backend/src/discussion-context/discussion-context.assembler.ts:DiscussionContextAssembler",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/bubbles/bubbles.service.spec.ts",
+      "target": "file:backend/src/bubbles/bubble.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/bubbles/bubbles.service.spec.ts",
+      "target": "file:backend/src/bubbles/bubbles.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/bubbles/bubbles.service.spec.ts",
+      "target": "file:backend/src/bubbles/sqlite-bubble.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/bubbles/bubbles.service.spec.ts",
+      "target": "file:backend/src/database/database.provider.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/bubbles/bubbles.service.spec.ts",
+      "target": "file:backend/src/projects/projects.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/bubbles/bubbles.service.spec.ts",
+      "target": "file:backend/src/projects/sqlite-project.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/bubbles/bubbles.service.ts",
+      "target": "file:backend/src/bubbles/bubble.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/bubbles/bubbles.service.ts",
+      "target": "file:backend/src/projects/projects.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/bubbles/sqlite-bubble.repository.spec.ts",
+      "target": "file:backend/src/bubbles/bubble.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/bubbles/sqlite-bubble.repository.spec.ts",
+      "target": "file:backend/src/bubbles/bubbles.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/bubbles/sqlite-bubble.repository.spec.ts",
+      "target": "file:backend/src/bubbles/sqlite-bubble.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/bubbles/sqlite-bubble.repository.spec.ts",
+      "target": "file:backend/src/database/database.provider.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/bubbles/sqlite-bubble.repository.spec.ts",
+      "target": "file:backend/src/projects/projects.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/bubbles/sqlite-bubble.repository.spec.ts",
+      "target": "file:backend/src/projects/sqlite-project.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/bubbles/sqlite-bubble.repository.ts",
+      "target": "file:backend/src/bubbles/bubble.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/bubbles/sqlite-bubble.repository.ts",
+      "target": "file:backend/src/database/database.provider.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/database/database-transaction.ts",
+      "target": "file:backend/src/database/database.provider.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/database/database.module.ts",
+      "target": "file:backend/src/database/database-transaction.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/database/database.module.ts",
+      "target": "file:backend/src/database/database.provider.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/database/database.provider.spec.ts",
+      "target": "file:backend/src/bubbles/sqlite-bubble.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/database/database.provider.spec.ts",
+      "target": "file:backend/src/database/database.provider.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/database/database.provider.spec.ts",
+      "target": "file:backend/src/discussions/sqlite-discussion.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/database/database.provider.spec.ts",
+      "target": "file:backend/src/documents/sqlite-document.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/database/database.provider.spec.ts",
+      "target": "file:backend/src/projects/sqlite-project.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/database/database.provider.ts",
+      "target": "file:backend/src/config/configuration.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/database/database.provider.ts",
+      "target": "file:backend/src/database/database.migrations.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussion-context/discussion-context.assembler.spec.ts",
+      "target": "file:backend/src/bubbles/bubbles.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussion-context/discussion-context.assembler.spec.ts",
+      "target": "file:backend/src/bubbles/sqlite-bubble.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussion-context/discussion-context.assembler.spec.ts",
+      "target": "file:backend/src/database/database.provider.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussion-context/discussion-context.assembler.spec.ts",
+      "target": "file:backend/src/discussion-context/discussion-context.assembler.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussion-context/discussion-context.assembler.spec.ts",
+      "target": "file:backend/src/discussion-context/discussion-context.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussion-context/discussion-context.assembler.spec.ts",
+      "target": "file:backend/src/projects/projects.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussion-context/discussion-context.assembler.spec.ts",
+      "target": "file:backend/src/projects/sqlite-project.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussion-context/discussion-context.assembler.ts",
+      "target": "file:backend/src/bubbles/bubble.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussion-context/discussion-context.assembler.ts",
+      "target": "file:backend/src/discussion-context/discussion-context.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/discussion-context/discussion-context.assembler.ts",
+      "target": "file:backend/src/projects/projects.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "class:backend/src/bubbles/bubbles.service.ts:BubblesService",
+      "target": "class:backend/src/projects/projects.service.ts:ProjectsService",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:backend/src/discussion-context/discussion-context.assembler.ts:DiscussionContextAssembler",
+      "target": "class:backend/src/projects/projects.service.ts:ProjectsService",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:backend/src/discussion-context/discussion-context.assembler.ts:DiscussionContextAssembler",
+      "target": "class:backend/src/bubbles/bubbles.service.ts:BubblesService",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:backend/src/bubbles/sqlite-bubble.repository.ts:SqliteBubbleRepository",
+      "target": "class:backend/src/database/database.provider.ts:DatabaseProvider",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:backend/src/database/database-transaction.ts:DatabaseTransaction",
+      "target": "class:backend/src/database/database.provider.ts:DatabaseProvider",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/bubbles/bubbles.service.ts",
+      "target": "file:backend/src/bubbles/bubbles.service.spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/src/bubbles/sqlite-bubble.repository.ts",
+      "target": "file:backend/src/bubbles/sqlite-bubble.repository.spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/src/database/database.provider.ts",
+      "target": "file:backend/src/database/database.provider.spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/src/discussion-context/discussion-context.assembler.ts",
+      "target": "file:backend/src/discussion-context/discussion-context.assembler.spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

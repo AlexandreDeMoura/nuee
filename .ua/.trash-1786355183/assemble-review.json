@@ -1,0 +1,33 @@
+{
+  "fixedSectionOk": true,
+  "nodesRecovered": 1,
+  "edgesRestored": 17,
+  "crossBatchEdgesAdded": 0,
+  "typesRemapped": 0,
+  "complexityRemapped": 0,
+  "finalNodeCount": 700,
+  "finalEdgeCount": 1772,
+  "dropsConfirmedCorrect": 10,
+  "breakdown": {
+    "callsEdgesRetargetedToRealDefiningModule": 5,
+    "callsEdgesRestoredViaRecoveredNode": 1,
+    "structuralEdgesForRecoveredNode": 2,
+    "testedByEdgesRestored": 9,
+    "nodesTaggedTested": 3
+  },
+  "notes": [
+    "PRIORITY DROPS: all 6 resolved, 0 confirmed as correct drops. Five were barrel/re-export mis-attribution, not missing code: callers import a symbol from a barrel (`../utils/date`, `../utils/routing`) or a re-exporting module (`./discussionModel`), and the analyzer attributed the callee to the importing path rather than the defining file. The real function nodes already existed, so the edges were retargeted: resolveRoute -> utils/routing/resolveRoute.ts, formatUpdatedAt (x3) -> utils/date/formatUpdatedAt.ts, assertDiscussionDetails -> api/discussionResponse.ts (discussionModel.ts re-exports it from there at line 1-5).",
+    "The sixth drop was a genuine missing node: isTemporaryDiscussionTitle IS defined in frontend/src/discussions/discussionModel.ts:27-29, but the analyzer emitted no function nodes at all for that file. Recovered the node with a grounded summary plus contains/exports edges, then restored the DiscussionsPanel calls edge.",
+    "TESTED_BY AUDIT — script bug found. The 19 reported drops are really 10 duplicate emissions (correctly deduped) plus 9 genuine drops that were WRONG. Batches emitted 120 tested_by edges over 110 unordered-unique pairs; 101 survived. All 9 wrongly-dropped edges are production -> backend/test/*.e2e-spec.ts with both endpoints present as nodes and already in the correct orientation. Before the fix the graph contained ZERO tested_by edges targeting backend/test/, so every e2e coverage relationship in the project had been erased. Root cause: the merge script's test-file heuristic does not recognize backend/test/*.e2e-spec.ts as test files, so production -> e2e pairs were misclassified as prod<->prod and dropped. Restored all 9 and tagged the 3 newly-covered production nodes 'tested'.",
+    "The 3 flipped tested_by edges are correct. Batches 9-part-1/9-part-2 emitted spec -> source (sqlite-document.repository, knowledge-extraction.service, sqlite-knowledge-extraction.repository); the graph now holds source -> spec, i.e. production -> test as intended.",
+    "CROSS-BATCH IMPORT CHECK: clean. All 700 import relationships in scan-result.json importMap have a matching `imports` edge (700 imports edges in the graph), and every endpoint resolves to an existing file node. Zero gaps, so zero speculative edges added.",
+    "SYSTEMIC SCANNER DEFECT (upstream, not fixed here): the scanner resolves no `export *` / re-export targets at all. Every barrel has an empty importMap entry — frontend/src/{api,discussions,documents,knowledge-extraction}/index.ts, frontend/src/utils/{date,routing}/index.ts, shared/src/index.ts — as does the re-exporting module frontend/src/discussions/discussionModel.ts. Consequence: barrels are traversal sinks. Consumers reach them (documents/index.ts has 8 incoming imports, discussions/index.ts has 10) but the barrels have no outgoing edges to the modules they re-export. This is the same root cause as the 6 priority drops. The fix belongs in the scanner's export-* resolution, not in per-barrel patching.",
+    "FLAGGED ITEM 1 (batch 13) — analyzer hypothesis was WRONG, no edge needed. useDocumentMultiSelection.ts / documentContextSelectionTypes.ts have no consumer in discussions/ or workspace/. The only consumers are inside documents/ itself: DocumentContextSelectionPanel.tsx and useDocumentMultiSelection.ts both import from ./documentContextSelectionTypes, and both edges are already present in the graph. DocumentMultiSelection is a type defined in documentContextSelectionTypes.ts, not a value supplied by a consuming feature.",
+    "FLAGGED ITEM 2 (batch 2) — the 3 depends_on edges on frontend/src/documents/index.ts are individually correct but incomplete: the barrel has 9 `export *` statements and only DocumentsPanel, useDocumentLibrary, and documentAnalytics were captured. The 6 missing are DocumentContextSelectionPanel, DocumentInspectionPanel, documentContextSelectionTypes, documentPresentation, documentUploadPreflight, useDocumentMultiSelection. Left unmodified: not importMap-backed, and this is one instance of the systemic barrel defect above, which should be fixed uniformly upstream rather than for one barrel.",
+    "FLAGGED ITEM 3 (batch 18) — verified correct and complete. shared/src/index.ts has exactly one re-export (`export * from './validation-limits'`) and the graph captures it as depends_on -> file:shared/src/validation-limits.ts, with the target node present. Only the edge type differs from how module relationships are modeled elsewhere (`imports`); the relationship itself is not missing.",
+    "FLAGGED ITEM 4 (batch 12) — the discussions/index.ts barrel edges are NOT sane. The file re-exports 21 modules via `export *` but has zero outgoing depends_on/imports edges (its only outgoing edge is a tested_by). Same systemic barrel defect; left unmodified for the same reason as item 2. Note the barrel handling is inconsistent across the graph: shared/src/index.ts got 1 of 1, documents/index.ts got 3 of 9, discussions/index.ts got 0 of 21, and api/, knowledge-extraction/, utils/date/, utils/routing/ barrels got 0.",
+    "FIXED-SECTION SANITY: the reported 22 corrections are all tested_by orientation/drop handling and look proportionate; no node-ID or complexity normalization was reported for this run, so the >30% ID-correction and complexity-skew thresholds were not triggered. Note the header block describing generic ID/complexity normalization did not apply to this run.",
+    "MINOR, NOT APPLIED: all 7 backend e2e specs import AppModule, but batch-4 emitted app.module.ts -> e2e tested_by edges for only 6 of them; app.module.ts -> backend/test/documents.e2e-spec.ts was never emitted by any batch. Left out to keep the change set to analyzer-emitted edges, but the AppModule fan-out is asymmetric by one.",
+    "INTEGRITY: post-fix graph verified — 0 dangling edge endpoints, 0 duplicate node IDs, 0 duplicate (source,target,type) edges. Pre-fix backup retained in the session scratchpad."
+  ]
+}

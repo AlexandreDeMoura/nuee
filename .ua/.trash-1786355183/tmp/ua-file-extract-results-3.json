@@ -1,0 +1,4639 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 26,
+  "filesSkipped": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 26,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 26,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "frontend/src/knowledge-extraction/KnowledgeExtractionProposalReview.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 467,
+      "nonEmptyLines": 444,
+      "functions": [
+        {
+          "name": "normalizedProposal",
+          "startLine": 36,
+          "endLine": 44,
+          "params": [
+            "proposal"
+          ]
+        },
+        {
+          "name": "KnowledgeExtractionProposalReview",
+          "startLine": 46,
+          "endLine": 467,
+          "params": [
+            "{\n  controller,\n  isRejecting = false,\n  onApproveAsNewBubble,\n  onApproveBubbleUpdate,\n  onReject,\n  onUpdateExistingBubble,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "KnowledgeExtractionProposalReview",
+          "line": 46,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "normalizedProposal",
+          "callee": "proposal.title.trim",
+          "lineNumber": 40
+        },
+        {
+          "caller": "normalizedProposal",
+          "callee": "proposal.summary.trim",
+          "lineNumber": 41
+        },
+        {
+          "caller": "normalizedProposal",
+          "callee": "proposal.content.trim",
+          "lineNumber": 42
+        },
+        {
+          "caller": "KnowledgeExtractionProposalReview",
+          "callee": "useId",
+          "lineNumber": 54
+        },
+        {
+          "caller": "KnowledgeExtractionProposalReview",
+          "callee": "useId",
+          "lineNumber": 55
+        },
+        {
+          "caller": "KnowledgeExtractionProposalReview",
+          "callee": "useId",
+          "lineNumber": 56
+        },
+        {
+          "caller": "KnowledgeExtractionProposalReview",
+          "callee": "useId",
+          "lineNumber": 57
+        },
+        {
+          "caller": "KnowledgeExtractionProposalReview",
+          "callee": "useId",
+          "lineNumber": 58
+        },
+        {
+          "caller": "KnowledgeExtractionProposalReview",
+          "callee": "useId",
+          "lineNumber": 59
+        },
+        {
+          "caller": "KnowledgeExtractionProposalReview",
+          "callee": "useRef",
+          "lineNumber": 60
+        },
+        {
+          "caller": "KnowledgeExtractionProposalReview",
+          "callee": "useState",
+          "lineNumber": 61
+        },
+        {
+          "caller": "KnowledgeExtractionProposalReview",
+          "callee": "normalizedProposal",
+          "lineNumber": 66
+        },
+        {
+          "caller": "KnowledgeExtractionProposalReview",
+          "callee": "useFieldValidity",
+          "lineNumber": 67
+        },
+        {
+          "caller": "KnowledgeExtractionProposalReview",
+          "callee": "target.summary?.trim",
+          "lineNumber": 84
+        },
+        {
+          "caller": "KnowledgeExtractionProposalReview",
+          "callee": "markdownToPlainText",
+          "lineNumber": 84
+        },
+        {
+          "caller": "KnowledgeExtractionProposalReview",
+          "callee": "useEffect",
+          "lineNumber": 94
+        },
+        {
+          "caller": "KnowledgeExtractionProposalReview",
+          "callee": "titleInputRef.current?.focus",
+          "lineNumber": 95
+        },
+        {
+          "caller": "editField",
+          "callee": "controller.editProposal",
+          "lineNumber": 103
+        },
+        {
+          "caller": "showContentEditor",
+          "callee": "setContentView",
+          "lineNumber": 107
+        },
+        {
+          "caller": "showContentPreview",
+          "callee": "fields.markTouched",
+          "lineNumber": 114
+        },
+        {
+          "caller": "showContentPreview",
+          "callee": "setContentView",
+          "lineNumber": 120
+        },
+        {
+          "caller": "tryResolution",
+          "callee": "fields.revealAll",
+          "lineNumber": 129
+        },
+        {
+          "caller": "tryResolution",
+          "callee": "action",
+          "lineNumber": 139
+        },
+        {
+          "caller": "KnowledgeExtractionProposalReview",
+          "callee": "inputBorderClasses",
+          "lineNumber": 213
+        },
+        {
+          "caller": "KnowledgeExtractionProposalReview",
+          "callee": "fields.markTouched",
+          "lineNumber": 221
+        },
+        {
+          "caller": "KnowledgeExtractionProposalReview",
+          "callee": "editField",
+          "lineNumber": 222
+        },
+        {
+          "caller": "KnowledgeExtractionProposalReview",
+          "callee": "inputBorderClasses",
+          "lineNumber": 250
+        },
+        {
+          "caller": "KnowledgeExtractionProposalReview",
+          "callee": "editField",
+          "lineNumber": 255
+        },
+        {
+          "caller": "KnowledgeExtractionProposalReview",
+          "callee": "inputBorderClasses",
+          "lineNumber": 310
+        },
+        {
+          "caller": "KnowledgeExtractionProposalReview",
+          "callee": "fields.markTouched",
+          "lineNumber": 317
+        },
+        {
+          "caller": "KnowledgeExtractionProposalReview",
+          "callee": "editField",
+          "lineNumber": 318
+        },
+        {
+          "caller": "KnowledgeExtractionProposalReview",
+          "callee": "tryResolution",
+          "lineNumber": 369
+        },
+        {
+          "caller": "KnowledgeExtractionProposalReview",
+          "callee": "tryResolution",
+          "lineNumber": 396
+        },
+        {
+          "caller": "KnowledgeExtractionProposalReview",
+          "callee": "tryResolution",
+          "lineNumber": 420
+        },
+        {
+          "caller": "KnowledgeExtractionProposalReview",
+          "callee": "onReject",
+          "lineNumber": 446
+        }
+      ],
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/knowledge-extraction/KnowledgeExtractionSourceActions.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 104,
+      "nonEmptyLines": 101,
+      "functions": [
+        {
+          "name": "KnowledgeExtractionSourceActions",
+          "startLine": 11,
+          "endLine": 104,
+          "params": [
+            "{\n  controller,\n  onCancel,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "KnowledgeExtractionSourceActions",
+          "line": 11,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "KnowledgeExtractionSourceActions",
+          "callee": "hasKnowledgeExtractionSources",
+          "lineNumber": 20
+        },
+        {
+          "caller": "KnowledgeExtractionSourceActions",
+          "callee": "controller.state.selection.detailLevel.toUpperCase",
+          "lineNumber": 33
+        },
+        {
+          "caller": "KnowledgeExtractionSourceActions",
+          "callee": "controller.generateProposal",
+          "lineNumber": 83
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 211,
+      "nonEmptyLines": 202,
+      "functions": [
+        {
+          "name": "SelectionIndicator",
+          "startLine": 46,
+          "endLine": 59,
+          "params": [
+            "{ selected }"
+          ]
+        },
+        {
+          "name": "SourceIssue",
+          "startLine": 61,
+          "endLine": 72,
+          "params": [
+            "{\n  issue,\n}"
+          ]
+        },
+        {
+          "name": "MessageSource",
+          "startLine": 74,
+          "endLine": 150,
+          "params": [
+            "{\n  controller,\n  disabled,\n  errorId,\n  extractingFrom,\n  issue,\n  message,\n  setSourceRef,\n  threadPosition,\n}"
+          ]
+        },
+        {
+          "name": "FrozenContextSource",
+          "startLine": 152,
+          "endLine": 211,
+          "params": [
+            "{\n  controller,\n  disabled,\n  errorId,\n  issue,\n  item,\n  setSourceRef,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "MessageSource",
+          "line": 74,
+          "isDefault": false
+        },
+        {
+          "name": "FrozenContextSource",
+          "line": 152,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "MessageSource",
+          "callee": "controller.state.selection.messageIds.includes",
+          "lineNumber": 94
+        },
+        {
+          "caller": "MessageSource",
+          "callee": "controller.toggleMessage",
+          "lineNumber": 113
+        },
+        {
+          "caller": "FrozenContextSource",
+          "callee": "controller.state.selection.frozenContextItemIds.includes",
+          "lineNumber": 168
+        },
+        {
+          "caller": "FrozenContextSource",
+          "callee": "controller.toggleFrozenContextItem",
+          "lineNumber": 186
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 2,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 548,
+      "nonEmptyLines": 526,
+      "functions": [
+        {
+          "name": "sourceIssue",
+          "startLine": 59,
+          "endLine": 70,
+          "params": [
+            "issues",
+            "sourceKind",
+            "sourceId"
+          ]
+        },
+        {
+          "name": "StepHeading",
+          "startLine": 72,
+          "endLine": 95,
+          "params": [
+            "{\n  aside,\n  children,\n  number,\n}"
+          ]
+        },
+        {
+          "name": "FieldError",
+          "startLine": 97,
+          "endLine": 115,
+          "params": [
+            "{ id, message }"
+          ]
+        },
+        {
+          "name": "KnowledgeExtractionSourceSelection",
+          "startLine": 122,
+          "endLine": 548,
+          "params": [
+            "{\n  controller,\n  discussion,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "KnowledgeExtractionSourceSelection",
+          "line": 122,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "sourceIssue",
+          "callee": "issues.find",
+          "lineNumber": 65
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "useId",
+          "lineNumber": 126
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "useId",
+          "lineNumber": 127
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "useId",
+          "lineNumber": 128
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "useId",
+          "lineNumber": 129
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "useId",
+          "lineNumber": 130
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "useId",
+          "lineNumber": 131
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "useId",
+          "lineNumber": 132
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "useRef",
+          "lineNumber": 133
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "useRef",
+          "lineNumber": 134
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "useMemo",
+          "lineNumber": 135
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "eligibleKnowledgeExtractionMessages",
+          "lineNumber": 136
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "useMemo",
+          "lineNumber": 139
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "eligibleKnowledgeExtractionContextItems",
+          "lineNumber": 140
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "useMemo",
+          "lineNumber": 148
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "useMemo",
+          "lineNumber": 158
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "messages.map",
+          "lineNumber": 159
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "useMemo",
+          "lineNumber": 162
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "controller.state.selection.messageIds.filter",
+          "lineNumber": 167
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "eligibleMessageIdSet.has",
+          "lineNumber": 168
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "useEffect",
+          "lineNumber": 173
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "sourceRefs.current.get",
+          "lineNumber": 185
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "knowledgeExtractionSourceRefKey",
+          "lineNumber": 186
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "sourceRefs.current.get",
+          "lineNumber": 189
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "knowledgeExtractionSourceRefKey",
+          "lineNumber": 190
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "sourceRefs.current.get",
+          "lineNumber": 196
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "knowledgeExtractionSourceRefKey",
+          "lineNumber": 197
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "sourceRefs.current.get",
+          "lineNumber": 199
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "knowledgeExtractionSourceRefKey",
+          "lineNumber": 200
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "initialTarget.focus",
+          "lineNumber": 208
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "useEffect",
+          "lineNumber": 218
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "sourceRefs.current\n      .get(\n        knowledgeExtractionSourceRefKey(\n          firstIssue.sourceKind,\n          firstIssue.sourceId,\n        ),\n      )\n      ?.focus",
+          "lineNumber": 227
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "sourceRefs.current\n      .get",
+          "lineNumber": 227
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "knowledgeExtractionSourceRefKey",
+          "lineNumber": 229
+        },
+        {
+          "caller": "registerSource",
+          "callee": "knowledgeExtractionSourceRefKey",
+          "lineNumber": 243
+        },
+        {
+          "caller": "registerSource",
+          "callee": "sourceRefs.current.set",
+          "lineNumber": 246
+        },
+        {
+          "caller": "registerSource",
+          "callee": "sourceRefs.current.delete",
+          "lineNumber": 248
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "[\n    instructionsHelpId,\n    fieldErrors.instructions ? instructionsErrorId : null,\n  ]\n    .filter(Boolean)\n    .join",
+          "lineNumber": 252
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "[\n    instructionsHelpId,\n    fieldErrors.instructions ? instructionsErrorId : null,\n  ]\n    .filter",
+          "lineNumber": 252
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "controller.selectAllMessages",
+          "lineNumber": 312
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "messages.map",
+          "lineNumber": 336
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "sourceIssue",
+          "lineNumber": 344
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "registerSource",
+          "lineNumber": 347
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "discussion.messages.findIndex",
+          "lineNumber": 349
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "contextItems.map",
+          "lineNumber": 388
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "sourceIssue",
+          "lineNumber": 393
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "registerSource",
+          "lineNumber": 396
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "controller.setInstructions",
+          "lineNumber": 437
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "instructionPresets.map",
+          "lineNumber": 447
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "controller.setInstructions",
+          "lineNumber": 453
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "detailOptions.map",
+          "lineNumber": 490
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "controller.setDetailLevel",
+          "lineNumber": 507
+        },
+        {
+          "caller": "KnowledgeExtractionSourceSelection",
+          "callee": "Array.from",
+          "lineNumber": 517
+        }
+      ],
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 1,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/knowledge-extraction/index.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 9,
+      "nonEmptyLines": 9,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/knowledge-extraction/knowledgeExtractionAnalytics.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 132,
+      "nonEmptyLines": 116,
+      "functions": [
+        {
+          "name": "instructionsLengthBand",
+          "startLine": 26,
+          "endLine": 44,
+          "params": [
+            "instructions"
+          ]
+        },
+        {
+          "name": "payloadSizeBand",
+          "startLine": 46,
+          "endLine": 62,
+          "params": [
+            "byteLength"
+          ]
+        },
+        {
+          "name": "utf8ByteLength",
+          "startLine": 64,
+          "endLine": 66,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "knowledgeExtractionGenerationMetrics",
+          "startLine": 68,
+          "endLine": 132,
+          "params": [
+            "discussion",
+            "selection",
+            "selectAllUsed"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "knowledgeExtractionGenerationMetrics",
+          "line": 68,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "instructionsLengthBand",
+          "callee": "instructions.trim",
+          "lineNumber": 29
+        },
+        {
+          "caller": "utf8ByteLength",
+          "callee": "new TextEncoder().encode",
+          "lineNumber": 65
+        },
+        {
+          "caller": "knowledgeExtractionGenerationMetrics",
+          "callee": "eligibleKnowledgeExtractionMessages",
+          "lineNumber": 74
+        },
+        {
+          "caller": "knowledgeExtractionGenerationMetrics",
+          "callee": "eligibleMessages.filter",
+          "lineNumber": 77
+        },
+        {
+          "caller": "knowledgeExtractionGenerationMetrics",
+          "callee": "selectedMessageIds.has",
+          "lineNumber": 78
+        },
+        {
+          "caller": "knowledgeExtractionGenerationMetrics",
+          "callee": "eligibleKnowledgeExtractionContextItems(discussion).filter",
+          "lineNumber": 84
+        },
+        {
+          "caller": "knowledgeExtractionGenerationMetrics",
+          "callee": "eligibleKnowledgeExtractionContextItems",
+          "lineNumber": 84
+        },
+        {
+          "caller": "knowledgeExtractionGenerationMetrics",
+          "callee": "selectedContextIds.has",
+          "lineNumber": 85
+        },
+        {
+          "caller": "knowledgeExtractionGenerationMetrics",
+          "callee": "JSON.stringify",
+          "lineNumber": 100
+        },
+        {
+          "caller": "knowledgeExtractionGenerationMetrics",
+          "callee": "selectedContextItems.map",
+          "lineNumber": 101
+        },
+        {
+          "caller": "knowledgeExtractionGenerationMetrics",
+          "callee": "selectedMessages.map",
+          "lineNumber": 106
+        },
+        {
+          "caller": "knowledgeExtractionGenerationMetrics",
+          "callee": "selection.instructions.trim",
+          "lineNumber": 114
+        },
+        {
+          "caller": "knowledgeExtractionGenerationMetrics",
+          "callee": "instructionsLengthBand",
+          "lineNumber": 115
+        },
+        {
+          "caller": "knowledgeExtractionGenerationMetrics",
+          "callee": "payloadSizeBand",
+          "lineNumber": 128
+        },
+        {
+          "caller": "knowledgeExtractionGenerationMetrics",
+          "callee": "utf8ByteLength",
+          "lineNumber": 129
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 1,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/knowledge-extraction/knowledgeExtractionSources.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 47,
+      "nonEmptyLines": 43,
+      "functions": [
+        {
+          "name": "knowledgeExtractionSourceRefKey",
+          "startLine": 9,
+          "endLine": 14,
+          "params": [
+            "sourceKind",
+            "sourceId"
+          ]
+        },
+        {
+          "name": "eligibleKnowledgeExtractionMessages",
+          "startLine": 16,
+          "endLine": 24,
+          "params": [
+            "discussion"
+          ]
+        },
+        {
+          "name": "eligibleKnowledgeExtractionContextItems",
+          "startLine": 26,
+          "endLine": 37,
+          "params": [
+            "discussion"
+          ]
+        },
+        {
+          "name": "hasEligibleKnowledgeExtractionSource",
+          "startLine": 39,
+          "endLine": 47,
+          "params": [
+            "discussion"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "knowledgeExtractionSourceRefKey",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "eligibleKnowledgeExtractionMessages",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "eligibleKnowledgeExtractionContextItems",
+          "line": 26,
+          "isDefault": false
+        },
+        {
+          "name": "hasEligibleKnowledgeExtractionSource",
+          "line": 39,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "eligibleKnowledgeExtractionMessages",
+          "callee": "discussion.messages.filter",
+          "lineNumber": 19
+        },
+        {
+          "caller": "eligibleKnowledgeExtractionMessages",
+          "callee": "message.content.trim",
+          "lineNumber": 22
+        },
+        {
+          "caller": "eligibleKnowledgeExtractionContextItems",
+          "callee": "isFrozenContextV1",
+          "lineNumber": 29
+        },
+        {
+          "caller": "eligibleKnowledgeExtractionContextItems",
+          "callee": "discussion.frozen_context.items.filter",
+          "lineNumber": 33
+        },
+        {
+          "caller": "eligibleKnowledgeExtractionContextItems",
+          "callee": "item.frozen_content.trim",
+          "lineNumber": 34
+        },
+        {
+          "caller": "hasEligibleKnowledgeExtractionSource",
+          "callee": "eligibleKnowledgeExtractionMessages",
+          "lineNumber": 44
+        },
+        {
+          "caller": "hasEligibleKnowledgeExtractionSource",
+          "callee": "eligibleKnowledgeExtractionContextItems",
+          "lineNumber": 45
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 4,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 540,
+      "nonEmptyLines": 491,
+      "functions": [
+        {
+          "name": "emptySelection",
+          "startLine": 196,
+          "endLine": 203,
+          "params": []
+        },
+        {
+          "name": "normalizeIdentifiers",
+          "startLine": 205,
+          "endLine": 221,
+          "params": [
+            "identifiers"
+          ]
+        },
+        {
+          "name": "normalizeKnowledgeExtractionSelection",
+          "startLine": 223,
+          "endLine": 234,
+          "params": [
+            "selection"
+          ]
+        },
+        {
+          "name": "knowledgeExtractionSelectionFingerprint",
+          "startLine": 236,
+          "endLine": 248,
+          "params": [
+            "selection"
+          ]
+        },
+        {
+          "name": "hasKnowledgeExtractionSources",
+          "startLine": 250,
+          "endLine": 257,
+          "params": [
+            "selection"
+          ]
+        },
+        {
+          "name": "createKnowledgeExtractionState",
+          "startLine": 259,
+          "endLine": 281,
+          "params": [
+            "binding"
+          ]
+        },
+        {
+          "name": "selectingState",
+          "startLine": 283,
+          "endLine": 305,
+          "params": [
+            "state",
+            "initialMessageId"
+          ]
+        },
+        {
+          "name": "terminalState",
+          "startLine": 307,
+          "endLine": 317,
+          "params": [
+            "state",
+            "status",
+            "resolution"
+          ]
+        },
+        {
+          "name": "resolutionMatchesSavingState",
+          "startLine": 319,
+          "endLine": 330,
+          "params": [
+            "state",
+            "resolution"
+          ]
+        },
+        {
+          "name": "knowledgeExtractionReducer",
+          "startLine": 332,
+          "endLine": 540,
+          "params": [
+            "state",
+            "event"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "normalizeKnowledgeExtractionSelection",
+          "line": 223,
+          "isDefault": false
+        },
+        {
+          "name": "knowledgeExtractionSelectionFingerprint",
+          "line": 236,
+          "isDefault": false
+        },
+        {
+          "name": "hasKnowledgeExtractionSources",
+          "line": 250,
+          "isDefault": false
+        },
+        {
+          "name": "createKnowledgeExtractionState",
+          "line": 259,
+          "isDefault": false
+        },
+        {
+          "name": "knowledgeExtractionReducer",
+          "line": 332,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "normalizeIdentifiers",
+          "callee": "candidate.trim",
+          "lineNumber": 210
+        },
+        {
+          "caller": "normalizeIdentifiers",
+          "callee": "seen.has",
+          "lineNumber": 212
+        },
+        {
+          "caller": "normalizeIdentifiers",
+          "callee": "seen.add",
+          "lineNumber": 216
+        },
+        {
+          "caller": "normalizeIdentifiers",
+          "callee": "normalized.push",
+          "lineNumber": 217
+        },
+        {
+          "caller": "normalizeKnowledgeExtractionSelection",
+          "callee": "normalizeIdentifiers",
+          "lineNumber": 228
+        },
+        {
+          "caller": "normalizeKnowledgeExtractionSelection",
+          "callee": "normalizeIdentifiers",
+          "lineNumber": 232
+        },
+        {
+          "caller": "knowledgeExtractionSelectionFingerprint",
+          "callee": "normalizeKnowledgeExtractionSelection",
+          "lineNumber": 239
+        },
+        {
+          "caller": "knowledgeExtractionSelectionFingerprint",
+          "callee": "JSON.stringify",
+          "lineNumber": 241
+        },
+        {
+          "caller": "knowledgeExtractionSelectionFingerprint",
+          "callee": "[...normalized.frozenContextItemIds].sort",
+          "lineNumber": 243
+        },
+        {
+          "caller": "knowledgeExtractionSelectionFingerprint",
+          "callee": "normalized.instructions.trim().replace",
+          "lineNumber": 245
+        },
+        {
+          "caller": "knowledgeExtractionSelectionFingerprint",
+          "callee": "normalized.instructions.trim",
+          "lineNumber": 245
+        },
+        {
+          "caller": "knowledgeExtractionSelectionFingerprint",
+          "callee": "[...normalized.messageIds].sort",
+          "lineNumber": 246
+        },
+        {
+          "caller": "createKnowledgeExtractionState",
+          "callee": "emptySelection",
+          "lineNumber": 262
+        },
+        {
+          "caller": "createKnowledgeExtractionState",
+          "callee": "knowledgeExtractionSelectionFingerprint",
+          "lineNumber": 277
+        },
+        {
+          "caller": "selectingState",
+          "callee": "initialMessageId?.trim",
+          "lineNumber": 287
+        },
+        {
+          "caller": "selectingState",
+          "callee": "normalizeKnowledgeExtractionSelection",
+          "lineNumber": 288
+        },
+        {
+          "caller": "selectingState",
+          "callee": "createKnowledgeExtractionState",
+          "lineNumber": 297
+        },
+        {
+          "caller": "selectingState",
+          "callee": "knowledgeExtractionSelectionFingerprint",
+          "lineNumber": 302
+        },
+        {
+          "caller": "terminalState",
+          "callee": "createKnowledgeExtractionState",
+          "lineNumber": 313
+        },
+        {
+          "caller": "knowledgeExtractionReducer",
+          "callee": "createKnowledgeExtractionState",
+          "lineNumber": 338
+        },
+        {
+          "caller": "knowledgeExtractionReducer",
+          "callee": "selectingState",
+          "lineNumber": 344
+        },
+        {
+          "caller": "knowledgeExtractionReducer",
+          "callee": "normalizeKnowledgeExtractionSelection",
+          "lineNumber": 356
+        },
+        {
+          "caller": "knowledgeExtractionReducer",
+          "callee": "knowledgeExtractionSelectionFingerprint",
+          "lineNumber": 360
+        },
+        {
+          "caller": "knowledgeExtractionReducer",
+          "callee": "hasKnowledgeExtractionSources",
+          "lineNumber": 380
+        },
+        {
+          "caller": "knowledgeExtractionReducer",
+          "callee": "event.attemptId.trim",
+          "lineNumber": 381
+        },
+        {
+          "caller": "knowledgeExtractionReducer",
+          "callee": "event.extractionId.trim",
+          "lineNumber": 424
+        },
+        {
+          "caller": "knowledgeExtractionReducer",
+          "callee": "resolutionMatchesSavingState",
+          "lineNumber": 522
+        },
+        {
+          "caller": "knowledgeExtractionReducer",
+          "callee": "terminalState",
+          "lineNumber": 523
+        },
+        {
+          "caller": "knowledgeExtractionReducer",
+          "callee": "terminalState",
+          "lineNumber": 530
+        },
+        {
+          "caller": "knowledgeExtractionReducer",
+          "callee": "createKnowledgeExtractionState",
+          "lineNumber": 537
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 5,
+        "functionCount": 10,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/knowledge-extraction/knowledgeExtractionTargetSelection.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 12,
+      "nonEmptyLines": 11,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 1006,
+      "nonEmptyLines": 902,
+      "functions": [
+        {
+          "name": "createDefaultAttemptId",
+          "startLine": 115,
+          "endLine": 117,
+          "params": []
+        },
+        {
+          "name": "isRecord",
+          "startLine": 119,
+          "endLine": 121,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isAbort",
+          "startLine": 123,
+          "endLine": 127,
+          "params": [
+            "error"
+          ]
+        },
+        {
+          "name": "errorMessage",
+          "startLine": 129,
+          "endLine": 133,
+          "params": [
+            "error",
+            "fallback"
+          ]
+        },
+        {
+          "name": "normalizeSourceIssues",
+          "startLine": 135,
+          "endLine": 176,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "generationFailure",
+          "startLine": 178,
+          "endLine": 190,
+          "params": [
+            "error"
+          ]
+        },
+        {
+          "name": "sourceValidationFailure",
+          "startLine": 192,
+          "endLine": 215,
+          "params": [
+            "error"
+          ]
+        },
+        {
+          "name": "normalizeFieldErrors",
+          "startLine": 224,
+          "endLine": 244,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "resolutionFailure",
+          "startLine": 246,
+          "endLine": 258,
+          "params": [
+            "error"
+          ]
+        },
+        {
+          "name": "targetChangedFailure",
+          "startLine": 260,
+          "endLine": 282,
+          "params": [
+            "error"
+          ]
+        },
+        {
+          "name": "selectionInput",
+          "startLine": 284,
+          "endLine": 297,
+          "params": [
+            "state"
+          ]
+        },
+        {
+          "name": "isUnresolvedServerAttempt",
+          "startLine": 299,
+          "endLine": 308,
+          "params": [
+            "state"
+          ]
+        },
+        {
+          "name": "useKnowledgeExtraction",
+          "startLine": 310,
+          "endLine": 1006,
+          "params": [
+            "{\n  analyticsClient = analytics,\n  analyticsDiscussion,\n  createAttemptId = createDefaultAttemptId,\n  discussionId,\n  onResolved,\n  projectId,\n  requests,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "useKnowledgeExtraction",
+          "line": 310,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "createDefaultAttemptId",
+          "callee": "crypto.randomUUID",
+          "lineNumber": 116
+        },
+        {
+          "caller": "isRecord",
+          "callee": "Array.isArray",
+          "lineNumber": 120
+        },
+        {
+          "caller": "errorMessage",
+          "callee": "error.message.trim",
+          "lineNumber": 130
+        },
+        {
+          "caller": "normalizeSourceIssues",
+          "callee": "Array.isArray",
+          "lineNumber": 138
+        },
+        {
+          "caller": "normalizeSourceIssues",
+          "callee": "isRecord",
+          "lineNumber": 147
+        },
+        {
+          "caller": "normalizeSourceIssues",
+          "callee": "candidate.source_id.trim",
+          "lineNumber": 151
+        },
+        {
+          "caller": "normalizeSourceIssues",
+          "callee": "SOURCE_ISSUE_REASONS.has",
+          "lineNumber": 153
+        },
+        {
+          "caller": "normalizeSourceIssues",
+          "callee": "candidate.source_id.trim",
+          "lineNumber": 160
+        },
+        {
+          "caller": "normalizeSourceIssues",
+          "callee": "seen.has",
+          "lineNumber": 163
+        },
+        {
+          "caller": "normalizeSourceIssues",
+          "callee": "seen.add",
+          "lineNumber": 167
+        },
+        {
+          "caller": "normalizeSourceIssues",
+          "callee": "issues.push",
+          "lineNumber": 168
+        },
+        {
+          "caller": "generationFailure",
+          "callee": "errorMessage",
+          "lineNumber": 184
+        },
+        {
+          "caller": "sourceValidationFailure",
+          "callee": "normalizeFieldErrors",
+          "lineNumber": 202
+        },
+        {
+          "caller": "sourceValidationFailure",
+          "callee": "errorMessage",
+          "lineNumber": 205
+        },
+        {
+          "caller": "sourceValidationFailure",
+          "callee": "normalizeSourceIssues",
+          "lineNumber": 212
+        },
+        {
+          "caller": "normalizeFieldErrors",
+          "callee": "isRecord",
+          "lineNumber": 227
+        },
+        {
+          "caller": "normalizeFieldErrors",
+          "callee": "Object.entries",
+          "lineNumber": 233
+        },
+        {
+          "caller": "normalizeFieldErrors",
+          "callee": "REQUEST_FIELDS.has",
+          "lineNumber": 235
+        },
+        {
+          "caller": "normalizeFieldErrors",
+          "callee": "message.trim",
+          "lineNumber": 237
+        },
+        {
+          "caller": "normalizeFieldErrors",
+          "callee": "message.trim",
+          "lineNumber": 239
+        },
+        {
+          "caller": "resolutionFailure",
+          "callee": "errorMessage",
+          "lineNumber": 252
+        },
+        {
+          "caller": "targetChangedFailure",
+          "callee": "isKnowledgeExtractionTargetChangedError",
+          "lineNumber": 269
+        },
+        {
+          "caller": "selectionInput",
+          "callee": "state.selection.instructions.trim",
+          "lineNumber": 292
+        },
+        {
+          "caller": "selectionInput",
+          "callee": "state.selection.instructions.trim",
+          "lineNumber": 293
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useState",
+          "lineNumber": 320
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "createKnowledgeExtractionState",
+          "lineNumber": 321
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useRef",
+          "lineNumber": 323
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useRef",
+          "lineNumber": 324
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useRef",
+          "lineNumber": 325
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useRef",
+          "lineNumber": 326
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useRef",
+          "lineNumber": 331
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useRef",
+          "lineNumber": 332
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useRef",
+          "lineNumber": 333
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useRef",
+          "lineNumber": 334
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useRef",
+          "lineNumber": 335
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useEffect",
+          "lineNumber": 340
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useCallback",
+          "lineNumber": 360
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "knowledgeExtractionReducer",
+          "lineNumber": 363
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "setState",
+          "lineNumber": 367
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useCallback",
+          "lineNumber": 375
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "controllerRef.current?.abort",
+          "lineNumber": 377
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useCallback",
+          "lineNumber": 381
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "isUnresolvedServerAttempt",
+          "lineNumber": 383
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "requestsRef.current\n        .discard(\n          attempt.projectId,\n          attempt.discussionId,\n          attempt.extractionId,\n        )\n        .catch",
+          "lineNumber": 387
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "requestsRef.current\n        .discard",
+          "lineNumber": 387
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useEffect",
+          "lineNumber": 398
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "transition",
+          "lineNumber": 405
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "abortCurrentOperation",
+          "lineNumber": 418
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "bestEffortDiscard",
+          "lineNumber": 419
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useCallback",
+          "lineNumber": 430
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useCallback",
+          "lineNumber": 437
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "currentBindingMatches",
+          "lineNumber": 441
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "transition",
+          "lineNumber": 445
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useCallback",
+          "lineNumber": 455
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "currentBindingMatches",
+          "lineNumber": 464
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "transition",
+          "lineNumber": 468
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "createSelection",
+          "lineNumber": 469
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useCallback",
+          "lineNumber": 477
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "messageId.trim",
+          "lineNumber": 479
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "updateSelection",
+          "lineNumber": 485
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "currentIds.includes",
+          "lineNumber": 487
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "currentIds.filter",
+          "lineNumber": 488
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useCallback",
+          "lineNumber": 500
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "updateSelection",
+          "lineNumber": 502
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useCallback",
+          "lineNumber": 510
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "updateSelection",
+          "lineNumber": 512
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useCallback",
+          "lineNumber": 523
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "updateSelection",
+          "lineNumber": 525
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useCallback",
+          "lineNumber": 533
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "updateSelection",
+          "lineNumber": 535
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useCallback",
+          "lineNumber": 543
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "contextItemId.trim",
+          "lineNumber": 545
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "updateSelection",
+          "lineNumber": 551
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "current.frozenContextItemIds.includes",
+          "lineNumber": 553
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "current.frozenContextItemIds.filter",
+          "lineNumber": 556
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useCallback",
+          "lineNumber": 565
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "currentBindingMatches",
+          "lineNumber": 569
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "hasKnowledgeExtractionSources",
+          "lineNumber": 576
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "transition",
+          "lineNumber": 577
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "createAttemptIdRef.current",
+          "lineNumber": 596
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "transition",
+          "lineNumber": 597
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "abortCurrentOperation",
+          "lineNumber": 606
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "selectionInput",
+          "lineNumber": 612
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "Date.now",
+          "lineNumber": 614
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "knowledgeExtractionGenerationMetrics",
+          "lineNumber": 619
+        },
+        {
+          "caller": "trackGeneration",
+          "callee": "trackAnalytics",
+          "lineNumber": 638
+        },
+        {
+          "caller": "trackGeneration",
+          "callee": "Math.max",
+          "lineNumber": 646
+        },
+        {
+          "caller": "trackGeneration",
+          "callee": "Date.now",
+          "lineNumber": 646
+        },
+        {
+          "caller": "trackGeneration",
+          "callee": "new Date().toISOString",
+          "lineNumber": 648
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "requestsRef.current.create",
+          "lineNumber": 654
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "currentBindingMatches",
+          "lineNumber": 666
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "transition",
+          "lineNumber": 671
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "trackGeneration",
+          "lineNumber": 676
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "isAbort",
+          "lineNumber": 682
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "currentBindingMatches",
+          "lineNumber": 683
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "SOURCE_VALIDATION_CODES.has",
+          "lineNumber": 691
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "transition",
+          "lineNumber": 693
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "sourceValidationFailure",
+          "lineNumber": 694
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "trackGeneration",
+          "lineNumber": 697
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "transition",
+          "lineNumber": 699
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "generationFailure",
+          "lineNumber": 700
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "trackGeneration",
+          "lineNumber": 703
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useCallback",
+          "lineNumber": 720
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "transition",
+          "lineNumber": 725
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useCallback",
+          "lineNumber": 734
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "transition",
+          "lineNumber": 735
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useCallback",
+          "lineNumber": 738
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "transition",
+          "lineNumber": 739
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useCallback",
+          "lineNumber": 742
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "transition",
+          "lineNumber": 748
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useCallback",
+          "lineNumber": 763
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "currentBindingMatches",
+          "lineNumber": 780
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "transition",
+          "lineNumber": 788
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "abortCurrentOperation",
+          "lineNumber": 801
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "Date.now",
+          "lineNumber": 806
+        },
+        {
+          "caller": "trackResolution",
+          "callee": "trackAnalytics",
+          "lineNumber": 810
+        },
+        {
+          "caller": "trackResolution",
+          "callee": "Math.max",
+          "lineNumber": 818
+        },
+        {
+          "caller": "trackResolution",
+          "callee": "Date.now",
+          "lineNumber": 818
+        },
+        {
+          "caller": "trackResolution",
+          "callee": "new Date().toISOString",
+          "lineNumber": 819
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "requestsRef.current.resolve",
+          "lineNumber": 825
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "currentBindingMatches",
+          "lineNumber": 838
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "transition",
+          "lineNumber": 843
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "trackResolution",
+          "lineNumber": 852
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "onResolvedRef.current",
+          "lineNumber": 853
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "isAbort",
+          "lineNumber": 859
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "currentBindingMatches",
+          "lineNumber": 860
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "targetChangedFailure",
+          "lineNumber": 869
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "transition",
+          "lineNumber": 872
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "trackResolution",
+          "lineNumber": 880
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "transition",
+          "lineNumber": 885
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "resolutionFailure",
+          "lineNumber": 886
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "trackResolution",
+          "lineNumber": 889
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useCallback",
+          "lineNumber": 906
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "Promise.resolve",
+          "lineNumber": 913
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "runResolution",
+          "lineNumber": 916
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useCallback",
+          "lineNumber": 925
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "Promise.resolve",
+          "lineNumber": 933
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "runResolution",
+          "lineNumber": 936
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useCallback",
+          "lineNumber": 947
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "runResolution",
+          "lineNumber": 948
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useCallback",
+          "lineNumber": 951
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "currentBindingMatches",
+          "lineNumber": 955
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "abortCurrentOperation",
+          "lineNumber": 963
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "transition",
+          "lineNumber": 964
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "requestsRef.current.discard",
+          "lineNumber": 971
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "useCallback",
+          "lineNumber": 982
+        },
+        {
+          "caller": "useKnowledgeExtraction",
+          "callee": "transition",
+          "lineNumber": 983
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 1,
+        "functionCount": 13,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/main.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 10,
+      "nonEmptyLines": 9,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/projects/CreateProjectDialog.documents.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 58,
+      "nonEmptyLines": 53,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/projects/CreateProjectDialog.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 464,
+      "nonEmptyLines": 438,
+      "functions": [
+        {
+          "name": "CreateProjectDialog",
+          "startLine": 49,
+          "endLine": 464,
+          "params": [
+            "{\n  onCancel,\n  onCreated,\n  requestCreate = createProject,\n  requestDocumentPolicy = getDocumentUploadPolicy,\n  analyticsClient = analytics,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "CreateProjectDialog",
+          "line": 49,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "useState",
+          "lineNumber": 56
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "useState",
+          "lineNumber": 57
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "useState",
+          "lineNumber": 58
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "useState",
+          "lineNumber": 59
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "useState",
+          "lineNumber": 60
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "useState",
+          "lineNumber": 62
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "useState",
+          "lineNumber": 63
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "useState",
+          "lineNumber": 64
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "useRef",
+          "lineNumber": 65
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "useRef",
+          "lineNumber": 66
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "useRef",
+          "lineNumber": 67
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "title.trim",
+          "lineNumber": 69
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "description.trim",
+          "lineNumber": 70
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "useModalShell",
+          "lineNumber": 72
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "onCancel",
+          "lineNumber": 75
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "useFieldValidity",
+          "lineNumber": 80
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "useMemo",
+          "lineNumber": 90
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "documentPolicyExtensions(documentPolicy).join",
+          "lineNumber": 93
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "documentPolicyExtensions",
+          "lineNumber": 93
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "useEffect",
+          "lineNumber": 98
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "requestDocumentPolicy(controller.signal)\n      .then((policy) => {\n        if (!controller.signal.aborted) {\n          setDocumentPolicy(policy);\n        }\n      })\n      .catch",
+          "lineNumber": 101
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "requestDocumentPolicy(controller.signal)\n      .then",
+          "lineNumber": 101
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "requestDocumentPolicy",
+          "lineNumber": 101
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "setDocumentPolicy",
+          "lineNumber": 104
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "setDocumentPolicyError",
+          "lineNumber": 115
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "controller.abort",
+          "lineNumber": 118
+        },
+        {
+          "caller": "handleBackdropMouseDown",
+          "callee": "onCancel",
+          "lineNumber": 123
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "event.preventDefault",
+          "lineNumber": 128
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "fields.revealAll",
+          "lineNumber": 131
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setIsCreating",
+          "lineNumber": 136
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setHasCreateError",
+          "lineNumber": 137
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "requestCreate",
+          "lineNumber": 140
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setIsCreating",
+          "lineNumber": 146
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "trackAnalytics",
+          "lineNumber": 147
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "onCreated",
+          "lineNumber": 149
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "onCreated",
+          "lineNumber": 151
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setIsCreating",
+          "lineNumber": 155
+        },
+        {
+          "caller": "handleSubmit",
+          "callee": "setHasCreateError",
+          "lineNumber": 156
+        },
+        {
+          "caller": "handleDocumentsSelected",
+          "callee": "Array.from",
+          "lineNumber": 161
+        },
+        {
+          "caller": "handleDocumentsSelected",
+          "callee": "setDocumentFiles",
+          "lineNumber": 165
+        },
+        {
+          "caller": "clearCreateError",
+          "callee": "setHasCreateError",
+          "lineNumber": 171
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "inputBorderClasses",
+          "lineNumber": 266
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "fields.markTouched",
+          "lineNumber": 277
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "setTitle",
+          "lineNumber": 279
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "clearCreateError",
+          "lineNumber": 280
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "inputBorderClasses",
+          "lineNumber": 303
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "fields.markTouched",
+          "lineNumber": 318
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "setDescription",
+          "lineNumber": 320
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "clearCreateError",
+          "lineNumber": 321
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "documentInputRef.current?.click",
+          "lineNumber": 370
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "documentPolicyDescription",
+          "lineNumber": 380
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "setDocumentPolicyError",
+          "lineNumber": 391
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "setDocumentPolicyRequestKey",
+          "lineNumber": 392
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "documentFiles.map",
+          "lineNumber": 401
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "formatDocumentSize",
+          "lineNumber": 411
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "setDocumentFiles",
+          "lineNumber": 419
+        },
+        {
+          "caller": "CreateProjectDialog",
+          "callee": "current.filter",
+          "lineNumber": 420
+        }
+      ],
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/projects/ProjectDescriptionEditor.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 334,
+      "nonEmptyLines": 298,
+      "functions": [
+        {
+          "name": "isAbortError",
+          "startLine": 42,
+          "endLine": 44,
+          "params": [
+            "error"
+          ]
+        },
+        {
+          "name": "ProjectDescriptionEditor",
+          "startLine": 46,
+          "endLine": 334,
+          "params": [
+            "{\n  project,\n  onProjectSaved,\n  onStatusChange,\n  requestUpdate = updateProjectDescription,\n  saveDelayMs = DEFAULT_SAVE_DELAY_MS,\n  analyticsClient = analytics,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "ProjectDescriptionEditor",
+          "line": 46,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "useState",
+          "lineNumber": 54
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "useState",
+          "lineNumber": 55
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "useState",
+          "lineNumber": 56
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "useState",
+          "lineNumber": 57
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "useState",
+          "lineNumber": 58
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "useRef",
+          "lineNumber": 59
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "useRef",
+          "lineNumber": 60
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "useRef",
+          "lineNumber": 61
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "useRef",
+          "lineNumber": 62
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "useRef",
+          "lineNumber": 63
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "useRef",
+          "lineNumber": 64
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "useRef",
+          "lineNumber": 65
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "draft.trim",
+          "lineNumber": 67
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "useFieldValidity",
+          "lineNumber": 72
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "useEffect",
+          "lineNumber": 75
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "useEffect",
+          "lineNumber": 79
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "useEffect",
+          "lineNumber": 83
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "activeControllerRef.current?.abort",
+          "lineNumber": 89
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "useCallback",
+          "lineNumber": 93
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "setStatus",
+          "lineNumber": 99
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "onStatusChangeRef.current",
+          "lineNumber": 100
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "useCallback",
+          "lineNumber": 103
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "submittedDraft.trim",
+          "lineNumber": 105
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "setIsSaving",
+          "lineNumber": 115
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "setFailedDraft",
+          "lineNumber": 116
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "publishStatus",
+          "lineNumber": 117
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "requestUpdate",
+          "lineNumber": 120
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "setPersistedDescription",
+          "lineNumber": 130
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "trackAnalytics",
+          "lineNumber": 131
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "onProjectSavedRef.current",
+          "lineNumber": 134
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "draftRef.current.trim",
+          "lineNumber": 136
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "setDraft",
+          "lineNumber": 138
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "publishStatus",
+          "lineNumber": 139
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "publishStatus",
+          "lineNumber": 141
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "isAbortError",
+          "lineNumber": 147
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "setFailedDraft",
+          "lineNumber": 152
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "publishStatus",
+          "lineNumber": 153
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "setIsSaving",
+          "lineNumber": 157
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "useEffect",
+          "lineNumber": 164
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "publishStatus",
+          "lineNumber": 167
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "publishStatus",
+          "lineNumber": 174
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "publishStatus",
+          "lineNumber": 183
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "window.setTimeout",
+          "lineNumber": 184
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "saveDraft",
+          "lineNumber": 185
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "window.clearTimeout",
+          "lineNumber": 188
+        },
+        {
+          "caller": "handleRetry",
+          "callee": "setFailedDraft",
+          "lineNumber": 206
+        },
+        {
+          "caller": "handleRetry",
+          "callee": "saveDraft",
+          "lineNumber": 207
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "fields.markTouched",
+          "lineNumber": 254
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "setDraft",
+          "lineNumber": 258
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "setFailedDraft",
+          "lineNumber": 261
+        },
+        {
+          "caller": "ProjectDescriptionEditor",
+          "callee": "publishStatus",
+          "lineNumber": 265
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/ui/RichResponse.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 122,
+      "nonEmptyLines": 99,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/ui/RichResponse.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 408,
+      "nonEmptyLines": 355,
+      "functions": [
+        {
+          "name": "safeExternalUrl",
+          "startLine": 16,
+          "endLine": 26,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "citationLink",
+          "startLine": 28,
+          "endLine": 45,
+          "params": [
+            "href",
+            "label",
+            "key"
+          ]
+        },
+        {
+          "name": "inlineContent",
+          "startLine": 47,
+          "endLine": 116,
+          "params": [
+            "content",
+            "references"
+          ]
+        },
+        {
+          "name": "tableCells",
+          "startLine": 118,
+          "endLine": 125,
+          "params": [
+            "line"
+          ]
+        },
+        {
+          "name": "isTableDivider",
+          "startLine": 127,
+          "endLine": 134,
+          "params": [
+            "line"
+          ]
+        },
+        {
+          "name": "isTableStart",
+          "startLine": 136,
+          "endLine": 143,
+          "params": [
+            "lines",
+            "index"
+          ]
+        },
+        {
+          "name": "isBlockStart",
+          "startLine": 145,
+          "endLine": 154,
+          "params": [
+            "lines",
+            "index"
+          ]
+        },
+        {
+          "name": "preparedContent",
+          "startLine": 156,
+          "endLine": 177,
+          "params": [
+            "content"
+          ]
+        },
+        {
+          "name": "RichResponse",
+          "startLine": 184,
+          "endLine": 408,
+          "params": [
+            "{\n  content,\n  density = 'comfortable',\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "RichResponse",
+          "line": 184,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "safeExternalUrl",
+          "callee": "value.trim",
+          "lineNumber": 18
+        },
+        {
+          "caller": "inlineContent",
+          "callee": "content.matchAll",
+          "lineNumber": 54
+        },
+        {
+          "caller": "inlineContent",
+          "callee": "nodes.push",
+          "lineNumber": 59
+        },
+        {
+          "caller": "inlineContent",
+          "callee": "content.slice",
+          "lineNumber": 59
+        },
+        {
+          "caller": "inlineContent",
+          "callee": "token.startsWith",
+          "lineNumber": 62
+        },
+        {
+          "caller": "inlineContent",
+          "callee": "nodes.push",
+          "lineNumber": 63
+        },
+        {
+          "caller": "inlineContent",
+          "callee": "token.slice",
+          "lineNumber": 68
+        },
+        {
+          "caller": "inlineContent",
+          "callee": "token.startsWith",
+          "lineNumber": 71
+        },
+        {
+          "caller": "inlineContent",
+          "callee": "nodes.push",
+          "lineNumber": 72
+        },
+        {
+          "caller": "inlineContent",
+          "callee": "token.slice",
+          "lineNumber": 74
+        },
+        {
+          "caller": "inlineContent",
+          "callee": "token.startsWith",
+          "lineNumber": 77
+        },
+        {
+          "caller": "inlineContent",
+          "callee": "nodes.push",
+          "lineNumber": 78
+        },
+        {
+          "caller": "inlineContent",
+          "callee": "token.slice",
+          "lineNumber": 79
+        },
+        {
+          "caller": "inlineContent",
+          "callee": "token.match",
+          "lineNumber": 82
+        },
+        {
+          "caller": "inlineContent",
+          "callee": "token.match",
+          "lineNumber": 83
+        },
+        {
+          "caller": "inlineContent",
+          "callee": "token.match",
+          "lineNumber": 84
+        },
+        {
+          "caller": "inlineContent",
+          "callee": "safeExternalUrl",
+          "lineNumber": 92
+        },
+        {
+          "caller": "inlineContent",
+          "callee": "references.get",
+          "lineNumber": 95
+        },
+        {
+          "caller": "inlineContent",
+          "callee": "referenceLink[2].toLowerCase",
+          "lineNumber": 95
+        },
+        {
+          "caller": "inlineContent",
+          "callee": "references.get",
+          "lineNumber": 98
+        },
+        {
+          "caller": "inlineContent",
+          "callee": "shortReference[1].toLowerCase",
+          "lineNumber": 98
+        },
+        {
+          "caller": "inlineContent",
+          "callee": "nodes.push",
+          "lineNumber": 101
+        },
+        {
+          "caller": "inlineContent",
+          "callee": "citationLink",
+          "lineNumber": 103
+        },
+        {
+          "caller": "inlineContent",
+          "callee": "nodes.push",
+          "lineNumber": 112
+        },
+        {
+          "caller": "inlineContent",
+          "callee": "content.slice",
+          "lineNumber": 112
+        },
+        {
+          "caller": "tableCells",
+          "callee": "line\n    .trim()\n    .replace(/^\\|/, '')\n    .replace(/\\|$/, '')\n    .split('|')\n    .map",
+          "lineNumber": 119
+        },
+        {
+          "caller": "tableCells",
+          "callee": "line\n    .trim()\n    .replace(/^\\|/, '')\n    .replace(/\\|$/, '')\n    .split",
+          "lineNumber": 119
+        },
+        {
+          "caller": "tableCells",
+          "callee": "line\n    .trim()\n    .replace(/^\\|/, '')\n    .replace",
+          "lineNumber": 119
+        },
+        {
+          "caller": "tableCells",
+          "callee": "line\n    .trim()\n    .replace",
+          "lineNumber": 119
+        },
+        {
+          "caller": "tableCells",
+          "callee": "line\n    .trim",
+          "lineNumber": 119
+        },
+        {
+          "caller": "tableCells",
+          "callee": "cell.trim",
+          "lineNumber": 124
+        },
+        {
+          "caller": "isTableDivider",
+          "callee": "tableCells",
+          "lineNumber": 128
+        },
+        {
+          "caller": "isTableDivider",
+          "callee": "cells.every",
+          "lineNumber": 132
+        },
+        {
+          "caller": "isTableDivider",
+          "callee": "/^:?-{3,}:?$/.test",
+          "lineNumber": 132
+        },
+        {
+          "caller": "isTableStart",
+          "callee": "lines[index].includes",
+          "lineNumber": 139
+        },
+        {
+          "caller": "isTableStart",
+          "callee": "isTableDivider",
+          "lineNumber": 140
+        },
+        {
+          "caller": "isTableStart",
+          "callee": "tableCells",
+          "lineNumber": 141
+        },
+        {
+          "caller": "isTableStart",
+          "callee": "tableCells",
+          "lineNumber": 141
+        },
+        {
+          "caller": "isBlockStart",
+          "callee": "/^ {0,3}```/.test",
+          "lineNumber": 149
+        },
+        {
+          "caller": "isBlockStart",
+          "callee": "/^ {0,3}#{1,3}\\s+/.test",
+          "lineNumber": 150
+        },
+        {
+          "caller": "isBlockStart",
+          "callee": "listItemPattern.test",
+          "lineNumber": 151
+        },
+        {
+          "caller": "isBlockStart",
+          "callee": "isTableStart",
+          "lineNumber": 152
+        },
+        {
+          "caller": "preparedContent",
+          "callee": "content.replace(/\\r\\n?/g, '\\n').split",
+          "lineNumber": 161
+        },
+        {
+          "caller": "preparedContent",
+          "callee": "content.replace",
+          "lineNumber": 161
+        },
+        {
+          "caller": "preparedContent",
+          "callee": "lines.map",
+          "lineNumber": 164
+        },
+        {
+          "caller": "preparedContent",
+          "callee": "line.match",
+          "lineNumber": 165
+        },
+        {
+          "caller": "preparedContent",
+          "callee": "safeExternalUrl",
+          "lineNumber": 166
+        },
+        {
+          "caller": "preparedContent",
+          "callee": "references.set",
+          "lineNumber": 169
+        },
+        {
+          "caller": "preparedContent",
+          "callee": "definition[1].toLowerCase",
+          "lineNumber": 169
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "preparedContent",
+          "lineNumber": 188
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "line.trim",
+          "lineNumber": 196
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "line.match",
+          "lineNumber": 201
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "/^ {0,3}```\\s*$/.test",
+          "lineNumber": 208
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "codeLines.push",
+          "lineNumber": 209
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "blocks.push",
+          "lineNumber": 217
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "codeLines.join",
+          "lineNumber": 223
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "isTableStart",
+          "lineNumber": 230
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "tableCells",
+          "lineNumber": 231
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "lines[index].trim",
+          "lineNumber": 237
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "lines[index].includes",
+          "lineNumber": 238
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "tableCells",
+          "lineNumber": 240
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "rows.push",
+          "lineNumber": 246
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "blocks.push",
+          "lineNumber": 250
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "headers.map",
+          "lineNumber": 258
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "inlineContent",
+          "lineNumber": 264
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "rows.map",
+          "lineNumber": 270
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "row.map",
+          "lineNumber": 272
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "inlineContent",
+          "lineNumber": 277
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "line.match",
+          "lineNumber": 290
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "inlineContent",
+          "lineNumber": 299
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "blocks.push",
+          "lineNumber": 301
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "line.match",
+          "lineNumber": 330
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "/^\\d/.test",
+          "lineNumber": 333
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "Number.parseInt",
+          "lineNumber": 335
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "lines[index].match",
+          "lineNumber": 338
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "/^\\d/.test",
+          "lineNumber": 340
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "items.push",
+          "lineNumber": 344
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "items.map",
+          "lineNumber": 351
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "inlineContent",
+          "lineNumber": 353
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "blocks.push",
+          "lineNumber": 357
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "line.trim",
+          "lineNumber": 379
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "lines[index].trim",
+          "lineNumber": 384
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "isBlockStart",
+          "lineNumber": 385
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "paragraphLines.push",
+          "lineNumber": 387
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "lines[index].trim",
+          "lineNumber": 387
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "blocks.push",
+          "lineNumber": 391
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "inlineContent",
+          "lineNumber": 393
+        },
+        {
+          "caller": "RichResponse",
+          "callee": "paragraphLines.join",
+          "lineNumber": 393
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 9,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/ui/focusRing.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 2,
+      "nonEmptyLines": 2,
+      "exports": [
+        {
+          "name": "focusRing",
+          "line": 1,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/ui/markdownToPlainText.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 43,
+      "nonEmptyLines": 33,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/ui/markdownToPlainText.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 56,
+      "nonEmptyLines": 49,
+      "functions": [
+        {
+          "name": "isTableDivider",
+          "startLine": 5,
+          "endLine": 14,
+          "params": [
+            "line"
+          ]
+        },
+        {
+          "name": "markdownToPlainText",
+          "startLine": 16,
+          "endLine": 56,
+          "params": [
+            "markdown"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "markdownToPlainText",
+          "line": 16,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "isTableDivider",
+          "callee": "line\n    .trim()\n    .replace(/^\\|/, '')\n    .replace(/\\|$/, '')\n    .split('|')\n    .map",
+          "lineNumber": 6
+        },
+        {
+          "caller": "isTableDivider",
+          "callee": "line\n    .trim()\n    .replace(/^\\|/, '')\n    .replace(/\\|$/, '')\n    .split",
+          "lineNumber": 6
+        },
+        {
+          "caller": "isTableDivider",
+          "callee": "line\n    .trim()\n    .replace(/^\\|/, '')\n    .replace",
+          "lineNumber": 6
+        },
+        {
+          "caller": "isTableDivider",
+          "callee": "line\n    .trim()\n    .replace",
+          "lineNumber": 6
+        },
+        {
+          "caller": "isTableDivider",
+          "callee": "line\n    .trim",
+          "lineNumber": 6
+        },
+        {
+          "caller": "isTableDivider",
+          "callee": "cell.trim",
+          "lineNumber": 11
+        },
+        {
+          "caller": "isTableDivider",
+          "callee": "cells.every",
+          "lineNumber": 13
+        },
+        {
+          "caller": "isTableDivider",
+          "callee": "tableDividerCellPattern.test",
+          "lineNumber": 13
+        },
+        {
+          "caller": "markdownToPlainText",
+          "callee": "markdown\n    .replace(/\\r\\n?/g, '\\n')\n    .split('\\n')\n    .filter",
+          "lineNumber": 18
+        },
+        {
+          "caller": "markdownToPlainText",
+          "callee": "markdown\n    .replace(/\\r\\n?/g, '\\n')\n    .split",
+          "lineNumber": 18
+        },
+        {
+          "caller": "markdownToPlainText",
+          "callee": "markdown\n    .replace",
+          "lineNumber": 18
+        },
+        {
+          "caller": "markdownToPlainText",
+          "callee": "codeFenceStartPattern.test",
+          "lineNumber": 22
+        },
+        {
+          "caller": "markdownToPlainText",
+          "callee": "codeFenceEndPattern.test",
+          "lineNumber": 28
+        },
+        {
+          "caller": "markdownToPlainText",
+          "callee": "linesWithoutCode\n    .filter((line) => !isTableDivider(line))\n    .map((line) =>\n      line\n        .replace(/^ {0,3}#{1,6}\\s+/, '')\n        .replace(/^\\s*(?:[-+*]|\\d+[.)])\\s+/, '')\n        .replace(/^\\s*\\[[^\\]\\n]+\\]:\\s*\\S+.*$/, ''),\n    )\n    .join('\\n')\n    .replace(/!?\\[([^\\]\\n]+)\\]\\([^)]+\\)/g, '$1')\n    .replace(/!?\\[([^\\]\\n]+)\\]\\[[^\\]\\n]+\\]/g, '$1')\n    .replace(/\\[([^\\]\\n]+)\\]/g, '$1')\n    .replace(/\\*\\*([^*\\n]+)\\*\\*/g, '$1')\n    .replace(/\\*([^*\\n]+)\\*/g, '$1')\n    .replace(/`([^`\\n]+)`/g, '$1')\n    .replace(/\\|/g, ' ')\n    .trim()\n    .replace",
+          "lineNumber": 38
+        },
+        {
+          "caller": "markdownToPlainText",
+          "callee": "linesWithoutCode\n    .filter((line) => !isTableDivider(line))\n    .map((line) =>\n      line\n        .replace(/^ {0,3}#{1,6}\\s+/, '')\n        .replace(/^\\s*(?:[-+*]|\\d+[.)])\\s+/, '')\n        .replace(/^\\s*\\[[^\\]\\n]+\\]:\\s*\\S+.*$/, ''),\n    )\n    .join('\\n')\n    .replace(/!?\\[([^\\]\\n]+)\\]\\([^)]+\\)/g, '$1')\n    .replace(/!?\\[([^\\]\\n]+)\\]\\[[^\\]\\n]+\\]/g, '$1')\n    .replace(/\\[([^\\]\\n]+)\\]/g, '$1')\n    .replace(/\\*\\*([^*\\n]+)\\*\\*/g, '$1')\n    .replace(/\\*([^*\\n]+)\\*/g, '$1')\n    .replace(/`([^`\\n]+)`/g, '$1')\n    .replace(/\\|/g, ' ')\n    .trim",
+          "lineNumber": 38
+        },
+        {
+          "caller": "markdownToPlainText",
+          "callee": "linesWithoutCode\n    .filter((line) => !isTableDivider(line))\n    .map((line) =>\n      line\n        .replace(/^ {0,3}#{1,6}\\s+/, '')\n        .replace(/^\\s*(?:[-+*]|\\d+[.)])\\s+/, '')\n        .replace(/^\\s*\\[[^\\]\\n]+\\]:\\s*\\S+.*$/, ''),\n    )\n    .join('\\n')\n    .replace(/!?\\[([^\\]\\n]+)\\]\\([^)]+\\)/g, '$1')\n    .replace(/!?\\[([^\\]\\n]+)\\]\\[[^\\]\\n]+\\]/g, '$1')\n    .replace(/\\[([^\\]\\n]+)\\]/g, '$1')\n    .replace(/\\*\\*([^*\\n]+)\\*\\*/g, '$1')\n    .replace(/\\*([^*\\n]+)\\*/g, '$1')\n    .replace(/`([^`\\n]+)`/g, '$1')\n    .replace",
+          "lineNumber": 38
+        },
+        {
+          "caller": "markdownToPlainText",
+          "callee": "linesWithoutCode\n    .filter((line) => !isTableDivider(line))\n    .map((line) =>\n      line\n        .replace(/^ {0,3}#{1,6}\\s+/, '')\n        .replace(/^\\s*(?:[-+*]|\\d+[.)])\\s+/, '')\n        .replace(/^\\s*\\[[^\\]\\n]+\\]:\\s*\\S+.*$/, ''),\n    )\n    .join('\\n')\n    .replace(/!?\\[([^\\]\\n]+)\\]\\([^)]+\\)/g, '$1')\n    .replace(/!?\\[([^\\]\\n]+)\\]\\[[^\\]\\n]+\\]/g, '$1')\n    .replace(/\\[([^\\]\\n]+)\\]/g, '$1')\n    .replace(/\\*\\*([^*\\n]+)\\*\\*/g, '$1')\n    .replace(/\\*([^*\\n]+)\\*/g, '$1')\n    .replace",
+          "lineNumber": 38
+        },
+        {
+          "caller": "markdownToPlainText",
+          "callee": "linesWithoutCode\n    .filter((line) => !isTableDivider(line))\n    .map((line) =>\n      line\n        .replace(/^ {0,3}#{1,6}\\s+/, '')\n        .replace(/^\\s*(?:[-+*]|\\d+[.)])\\s+/, '')\n        .replace(/^\\s*\\[[^\\]\\n]+\\]:\\s*\\S+.*$/, ''),\n    )\n    .join('\\n')\n    .replace(/!?\\[([^\\]\\n]+)\\]\\([^)]+\\)/g, '$1')\n    .replace(/!?\\[([^\\]\\n]+)\\]\\[[^\\]\\n]+\\]/g, '$1')\n    .replace(/\\[([^\\]\\n]+)\\]/g, '$1')\n    .replace(/\\*\\*([^*\\n]+)\\*\\*/g, '$1')\n    .replace",
+          "lineNumber": 38
+        },
+        {
+          "caller": "markdownToPlainText",
+          "callee": "linesWithoutCode\n    .filter((line) => !isTableDivider(line))\n    .map((line) =>\n      line\n        .replace(/^ {0,3}#{1,6}\\s+/, '')\n        .replace(/^\\s*(?:[-+*]|\\d+[.)])\\s+/, '')\n        .replace(/^\\s*\\[[^\\]\\n]+\\]:\\s*\\S+.*$/, ''),\n    )\n    .join('\\n')\n    .replace(/!?\\[([^\\]\\n]+)\\]\\([^)]+\\)/g, '$1')\n    .replace(/!?\\[([^\\]\\n]+)\\]\\[[^\\]\\n]+\\]/g, '$1')\n    .replace(/\\[([^\\]\\n]+)\\]/g, '$1')\n    .replace",
+          "lineNumber": 38
+        },
+        {
+          "caller": "markdownToPlainText",
+          "callee": "linesWithoutCode\n    .filter((line) => !isTableDivider(line))\n    .map((line) =>\n      line\n        .replace(/^ {0,3}#{1,6}\\s+/, '')\n        .replace(/^\\s*(?:[-+*]|\\d+[.)])\\s+/, '')\n        .replace(/^\\s*\\[[^\\]\\n]+\\]:\\s*\\S+.*$/, ''),\n    )\n    .join('\\n')\n    .replace(/!?\\[([^\\]\\n]+)\\]\\([^)]+\\)/g, '$1')\n    .replace(/!?\\[([^\\]\\n]+)\\]\\[[^\\]\\n]+\\]/g, '$1')\n    .replace",
+          "lineNumber": 38
+        },
+        {
+          "caller": "markdownToPlainText",
+          "callee": "linesWithoutCode\n    .filter((line) => !isTableDivider(line))\n    .map((line) =>\n      line\n        .replace(/^ {0,3}#{1,6}\\s+/, '')\n        .replace(/^\\s*(?:[-+*]|\\d+[.)])\\s+/, '')\n        .replace(/^\\s*\\[[^\\]\\n]+\\]:\\s*\\S+.*$/, ''),\n    )\n    .join('\\n')\n    .replace(/!?\\[([^\\]\\n]+)\\]\\([^)]+\\)/g, '$1')\n    .replace",
+          "lineNumber": 38
+        },
+        {
+          "caller": "markdownToPlainText",
+          "callee": "linesWithoutCode\n    .filter((line) => !isTableDivider(line))\n    .map((line) =>\n      line\n        .replace(/^ {0,3}#{1,6}\\s+/, '')\n        .replace(/^\\s*(?:[-+*]|\\d+[.)])\\s+/, '')\n        .replace(/^\\s*\\[[^\\]\\n]+\\]:\\s*\\S+.*$/, ''),\n    )\n    .join('\\n')\n    .replace",
+          "lineNumber": 38
+        },
+        {
+          "caller": "markdownToPlainText",
+          "callee": "linesWithoutCode\n    .filter((line) => !isTableDivider(line))\n    .map((line) =>\n      line\n        .replace(/^ {0,3}#{1,6}\\s+/, '')\n        .replace(/^\\s*(?:[-+*]|\\d+[.)])\\s+/, '')\n        .replace(/^\\s*\\[[^\\]\\n]+\\]:\\s*\\S+.*$/, ''),\n    )\n    .join",
+          "lineNumber": 38
+        },
+        {
+          "caller": "markdownToPlainText",
+          "callee": "linesWithoutCode\n    .filter((line) => !isTableDivider(line))\n    .map",
+          "lineNumber": 38
+        },
+        {
+          "caller": "markdownToPlainText",
+          "callee": "linesWithoutCode\n    .filter",
+          "lineNumber": 38
+        },
+        {
+          "caller": "markdownToPlainText",
+          "callee": "isTableDivider",
+          "lineNumber": 39
+        },
+        {
+          "caller": "markdownToPlainText",
+          "callee": "line\n        .replace(/^ {0,3}#{1,6}\\s+/, '')\n        .replace(/^\\s*(?:[-+*]|\\d+[.)])\\s+/, '')\n        .replace",
+          "lineNumber": 41
+        },
+        {
+          "caller": "markdownToPlainText",
+          "callee": "line\n        .replace(/^ {0,3}#{1,6}\\s+/, '')\n        .replace",
+          "lineNumber": 41
+        },
+        {
+          "caller": "markdownToPlainText",
+          "callee": "line\n        .replace",
+          "lineNumber": 41
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/ui/useFieldValidity.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 63,
+      "nonEmptyLines": 54,
+      "functions": [
+        {
+          "name": "useFieldValidity",
+          "startLine": 35,
+          "endLine": 63,
+          "params": [
+            "isInvalid",
+            "{ isSuppressed }"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "useFieldValidity",
+          "line": 35,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useFieldValidity",
+          "callee": "useState",
+          "lineNumber": 39
+        },
+        {
+          "caller": "useFieldValidity",
+          "callee": "Object.keys",
+          "lineNumber": 41
+        },
+        {
+          "caller": "markTouched",
+          "callee": "isSuppressed",
+          "lineNumber": 49
+        },
+        {
+          "caller": "markTouched",
+          "callee": "setTouched",
+          "lineNumber": 53
+        },
+        {
+          "caller": "revealAll",
+          "callee": "setTouched",
+          "lineNumber": 59
+        },
+        {
+          "caller": "revealAll",
+          "callee": "Object.fromEntries",
+          "lineNumber": 59
+        },
+        {
+          "caller": "revealAll",
+          "callee": "fields.map",
+          "lineNumber": 59
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/ui/useModalShell.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 161,
+      "nonEmptyLines": 137,
+      "functions": [
+        {
+          "name": "useModalShell",
+          "startLine": 58,
+          "endLine": 161,
+          "params": [
+            "{\n  onEscape,\n  initialFocus,\n  lockScroll = true,\n  stacked = false,\n  resetKey,\n  enabled = true,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "useModalShell",
+          "line": 58,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useModalShell",
+          "callee": "useRef",
+          "lineNumber": 66
+        },
+        {
+          "caller": "useModalShell",
+          "callee": "useRef",
+          "lineNumber": 67
+        },
+        {
+          "caller": "useModalShell",
+          "callee": "useRef",
+          "lineNumber": 68
+        },
+        {
+          "caller": "useModalShell",
+          "callee": "useRef",
+          "lineNumber": 69
+        },
+        {
+          "caller": "useModalShell",
+          "callee": "useEffect",
+          "lineNumber": 71
+        },
+        {
+          "caller": "useModalShell",
+          "callee": "useEffect",
+          "lineNumber": 75
+        },
+        {
+          "caller": "useModalShell",
+          "callee": "useEffect",
+          "lineNumber": 79
+        },
+        {
+          "caller": "useModalShell",
+          "callee": "(\n      initialFocusRef.current?.(containerRef.current) ?? containerRef.current\n    )?.focus",
+          "lineNumber": 96
+        },
+        {
+          "caller": "useModalShell",
+          "callee": "initialFocusRef.current",
+          "lineNumber": 97
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "event.stopImmediatePropagation",
+          "lineNumber": 106
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "event.preventDefault",
+          "lineNumber": 110
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "onEscapeRef.current",
+          "lineNumber": 111
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "Array.from",
+          "lineNumber": 117
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "container.querySelectorAll",
+          "lineNumber": 117
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "event.preventDefault",
+          "lineNumber": 121
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "container?.focus",
+          "lineNumber": 122
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "event.preventDefault",
+          "lineNumber": 134
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "last.focus",
+          "lineNumber": 135
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "event.preventDefault",
+          "lineNumber": 137
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "first.focus",
+          "lineNumber": 138
+        },
+        {
+          "caller": "useModalShell",
+          "callee": "document.addEventListener",
+          "lineNumber": 142
+        },
+        {
+          "caller": "useModalShell",
+          "callee": "document.removeEventListener",
+          "lineNumber": 146
+        },
+        {
+          "caller": "useModalShell",
+          "callee": "previouslyFocused.focus",
+          "lineNumber": 153
+        },
+        {
+          "caller": "useModalShell",
+          "callee": "useCallback",
+          "lineNumber": 158
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/utils/date/index.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 1,
+      "nonEmptyLines": 1,
+      "exports": [
+        {
+          "name": "formatUpdatedAt",
+          "line": 1,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/utils/routing/index.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 3,
+      "nonEmptyLines": 3,
+      "exports": [
+        {
+          "name": "navigate",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "navigateTo",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "resolveRoute",
+          "line": 2,
+          "isDefault": false
+        },
+        {
+          "name": "AppRoute",
+          "line": 3,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 4,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/workspace/ProjectCanvasRoute.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 248,
+      "nonEmptyLines": 231,
+      "functions": [
+        {
+          "name": "Logo",
+          "startLine": 69,
+          "endLine": 78,
+          "params": []
+        },
+        {
+          "name": "ProjectRouteState",
+          "startLine": 80,
+          "endLine": 150,
+          "params": [
+            "{\n  status,\n  onRetry,\n}"
+          ]
+        },
+        {
+          "name": "ProjectCanvasRoute",
+          "startLine": 152,
+          "endLine": 248,
+          "params": [
+            "{\n  projectId,\n  initialDocumentUploads,\n  onInitialDocumentUploadsStarted,\n  requestProject = getProject,\n  requestBubbleCreate,\n  requestBubbles,\n  requestBubblePlacement,\n  requestBubblePositionUpdate,\n  requestBubblePositionsUpdate,\n  requestBubbleDelete,\n  requestBubbleUpdate,\n  requestBubbleLinks,\n  requestBubbleLinkCreate,\n  requestBubbleLinkDelete,\n  requestViewportUpdate,\n  canvasMultiSelection = null,\n  viewportSaveDelayMs,\n  bubbleSaveDelayMs,\n  documentLibraryRequests,\n  documentPollIntervalMs,\n  requestDocument,\n  analyticsClient = analytics,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "ProjectCanvasRoute",
+          "line": 152,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "ProjectRouteState",
+          "callee": "navigate",
+          "lineNumber": 96
+        },
+        {
+          "caller": "ProjectRouteState",
+          "callee": "navigate",
+          "lineNumber": 143
+        },
+        {
+          "caller": "ProjectCanvasRoute",
+          "callee": "useState",
+          "lineNumber": 176
+        },
+        {
+          "caller": "ProjectCanvasRoute",
+          "callee": "useState",
+          "lineNumber": 177
+        },
+        {
+          "caller": "ProjectCanvasRoute",
+          "callee": "useRef",
+          "lineNumber": 178
+        },
+        {
+          "caller": "ProjectCanvasRoute",
+          "callee": "useEffect",
+          "lineNumber": 180
+        },
+        {
+          "caller": "ProjectCanvasRoute",
+          "callee": "requestProject(projectId, controller.signal)\n      .then((project) => {\n        if (controller.signal.aborted) {\n          return;\n        }\n\n        setLoadState({ status: 'ready', project });\n\n        if (openedProjectIdRef.current !== project.id) {\n          openedProjectIdRef.current = project.id;\n          trackAnalytics(analyticsClient, 'project_opened', { project_id: project.id });\n        }\n      })\n      .catch",
+          "lineNumber": 183
+        },
+        {
+          "caller": "ProjectCanvasRoute",
+          "callee": "requestProject(projectId, controller.signal)\n      .then",
+          "lineNumber": 183
+        },
+        {
+          "caller": "ProjectCanvasRoute",
+          "callee": "requestProject",
+          "lineNumber": 183
+        },
+        {
+          "caller": "ProjectCanvasRoute",
+          "callee": "setLoadState",
+          "lineNumber": 189
+        },
+        {
+          "caller": "ProjectCanvasRoute",
+          "callee": "trackAnalytics",
+          "lineNumber": 193
+        },
+        {
+          "caller": "ProjectCanvasRoute",
+          "callee": "setLoadState",
+          "lineNumber": 201
+        },
+        {
+          "caller": "ProjectCanvasRoute",
+          "callee": "controller.abort",
+          "lineNumber": 208
+        },
+        {
+          "caller": "ProjectCanvasRoute",
+          "callee": "setLoadState",
+          "lineNumber": 243
+        },
+        {
+          "caller": "ProjectCanvasRoute",
+          "callee": "setRequestKey",
+          "lineNumber": 244
+        }
+      ],
+      "metrics": {
+        "importCount": 9,
+        "exportCount": 1,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/workspace/ProjectWorkspace.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 1385,
+      "nonEmptyLines": 1308,
+      "functions": [
+        {
+          "name": "Logo",
+          "startLine": 201,
+          "endLine": 210,
+          "params": []
+        },
+        {
+          "name": "ProjectBar",
+          "startLine": 238,
+          "endLine": 276,
+          "params": [
+            "{\n  project,\n  descriptionStatus,\n}"
+          ]
+        },
+        {
+          "name": "ActionCard",
+          "startLine": 288,
+          "endLine": 329,
+          "params": [
+            "{\n  action,\n  description,\n  icon: Icon,\n  label,\n  meta,\n  onLaunch,\n  primary = false,\n}"
+          ]
+        },
+        {
+          "name": "EmptyProjectActions",
+          "startLine": 331,
+          "endLine": 380,
+          "params": [
+            "{\n  analyticsClient,\n  handlers,\n  projectId,\n}"
+          ]
+        },
+        {
+          "name": "EmptyCanvasContent",
+          "startLine": 382,
+          "endLine": 421,
+          "params": [
+            "{\n  analyticsClient,\n  emptyActionHandlers,\n  primaryActions,\n  projectId,\n}"
+          ]
+        },
+        {
+          "name": "InspectorEmptyState",
+          "startLine": 423,
+          "endLine": 440,
+          "params": []
+        },
+        {
+          "name": "WorkspacePanel",
+          "startLine": 442,
+          "endLine": 579,
+          "params": [
+            "{\n  activeView,\n  discussionCount,\n  discussionsContent,\n  inspectorSelection,\n  selectedBubble,\n  panelSlots,\n  project,\n  onProjectSaved,\n  onDescriptionStatusChange,\n  requestDescriptionUpdate,\n  descriptionSaveDelayMs,\n  analyticsClient,\n  requestBubbleUpdate,\n  requestBubbleDelete,\n  requestBubbleLinkCreate,\n  requestBubbleLinkDelete,\n  bubbleSaveDelayMs,\n  documentLibrary,\n  documentUploadInputRef,\n  requestDocument,\n  availableBubbles,\n  bubbleLinkLoadState,\n  onBubbleLinkCreated,\n  onBubbleLinkRemoved,\n  onRetryBubbleLinks,\n  onBubbleDeleted,\n  onBubbleUpdated,\n}"
+          ]
+        },
+        {
+          "name": "ProjectWorkspace",
+          "startLine": 581,
+          "endLine": 1385,
+          "params": [
+            "{\n  project,\n  initialDocumentUploads,\n  onInitialDocumentUploadsStarted,\n  requestBubbleCreate,\n  requestBubbles = getProjectBubbles,\n  requestBubblePlacement,\n  requestBubblePositionUpdate,\n  requestBubblePositionsUpdate,\n  requestBubbleDelete,\n  requestBubbleUpdate,\n  requestBubbleLinks = getBubbleLinks,\n  requestBubbleLinkCreate,\n  requestBubbleLinkDelete,\n  requestViewportUpdate,\n  canvasMultiSelection = null,\n  viewportSaveDelayMs,\n  bubbleSaveDelayMs,\n  documentLibraryRequests,\n  documentPollIntervalMs,\n  requestDocument,\n  discussionCount = 0,\n  panelSlots,\n  overlaySlots,\n  emptyActionHandlers,\n  discussionLifecycleRequests,\n  discussionPanelRequests,\n  extractionRequests,\n  onExtractDiscussionKnowledge,\n  onInspectDiscussionContext,\n  onDiscussionDraftSubmit,\n  inspectorSelection = null,\n  onInspectorSelectionInvalidated,\n  primaryActions,\n  requestDescriptionUpdate,\n  descriptionSaveDelayMs,\n  analyticsClient = analytics,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "ProjectWorkspace",
+          "line": 581,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "ProjectBar",
+          "callee": "navigate",
+          "lineNumber": 252
+        },
+        {
+          "caller": "launch",
+          "callee": "trackAnalytics",
+          "lineNumber": 341
+        },
+        {
+          "caller": "launch",
+          "callee": "handlers?.[action]",
+          "lineNumber": 345
+        },
+        {
+          "caller": "EmptyProjectActions",
+          "callee": "launch",
+          "lineNumber": 359
+        },
+        {
+          "caller": "EmptyProjectActions",
+          "callee": "launch",
+          "lineNumber": 368
+        },
+        {
+          "caller": "EmptyProjectActions",
+          "callee": "launch",
+          "lineNumber": 376
+        },
+        {
+          "caller": "WorkspacePanel",
+          "callee": "panelDefinitions.find",
+          "lineNumber": 499
+        },
+        {
+          "caller": "WorkspacePanel",
+          "callee": "panelSlots.inspector",
+          "lineNumber": 504
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useState",
+          "lineNumber": 619
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useState",
+          "lineNumber": 621
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useState",
+          "lineNumber": 622
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "getDefaultPanelView",
+          "lineNumber": 625
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useState",
+          "lineNumber": 628
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useState",
+          "lineNumber": 634
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useState",
+          "lineNumber": 636
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useState",
+          "lineNumber": 637
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useState",
+          "lineNumber": 641
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useState",
+          "lineNumber": 642
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useState",
+          "lineNumber": 650
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useState",
+          "lineNumber": 651
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useDiscussionVisibility",
+          "lineNumber": 652
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useDiscussionContextSelection",
+          "lineNumber": 653
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useDocumentLibrary",
+          "lineNumber": 660
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useRef",
+          "lineNumber": 669
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useProjectDiscussions",
+          "lineNumber": 670
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useRef",
+          "lineNumber": 677
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useRef",
+          "lineNumber": 678
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useProjectBubbles",
+          "lineNumber": 679
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useMemo",
+          "lineNumber": 690
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "createProjectSourceCatalog",
+          "lineNumber": 692
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "availableBubbles.find",
+          "lineNumber": 700
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useEffect",
+          "lineNumber": 710
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "window.setTimeout",
+          "lineNumber": 722
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "uploadInitialDocument",
+          "lineNumber": 729
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "onInitialDocumentUploadsStarted",
+          "lineNumber": 731
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "window.clearTimeout",
+          "lineNumber": 734
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useEffect",
+          "lineNumber": 742
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "onInspectorSelectionInvalidated",
+          "lineNumber": 744
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useEffect",
+          "lineNumber": 748
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "setDocumentUploadPickerProjectId",
+          "lineNumber": 758
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "documentUploadInputRef.current.click",
+          "lineNumber": 759
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useEffect",
+          "lineNumber": 767
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "requestBubbleLinks(currentProject.id, controller.signal)\n      .then((links) => {\n        if (controller.signal.aborted) {\n          return;\n        }\n\n        const currentLinks = links.filter(\n          (link) =>\n            !isBubbleRemoved(link.bubble_a_id) &&\n            !isBubbleRemoved(link.bubble_b_id),\n        );\n\n        setBubbleLinkLoadState({ status: 'ready', links: currentLinks });\n      })\n      .catch",
+          "lineNumber": 770
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "requestBubbleLinks(currentProject.id, controller.signal)\n      .then",
+          "lineNumber": 770
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "requestBubbleLinks",
+          "lineNumber": 770
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "links.filter",
+          "lineNumber": 776
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "isBubbleRemoved",
+          "lineNumber": 778
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "isBubbleRemoved",
+          "lineNumber": 779
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "setBubbleLinkLoadState",
+          "lineNumber": 782
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "setBubbleLinkLoadState",
+          "lineNumber": 792
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "controller.abort",
+          "lineNumber": 798
+        },
+        {
+          "caller": "handlePanelKeyDown",
+          "callee": "event.preventDefault",
+          "lineNumber": 823
+        },
+        {
+          "caller": "handlePanelKeyDown",
+          "callee": "selectPanel",
+          "lineNumber": 825
+        },
+        {
+          "caller": "handlePanelKeyDown",
+          "callee": "panelButtonRefs.current[nextIndex]?.focus",
+          "lineNumber": 826
+        },
+        {
+          "caller": "selectPanel",
+          "callee": "setActivatedDocumentLibraryProjectId",
+          "lineNumber": 831
+        },
+        {
+          "caller": "selectPanel",
+          "callee": "setDocumentUploadPickerProjectId",
+          "lineNumber": 833
+        },
+        {
+          "caller": "selectPanel",
+          "callee": "setActivePanel",
+          "lineNumber": 840
+        },
+        {
+          "caller": "selectPanel",
+          "callee": "trackAnalytics",
+          "lineNumber": 841
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useCallback",
+          "lineNumber": 847
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "setSelectedBubbleId",
+          "lineNumber": 849
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "trackAnalytics",
+          "lineNumber": 855
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "setActivePanel",
+          "lineNumber": 861
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "trackAnalytics",
+          "lineNumber": 862
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useCallback",
+          "lineNumber": 871
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "replaceBubble",
+          "lineNumber": 877
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useCallback",
+          "lineNumber": 881
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "addBubble",
+          "lineNumber": 888
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "replaceBubble",
+          "lineNumber": 890
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useCallback",
+          "lineNumber": 895
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "setKnowledgeExtractionTargetSelection",
+          "lineNumber": 901
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useCallback",
+          "lineNumber": 906
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "setBubbleLinkLoadState",
+          "lineNumber": 907
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "current.links.some",
+          "lineNumber": 909
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useCallback",
+          "lineNumber": 915
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "setBubbleLinkLoadState",
+          "lineNumber": 916
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "current.links.filter",
+          "lineNumber": 918
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useCallback",
+          "lineNumber": 922
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "setSelectedBubbleId",
+          "lineNumber": 923
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "removeBubble",
+          "lineNumber": 926
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "setBubbleLinkLoadState",
+          "lineNumber": 927
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "current.links.filter",
+          "lineNumber": 929
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useCallback",
+          "lineNumber": 936
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "setBubbleLinkLoadState",
+          "lineNumber": 937
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "setBubbleLinkRequestKey",
+          "lineNumber": 941
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useMemo",
+          "lineNumber": 944
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "Object.freeze",
+          "lineNumber": 946
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useCallback",
+          "lineNumber": 952
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "discussionContextSelection.prepare",
+          "lineNumber": 970
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "discussionVisibility.openDraft",
+          "lineNumber": 975
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useCallback",
+          "lineNumber": 984
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "openDraftWithContext",
+          "lineNumber": 985
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useCallback",
+          "lineNumber": 988
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "openDraftWithContext",
+          "lineNumber": 989
+        },
+        {
+          "caller": "internalUploadDocumentFromCanvas",
+          "callee": "setDocumentUploadPickerProjectId",
+          "lineNumber": 999
+        },
+        {
+          "caller": "internalUploadDocumentFromCanvas",
+          "callee": "selectPanel",
+          "lineNumber": 1000
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "setCreateBubbleDialogProjectId",
+          "lineNumber": 1007
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useMemo",
+          "lineNumber": 1009
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "knowledgeExtractionTargetSelection.onConfirm",
+          "lineNumber": 1038
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "overlaySlots.discussion",
+          "lineNumber": 1053
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useCallback",
+          "lineNumber": 1066
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "trackAnalytics",
+          "lineNumber": 1070
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "new Date().toISOString",
+          "lineNumber": 1073
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "discussionContextSelection.cancel",
+          "lineNumber": 1076
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "discussionVisibility.minimize",
+          "lineNumber": 1079
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useCallback",
+          "lineNumber": 1086
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "projectDiscussions.openDiscussion",
+          "lineNumber": 1088
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "discussionVisibility.openDiscussion",
+          "lineNumber": 1091
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useCallback",
+          "lineNumber": 1099
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "projectDiscussions.clearDeleteError",
+          "lineNumber": 1101
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "setDiscussionDeletionState",
+          "lineNumber": 1102
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useCallback",
+          "lineNumber": 1109
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "projectDiscussions.clearDeleteError",
+          "lineNumber": 1114
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "setDiscussionDeletionState",
+          "lineNumber": 1115
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "useCallback",
+          "lineNumber": 1117
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "projectDiscussions.deleteDiscussion",
+          "lineNumber": 1123
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "setDiscussionDeletionState",
+          "lineNumber": 1129
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "discussionVisibility.minimize",
+          "lineNumber": 1139
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "handleDiscussionOpen",
+          "lineNumber": 1158
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "setCreateBubbleDialogProjectId",
+          "lineNumber": 1220
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "panelDefinitions.map",
+          "lineNumber": 1244
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "selectPanel",
+          "lineNumber": 1263
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "handlePanelKeyDown",
+          "lineNumber": 1264
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "openDiscussionDeleteConfirmation",
+          "lineNumber": 1327
+        },
+        {
+          "caller": "ProjectWorkspace",
+          "callee": "confirmDiscussionDelete",
+          "lineNumber": 1377
+        }
+      ],
+      "metrics": {
+        "importCount": 15,
+        "exportCount": 1,
+        "functionCount": 8,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/workspace/currentProjectDescription.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 28,
+      "nonEmptyLines": 23,
+      "functions": [
+        {
+          "name": "useCurrentProjectDescription",
+          "startLine": 18,
+          "endLine": 28,
+          "params": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "CurrentProjectDescriptionContext",
+          "line": 15,
+          "isDefault": false
+        },
+        {
+          "name": "useCurrentProjectDescription",
+          "line": 18,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "useCurrentProjectDescription",
+          "callee": "useContext",
+          "lineNumber": 19
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    }
+  ]
+}

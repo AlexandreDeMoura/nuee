@@ -1,0 +1,1553 @@
+{
+  "nodes": [
+    {
+      "id": "file:frontend/src/knowledge-extraction/KnowledgeExtractionProposalReview.tsx",
+      "type": "file",
+      "name": "KnowledgeExtractionProposalReview.tsx",
+      "filePath": "frontend/src/knowledge-extraction/KnowledgeExtractionProposalReview.tsx",
+      "summary": "Review surface for a generated knowledge-extraction proposal: renders editable title, summary, and content fields with a markdown edit/preview toggle, and exposes the approve-as-new-bubble, update-existing-bubble, and reject resolutions.",
+      "tags": [
+        "component",
+        "knowledge-extraction",
+        "proposal-review",
+        "validation",
+        "accessibility"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Uses useId-generated field identifiers and a controller prop rather than local server state, keeping the extraction state machine as the single owner of the workflow."
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/KnowledgeExtractionProposalReview.tsx:KnowledgeExtractionProposalReview",
+      "type": "function",
+      "name": "KnowledgeExtractionProposalReview",
+      "filePath": "frontend/src/knowledge-extraction/KnowledgeExtractionProposalReview.tsx",
+      "lineRange": [
+        46,
+        467
+      ],
+      "summary": "React component rendering the proposal review step: trims proposal fields, tracks the per-extraction content edit/preview mode, validates required fields via useFieldValidity, and dispatches edits and resolutions through the extraction controller.",
+      "tags": [
+        "component",
+        "proposal-review",
+        "form",
+        "validation"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceActions.tsx",
+      "type": "file",
+      "name": "KnowledgeExtractionSourceActions.tsx",
+      "filePath": "frontend/src/knowledge-extraction/KnowledgeExtractionSourceActions.tsx",
+      "summary": "Sticky action bar for the source-selection step, showing the selected source count and detail level and driving proposal generation or cancellation from the extraction controller state.",
+      "tags": [
+        "component",
+        "knowledge-extraction",
+        "action-bar",
+        "accessibility"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/KnowledgeExtractionSourceActions.tsx:KnowledgeExtractionSourceActions",
+      "type": "function",
+      "name": "KnowledgeExtractionSourceActions",
+      "filePath": "frontend/src/knowledge-extraction/KnowledgeExtractionSourceActions.tsx",
+      "lineRange": [
+        11,
+        104
+      ],
+      "summary": "Derives selected-source counts and generate-button labels from the controller status (generating, reviewing, source_invalid) and triggers controller.generateProposal.",
+      "tags": [
+        "component",
+        "action-bar",
+        "state-derived"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx",
+      "type": "file",
+      "name": "KnowledgeExtractionSourceOption.tsx",
+      "filePath": "frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx",
+      "summary": "Selectable source rows for the extraction picker: one variant for discussion messages and one for frozen-context items, each showing selection state, disabled reasons, and per-source validation issues.",
+      "tags": [
+        "component",
+        "knowledge-extraction",
+        "source-selection",
+        "accessibility"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx:SelectionIndicator",
+      "type": "function",
+      "name": "SelectionIndicator",
+      "filePath": "frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx",
+      "lineRange": [
+        46,
+        59
+      ],
+      "summary": "Renders the checkbox-style tick indicating whether a source row is currently selected.",
+      "tags": [
+        "component",
+        "presentational",
+        "indicator"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx:SourceIssue",
+      "type": "function",
+      "name": "SourceIssue",
+      "filePath": "frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx",
+      "lineRange": [
+        61,
+        72
+      ],
+      "summary": "Renders the inline explanation for a source that failed server-side validation (missing, cross-project, cross-discussion, or inaccessible).",
+      "tags": [
+        "component",
+        "presentational",
+        "error-display"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx:MessageSource",
+      "type": "function",
+      "name": "MessageSource",
+      "filePath": "frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx",
+      "lineRange": [
+        74,
+        150
+      ],
+      "summary": "Selectable row for a discussion message source; reads selection membership from the controller and toggles it via controller.toggleMessage while surfacing thread position and validation issues.",
+      "tags": [
+        "component",
+        "source-selection",
+        "event-handler"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx:FrozenContextSource",
+      "type": "function",
+      "name": "FrozenContextSource",
+      "filePath": "frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx",
+      "lineRange": [
+        152,
+        211
+      ],
+      "summary": "Selectable row for a frozen-context item source, toggling membership via controller.toggleFrozenContextItem and rendering issue and disabled states.",
+      "tags": [
+        "component",
+        "source-selection",
+        "frozen-context"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx",
+      "type": "file",
+      "name": "KnowledgeExtractionSourceSelection.tsx",
+      "filePath": "frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx",
+      "summary": "Multi-step source-selection screen for knowledge extraction: lists eligible discussion messages and frozen-context items, offers detail-level presets and free-form instructions, and surfaces field-level and per-source validation errors.",
+      "tags": [
+        "component",
+        "knowledge-extraction",
+        "source-selection",
+        "validation",
+        "accessibility"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Imports KNOWLEDGE_EXTRACTION_INSTRUCTIONS_MAX_LENGTH from @nuee/shared-types so the client honours the same limit the server enforces rather than re-declaring it."
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx:sourceIssue",
+      "type": "function",
+      "name": "sourceIssue",
+      "filePath": "frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx",
+      "lineRange": [
+        59,
+        70
+      ],
+      "summary": "Looks up the validation issue matching a given source kind and identifier from the controller issue list.",
+      "tags": [
+        "utility",
+        "lookup",
+        "validation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx:StepHeading",
+      "type": "function",
+      "name": "StepHeading",
+      "filePath": "frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx",
+      "lineRange": [
+        72,
+        95
+      ],
+      "summary": "Renders a numbered step heading with an optional aside for the selection wizard layout.",
+      "tags": [
+        "component",
+        "presentational",
+        "layout"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx:FieldError",
+      "type": "function",
+      "name": "FieldError",
+      "filePath": "frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx",
+      "lineRange": [
+        97,
+        115
+      ],
+      "summary": "Renders an accessible, id-addressable field-level error message used by the instruction and source fieldsets.",
+      "tags": [
+        "component",
+        "error-display",
+        "accessibility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx:KnowledgeExtractionSourceSelection",
+      "type": "function",
+      "name": "KnowledgeExtractionSourceSelection",
+      "filePath": "frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx",
+      "lineRange": [
+        122,
+        548
+      ],
+      "summary": "Composes the full source-selection step: memoizes eligible messages and context items, wires select-all and per-source toggles, manages detail level and instructions, and focuses the first invalid source on validation failure.",
+      "tags": [
+        "component",
+        "source-selection",
+        "form",
+        "accessibility"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:frontend/src/knowledge-extraction/index.ts",
+      "type": "file",
+      "name": "index.ts",
+      "filePath": "frontend/src/knowledge-extraction/index.ts",
+      "summary": "Public barrel for the knowledge-extraction feature, re-exporting the discard dialog, proposal review, source actions and selection components, analytics helpers, source helpers, state machine, target-selection contract, and the useKnowledgeExtraction hook.",
+      "tags": [
+        "barrel",
+        "entry-point",
+        "knowledge-extraction",
+        "exports"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/src/knowledge-extraction/knowledgeExtractionAnalytics.ts",
+      "type": "file",
+      "name": "knowledgeExtractionAnalytics.ts",
+      "filePath": "frontend/src/knowledge-extraction/knowledgeExtractionAnalytics.ts",
+      "summary": "Builds the privacy-preserving analytics payload for an extraction generation attempt, bucketing instruction length and estimated request payload size into bands instead of emitting raw content.",
+      "tags": [
+        "analytics",
+        "utility",
+        "knowledge-extraction",
+        "telemetry"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Free-text instructions are reduced to length bands so no user content leaves the client in analytics events."
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/knowledgeExtractionAnalytics.ts:instructionsLengthBand",
+      "type": "function",
+      "name": "instructionsLengthBand",
+      "filePath": "frontend/src/knowledge-extraction/knowledgeExtractionAnalytics.ts",
+      "lineRange": [
+        26,
+        44
+      ],
+      "summary": "Maps the trimmed instruction string to a coarse length band so analytics never carries the instruction text itself.",
+      "tags": [
+        "analytics",
+        "utility",
+        "privacy"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/knowledgeExtractionAnalytics.ts:payloadSizeBand",
+      "type": "function",
+      "name": "payloadSizeBand",
+      "filePath": "frontend/src/knowledge-extraction/knowledgeExtractionAnalytics.ts",
+      "lineRange": [
+        46,
+        62
+      ],
+      "summary": "Maps an estimated UTF-8 payload byte length to a coarse size band for telemetry.",
+      "tags": [
+        "analytics",
+        "utility",
+        "bucketing"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/knowledgeExtractionAnalytics.ts:knowledgeExtractionGenerationMetrics",
+      "type": "function",
+      "name": "knowledgeExtractionGenerationMetrics",
+      "filePath": "frontend/src/knowledge-extraction/knowledgeExtractionAnalytics.ts",
+      "lineRange": [
+        68,
+        132
+      ],
+      "summary": "Computes the generation-attempt metrics — eligible and selected message and context counts, select-all usage, detail level, and instruction and payload bands — from the discussion and current selection.",
+      "tags": [
+        "analytics",
+        "metrics",
+        "knowledge-extraction"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts",
+      "type": "file",
+      "name": "knowledgeExtractionSources.ts",
+      "filePath": "frontend/src/knowledge-extraction/knowledgeExtractionSources.ts",
+      "summary": "Pure helpers that decide which discussion messages and frozen-context items are eligible extraction sources and produce stable ref keys for the selection UI.",
+      "tags": [
+        "utility",
+        "knowledge-extraction",
+        "source-selection",
+        "pure-functions"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts:knowledgeExtractionSourceRefKey",
+      "type": "function",
+      "name": "knowledgeExtractionSourceRefKey",
+      "filePath": "frontend/src/knowledge-extraction/knowledgeExtractionSources.ts",
+      "lineRange": [
+        9,
+        14
+      ],
+      "summary": "Builds a stable composite key from a source kind and identifier so the selection UI can register per-source DOM refs.",
+      "tags": [
+        "utility",
+        "key-generation",
+        "source-selection"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts:eligibleKnowledgeExtractionMessages",
+      "type": "function",
+      "name": "eligibleKnowledgeExtractionMessages",
+      "filePath": "frontend/src/knowledge-extraction/knowledgeExtractionSources.ts",
+      "lineRange": [
+        16,
+        24
+      ],
+      "summary": "Filters a discussion down to the messages with non-empty content that may be used as extraction sources.",
+      "tags": [
+        "utility",
+        "filtering",
+        "source-selection"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts:eligibleKnowledgeExtractionContextItems",
+      "type": "function",
+      "name": "eligibleKnowledgeExtractionContextItems",
+      "filePath": "frontend/src/knowledge-extraction/knowledgeExtractionSources.ts",
+      "lineRange": [
+        26,
+        37
+      ],
+      "summary": "Filters a discussion frozen context to v1 items with non-empty frozen content that may be used as extraction sources.",
+      "tags": [
+        "utility",
+        "filtering",
+        "frozen-context"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts:hasEligibleKnowledgeExtractionSource",
+      "type": "function",
+      "name": "hasEligibleKnowledgeExtractionSource",
+      "filePath": "frontend/src/knowledge-extraction/knowledgeExtractionSources.ts",
+      "lineRange": [
+        39,
+        47
+      ],
+      "summary": "Reports whether a discussion has at least one eligible message or frozen-context item, used to gate the extraction entry point.",
+      "tags": [
+        "utility",
+        "predicate",
+        "source-selection"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "type": "file",
+      "name": "knowledgeExtractionStateMachine.ts",
+      "filePath": "frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "summary": "Framework-independent reducer and type surface for the knowledge-extraction workflow, defining every status from idle through selecting, generating, reviewing, target selection, saving, and the resolved or discarded terminals, plus the typed failure kinds.",
+      "tags": [
+        "state-machine",
+        "reducer",
+        "knowledge-extraction",
+        "type-definition",
+        "pure-functions"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Discriminated unions model both events and failures, so each failure kind (generation, source_validation, resolution, target_changed) carries exactly the fields its recovery path needs."
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts:normalizeIdentifiers",
+      "type": "function",
+      "name": "normalizeIdentifiers",
+      "filePath": "frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "lineRange": [
+        205,
+        221
+      ],
+      "summary": "Trims, de-duplicates, and preserves ordering of a source identifier list so equivalent selections produce identical state.",
+      "tags": [
+        "utility",
+        "normalization",
+        "deduplication"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts:normalizeKnowledgeExtractionSelection",
+      "type": "function",
+      "name": "normalizeKnowledgeExtractionSelection",
+      "filePath": "frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "lineRange": [
+        223,
+        234
+      ],
+      "summary": "Normalizes a full selection (message ids, frozen-context ids, instructions, detail level) into its canonical form.",
+      "tags": [
+        "normalization",
+        "selection",
+        "pure-function"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts:knowledgeExtractionSelectionFingerprint",
+      "type": "function",
+      "name": "knowledgeExtractionSelectionFingerprint",
+      "filePath": "frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "lineRange": [
+        236,
+        248
+      ],
+      "summary": "Produces a stable JSON fingerprint of a normalized selection with sorted identifiers, used to detect whether the selection changed since the last generation attempt.",
+      "tags": [
+        "fingerprint",
+        "serialization",
+        "selection"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts:hasKnowledgeExtractionSources",
+      "type": "function",
+      "name": "hasKnowledgeExtractionSources",
+      "filePath": "frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "lineRange": [
+        250,
+        257
+      ],
+      "summary": "Predicate reporting whether a selection contains at least one message or frozen-context source.",
+      "tags": [
+        "predicate",
+        "validation",
+        "selection"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts:createKnowledgeExtractionState",
+      "type": "function",
+      "name": "createKnowledgeExtractionState",
+      "filePath": "frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "lineRange": [
+        259,
+        281
+      ],
+      "summary": "Builds the initial idle extraction state for a project and discussion binding, with an empty selection and its fingerprint.",
+      "tags": [
+        "factory",
+        "state-machine",
+        "initialization"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts:selectingState",
+      "type": "function",
+      "name": "selectingState",
+      "filePath": "frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "lineRange": [
+        283,
+        305
+      ],
+      "summary": "Transitions into the selecting status, seeding the selection with an optional initial message id.",
+      "tags": [
+        "state-machine",
+        "transition",
+        "selection"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts:terminalState",
+      "type": "function",
+      "name": "terminalState",
+      "filePath": "frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "lineRange": [
+        307,
+        317
+      ],
+      "summary": "Builds a terminal state (resolved or discarded) carrying the resolution response and clearing in-flight failure data.",
+      "tags": [
+        "state-machine",
+        "transition",
+        "terminal-state"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts:resolutionMatchesSavingState",
+      "type": "function",
+      "name": "resolutionMatchesSavingState",
+      "filePath": "frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "lineRange": [
+        319,
+        330
+      ],
+      "summary": "Guards a resolved event against the saving status that produced it, so a stale resolution cannot complete the wrong save path.",
+      "tags": [
+        "state-machine",
+        "guard",
+        "stale-response"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts:knowledgeExtractionReducer",
+      "type": "function",
+      "name": "knowledgeExtractionReducer",
+      "filePath": "frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "lineRange": [
+        332,
+        540
+      ],
+      "summary": "Pure reducer mapping every extraction event onto the next state, enforcing legal transitions, failure retention, retry counting, and selection-fingerprint invalidation.",
+      "tags": [
+        "reducer",
+        "state-machine",
+        "pure-function",
+        "validation"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:frontend/src/knowledge-extraction/knowledgeExtractionTargetSelection.ts",
+      "type": "file",
+      "name": "knowledgeExtractionTargetSelection.ts",
+      "filePath": "frontend/src/knowledge-extraction/knowledgeExtractionTargetSelection.ts",
+      "summary": "Declares the KnowledgeExtractionTargetSelectionRequest contract that knowledge-extraction hands to the workspace so the canvas can host bubble target selection without owning the extraction lifecycle.",
+      "tags": [
+        "type-definition",
+        "knowledge-extraction",
+        "boundary",
+        "target-selection"
+      ],
+      "complexity": "simple",
+      "languageNotes": "A typed callback port keeps target-selection ownership in knowledge-extraction while the workspace supplies only the selection surface."
+    },
+    {
+      "id": "file:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "type": "file",
+      "name": "useKnowledgeExtraction.ts",
+      "filePath": "frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "summary": "Hook that drives the whole extraction workflow: exposes the controller surface (start, selection mutators, generateProposal, editProposal, target selection, approve, reject, discard, reset) over the state machine, with abort handling, attempt idempotency keys, response normalization, and analytics.",
+      "tags": [
+        "hook",
+        "knowledge-extraction",
+        "state-machine",
+        "api-client",
+        "analytics"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Requests are injectable props defaulting to the API module, and refs hold the current callbacks and an operation counter so aborted or superseded attempts cannot apply stale results."
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts:normalizeSourceIssues",
+      "type": "function",
+      "name": "normalizeSourceIssues",
+      "filePath": "frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "lineRange": [
+        135,
+        176
+      ],
+      "summary": "Validates and de-duplicates the server source-issue list at runtime, keeping only entries with a known reason and a non-empty source id.",
+      "tags": [
+        "validation",
+        "normalization",
+        "runtime-check"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts:generationFailure",
+      "type": "function",
+      "name": "generationFailure",
+      "filePath": "frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "lineRange": [
+        178,
+        190
+      ],
+      "summary": "Maps a thrown error into the retryable generation failure shape consumed by the reducer.",
+      "tags": [
+        "error-handling",
+        "normalization",
+        "failure-mapping"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts:sourceValidationFailure",
+      "type": "function",
+      "name": "sourceValidationFailure",
+      "filePath": "frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "lineRange": [
+        192,
+        215
+      ],
+      "summary": "Maps a source-validation ApiError into the non-retryable failure shape carrying field errors and per-source issues.",
+      "tags": [
+        "error-handling",
+        "validation",
+        "failure-mapping"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts:normalizeFieldErrors",
+      "type": "function",
+      "name": "normalizeFieldErrors",
+      "filePath": "frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "lineRange": [
+        224,
+        244
+      ],
+      "summary": "Filters the server field-error map down to the known extraction request fields with non-empty messages.",
+      "tags": [
+        "validation",
+        "normalization",
+        "runtime-check"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts:resolutionFailure",
+      "type": "function",
+      "name": "resolutionFailure",
+      "filePath": "frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "lineRange": [
+        246,
+        258
+      ],
+      "summary": "Maps a thrown error into the retryable resolution failure shape used when approving or rejecting a proposal.",
+      "tags": [
+        "error-handling",
+        "failure-mapping"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts:targetChangedFailure",
+      "type": "function",
+      "name": "targetChangedFailure",
+      "filePath": "frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "lineRange": [
+        260,
+        282
+      ],
+      "summary": "Detects the KNOWLEDGE_EXTRACTION_TARGET_CHANGED conflict and converts it into the non-retryable target-changed failure.",
+      "tags": [
+        "error-handling",
+        "conflict-detection",
+        "failure-mapping"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts:selectionInput",
+      "type": "function",
+      "name": "selectionInput",
+      "filePath": "frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "lineRange": [
+        284,
+        297
+      ],
+      "summary": "Projects the current state selection into the create-extraction request payload.",
+      "tags": [
+        "utility",
+        "serialization",
+        "request-mapping"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts:isUnresolvedServerAttempt",
+      "type": "function",
+      "name": "isUnresolvedServerAttempt",
+      "filePath": "frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "lineRange": [
+        299,
+        308
+      ],
+      "summary": "Reports whether a state holds a server-side extraction that was never resolved, so it can be discarded on a best-effort basis.",
+      "tags": [
+        "predicate",
+        "cleanup",
+        "state-machine"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts:useKnowledgeExtraction",
+      "type": "function",
+      "name": "useKnowledgeExtraction",
+      "filePath": "frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "lineRange": [
+        310,
+        1006
+      ],
+      "summary": "Builds the KnowledgeExtractionController: holds the reducer state in refs, aborts superseded operations, generates attempt ids for idempotent retries, best-effort discards orphaned server attempts, and emits generation and resolution analytics.",
+      "tags": [
+        "hook",
+        "controller",
+        "async",
+        "abort-handling",
+        "idempotency"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:frontend/src/main.tsx",
+      "type": "file",
+      "name": "main.tsx",
+      "filePath": "frontend/src/main.tsx",
+      "summary": "Vite entry point that mounts the App component into the #root element inside React StrictMode and loads the global stylesheet.",
+      "tags": [
+        "entry-point",
+        "bootstrap",
+        "react",
+        "vite"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/src/projects/CreateProjectDialog.documents.test.tsx",
+      "type": "file",
+      "name": "CreateProjectDialog.documents.test.tsx",
+      "filePath": "frontend/src/projects/CreateProjectDialog.documents.test.tsx",
+      "summary": "Vitest suite asserting that CreateProjectDialog persists the project before handing optional selected files off to the document library, preserving the create-then-upload ordering.",
+      "tags": [
+        "test",
+        "integration-test",
+        "projects",
+        "documents"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/src/projects/CreateProjectDialog.tsx",
+      "type": "file",
+      "name": "CreateProjectDialog.tsx",
+      "filePath": "frontend/src/projects/CreateProjectDialog.tsx",
+      "summary": "Modal dialog for creating a project: validates title and description, loads the document upload policy to describe accepted file types, and hands any optionally selected files to the document library only after the project is created.",
+      "tags": [
+        "component",
+        "modal",
+        "projects",
+        "form",
+        "validation"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Request functions (createProject, getDocumentUploadPolicy) are injectable props so tests supply fakes instead of mocking the API module."
+    },
+    {
+      "id": "function:frontend/src/projects/CreateProjectDialog.tsx:CreateProjectDialog",
+      "type": "function",
+      "name": "CreateProjectDialog",
+      "filePath": "frontend/src/projects/CreateProjectDialog.tsx",
+      "lineRange": [
+        49,
+        464
+      ],
+      "summary": "Renders and coordinates the project-creation modal: field validity, abortable document-policy fetch, submit state, and the ordered create-then-hand-off-files flow with analytics.",
+      "tags": [
+        "component",
+        "modal",
+        "form",
+        "async",
+        "abort-handling"
+      ],
+      "complexity": "complex"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionProposalReview.tsx",
+      "target": "function:frontend/src/knowledge-extraction/KnowledgeExtractionProposalReview.tsx:KnowledgeExtractionProposalReview",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionProposalReview.tsx",
+      "target": "function:frontend/src/knowledge-extraction/KnowledgeExtractionProposalReview.tsx:KnowledgeExtractionProposalReview",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceActions.tsx",
+      "target": "function:frontend/src/knowledge-extraction/KnowledgeExtractionSourceActions.tsx:KnowledgeExtractionSourceActions",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceActions.tsx",
+      "target": "function:frontend/src/knowledge-extraction/KnowledgeExtractionSourceActions.tsx:KnowledgeExtractionSourceActions",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx",
+      "target": "function:frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx:SelectionIndicator",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx",
+      "target": "function:frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx:SourceIssue",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx",
+      "target": "function:frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx:MessageSource",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx",
+      "target": "function:frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx:MessageSource",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx",
+      "target": "function:frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx:FrozenContextSource",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx",
+      "target": "function:frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx:FrozenContextSource",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx",
+      "target": "function:frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx:sourceIssue",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx",
+      "target": "function:frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx:StepHeading",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx",
+      "target": "function:frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx:FieldError",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx",
+      "target": "function:frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx:KnowledgeExtractionSourceSelection",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx",
+      "target": "function:frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx:KnowledgeExtractionSourceSelection",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionAnalytics.ts",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionAnalytics.ts:instructionsLengthBand",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionAnalytics.ts",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionAnalytics.ts:payloadSizeBand",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionAnalytics.ts",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionAnalytics.ts:knowledgeExtractionGenerationMetrics",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionAnalytics.ts",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionAnalytics.ts:knowledgeExtractionGenerationMetrics",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts:knowledgeExtractionSourceRefKey",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts:knowledgeExtractionSourceRefKey",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts:eligibleKnowledgeExtractionMessages",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts:eligibleKnowledgeExtractionMessages",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts:eligibleKnowledgeExtractionContextItems",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts:eligibleKnowledgeExtractionContextItems",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts:hasEligibleKnowledgeExtractionSource",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts:hasEligibleKnowledgeExtractionSource",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts:normalizeIdentifiers",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts:normalizeKnowledgeExtractionSelection",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts:normalizeKnowledgeExtractionSelection",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts:knowledgeExtractionSelectionFingerprint",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts:knowledgeExtractionSelectionFingerprint",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts:hasKnowledgeExtractionSources",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts:hasKnowledgeExtractionSources",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts:createKnowledgeExtractionState",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts:createKnowledgeExtractionState",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts:selectingState",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts:terminalState",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts:resolutionMatchesSavingState",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts:knowledgeExtractionReducer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts:knowledgeExtractionReducer",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "target": "function:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts:normalizeSourceIssues",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "target": "function:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts:generationFailure",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "target": "function:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts:sourceValidationFailure",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "target": "function:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts:normalizeFieldErrors",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "target": "function:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts:resolutionFailure",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "target": "function:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts:targetChangedFailure",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "target": "function:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts:selectionInput",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "target": "function:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts:isUnresolvedServerAttempt",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "target": "function:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts:useKnowledgeExtraction",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "target": "function:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts:useKnowledgeExtraction",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/projects/CreateProjectDialog.tsx",
+      "target": "function:frontend/src/projects/CreateProjectDialog.tsx:CreateProjectDialog",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/projects/CreateProjectDialog.tsx",
+      "target": "function:frontend/src/projects/CreateProjectDialog.tsx:CreateProjectDialog",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionProposalReview.tsx",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionProposalReview.tsx",
+      "target": "file:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionProposalReview.tsx",
+      "target": "file:frontend/src/ui/RichResponse.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionProposalReview.tsx",
+      "target": "file:frontend/src/ui/focusRing.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionProposalReview.tsx",
+      "target": "file:frontend/src/ui/markdownToPlainText.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionProposalReview.tsx",
+      "target": "file:frontend/src/ui/useFieldValidity.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceActions.tsx",
+      "target": "file:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceActions.tsx",
+      "target": "file:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceActions.tsx",
+      "target": "file:frontend/src/ui/focusRing.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx",
+      "target": "file:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx",
+      "target": "file:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx",
+      "target": "file:frontend/src/ui/focusRing.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx",
+      "target": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceOption.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx",
+      "target": "file:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx",
+      "target": "file:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx",
+      "target": "file:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx",
+      "target": "file:frontend/src/ui/focusRing.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionAnalytics.ts",
+      "target": "file:frontend/src/analytics.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionAnalytics.ts",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionAnalytics.ts",
+      "target": "file:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionAnalytics.ts",
+      "target": "file:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts",
+      "target": "file:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/knowledgeExtractionTargetSelection.ts",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "target": "file:frontend/src/analytics.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "target": "file:frontend/src/knowledge-extraction/knowledgeExtractionAnalytics.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "target": "file:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/main.tsx",
+      "target": "file:frontend/src/App.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/main.tsx",
+      "target": "file:frontend/src/index.css",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/projects/CreateProjectDialog.documents.test.tsx",
+      "target": "file:frontend/src/documents/documentTestFixtures.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/projects/CreateProjectDialog.documents.test.tsx",
+      "target": "file:frontend/src/projects/CreateProjectDialog.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/projects/CreateProjectDialog.tsx",
+      "target": "file:frontend/src/analytics.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/projects/CreateProjectDialog.tsx",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/projects/CreateProjectDialog.tsx",
+      "target": "file:frontend/src/documents/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/projects/CreateProjectDialog.tsx",
+      "target": "file:frontend/src/ui/focusRing.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/projects/CreateProjectDialog.tsx",
+      "target": "file:frontend/src/ui/useFieldValidity.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/projects/CreateProjectDialog.tsx",
+      "target": "file:frontend/src/ui/useModalShell.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "function:frontend/src/knowledge-extraction/KnowledgeExtractionSourceActions.tsx:KnowledgeExtractionSourceActions",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts:hasKnowledgeExtractionSources",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx:KnowledgeExtractionSourceSelection",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts:eligibleKnowledgeExtractionMessages",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx:KnowledgeExtractionSourceSelection",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts:eligibleKnowledgeExtractionContextItems",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:frontend/src/knowledge-extraction/KnowledgeExtractionSourceSelection.tsx:KnowledgeExtractionSourceSelection",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts:knowledgeExtractionSourceRefKey",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:frontend/src/knowledge-extraction/knowledgeExtractionAnalytics.ts:knowledgeExtractionGenerationMetrics",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts:eligibleKnowledgeExtractionMessages",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:frontend/src/knowledge-extraction/knowledgeExtractionAnalytics.ts:knowledgeExtractionGenerationMetrics",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionSources.ts:eligibleKnowledgeExtractionContextItems",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts:useKnowledgeExtraction",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts:createKnowledgeExtractionState",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts:useKnowledgeExtraction",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts:knowledgeExtractionReducer",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts:useKnowledgeExtraction",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts:hasKnowledgeExtractionSources",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts:useKnowledgeExtraction",
+      "target": "function:frontend/src/knowledge-extraction/knowledgeExtractionAnalytics.ts:knowledgeExtractionGenerationMetrics",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/projects/CreateProjectDialog.tsx",
+      "target": "file:frontend/src/projects/CreateProjectDialog.documents.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

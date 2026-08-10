@@ -1,0 +1,4481 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 29,
+  "filesSkipped": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 29,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 29,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "backend/src/config/configuration.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 208,
+      "nonEmptyLines": 203,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/config/configuration.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 421,
+      "nonEmptyLines": 378,
+      "functions": [
+        {
+          "name": "optionalString",
+          "startLine": 86,
+          "endLine": 101,
+          "params": [
+            "source",
+            "key"
+          ]
+        },
+        {
+          "name": "enumValue",
+          "startLine": 103,
+          "endLine": 116,
+          "params": [
+            "source",
+            "key",
+            "allowed",
+            "fallback"
+          ]
+        },
+        {
+          "name": "integerValue",
+          "startLine": 118,
+          "endLine": 138,
+          "params": [
+            "source",
+            "key",
+            "fallback",
+            "minimum",
+            "maximum"
+          ]
+        },
+        {
+          "name": "booleanValue",
+          "startLine": 140,
+          "endLine": 160,
+          "params": [
+            "source",
+            "key",
+            "fallback"
+          ]
+        },
+        {
+          "name": "frontendOrigin",
+          "startLine": 162,
+          "endLine": 186,
+          "params": [
+            "source"
+          ]
+        },
+        {
+          "name": "createAppConfig",
+          "startLine": 188,
+          "endLine": 200,
+          "params": [
+            "source"
+          ]
+        },
+        {
+          "name": "createAiConfig",
+          "startLine": 202,
+          "endLine": 284,
+          "params": [
+            "source"
+          ]
+        },
+        {
+          "name": "createDocumentsConfig",
+          "startLine": 286,
+          "endLine": 404,
+          "params": [
+            "source"
+          ]
+        },
+        {
+          "name": "validateEnvironment",
+          "startLine": 406,
+          "endLine": 413,
+          "params": [
+            "source"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "createAppConfig",
+          "line": 188,
+          "isDefault": false
+        },
+        {
+          "name": "createAiConfig",
+          "line": 202,
+          "isDefault": false
+        },
+        {
+          "name": "createDocumentsConfig",
+          "line": 286,
+          "isDefault": false
+        },
+        {
+          "name": "validateEnvironment",
+          "line": 406,
+          "isDefault": false
+        },
+        {
+          "name": "appConfig",
+          "line": 415,
+          "isDefault": false
+        },
+        {
+          "name": "aiConfig",
+          "line": 417,
+          "isDefault": false
+        },
+        {
+          "name": "documentsConfig",
+          "line": 419,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "optionalString",
+          "callee": "value.trim",
+          "lineNumber": 96
+        },
+        {
+          "caller": "optionalString",
+          "callee": "value.trim",
+          "lineNumber": 100
+        },
+        {
+          "caller": "enumValue",
+          "callee": "optionalString",
+          "lineNumber": 109
+        },
+        {
+          "caller": "enumValue",
+          "callee": "allowed.includes",
+          "lineNumber": 111
+        },
+        {
+          "caller": "enumValue",
+          "callee": "allowed.join",
+          "lineNumber": 112
+        },
+        {
+          "caller": "integerValue",
+          "callee": "Number",
+          "lineNumber": 129
+        },
+        {
+          "caller": "integerValue",
+          "callee": "Number.isInteger",
+          "lineNumber": 131
+        },
+        {
+          "caller": "frontendOrigin",
+          "callee": "optionalString",
+          "lineNumber": 164
+        },
+        {
+          "caller": "createAppConfig",
+          "callee": "enumValue",
+          "lineNumber": 190
+        },
+        {
+          "caller": "createAppConfig",
+          "callee": "integerValue",
+          "lineNumber": 196
+        },
+        {
+          "caller": "createAppConfig",
+          "callee": "frontendOrigin",
+          "lineNumber": 197
+        },
+        {
+          "caller": "createAppConfig",
+          "callee": "optionalString",
+          "lineNumber": 198
+        },
+        {
+          "caller": "createAiConfig",
+          "callee": "enumValue",
+          "lineNumber": 203
+        },
+        {
+          "caller": "createAiConfig",
+          "callee": "enumValue",
+          "lineNumber": 209
+        },
+        {
+          "caller": "createAiConfig",
+          "callee": "optionalString",
+          "lineNumber": 215
+        },
+        {
+          "caller": "createAiConfig",
+          "callee": "optionalString",
+          "lineNumber": 223
+        },
+        {
+          "caller": "createAiConfig",
+          "callee": "booleanValue",
+          "lineNumber": 225
+        },
+        {
+          "caller": "createAiConfig",
+          "callee": "integerValue",
+          "lineNumber": 230
+        },
+        {
+          "caller": "createAiConfig",
+          "callee": "integerValue",
+          "lineNumber": 237
+        },
+        {
+          "caller": "createAiConfig",
+          "callee": "integerValue",
+          "lineNumber": 244
+        },
+        {
+          "caller": "createAiConfig",
+          "callee": "integerValue",
+          "lineNumber": 251
+        },
+        {
+          "caller": "createAiConfig",
+          "callee": "integerValue",
+          "lineNumber": 258
+        },
+        {
+          "caller": "createAiConfig",
+          "callee": "integerValue",
+          "lineNumber": 265
+        },
+        {
+          "caller": "createDocumentsConfig",
+          "callee": "integerValue",
+          "lineNumber": 289
+        },
+        {
+          "caller": "createDocumentsConfig",
+          "callee": "integerValue",
+          "lineNumber": 296
+        },
+        {
+          "caller": "createDocumentsConfig",
+          "callee": "integerValue",
+          "lineNumber": 303
+        },
+        {
+          "caller": "createDocumentsConfig",
+          "callee": "integerValue",
+          "lineNumber": 317
+        },
+        {
+          "caller": "createDocumentsConfig",
+          "callee": "integerValue",
+          "lineNumber": 324
+        },
+        {
+          "caller": "createDocumentsConfig",
+          "callee": "integerValue",
+          "lineNumber": 331
+        },
+        {
+          "caller": "createDocumentsConfig",
+          "callee": "optionalString",
+          "lineNumber": 352
+        },
+        {
+          "caller": "createDocumentsConfig",
+          "callee": "SUPPORTED_DOCUMENT_FORMATS.map",
+          "lineNumber": 353
+        },
+        {
+          "caller": "createDocumentsConfig",
+          "callee": "integerValue",
+          "lineNumber": 362
+        },
+        {
+          "caller": "createDocumentsConfig",
+          "callee": "integerValue",
+          "lineNumber": 369
+        },
+        {
+          "caller": "createDocumentsConfig",
+          "callee": "integerValue",
+          "lineNumber": 378
+        },
+        {
+          "caller": "createDocumentsConfig",
+          "callee": "integerValue",
+          "lineNumber": 385
+        },
+        {
+          "caller": "createDocumentsConfig",
+          "callee": "optionalString",
+          "lineNumber": 393
+        },
+        {
+          "caller": "createDocumentsConfig",
+          "callee": "integerValue",
+          "lineNumber": 395
+        },
+        {
+          "caller": "validateEnvironment",
+          "callee": "createAppConfig",
+          "lineNumber": 409
+        },
+        {
+          "caller": "validateEnvironment",
+          "callee": "createAiConfig",
+          "lineNumber": 410
+        },
+        {
+          "caller": "validateEnvironment",
+          "callee": "createDocumentsConfig",
+          "lineNumber": 411
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 7,
+        "functionCount": 9,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/documents/clamav-document-malware.scanner.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 163,
+      "nonEmptyLines": 143,
+      "functions": [
+        {
+          "name": "classifyClamAvResponse",
+          "startLine": 16,
+          "endLine": 30,
+          "params": [
+            "response"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "ClamAvDocumentMalwareScanner",
+          "startLine": 33,
+          "endLine": 163,
+          "methods": [
+            "constructor",
+            "scan",
+            "writeInstream",
+            "finishFromResponse"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "classifyClamAvResponse",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "ClamAvDocumentMalwareScanner",
+          "line": 32,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "classifyClamAvResponse",
+          "callee": "response.replace(/\\0.*$/su, '').trim",
+          "lineNumber": 19
+        },
+        {
+          "caller": "classifyClamAvResponse",
+          "callee": "response.replace",
+          "lineNumber": 19
+        },
+        {
+          "caller": "classifyClamAvResponse",
+          "callee": "normalized.endsWith",
+          "lineNumber": 21
+        },
+        {
+          "caller": "classifyClamAvResponse",
+          "callee": "normalized.endsWith",
+          "lineNumber": 25
+        },
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 35
+        },
+        {
+          "caller": "scan",
+          "callee": "Promise.reject",
+          "lineNumber": 47
+        },
+        {
+          "caller": "scan",
+          "callee": "createConnection",
+          "lineNumber": 53
+        },
+        {
+          "caller": "finish",
+          "callee": "signal.removeEventListener",
+          "lineNumber": 71
+        },
+        {
+          "caller": "finish",
+          "callee": "socket.destroy",
+          "lineNumber": 72
+        },
+        {
+          "caller": "finish",
+          "callee": "reject",
+          "lineNumber": 75
+        },
+        {
+          "caller": "finish",
+          "callee": "resolve",
+          "lineNumber": 77
+        },
+        {
+          "caller": "finish",
+          "callee": "reject",
+          "lineNumber": 79
+        },
+        {
+          "caller": "abort",
+          "callee": "finish",
+          "lineNumber": 84
+        },
+        {
+          "caller": "scan",
+          "callee": "signal.addEventListener",
+          "lineNumber": 87
+        },
+        {
+          "caller": "scan",
+          "callee": "socket.setTimeout",
+          "lineNumber": 88
+        },
+        {
+          "caller": "scan",
+          "callee": "socket.once",
+          "lineNumber": 89
+        },
+        {
+          "caller": "scan",
+          "callee": "finish",
+          "lineNumber": 90
+        },
+        {
+          "caller": "scan",
+          "callee": "socket.once",
+          "lineNumber": 92
+        },
+        {
+          "caller": "scan",
+          "callee": "finish",
+          "lineNumber": 93
+        },
+        {
+          "caller": "scan",
+          "callee": "socket.on",
+          "lineNumber": 95
+        },
+        {
+          "caller": "scan",
+          "callee": "finish",
+          "lineNumber": 99
+        },
+        {
+          "caller": "scan",
+          "callee": "responseChunks.push",
+          "lineNumber": 103
+        },
+        {
+          "caller": "scan",
+          "callee": "Buffer.from",
+          "lineNumber": 103
+        },
+        {
+          "caller": "scan",
+          "callee": "chunk.includes",
+          "lineNumber": 105
+        },
+        {
+          "caller": "scan",
+          "callee": "this.finishFromResponse",
+          "lineNumber": 106
+        },
+        {
+          "caller": "scan",
+          "callee": "socket.once",
+          "lineNumber": 109
+        },
+        {
+          "caller": "scan",
+          "callee": "this.finishFromResponse",
+          "lineNumber": 110
+        },
+        {
+          "caller": "scan",
+          "callee": "socket.once",
+          "lineNumber": 112
+        },
+        {
+          "caller": "scan",
+          "callee": "this.writeInstream",
+          "lineNumber": 114
+        },
+        {
+          "caller": "scan",
+          "callee": "finish",
+          "lineNumber": 116
+        },
+        {
+          "caller": "writeInstream",
+          "callee": "socket.write",
+          "lineNumber": 123
+        },
+        {
+          "caller": "writeInstream",
+          "callee": "bytes.subarray",
+          "lineNumber": 130
+        },
+        {
+          "caller": "writeInstream",
+          "callee": "Math.min",
+          "lineNumber": 132
+        },
+        {
+          "caller": "writeInstream",
+          "callee": "Buffer.allocUnsafe",
+          "lineNumber": 134
+        },
+        {
+          "caller": "writeInstream",
+          "callee": "header.writeUInt32BE",
+          "lineNumber": 135
+        },
+        {
+          "caller": "writeInstream",
+          "callee": "socket.write",
+          "lineNumber": 136
+        },
+        {
+          "caller": "writeInstream",
+          "callee": "socket.write",
+          "lineNumber": 137
+        },
+        {
+          "caller": "writeInstream",
+          "callee": "socket.end",
+          "lineNumber": 140
+        },
+        {
+          "caller": "finishFromResponse",
+          "callee": "finish",
+          "lineNumber": 151
+        },
+        {
+          "caller": "finishFromResponse",
+          "callee": "classifyClamAvResponse",
+          "lineNumber": 153
+        },
+        {
+          "caller": "finishFromResponse",
+          "callee": "Buffer.concat(chunks).toString",
+          "lineNumber": 153
+        },
+        {
+          "caller": "finishFromResponse",
+          "callee": "Buffer.concat",
+          "lineNumber": 153
+        },
+        {
+          "caller": "finishFromResponse",
+          "callee": "finish",
+          "lineNumber": 156
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/documents/deterministic-document-malware.scanner.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 34,
+      "nonEmptyLines": 31,
+      "classes": [
+        {
+          "name": "DeterministicDocumentMalwareScanner",
+          "startLine": 19,
+          "endLine": 34,
+          "methods": [
+            "scan"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "DeterministicDocumentMalwareScanner",
+          "line": 18,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "scan",
+          "callee": "Promise.reject",
+          "lineNumber": 25
+        },
+        {
+          "caller": "scan",
+          "callee": "Promise.resolve",
+          "lineNumber": 30
+        },
+        {
+          "caller": "scan",
+          "callee": "Buffer.from(bytes).includes",
+          "lineNumber": 31
+        },
+        {
+          "caller": "scan",
+          "callee": "Buffer.from",
+          "lineNumber": 31
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/documents/document-malware.scanner.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 35,
+      "nonEmptyLines": 31,
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/documents/document-processing.coordinator.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 364,
+      "nonEmptyLines": 317,
+      "classes": [
+        {
+          "name": "FakeDocumentFileStorage",
+          "startLine": 24,
+          "endLine": 51,
+          "methods": [
+            "store",
+            "read",
+            "remove"
+          ],
+          "properties": [
+            "files",
+            "lastRead",
+            "failReads"
+          ]
+        },
+        {
+          "name": "FakeDocumentMalwareScanner",
+          "startLine": 53,
+          "endLine": 92,
+          "methods": [
+            "scan"
+          ],
+          "properties": [
+            "results",
+            "calls",
+            "active",
+            "maximumActive",
+            "delayMs"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "read",
+          "callee": "Promise.reject",
+          "lineNumber": 35
+        },
+        {
+          "caller": "read",
+          "callee": "this.files.get",
+          "lineNumber": 38
+        },
+        {
+          "caller": "read",
+          "callee": "Promise.reject",
+          "lineNumber": 41
+        },
+        {
+          "caller": "read",
+          "callee": "Buffer.from",
+          "lineNumber": 44
+        },
+        {
+          "caller": "read",
+          "callee": "Promise.resolve",
+          "lineNumber": 45
+        },
+        {
+          "caller": "scan",
+          "callee": "Math.max",
+          "lineNumber": 66
+        },
+        {
+          "caller": "scan",
+          "callee": "setTimeout",
+          "lineNumber": 71
+        },
+        {
+          "caller": "abort",
+          "callee": "clearTimeout",
+          "lineNumber": 73
+        },
+        {
+          "caller": "abort",
+          "callee": "reject",
+          "lineNumber": 74
+        },
+        {
+          "caller": "scan",
+          "callee": "signal.addEventListener",
+          "lineNumber": 76
+        },
+        {
+          "caller": "scan",
+          "callee": "Math.min",
+          "lineNumber": 81
+        },
+        {
+          "caller": "createDocument",
+          "callee": "projects.list",
+          "lineNumber": 157
+        },
+        {
+          "caller": "createDocument",
+          "callee": "projects.create",
+          "lineNumber": 158
+        },
+        {
+          "caller": "createDocument",
+          "callee": "repository.getProjectUsage",
+          "lineNumber": 164
+        },
+        {
+          "caller": "createDocument",
+          "callee": "Buffer.from",
+          "lineNumber": 166
+        },
+        {
+          "caller": "createDocument",
+          "callee": "storage.files.set",
+          "lineNumber": 167
+        },
+        {
+          "caller": "createDocument",
+          "callee": "repository.create",
+          "lineNumber": 169
+        },
+        {
+          "caller": "createDocument",
+          "callee": "createHash('sha256').update(bytes).digest",
+          "lineNumber": 178
+        },
+        {
+          "caller": "createDocument",
+          "callee": "createHash('sha256').update",
+          "lineNumber": 178
+        },
+        {
+          "caller": "createDocument",
+          "callee": "createHash",
+          "lineNumber": 178
+        },
+        {
+          "caller": "createDocument",
+          "callee": "createHash('sha256')\n        .update(`request-${id}`)\n        .digest",
+          "lineNumber": 180
+        },
+        {
+          "caller": "createDocument",
+          "callee": "createHash('sha256')\n        .update",
+          "lineNumber": 180
+        },
+        {
+          "caller": "createDocument",
+          "callee": "createHash",
+          "lineNumber": 180
+        },
+        {
+          "caller": "createDocument",
+          "callee": "new Date().toISOString",
+          "lineNumber": 183
+        },
+        {
+          "caller": "createDocument",
+          "callee": "new Date().toISOString",
+          "lineNumber": 184
+        }
+      ],
+      "metrics": {
+        "importCount": 10,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "backend/src/documents/document-processing.coordinator.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 381,
+      "nonEmptyLines": 335,
+      "classes": [
+        {
+          "name": "UnsafeDocumentError",
+          "startLine": 42,
+          "endLine": 42,
+          "methods": [],
+          "properties": []
+        },
+        {
+          "name": "DocumentProcessingCoordinator",
+          "startLine": 45,
+          "endLine": 381,
+          "methods": [
+            "constructor",
+            "onModuleInit",
+            "onModuleDestroy",
+            "schedule",
+            "drain",
+            "runUntilIdle",
+            "runWorker",
+            "processClaimedDocument",
+            "executeClaimedDocument",
+            "recordFailure",
+            "recordProcessingTelemetry",
+            "extractorFor",
+            "verifyStoredSource",
+            "throwIfAborted",
+            "classifyFailure"
+          ],
+          "properties": [
+            "workerIdentity",
+            "activeControllers",
+            "drainPromise",
+            "drainRequested",
+            "drainScheduled",
+            "shuttingDown",
+            "recoveryTimer"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DocumentProcessingCoordinator",
+          "line": 44,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 57
+        },
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 59
+        },
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 61
+        },
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 66
+        },
+        {
+          "caller": "onModuleInit",
+          "callee": "this.schedule",
+          "lineNumber": 72
+        },
+        {
+          "caller": "onModuleInit",
+          "callee": "setInterval",
+          "lineNumber": 73
+        },
+        {
+          "caller": "onModuleInit",
+          "callee": "this.schedule",
+          "lineNumber": 74
+        },
+        {
+          "caller": "onModuleInit",
+          "callee": "Math.min",
+          "lineNumber": 75
+        },
+        {
+          "caller": "onModuleInit",
+          "callee": "this.recoveryTimer.unref",
+          "lineNumber": 77
+        },
+        {
+          "caller": "onModuleDestroy",
+          "callee": "clearInterval",
+          "lineNumber": 84
+        },
+        {
+          "caller": "onModuleDestroy",
+          "callee": "controller.abort",
+          "lineNumber": 89
+        },
+        {
+          "caller": "schedule",
+          "callee": "queueMicrotask",
+          "lineNumber": 107
+        },
+        {
+          "caller": "schedule",
+          "callee": "this.drain",
+          "lineNumber": 109
+        },
+        {
+          "caller": "drain",
+          "callee": "this.runUntilIdle",
+          "lineNumber": 119
+        },
+        {
+          "caller": "drain",
+          "callee": "this.schedule",
+          "lineNumber": 128
+        },
+        {
+          "caller": "runUntilIdle",
+          "callee": "Promise.all",
+          "lineNumber": 137
+        },
+        {
+          "caller": "runUntilIdle",
+          "callee": "Array.from",
+          "lineNumber": 138
+        },
+        {
+          "caller": "runUntilIdle",
+          "callee": "this.runWorker",
+          "lineNumber": 140
+        },
+        {
+          "caller": "runWorker",
+          "callee": "randomUUID",
+          "lineNumber": 149
+        },
+        {
+          "caller": "runWorker",
+          "callee": "this.documents.findProcessingCandidates",
+          "lineNumber": 150
+        },
+        {
+          "caller": "runWorker",
+          "callee": "now.toISOString",
+          "lineNumber": 151
+        },
+        {
+          "caller": "runWorker",
+          "callee": "this.documents.claimProcessingLease",
+          "lineNumber": 159
+        },
+        {
+          "caller": "runWorker",
+          "callee": "now.toISOString",
+          "lineNumber": 164
+        },
+        {
+          "caller": "runWorker",
+          "callee": "new Date(\n          now.getTime() + this.config.processingLeaseMs,\n        ).toISOString",
+          "lineNumber": 165
+        },
+        {
+          "caller": "runWorker",
+          "callee": "now.getTime",
+          "lineNumber": 166
+        },
+        {
+          "caller": "runWorker",
+          "callee": "this.processClaimedDocument",
+          "lineNumber": 174
+        },
+        {
+          "caller": "processClaimedDocument",
+          "callee": "Date.now",
+          "lineNumber": 182
+        },
+        {
+          "caller": "processClaimedDocument",
+          "callee": "reject",
+          "lineNumber": 187
+        },
+        {
+          "caller": "processClaimedDocument",
+          "callee": "controller.signal.addEventListener",
+          "lineNumber": 193
+        },
+        {
+          "caller": "processClaimedDocument",
+          "callee": "setTimeout",
+          "lineNumber": 197
+        },
+        {
+          "caller": "processClaimedDocument",
+          "callee": "controller.abort",
+          "lineNumber": 198
+        },
+        {
+          "caller": "processClaimedDocument",
+          "callee": "timeout.unref",
+          "lineNumber": 200
+        },
+        {
+          "caller": "processClaimedDocument",
+          "callee": "this.activeControllers.add",
+          "lineNumber": 201
+        },
+        {
+          "caller": "processClaimedDocument",
+          "callee": "this.executeClaimedDocument",
+          "lineNumber": 202
+        },
+        {
+          "caller": "processClaimedDocument",
+          "callee": "Promise.race",
+          "lineNumber": 209
+        },
+        {
+          "caller": "processClaimedDocument",
+          "callee": "this.recordProcessingTelemetry",
+          "lineNumber": 210
+        },
+        {
+          "caller": "processClaimedDocument",
+          "callee": "this.classifyFailure",
+          "lineNumber": 217
+        },
+        {
+          "caller": "processClaimedDocument",
+          "callee": "this.recordFailure",
+          "lineNumber": 218
+        },
+        {
+          "caller": "processClaimedDocument",
+          "callee": "this.recordProcessingTelemetry",
+          "lineNumber": 219
+        },
+        {
+          "caller": "processClaimedDocument",
+          "callee": "clearTimeout",
+          "lineNumber": 226
+        },
+        {
+          "caller": "processClaimedDocument",
+          "callee": "controller.signal.removeEventListener",
+          "lineNumber": 227
+        },
+        {
+          "caller": "processClaimedDocument",
+          "callee": "this.activeControllers.delete",
+          "lineNumber": 228
+        },
+        {
+          "caller": "executeClaimedDocument",
+          "callee": "this.fileStorage.read",
+          "lineNumber": 240
+        },
+        {
+          "caller": "executeClaimedDocument",
+          "callee": "this.throwIfAborted",
+          "lineNumber": 241
+        },
+        {
+          "caller": "executeClaimedDocument",
+          "callee": "this.verifyStoredSource",
+          "lineNumber": 242
+        },
+        {
+          "caller": "executeClaimedDocument",
+          "callee": "this.malwareScanner.scan",
+          "lineNumber": 244
+        },
+        {
+          "caller": "executeClaimedDocument",
+          "callee": "this.extractorFor(document.format).extract",
+          "lineNumber": 250
+        },
+        {
+          "caller": "executeClaimedDocument",
+          "callee": "this.extractorFor",
+          "lineNumber": 250
+        },
+        {
+          "caller": "executeClaimedDocument",
+          "callee": "this.throwIfAborted",
+          "lineNumber": 258
+        },
+        {
+          "caller": "executeClaimedDocument",
+          "callee": "this.documents.completeProcessing",
+          "lineNumber": 260
+        },
+        {
+          "caller": "executeClaimedDocument",
+          "callee": "new Date().toISOString",
+          "lineNumber": 267
+        },
+        {
+          "caller": "executeClaimedDocument",
+          "callee": "sourceBytes?.fill",
+          "lineNumber": 270
+        },
+        {
+          "caller": "recordFailure",
+          "callee": "new Date().toISOString",
+          "lineNumber": 279
+        },
+        {
+          "caller": "recordFailure",
+          "callee": "this.documents.releaseProcessingLease",
+          "lineNumber": 292
+        },
+        {
+          "caller": "recordFailure",
+          "callee": "this.documents.failProcessing",
+          "lineNumber": 299
+        },
+        {
+          "caller": "recordProcessingTelemetry",
+          "callee": "this.telemetry.record",
+          "lineNumber": 314
+        },
+        {
+          "caller": "recordProcessingTelemetry",
+          "callee": "documentCorrelationId",
+          "lineNumber": 318
+        },
+        {
+          "caller": "recordProcessingTelemetry",
+          "callee": "documentSizeBand",
+          "lineNumber": 320
+        },
+        {
+          "caller": "recordProcessingTelemetry",
+          "callee": "Math.max",
+          "lineNumber": 321
+        },
+        {
+          "caller": "recordProcessingTelemetry",
+          "callee": "Date.now",
+          "lineNumber": 321
+        },
+        {
+          "caller": "recordProcessingTelemetry",
+          "callee": "Math.max",
+          "lineNumber": 322
+        },
+        {
+          "caller": "verifyStoredSource",
+          "callee": "createHash('sha256').update(bytes).digest",
+          "lineNumber": 340
+        },
+        {
+          "caller": "verifyStoredSource",
+          "callee": "createHash('sha256').update",
+          "lineNumber": 340
+        },
+        {
+          "caller": "verifyStoredSource",
+          "callee": "createHash",
+          "lineNumber": 340
+        }
+      ],
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "backend/src/documents/document-text.normalizer.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 71,
+      "nonEmptyLines": 64,
+      "callGraph": [
+        {
+          "caller": "expectNormalizationError",
+          "callee": "normalizer.normalize",
+          "lineNumber": 21
+        },
+        {
+          "caller": "expectNormalizationError",
+          "callee": "expect(error).toBeInstanceOf",
+          "lineNumber": 24
+        },
+        {
+          "caller": "expectNormalizationError",
+          "callee": "expect",
+          "lineNumber": 24
+        },
+        {
+          "caller": "expectNormalizationError",
+          "callee": "expect(error).toHaveProperty",
+          "lineNumber": 25
+        },
+        {
+          "caller": "expectNormalizationError",
+          "callee": "expect",
+          "lineNumber": 25
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/documents/document-text.normalizer.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 46,
+      "nonEmptyLines": 39,
+      "classes": [
+        {
+          "name": "DocumentTextNormalizer",
+          "startLine": 5,
+          "endLine": 46,
+          "methods": [
+            "normalize",
+            "hasDisallowedCharacter"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "DocumentTextNormalizer",
+          "line": 4,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "normalize",
+          "callee": "this.hasDisallowedCharacter",
+          "lineNumber": 7
+        },
+        {
+          "caller": "normalize",
+          "callee": "value\n      .replace(/^\\ufeff/u, '')\n      .normalize('NFC')\n      .replace(/\\r\\n?|\\u0085|\\u2028|\\u2029|\\f/gu, '\\n')\n      .split('\\n')\n      .map((line) => line.trimEnd())\n      .join('\\n')\n      .replace(/\\n{3,}/gu, '\\n\\n')\n      .trim",
+          "lineNumber": 11
+        },
+        {
+          "caller": "normalize",
+          "callee": "value\n      .replace(/^\\ufeff/u, '')\n      .normalize('NFC')\n      .replace(/\\r\\n?|\\u0085|\\u2028|\\u2029|\\f/gu, '\\n')\n      .split('\\n')\n      .map((line) => line.trimEnd())\n      .join('\\n')\n      .replace",
+          "lineNumber": 11
+        },
+        {
+          "caller": "normalize",
+          "callee": "value\n      .replace(/^\\ufeff/u, '')\n      .normalize('NFC')\n      .replace(/\\r\\n?|\\u0085|\\u2028|\\u2029|\\f/gu, '\\n')\n      .split('\\n')\n      .map((line) => line.trimEnd())\n      .join",
+          "lineNumber": 11
+        },
+        {
+          "caller": "normalize",
+          "callee": "value\n      .replace(/^\\ufeff/u, '')\n      .normalize('NFC')\n      .replace(/\\r\\n?|\\u0085|\\u2028|\\u2029|\\f/gu, '\\n')\n      .split('\\n')\n      .map",
+          "lineNumber": 11
+        },
+        {
+          "caller": "normalize",
+          "callee": "value\n      .replace(/^\\ufeff/u, '')\n      .normalize('NFC')\n      .replace(/\\r\\n?|\\u0085|\\u2028|\\u2029|\\f/gu, '\\n')\n      .split",
+          "lineNumber": 11
+        },
+        {
+          "caller": "normalize",
+          "callee": "value\n      .replace(/^\\ufeff/u, '')\n      .normalize('NFC')\n      .replace",
+          "lineNumber": 11
+        },
+        {
+          "caller": "normalize",
+          "callee": "value\n      .replace(/^\\ufeff/u, '')\n      .normalize",
+          "lineNumber": 11
+        },
+        {
+          "caller": "normalize",
+          "callee": "value\n      .replace",
+          "lineNumber": 11
+        },
+        {
+          "caller": "normalize",
+          "callee": "line.trimEnd",
+          "lineNumber": 16
+        },
+        {
+          "caller": "normalize",
+          "callee": "Buffer.byteLength",
+          "lineNumber": 25
+        },
+        {
+          "caller": "hasDisallowedCharacter",
+          "callee": "[...value].some",
+          "lineNumber": 33
+        },
+        {
+          "caller": "hasDisallowedCharacter",
+          "callee": "character.codePointAt",
+          "lineNumber": 34
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/documents/document-upload.interceptor.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 162,
+      "nonEmptyLines": 147,
+      "functions": [
+        {
+          "name": "describeMultipartFailure",
+          "startLine": 156,
+          "endLine": 162,
+          "params": [
+            "message"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "DocumentUploadInterceptor",
+          "startLine": 95,
+          "endLine": 154,
+          "methods": [
+            "constructor",
+            "intercept"
+          ],
+          "properties": [
+            "delegate"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DocumentUploadInterceptor",
+          "line": 94,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 99
+        },
+        {
+          "caller": "constructor",
+          "callee": "FileInterceptor",
+          "lineNumber": 102
+        },
+        {
+          "caller": "intercept",
+          "callee": "this.delegate.intercept",
+          "lineNumber": 124
+        },
+        {
+          "caller": "intercept",
+          "callee": "describeMultipartFailure",
+          "lineNumber": 139
+        },
+        {
+          "caller": "describeMultipartFailure",
+          "callee": "message.split",
+          "lineNumber": 157
+        },
+        {
+          "caller": "describeMultipartFailure",
+          "callee": "MULTIPART_FAILURES.get",
+          "lineNumber": 160
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/documents/document-upload.validator.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 243,
+      "nonEmptyLines": 223,
+      "classes": [
+        {
+          "name": "FakePdfUploadInspector",
+          "startLine": 11,
+          "endLine": 25,
+          "methods": [
+            "inspect"
+          ],
+          "properties": [
+            "inspections",
+            "result",
+            "error"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "inspect",
+          "callee": "this.inspections.push",
+          "lineNumber": 17
+        },
+        {
+          "caller": "inspect",
+          "callee": "Promise.reject",
+          "lineNumber": 20
+        },
+        {
+          "caller": "inspect",
+          "callee": "Promise.resolve",
+          "lineNumber": 23
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/documents/document-upload.validator.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 308,
+      "nonEmptyLines": 264,
+      "classes": [
+        {
+          "name": "DocumentUploadValidator",
+          "startLine": 22,
+          "endLine": 308,
+          "methods": [
+            "constructor",
+            "validate",
+            "normalizeFilename",
+            "deriveTitle",
+            "formatPolicy",
+            "validateMimeType",
+            "copyBytes",
+            "validateUtf8Text",
+            "hasDisallowedTextControl",
+            "validatePdf",
+            "truncateFilename",
+            "invalidFilename"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "DocumentUploadValidator",
+          "line": 21,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 24
+        },
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 26
+        },
+        {
+          "caller": "validate",
+          "callee": "this.normalizeFilename",
+          "lineNumber": 31
+        },
+        {
+          "caller": "validate",
+          "callee": "this.formatPolicy",
+          "lineNumber": 32
+        },
+        {
+          "caller": "validate",
+          "callee": "this.validateMimeType",
+          "lineNumber": 33
+        },
+        {
+          "caller": "validate",
+          "callee": "this.copyBytes",
+          "lineNumber": 37
+        },
+        {
+          "caller": "validate",
+          "callee": "this.validatePdf",
+          "lineNumber": 54
+        },
+        {
+          "caller": "validate",
+          "callee": "this.validateUtf8Text",
+          "lineNumber": 56
+        },
+        {
+          "caller": "validate",
+          "callee": "createHash('sha256').update(bytes).digest",
+          "lineNumber": 59
+        },
+        {
+          "caller": "validate",
+          "callee": "createHash('sha256').update",
+          "lineNumber": 59
+        },
+        {
+          "caller": "validate",
+          "callee": "createHash",
+          "lineNumber": 59
+        },
+        {
+          "caller": "validate",
+          "callee": "this.deriveTitle",
+          "lineNumber": 60
+        },
+        {
+          "caller": "validate",
+          "callee": "createHash('sha256')\n      .update(\n        JSON.stringify({\n          version: 1,\n          original_filename: originalFilename,\n          title,\n          format: formatPolicy.category,\n          mime_type: mimeType,\n          size_bytes: bytes.byteLength,\n          source_hash: sourceHash,\n        }),\n      )\n      .digest",
+          "lineNumber": 61
+        },
+        {
+          "caller": "validate",
+          "callee": "createHash('sha256')\n      .update",
+          "lineNumber": 61
+        },
+        {
+          "caller": "validate",
+          "callee": "createHash",
+          "lineNumber": 61
+        },
+        {
+          "caller": "validate",
+          "callee": "JSON.stringify",
+          "lineNumber": 63
+        },
+        {
+          "caller": "normalizeFilename",
+          "callee": "this.invalidFilename",
+          "lineNumber": 89
+        },
+        {
+          "caller": "normalizeFilename",
+          "callee": "value.split(/[\\\\/]/u).at",
+          "lineNumber": 92
+        },
+        {
+          "caller": "normalizeFilename",
+          "callee": "value.split",
+          "lineNumber": 92
+        },
+        {
+          "caller": "normalizeFilename",
+          "callee": "withoutDevicePath\n      .normalize('NFC')\n      .replace(DISALLOWED_FILENAME_CHARACTERS, '')\n      .replace(/\\s+/gu, ' ')\n      .trim",
+          "lineNumber": 93
+        },
+        {
+          "caller": "normalizeFilename",
+          "callee": "withoutDevicePath\n      .normalize('NFC')\n      .replace(DISALLOWED_FILENAME_CHARACTERS, '')\n      .replace",
+          "lineNumber": 93
+        },
+        {
+          "caller": "normalizeFilename",
+          "callee": "withoutDevicePath\n      .normalize('NFC')\n      .replace",
+          "lineNumber": 93
+        },
+        {
+          "caller": "normalizeFilename",
+          "callee": "withoutDevicePath\n      .normalize",
+          "lineNumber": 93
+        },
+        {
+          "caller": "normalizeFilename",
+          "callee": "this.invalidFilename",
+          "lineNumber": 100
+        },
+        {
+          "caller": "normalizeFilename",
+          "callee": "this.truncateFilename",
+          "lineNumber": 103
+        },
+        {
+          "caller": "deriveTitle",
+          "callee": "extname",
+          "lineNumber": 107
+        },
+        {
+          "caller": "deriveTitle",
+          "callee": "filename\n      .slice(0, filename.length - extension.length)\n      .replace(/[_-]+/gu, ' ')\n      .replace(/\\s+/gu, ' ')\n      .trim",
+          "lineNumber": 108
+        },
+        {
+          "caller": "deriveTitle",
+          "callee": "filename\n      .slice(0, filename.length - extension.length)\n      .replace(/[_-]+/gu, ' ')\n      .replace",
+          "lineNumber": 108
+        },
+        {
+          "caller": "deriveTitle",
+          "callee": "filename\n      .slice(0, filename.length - extension.length)\n      .replace",
+          "lineNumber": 108
+        },
+        {
+          "caller": "deriveTitle",
+          "callee": "filename\n      .slice",
+          "lineNumber": 108
+        },
+        {
+          "caller": "deriveTitle",
+          "callee": "this.invalidFilename",
+          "lineNumber": 115
+        },
+        {
+          "caller": "deriveTitle",
+          "callee": "[...title].slice(0, MAX_FILENAME_LENGTH).join",
+          "lineNumber": 120
+        },
+        {
+          "caller": "deriveTitle",
+          "callee": "[...title].slice",
+          "lineNumber": 120
+        },
+        {
+          "caller": "formatPolicy",
+          "callee": "extname(filename).toLowerCase",
+          "lineNumber": 124
+        },
+        {
+          "caller": "formatPolicy",
+          "callee": "extname",
+          "lineNumber": 124
+        },
+        {
+          "caller": "formatPolicy",
+          "callee": "this.config.supported_formats.find",
+          "lineNumber": 125
+        },
+        {
+          "caller": "formatPolicy",
+          "callee": "candidate.extensions.includes",
+          "lineNumber": 126
+        },
+        {
+          "caller": "formatPolicy",
+          "callee": "this.config.supported_formats\n          .flatMap((candidate) => candidate.extensions)\n          .join",
+          "lineNumber": 132
+        },
+        {
+          "caller": "formatPolicy",
+          "callee": "this.config.supported_formats\n          .flatMap",
+          "lineNumber": 132
+        },
+        {
+          "caller": "validateMimeType",
+          "callee": "value.trim",
+          "lineNumber": 145
+        },
+        {
+          "caller": "validateMimeType",
+          "callee": "value.split(';', 1)[0]?.trim().toLowerCase",
+          "lineNumber": 152
+        },
+        {
+          "caller": "validateMimeType",
+          "callee": "value.split(';', 1)[0]?.trim",
+          "lineNumber": 152
+        },
+        {
+          "caller": "validateMimeType",
+          "callee": "value.split",
+          "lineNumber": 152
+        },
+        {
+          "caller": "validateMimeType",
+          "callee": "/^[a-z0-9!#$&^_.+-]+\\/[a-z0-9!#$&^_.+-]+$/u.test",
+          "lineNumber": 154
+        },
+        {
+          "caller": "validateMimeType",
+          "callee": "formatPolicy.mime_types.includes",
+          "lineNumber": 161
+        },
+        {
+          "caller": "copyBytes",
+          "callee": "Buffer.isBuffer",
+          "lineNumber": 172
+        },
+        {
+          "caller": "copyBytes",
+          "callee": "Buffer.from",
+          "lineNumber": 179
+        },
+        {
+          "caller": "validateUtf8Text",
+          "callee": "new TextDecoder('utf-8', { fatal: true }).decode",
+          "lineNumber": 186
+        },
+        {
+          "caller": "validateUtf8Text",
+          "callee": "this.hasDisallowedTextControl",
+          "lineNumber": 194
+        },
+        {
+          "caller": "hasDisallowedTextControl",
+          "callee": "[...value].some",
+          "lineNumber": 203
+        },
+        {
+          "caller": "hasDisallowedTextControl",
+          "callee": "character.codePointAt",
+          "lineNumber": 204
+        },
+        {
+          "caller": "validatePdf",
+          "callee": "bytes.indexOf",
+          "lineNumber": 217
+        },
+        {
+          "caller": "validatePdf",
+          "callee": "/^%PDF-\\d\\.\\d/u.test",
+          "lineNumber": 222
+        },
+        {
+          "caller": "validatePdf",
+          "callee": "bytes.subarray(signatureOffset, signatureOffset + 8).toString",
+          "lineNumber": 223
+        },
+        {
+          "caller": "validatePdf",
+          "callee": "bytes.subarray",
+          "lineNumber": 223
+        },
+        {
+          "caller": "validatePdf",
+          "callee": "this.pdfInspector.inspect",
+          "lineNumber": 233
+        },
+        {
+          "caller": "validatePdf",
+          "callee": "Number.isSafeInteger",
+          "lineNumber": 236
+        },
+        {
+          "caller": "truncateFilename",
+          "callee": "extname",
+          "lineNumber": 291
+        },
+        {
+          "caller": "truncateFilename",
+          "callee": "filename.slice",
+          "lineNumber": 293
+        },
+        {
+          "caller": "truncateFilename",
+          "callee": "extensionCharacters.slice",
+          "lineNumber": 294
+        },
+        {
+          "caller": "truncateFilename",
+          "callee": "[...stem].slice",
+          "lineNumber": 295
+        },
+        {
+          "caller": "truncateFilename",
+          "callee": "[...retainedStem, ...retainedExtension].join",
+          "lineNumber": 300
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/documents/document.telemetry.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 84,
+      "nonEmptyLines": 78,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/documents/document.telemetry.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 143,
+      "nonEmptyLines": 132,
+      "functions": [
+        {
+          "name": "documentSizeBand",
+          "startLine": 88,
+          "endLine": 93,
+          "params": [
+            "sizeBytes"
+          ]
+        },
+        {
+          "name": "documentCorrelationId",
+          "startLine": 95,
+          "endLine": 98,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "assertPrivacySafeDocumentLog",
+          "startLine": 101,
+          "endLine": 133,
+          "params": [
+            "event"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "DocumentTelemetry",
+          "startLine": 136,
+          "endLine": 143,
+          "methods": [
+            "record"
+          ],
+          "properties": [
+            "logger"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "documentSizeBand",
+          "line": 88,
+          "isDefault": false
+        },
+        {
+          "name": "documentCorrelationId",
+          "line": 95,
+          "isDefault": false
+        },
+        {
+          "name": "assertPrivacySafeDocumentLog",
+          "line": 101,
+          "isDefault": false
+        },
+        {
+          "name": "DocumentTelemetry",
+          "line": 135,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "documentCorrelationId",
+          "callee": "createHash('sha256').update(input).digest('hex').slice",
+          "lineNumber": 97
+        },
+        {
+          "caller": "documentCorrelationId",
+          "callee": "createHash('sha256').update(input).digest",
+          "lineNumber": 97
+        },
+        {
+          "caller": "documentCorrelationId",
+          "callee": "createHash('sha256').update",
+          "lineNumber": 97
+        },
+        {
+          "caller": "documentCorrelationId",
+          "callee": "createHash",
+          "lineNumber": 97
+        },
+        {
+          "caller": "assertPrivacySafeDocumentLog",
+          "callee": "Array.isArray",
+          "lineNumber": 102
+        },
+        {
+          "caller": "assertPrivacySafeDocumentLog",
+          "callee": "Object.keys(event).sort",
+          "lineNumber": 111
+        },
+        {
+          "caller": "assertPrivacySafeDocumentLog",
+          "callee": "Object.keys",
+          "lineNumber": 111
+        },
+        {
+          "caller": "assertPrivacySafeDocumentLog",
+          "callee": "[...allowedKeys[name as keyof typeof allowedKeys]].sort",
+          "lineNumber": 112
+        },
+        {
+          "caller": "assertPrivacySafeDocumentLog",
+          "callee": "actual.some",
+          "lineNumber": 115
+        },
+        {
+          "caller": "assertPrivacySafeDocumentLog",
+          "callee": "Object.values",
+          "lineNumber": 122
+        },
+        {
+          "caller": "assertPrivacySafeDocumentLog",
+          "callee": "Number.isFinite",
+          "lineNumber": 126
+        },
+        {
+          "caller": "record",
+          "callee": "assertPrivacySafeDocumentLog",
+          "lineNumber": 140
+        },
+        {
+          "caller": "record",
+          "callee": "this.logger.log",
+          "lineNumber": 141
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 4,
+        "functionCount": 3,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/documents/document.types.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 366,
+      "nonEmptyLines": 320,
+      "functions": [
+        {
+          "name": "toDocumentSummary",
+          "startLine": 213,
+          "endLine": 245,
+          "params": [
+            "record"
+          ]
+        },
+        {
+          "name": "toDocumentDetail",
+          "startLine": 247,
+          "endLine": 272,
+          "params": [
+            "record"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "DocumentUploadValidationError",
+          "startLine": 94,
+          "endLine": 102,
+          "methods": [
+            "constructor"
+          ],
+          "properties": []
+        },
+        {
+          "name": "PdfUploadInspectionError",
+          "startLine": 111,
+          "endLine": 119,
+          "methods": [
+            "constructor"
+          ],
+          "properties": []
+        },
+        {
+          "name": "DocumentMalwareScannerError",
+          "startLine": 144,
+          "endLine": 149,
+          "methods": [
+            "constructor"
+          ],
+          "properties": []
+        },
+        {
+          "name": "DocumentTextExtractionError",
+          "startLine": 166,
+          "endLine": 180,
+          "methods": [
+            "constructor"
+          ],
+          "properties": []
+        },
+        {
+          "name": "DocumentFileStorageError",
+          "startLine": 194,
+          "endLine": 202,
+          "methods": [
+            "constructor"
+          ],
+          "properties": []
+        },
+        {
+          "name": "DocumentIntegrityError",
+          "startLine": 353,
+          "endLine": 360,
+          "methods": [
+            "constructor"
+          ],
+          "properties": [
+            "code"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DocumentDetail",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "DocumentFormatCategory",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "DocumentListResponse",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "DocumentProcessingErrorCode",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "DocumentProcessingStatus",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "DocumentSummary",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "DocumentUploadValidationError",
+          "line": 94,
+          "isDefault": false
+        },
+        {
+          "name": "PdfUploadInspectionError",
+          "line": 111,
+          "isDefault": false
+        },
+        {
+          "name": "DocumentMalwareScannerError",
+          "line": 144,
+          "isDefault": false
+        },
+        {
+          "name": "DocumentTextExtractionError",
+          "line": 166,
+          "isDefault": false
+        },
+        {
+          "name": "DocumentFileStorageError",
+          "line": 194,
+          "isDefault": false
+        },
+        {
+          "name": "toDocumentSummary",
+          "line": 213,
+          "isDefault": false
+        },
+        {
+          "name": "toDocumentDetail",
+          "line": 247,
+          "isDefault": false
+        },
+        {
+          "name": "DocumentIntegrityError",
+          "line": 353,
+          "isDefault": false
+        },
+        {
+          "name": "DOCUMENT_REPOSITORY",
+          "line": 362,
+          "isDefault": false
+        },
+        {
+          "name": "DOCUMENT_FILE_STORAGE",
+          "line": 363,
+          "isDefault": false
+        },
+        {
+          "name": "PDF_UPLOAD_INSPECTOR",
+          "line": 364,
+          "isDefault": false
+        },
+        {
+          "name": "DOCUMENT_MALWARE_SCANNER",
+          "line": 365,
+          "isDefault": false
+        },
+        {
+          "name": "DOCUMENT_PROCESSING_QUEUE",
+          "line": 366,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "constructor",
+          "callee": "super",
+          "lineNumber": 99
+        },
+        {
+          "caller": "constructor",
+          "callee": "super",
+          "lineNumber": 116
+        },
+        {
+          "caller": "constructor",
+          "callee": "super",
+          "lineNumber": 146
+        },
+        {
+          "caller": "constructor",
+          "callee": "super",
+          "lineNumber": 177
+        },
+        {
+          "caller": "constructor",
+          "callee": "super",
+          "lineNumber": 199
+        },
+        {
+          "caller": "toDocumentDetail",
+          "callee": "toDocumentSummary",
+          "lineNumber": 248
+        },
+        {
+          "caller": "toDocumentDetail",
+          "callee": "record.extracted_text.trim",
+          "lineNumber": 259
+        },
+        {
+          "caller": "constructor",
+          "callee": "super",
+          "lineNumber": 357
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 19,
+        "functionCount": 2,
+        "classCount": 6
+      }
+    },
+    {
+      "path": "backend/src/documents/documents.controller.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 80,
+      "nonEmptyLines": 72,
+      "classes": [
+        {
+          "name": "DocumentUploadPolicyController",
+          "startLine": 29,
+          "endLine": 36,
+          "methods": [
+            "constructor",
+            "get"
+          ],
+          "properties": []
+        },
+        {
+          "name": "DocumentsController",
+          "startLine": 39,
+          "endLine": 80,
+          "methods": [
+            "constructor",
+            "upload",
+            "list",
+            "get",
+            "retry"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "DocumentUploadPolicyController",
+          "line": 28,
+          "isDefault": false
+        },
+        {
+          "name": "DocumentsController",
+          "line": 38,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "get",
+          "callee": "this.documents.uploadPolicy",
+          "lineNumber": 34
+        },
+        {
+          "caller": "upload",
+          "callee": "Param",
+          "lineNumber": 45
+        },
+        {
+          "caller": "upload",
+          "callee": "Body",
+          "lineNumber": 46
+        },
+        {
+          "caller": "upload",
+          "callee": "UploadedFile",
+          "lineNumber": 47
+        },
+        {
+          "caller": "upload",
+          "callee": "this.documents.upload",
+          "lineNumber": 49
+        },
+        {
+          "caller": "list",
+          "callee": "Param",
+          "lineNumber": 60
+        },
+        {
+          "caller": "list",
+          "callee": "this.documents.list",
+          "lineNumber": 61
+        },
+        {
+          "caller": "get",
+          "callee": "Param",
+          "lineNumber": 66
+        },
+        {
+          "caller": "get",
+          "callee": "Param",
+          "lineNumber": 67
+        },
+        {
+          "caller": "get",
+          "callee": "this.documents.get",
+          "lineNumber": 69
+        },
+        {
+          "caller": "retry",
+          "callee": "Param",
+          "lineNumber": 75
+        },
+        {
+          "caller": "retry",
+          "callee": "Param",
+          "lineNumber": 76
+        },
+        {
+          "caller": "retry",
+          "callee": "this.documents.retry",
+          "lineNumber": 78
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 2,
+        "functionCount": 0,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "backend/src/documents/documents.module.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 88,
+      "nonEmptyLines": 87,
+      "classes": [
+        {
+          "name": "DocumentsModule",
+          "startLine": 88,
+          "endLine": 88,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "DocumentsModule",
+          "line": 34,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 18,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/documents/documents.service.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 489,
+      "nonEmptyLines": 437,
+      "classes": [
+        {
+          "name": "FakeDocumentFileStorage",
+          "startLine": 20,
+          "endLine": 57,
+          "methods": [
+            "store",
+            "read",
+            "remove"
+          ],
+          "properties": [
+            "files",
+            "storeCount",
+            "removeCount",
+            "failStore",
+            "failRemove"
+          ]
+        },
+        {
+          "name": "FailingDocumentRepository",
+          "startLine": 59,
+          "endLine": 63,
+          "methods": [
+            "create"
+          ],
+          "properties": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "store",
+          "callee": "Promise.reject",
+          "lineNumber": 31
+        },
+        {
+          "caller": "store",
+          "callee": "this.files.set",
+          "lineNumber": 35
+        },
+        {
+          "caller": "store",
+          "callee": "Buffer.from",
+          "lineNumber": 35
+        },
+        {
+          "caller": "store",
+          "callee": "Promise.resolve",
+          "lineNumber": 36
+        },
+        {
+          "caller": "read",
+          "callee": "this.files.get",
+          "lineNumber": 40
+        },
+        {
+          "caller": "read",
+          "callee": "Promise.resolve",
+          "lineNumber": 43
+        },
+        {
+          "caller": "read",
+          "callee": "Buffer.from",
+          "lineNumber": 43
+        },
+        {
+          "caller": "read",
+          "callee": "Promise.reject",
+          "lineNumber": 44
+        },
+        {
+          "caller": "remove",
+          "callee": "Promise.reject",
+          "lineNumber": 51
+        },
+        {
+          "caller": "remove",
+          "callee": "this.files.delete",
+          "lineNumber": 54
+        },
+        {
+          "caller": "remove",
+          "callee": "Promise.resolve",
+          "lineNumber": 55
+        },
+        {
+          "caller": "createProject",
+          "callee": "projects.create",
+          "lineNumber": 146
+        },
+        {
+          "caller": "uploadInput",
+          "callee": "Buffer.from",
+          "lineNumber": 161
+        }
+      ],
+      "metrics": {
+        "importCount": 8,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "backend/src/documents/documents.service.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 549,
+      "nonEmptyLines": 482,
+      "classes": [
+        {
+          "name": "DocumentsService",
+          "startLine": 57,
+          "endLine": 549,
+          "methods": [
+            "constructor",
+            "upload",
+            "persistUpload",
+            "uploadPolicy",
+            "list",
+            "get",
+            "retry",
+            "queueProcessingRetry",
+            "readContextSource",
+            "validateFile",
+            "validateIdempotencyKey",
+            "enforceProjectQuota",
+            "resolveIdempotentReplay",
+            "getPersisted",
+            "compensateStoredFile",
+            "scheduleProcessing",
+            "withProjectUploadLock",
+            "invalidIdempotencyKey",
+            "idempotencyConflict",
+            "nextTimestamp",
+            "recordProcessingRetry",
+            "applicationErrorCode"
+          ],
+          "properties": [
+            "projectUploadTails"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DocumentsService",
+          "line": 56,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 61
+        },
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 63
+        },
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 67
+        },
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 69
+        },
+        {
+          "caller": "upload",
+          "callee": "Date.now",
+          "lineNumber": 78
+        },
+        {
+          "caller": "upload",
+          "callee": "documentCorrelationId",
+          "lineNumber": 79
+        },
+        {
+          "caller": "upload",
+          "callee": "this.persistUpload",
+          "lineNumber": 85
+        },
+        {
+          "caller": "upload",
+          "callee": "this.telemetry.record",
+          "lineNumber": 86
+        },
+        {
+          "caller": "upload",
+          "callee": "documentSizeBand",
+          "lineNumber": 92
+        },
+        {
+          "caller": "upload",
+          "callee": "Math.max",
+          "lineNumber": 93
+        },
+        {
+          "caller": "upload",
+          "callee": "Date.now",
+          "lineNumber": 93
+        },
+        {
+          "caller": "upload",
+          "callee": "this.telemetry.record",
+          "lineNumber": 100
+        },
+        {
+          "caller": "upload",
+          "callee": "documentSizeBand",
+          "lineNumber": 106
+        },
+        {
+          "caller": "upload",
+          "callee": "Math.max",
+          "lineNumber": 107
+        },
+        {
+          "caller": "upload",
+          "callee": "Date.now",
+          "lineNumber": 107
+        },
+        {
+          "caller": "upload",
+          "callee": "this.applicationErrorCode",
+          "lineNumber": 110
+        },
+        {
+          "caller": "persistUpload",
+          "callee": "this.projects.get",
+          "lineNumber": 120
+        },
+        {
+          "caller": "persistUpload",
+          "callee": "this.validateIdempotencyKey",
+          "lineNumber": 122
+        },
+        {
+          "caller": "persistUpload",
+          "callee": "this.validateFile",
+          "lineNumber": 123
+        },
+        {
+          "caller": "persistUpload",
+          "callee": "this.withProjectUploadLock",
+          "lineNumber": 125
+        },
+        {
+          "caller": "persistUpload",
+          "callee": "this.resolveIdempotentReplay",
+          "lineNumber": 126
+        },
+        {
+          "caller": "persistUpload",
+          "callee": "this.scheduleProcessing",
+          "lineNumber": 133
+        },
+        {
+          "caller": "persistUpload",
+          "callee": "toDocumentSummary",
+          "lineNumber": 135
+        },
+        {
+          "caller": "persistUpload",
+          "callee": "this.enforceProjectQuota",
+          "lineNumber": 141
+        },
+        {
+          "caller": "persistUpload",
+          "callee": "this.fileStorage.store",
+          "lineNumber": 146
+        },
+        {
+          "caller": "persistUpload",
+          "callee": "new Date().toISOString",
+          "lineNumber": 158
+        },
+        {
+          "caller": "persistUpload",
+          "callee": "this.documents.create",
+          "lineNumber": 159
+        },
+        {
+          "caller": "persistUpload",
+          "callee": "randomUUID",
+          "lineNumber": 160
+        },
+        {
+          "caller": "persistUpload",
+          "callee": "this.compensateStoredFile",
+          "lineNumber": 175
+        },
+        {
+          "caller": "persistUpload",
+          "callee": "this.resolveIdempotentReplay",
+          "lineNumber": 177
+        },
+        {
+          "caller": "persistUpload",
+          "callee": "toDocumentSummary",
+          "lineNumber": 185
+        },
+        {
+          "caller": "persistUpload",
+          "callee": "this.scheduleProcessing",
+          "lineNumber": 197
+        },
+        {
+          "caller": "persistUpload",
+          "callee": "toDocumentSummary",
+          "lineNumber": 199
+        },
+        {
+          "caller": "uploadPolicy",
+          "callee": "this.config.supported_formats.map",
+          "lineNumber": 208
+        },
+        {
+          "caller": "list",
+          "callee": "this.projects.get",
+          "lineNumber": 221
+        },
+        {
+          "caller": "list",
+          "callee": "this.documents\n      .findAllByProjectId(projectId)\n      .map",
+          "lineNumber": 223
+        },
+        {
+          "caller": "list",
+          "callee": "this.documents\n      .findAllByProjectId",
+          "lineNumber": 223
+        },
+        {
+          "caller": "list",
+          "callee": "toDocumentSummary",
+          "lineNumber": 225
+        },
+        {
+          "caller": "get",
+          "callee": "this.projects.get",
+          "lineNumber": 229
+        },
+        {
+          "caller": "get",
+          "callee": "toDocumentDetail",
+          "lineNumber": 231
+        },
+        {
+          "caller": "get",
+          "callee": "this.getPersisted",
+          "lineNumber": 231
+        },
+        {
+          "caller": "retry",
+          "callee": "Date.now",
+          "lineNumber": 238
+        },
+        {
+          "caller": "retry",
+          "callee": "this.queueProcessingRetry",
+          "lineNumber": 241
+        },
+        {
+          "caller": "retry",
+          "callee": "this.getPersisted",
+          "lineNumber": 242
+        },
+        {
+          "caller": "retry",
+          "callee": "this.recordProcessingRetry",
+          "lineNumber": 243
+        },
+        {
+          "caller": "retry",
+          "callee": "this.documents.findByProjectAndId",
+          "lineNumber": 246
+        },
+        {
+          "caller": "retry",
+          "callee": "this.recordProcessingRetry",
+          "lineNumber": 251
+        },
+        {
+          "caller": "retry",
+          "callee": "this.applicationErrorCode",
+          "lineNumber": 255
+        },
+        {
+          "caller": "queueProcessingRetry",
+          "callee": "this.projects.get",
+          "lineNumber": 266
+        },
+        {
+          "caller": "queueProcessingRetry",
+          "callee": "this.getPersisted",
+          "lineNumber": 267
+        },
+        {
+          "caller": "queueProcessingRetry",
+          "callee": "this.documents.queueProcessingRetry",
+          "lineNumber": 279
+        },
+        {
+          "caller": "queueProcessingRetry",
+          "callee": "this.nextTimestamp",
+          "lineNumber": 283
+        },
+        {
+          "caller": "queueProcessingRetry",
+          "callee": "this.scheduleProcessing",
+          "lineNumber": 294
+        },
+        {
+          "caller": "queueProcessingRetry",
+          "callee": "toDocumentSummary",
+          "lineNumber": 295
+        },
+        {
+          "caller": "readContextSource",
+          "callee": "this.documents.findByProjectAndId",
+          "lineNumber": 302
+        },
+        {
+          "caller": "readContextSource",
+          "callee": "this.documents.findProjectIdById",
+          "lineNumber": 308
+        },
+        {
+          "caller": "readContextSource",
+          "callee": "toDocumentDetail",
+          "lineNumber": 314
+        },
+        {
+          "caller": "validateFile",
+          "callee": "this.validator.validate",
+          "lineNumber": 333
+        },
+        {
+          "caller": "validateIdempotencyKey",
+          "callee": "this.invalidIdempotencyKey",
+          "lineNumber": 369
+        },
+        {
+          "caller": "validateIdempotencyKey",
+          "callee": "value.trim",
+          "lineNumber": 372
+        },
+        {
+          "caller": "validateIdempotencyKey",
+          "callee": "this.invalidIdempotencyKey",
+          "lineNumber": 375
+        },
+        {
+          "caller": "enforceProjectQuota",
+          "callee": "this.documents.getProjectUsage",
+          "lineNumber": 385
+        },
+        {
+          "caller": "resolveIdempotentReplay",
+          "callee": "this.documents.findByProjectAndUploadIdempotencyKey",
+          "lineNumber": 414
+        },
+        {
+          "caller": "resolveIdempotentReplay",
+          "callee": "this.idempotencyConflict",
+          "lineNumber": 424
+        },
+        {
+          "caller": "getPersisted",
+          "callee": "this.documents.findByProjectAndId",
+          "lineNumber": 431
+        },
+        {
+          "caller": "compensateStoredFile",
+          "callee": "this.fileStorage.remove",
+          "lineNumber": 445
+        },
+        {
+          "caller": "scheduleProcessing",
+          "callee": "this.processingQueue.schedule",
+          "lineNumber": 459
+        },
+        {
+          "caller": "withProjectUploadLock",
+          "callee": "this.projectUploadTails.get",
+          "lineNumber": 471
+        },
+        {
+          "caller": "withProjectUploadLock",
+          "callee": "Promise.resolve",
+          "lineNumber": 471
+        },
+        {
+          "caller": "withProjectUploadLock",
+          "callee": "this.projectUploadTails.set",
+          "lineNumber": 477
+        },
+        {
+          "caller": "withProjectUploadLock",
+          "callee": "operation",
+          "lineNumber": 481
+        },
+        {
+          "caller": "withProjectUploadLock",
+          "callee": "releaseCurrent",
+          "lineNumber": 483
+        },
+        {
+          "caller": "withProjectUploadLock",
+          "callee": "this.projectUploadTails.get",
+          "lineNumber": 485
+        },
+        {
+          "caller": "withProjectUploadLock",
+          "callee": "this.projectUploadTails.delete",
+          "lineNumber": 486
+        },
+        {
+          "caller": "nextTimestamp",
+          "callee": "Date.now",
+          "lineNumber": 510
+        },
+        {
+          "caller": "nextTimestamp",
+          "callee": "new Date(previousTimestamp).getTime",
+          "lineNumber": 511
+        },
+        {
+          "caller": "nextTimestamp",
+          "callee": "new Date(Math.max(currentTime, previousTime + 1)).toISOString",
+          "lineNumber": 513
+        },
+        {
+          "caller": "nextTimestamp",
+          "callee": "Math.max",
+          "lineNumber": 513
+        },
+        {
+          "caller": "recordProcessingRetry",
+          "callee": "this.telemetry.record",
+          "lineNumber": 522
+        },
+        {
+          "caller": "recordProcessingRetry",
+          "callee": "documentCorrelationId",
+          "lineNumber": 526
+        },
+        {
+          "caller": "recordProcessingRetry",
+          "callee": "documentSizeBand",
+          "lineNumber": 528
+        },
+        {
+          "caller": "recordProcessingRetry",
+          "callee": "Math.max",
+          "lineNumber": 529
+        },
+        {
+          "caller": "recordProcessingRetry",
+          "callee": "Date.now",
+          "lineNumber": 529
+        },
+        {
+          "caller": "recordProcessingRetry",
+          "callee": "Math.max",
+          "lineNumber": 530
+        },
+        {
+          "caller": "applicationErrorCode",
+          "callee": "error.getResponse",
+          "lineNumber": 538
+        }
+      ],
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/documents/pdfjs-adapters.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 76,
+      "nonEmptyLines": 64,
+      "functions": [
+        {
+          "name": "buildTextPdf",
+          "startLine": 43,
+          "endLine": 76,
+          "params": [
+            "lines"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "buildTextPdf",
+          "callee": "lines\n    .map((line) => `(${line}) Tj T*`)\n    .join",
+          "lineNumber": 44
+        },
+        {
+          "caller": "buildTextPdf",
+          "callee": "lines\n    .map",
+          "lineNumber": 44
+        },
+        {
+          "caller": "buildTextPdf",
+          "callee": "Buffer.byteLength",
+          "lineNumber": 52
+        },
+        {
+          "caller": "buildTextPdf",
+          "callee": "objects.forEach",
+          "lineNumber": 60
+        },
+        {
+          "caller": "buildTextPdf",
+          "callee": "offsets.push",
+          "lineNumber": 61
+        },
+        {
+          "caller": "buildTextPdf",
+          "callee": "Buffer.byteLength",
+          "lineNumber": 61
+        },
+        {
+          "caller": "buildTextPdf",
+          "callee": "Buffer.byteLength",
+          "lineNumber": 65
+        },
+        {
+          "caller": "buildTextPdf",
+          "callee": "offsets\n    .map((offset) => `${String(offset).padStart(10, '0')} 00000 n \\n`)\n    .join",
+          "lineNumber": 68
+        },
+        {
+          "caller": "buildTextPdf",
+          "callee": "offsets\n    .map",
+          "lineNumber": 68
+        },
+        {
+          "caller": "buildTextPdf",
+          "callee": "String(offset).padStart",
+          "lineNumber": 69
+        },
+        {
+          "caller": "buildTextPdf",
+          "callee": "String",
+          "lineNumber": 69
+        },
+        {
+          "caller": "buildTextPdf",
+          "callee": "Buffer.from",
+          "lineNumber": 75
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/documents/pdfjs-document-text.extractor.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 177,
+      "nonEmptyLines": 151,
+      "classes": [
+        {
+          "name": "FakePdfPage",
+          "startLine": 11,
+          "endLine": 23,
+          "methods": [
+            "constructor",
+            "getTextContent",
+            "cleanup"
+          ],
+          "properties": [
+            "cleaned"
+          ]
+        },
+        {
+          "name": "FakePdfDocument",
+          "startLine": 25,
+          "endLine": 49,
+          "methods": [
+            "constructor",
+            "numPages",
+            "getPage",
+            "cleanup"
+          ],
+          "properties": [
+            "pages",
+            "cleaned"
+          ]
+        },
+        {
+          "name": "FakePdfLoadingTask",
+          "startLine": 51,
+          "endLine": 60,
+          "methods": [
+            "constructor",
+            "destroy"
+          ],
+          "properties": [
+            "destroyed"
+          ]
+        },
+        {
+          "name": "TestPdfExtractor",
+          "startLine": 62,
+          "endLine": 73,
+          "methods": [
+            "constructor",
+            "loadPdfJs"
+          ],
+          "properties": []
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "getTextContent",
+          "callee": "Promise.resolve",
+          "lineNumber": 17
+        },
+        {
+          "caller": "constructor",
+          "callee": "contents.map",
+          "lineNumber": 30
+        },
+        {
+          "caller": "getPage",
+          "callee": "Promise.resolve",
+          "lineNumber": 41
+        },
+        {
+          "caller": "getPage",
+          "callee": "Promise.reject",
+          "lineNumber": 42
+        },
+        {
+          "caller": "cleanup",
+          "callee": "Promise.resolve",
+          "lineNumber": 47
+        },
+        {
+          "caller": "destroy",
+          "callee": "Promise.resolve",
+          "lineNumber": 58
+        },
+        {
+          "caller": "constructor",
+          "callee": "super",
+          "lineNumber": 67
+        },
+        {
+          "caller": "loadPdfJs",
+          "callee": "Promise.resolve",
+          "lineNumber": 71
+        },
+        {
+          "caller": "setup",
+          "callee": "Promise.resolve",
+          "lineNumber": 83
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 4
+      }
+    },
+    {
+      "path": "backend/src/documents/pdfjs-document-text.extractor.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 239,
+      "nonEmptyLines": 199,
+      "classes": [
+        {
+          "name": "PdfJsDocumentTextExtractor",
+          "startLine": 56,
+          "endLine": 239,
+          "methods": [
+            "constructor",
+            "extract",
+            "loadPdfJs",
+            "validatePageCount",
+            "serializePage",
+            "classifyParserError",
+            "throwIfAborted",
+            "isTextItem",
+            "errorName"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "PdfJsDocumentTextExtractor",
+          "line": 55,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "extract",
+          "callee": "this.throwIfAborted",
+          "lineNumber": 60
+        },
+        {
+          "caller": "extract",
+          "callee": "this.loadPdfJs",
+          "lineNumber": 62
+        },
+        {
+          "caller": "extract",
+          "callee": "pdfjs.getDocument",
+          "lineNumber": 64
+        },
+        {
+          "caller": "abort",
+          "callee": "loadingTask.destroy().catch",
+          "lineNumber": 78
+        },
+        {
+          "caller": "abort",
+          "callee": "loadingTask.destroy",
+          "lineNumber": 78
+        },
+        {
+          "caller": "extract",
+          "callee": "input.signal.addEventListener",
+          "lineNumber": 80
+        },
+        {
+          "caller": "extract",
+          "callee": "this.validatePageCount",
+          "lineNumber": 85
+        },
+        {
+          "caller": "extract",
+          "callee": "this.throwIfAborted",
+          "lineNumber": 91
+        },
+        {
+          "caller": "extract",
+          "callee": "document.getPage",
+          "lineNumber": 92
+        },
+        {
+          "caller": "extract",
+          "callee": "page.getTextContent",
+          "lineNumber": 95
+        },
+        {
+          "caller": "extract",
+          "callee": "this.serializePage",
+          "lineNumber": 99
+        },
+        {
+          "caller": "extract",
+          "callee": "Buffer.byteLength",
+          "lineNumber": 102
+        },
+        {
+          "caller": "extract",
+          "callee": "pages.push",
+          "lineNumber": 111
+        },
+        {
+          "caller": "extract",
+          "callee": "page.cleanup",
+          "lineNumber": 113
+        },
+        {
+          "caller": "extract",
+          "callee": "this.throwIfAborted",
+          "lineNumber": 117
+        },
+        {
+          "caller": "extract",
+          "callee": "this.normalizer.normalize",
+          "lineNumber": 119
+        },
+        {
+          "caller": "extract",
+          "callee": "pages.join",
+          "lineNumber": 120
+        },
+        {
+          "caller": "extract",
+          "callee": "this.classifyParserError",
+          "lineNumber": 124
+        },
+        {
+          "caller": "extract",
+          "callee": "input.signal.removeEventListener",
+          "lineNumber": 126
+        },
+        {
+          "caller": "extract",
+          "callee": "document.cleanup().catch",
+          "lineNumber": 129
+        },
+        {
+          "caller": "extract",
+          "callee": "document.cleanup",
+          "lineNumber": 129
+        },
+        {
+          "caller": "extract",
+          "callee": "loadingTask.destroy().catch",
+          "lineNumber": 134
+        },
+        {
+          "caller": "extract",
+          "callee": "loadingTask.destroy",
+          "lineNumber": 134
+        },
+        {
+          "caller": "loadPdfJs",
+          "callee": "import",
+          "lineNumber": 140
+        },
+        {
+          "caller": "validatePageCount",
+          "callee": "Number.isSafeInteger",
+          "lineNumber": 149
+        },
+        {
+          "caller": "serializePage",
+          "callee": "this.isTextItem",
+          "lineNumber": 162
+        },
+        {
+          "caller": "serializePage",
+          "callee": "result.endsWith",
+          "lineNumber": 168
+        },
+        {
+          "caller": "serializePage",
+          "callee": "/\\s$/u.test",
+          "lineNumber": 169
+        },
+        {
+          "caller": "serializePage",
+          "callee": "/^\\s/u.test",
+          "lineNumber": 170
+        },
+        {
+          "caller": "classifyParserError",
+          "callee": "this.errorName",
+          "lineNumber": 190
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/documents/pdfjs-upload.inspector.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 94,
+      "nonEmptyLines": 80,
+      "classes": [
+        {
+          "name": "PdfJsUploadInspector",
+          "startLine": 32,
+          "endLine": 94,
+          "methods": [
+            "inspect",
+            "errorName"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "PdfJsUploadInspector",
+          "line": 31,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "inspect",
+          "callee": "import",
+          "lineNumber": 40
+        },
+        {
+          "caller": "inspect",
+          "callee": "pdfjs.getDocument",
+          "lineNumber": 45
+        },
+        {
+          "caller": "inspect",
+          "callee": "Number.isSafeInteger",
+          "lineNumber": 58
+        },
+        {
+          "caller": "inspect",
+          "callee": "this.errorName",
+          "lineNumber": 70
+        },
+        {
+          "caller": "inspect",
+          "callee": "loadingTask.destroy().catch",
+          "lineNumber": 78
+        },
+        {
+          "caller": "inspect",
+          "callee": "loadingTask.destroy",
+          "lineNumber": 78
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/documents/private-document-file.storage.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 62,
+      "nonEmptyLines": 53,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/documents/private-document-file.storage.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 134,
+      "nonEmptyLines": 113,
+      "classes": [
+        {
+          "name": "PrivateDocumentFileStorage",
+          "startLine": 17,
+          "endLine": 134,
+          "methods": [
+            "constructor",
+            "store",
+            "read",
+            "remove",
+            "ensurePrivateDirectory",
+            "resolveFileReference",
+            "errorCode"
+          ],
+          "properties": [
+            "rootPath",
+            "stagingPath",
+            "originalsPath"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "PrivateDocumentFileStorage",
+          "line": 16,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 23
+        },
+        {
+          "caller": "constructor",
+          "callee": "join",
+          "lineNumber": 28
+        },
+        {
+          "caller": "constructor",
+          "callee": "join",
+          "lineNumber": 29
+        },
+        {
+          "caller": "constructor",
+          "callee": "join",
+          "lineNumber": 30
+        },
+        {
+          "caller": "store",
+          "callee": "randomUUID",
+          "lineNumber": 34
+        },
+        {
+          "caller": "store",
+          "callee": "key.slice",
+          "lineNumber": 35
+        },
+        {
+          "caller": "store",
+          "callee": "join",
+          "lineNumber": 37
+        },
+        {
+          "caller": "store",
+          "callee": "randomUUID",
+          "lineNumber": 37
+        },
+        {
+          "caller": "store",
+          "callee": "join",
+          "lineNumber": 38
+        },
+        {
+          "caller": "store",
+          "callee": "join",
+          "lineNumber": 39
+        },
+        {
+          "caller": "store",
+          "callee": "this.ensurePrivateDirectory",
+          "lineNumber": 43
+        },
+        {
+          "caller": "store",
+          "callee": "this.ensurePrivateDirectory",
+          "lineNumber": 44
+        },
+        {
+          "caller": "store",
+          "callee": "this.ensurePrivateDirectory",
+          "lineNumber": 45
+        },
+        {
+          "caller": "store",
+          "callee": "this.ensurePrivateDirectory",
+          "lineNumber": 46
+        },
+        {
+          "caller": "store",
+          "callee": "open",
+          "lineNumber": 48
+        },
+        {
+          "caller": "store",
+          "callee": "handle.writeFile",
+          "lineNumber": 52
+        },
+        {
+          "caller": "store",
+          "callee": "handle.sync",
+          "lineNumber": 53
+        },
+        {
+          "caller": "store",
+          "callee": "handle.close",
+          "lineNumber": 55
+        },
+        {
+          "caller": "store",
+          "callee": "link",
+          "lineNumber": 60
+        },
+        {
+          "caller": "store",
+          "callee": "unlink(temporaryPath).catch",
+          "lineNumber": 61
+        },
+        {
+          "caller": "store",
+          "callee": "unlink",
+          "lineNumber": 61
+        },
+        {
+          "caller": "store",
+          "callee": "unlink(temporaryPath).catch",
+          "lineNumber": 66
+        },
+        {
+          "caller": "store",
+          "callee": "unlink",
+          "lineNumber": 66
+        },
+        {
+          "caller": "read",
+          "callee": "readFile",
+          "lineNumber": 75
+        },
+        {
+          "caller": "read",
+          "callee": "this.resolveFileReference",
+          "lineNumber": 75
+        },
+        {
+          "caller": "remove",
+          "callee": "unlink",
+          "lineNumber": 87
+        },
+        {
+          "caller": "remove",
+          "callee": "this.resolveFileReference",
+          "lineNumber": 87
+        },
+        {
+          "caller": "remove",
+          "callee": "this.errorCode",
+          "lineNumber": 89
+        },
+        {
+          "caller": "ensurePrivateDirectory",
+          "callee": "mkdir",
+          "lineNumber": 102
+        },
+        {
+          "caller": "ensurePrivateDirectory",
+          "callee": "chmod",
+          "lineNumber": 103
+        },
+        {
+          "caller": "resolveFileReference",
+          "callee": "FILE_REFERENCE_PATTERN.exec",
+          "lineNumber": 110
+        },
+        {
+          "caller": "resolveFileReference",
+          "callee": "match.groups.key.slice",
+          "lineNumber": 114
+        },
+        {
+          "caller": "resolveFileReference",
+          "callee": "join",
+          "lineNumber": 119
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/documents/sqlite-document.repository.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 748,
+      "nonEmptyLines": 690,
+      "classes": [
+        {
+          "name": "SqliteDocumentRepository",
+          "startLine": 48,
+          "endLine": 748,
+          "methods": [
+            "constructor",
+            "create",
+            "findAllByProjectId",
+            "findProjectIdById",
+            "findByProjectAndId",
+            "findByProjectAndUploadIdempotencyKey",
+            "getProjectUsage",
+            "findProcessingCandidates",
+            "claimProcessingLease",
+            "renewProcessingLease",
+            "releaseProcessingLease",
+            "completeProcessing",
+            "failProcessing",
+            "queueProcessingRetry",
+            "toDocument",
+            "processingStatus",
+            "processingErrorCode",
+            "isDocumentFormat",
+            "isHash",
+            "isNullableHash",
+            "isNonEmptyString",
+            "isBoundedString",
+            "isNullableNonEmptyString",
+            "isNullableString",
+            "isIsoTimestamp",
+            "isNullableIsoTimestamp"
+          ],
+          "properties": [
+            "database"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "SqliteDocumentRepository",
+          "line": 47,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "create",
+          "callee": "this.toDocument",
+          "lineNumber": 56
+        },
+        {
+          "caller": "create",
+          "callee": "this.database\n      .prepare(\n        `\n          INSERT INTO documents (\n            id,\n            project_id,\n            title,\n            original_filename,\n            file_reference,\n            format,\n            mime_type,\n            size_bytes,\n            source_hash,\n            extracted_text,\n            processed_source_hash,\n            processing_status,\n            processing_error_code,\n            processing_error_retryable,\n            upload_idempotency_key,\n            upload_request_fingerprint,\n            processing_generation,\n            processing_attempt_count,\n            processing_started_at,\n            processing_completed_at,\n            processing_lease_owner,\n            processing_lease_expires_at,\n            created_at,\n            updated_at\n          ) VALUES (\n            ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,\n            ?, ?\n          )\n        `,\n      )\n      .run",
+          "lineNumber": 71
+        },
+        {
+          "caller": "create",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 71
+        },
+        {
+          "caller": "create",
+          "callee": "Number",
+          "lineNumber": 119
+        },
+        {
+          "caller": "findAllByProjectId",
+          "callee": "this.database\n      .prepare(\n        `\n          SELECT *\n          FROM documents\n          WHERE project_id = ?\n          ORDER BY created_at DESC, id ASC\n        `,\n      )\n      .all",
+          "lineNumber": 136
+        },
+        {
+          "caller": "findAllByProjectId",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 136
+        },
+        {
+          "caller": "findAllByProjectId",
+          "callee": "rows.map",
+          "lineNumber": 147
+        },
+        {
+          "caller": "findAllByProjectId",
+          "callee": "this.toDocument",
+          "lineNumber": 147
+        },
+        {
+          "caller": "findProjectIdById",
+          "callee": "this.database\n      .prepare('SELECT project_id FROM documents WHERE id = ?')\n      .get",
+          "lineNumber": 151
+        },
+        {
+          "caller": "findProjectIdById",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 151
+        },
+        {
+          "caller": "findProjectIdById",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 160
+        },
+        {
+          "caller": "findByProjectAndId",
+          "callee": "this.database\n      .prepare(\n        `\n          SELECT *\n          FROM documents\n          WHERE project_id = ? AND id = ?\n        `,\n      )\n      .get",
+          "lineNumber": 171
+        },
+        {
+          "caller": "findByProjectAndId",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 171
+        },
+        {
+          "caller": "findByProjectAndId",
+          "callee": "this.toDocument",
+          "lineNumber": 181
+        },
+        {
+          "caller": "findByProjectAndUploadIdempotencyKey",
+          "callee": "this.database\n      .prepare(\n        `\n          SELECT *\n          FROM documents\n          WHERE project_id = ? AND upload_idempotency_key = ?\n        `,\n      )\n      .get",
+          "lineNumber": 188
+        },
+        {
+          "caller": "findByProjectAndUploadIdempotencyKey",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 188
+        },
+        {
+          "caller": "findByProjectAndUploadIdempotencyKey",
+          "callee": "this.toDocument",
+          "lineNumber": 198
+        },
+        {
+          "caller": "getProjectUsage",
+          "callee": "this.database\n      .prepare(\n        `\n          SELECT\n            COUNT(*) AS document_count,\n            COALESCE(SUM(size_bytes), 0) AS storage_bytes\n          FROM documents\n          WHERE project_id = ?\n        `,\n      )\n      .get",
+          "lineNumber": 202
+        },
+        {
+          "caller": "getProjectUsage",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 202
+        },
+        {
+          "caller": "getProjectUsage",
+          "callee": "Number.isSafeInteger",
+          "lineNumber": 218
+        },
+        {
+          "caller": "getProjectUsage",
+          "callee": "Number.isSafeInteger",
+          "lineNumber": 220
+        },
+        {
+          "caller": "findProcessingCandidates",
+          "callee": "this.isIsoTimestamp",
+          "lineNumber": 237
+        },
+        {
+          "caller": "findProcessingCandidates",
+          "callee": "Number.isSafeInteger",
+          "lineNumber": 238
+        },
+        {
+          "caller": "findProcessingCandidates",
+          "callee": "this.database\n      .prepare(\n        `\n          SELECT *\n          FROM documents\n          WHERE\n            processing_status = 'processing'\n            AND (\n              processing_lease_owner IS NULL\n              OR processing_lease_expires_at <= ?\n            )\n          ORDER BY updated_at ASC, id ASC\n          LIMIT ?\n        `,\n      )\n      .all",
+          "lineNumber": 245
+        },
+        {
+          "caller": "findProcessingCandidates",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 245
+        },
+        {
+          "caller": "findProcessingCandidates",
+          "callee": "rows.map",
+          "lineNumber": 262
+        },
+        {
+          "caller": "findProcessingCandidates",
+          "callee": "this.toDocument",
+          "lineNumber": 262
+        },
+        {
+          "caller": "claimProcessingLease",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 269
+        },
+        {
+          "caller": "claimProcessingLease",
+          "callee": "this.isIsoTimestamp",
+          "lineNumber": 270
+        },
+        {
+          "caller": "claimProcessingLease",
+          "callee": "this.isIsoTimestamp",
+          "lineNumber": 271
+        },
+        {
+          "caller": "claimProcessingLease",
+          "callee": "this.database\n      .prepare(\n        `\n          UPDATE documents\n          SET\n            processing_attempt_count = processing_attempt_count + 1,\n            processing_started_at = COALESCE(\n              processing_started_at,\n              ?\n            ),\n            processing_lease_owner = ?,\n            processing_lease_expires_at = ?,\n            updated_at = ?\n          WHERE\n            project_id = ?\n            AND id = ?\n            AND processing_status = 'processing'\n            AND processing_generation = ?\n            AND (\n              processing_lease_owner IS NULL\n              OR processing_lease_expires_at <= ?\n            )\n            AND updated_at <= ?\n        `,\n      )\n      .run",
+          "lineNumber": 277
+        },
+        {
+          "caller": "claimProcessingLease",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 277
+        },
+        {
+          "caller": "claimProcessingLease",
+          "callee": "this.findByProjectAndId",
+          "lineNumber": 316
+        },
+        {
+          "caller": "renewProcessingLease",
+          "callee": "this.isIsoTimestamp",
+          "lineNumber": 323
+        },
+        {
+          "caller": "renewProcessingLease",
+          "callee": "this.isIsoTimestamp",
+          "lineNumber": 324
+        },
+        {
+          "caller": "renewProcessingLease",
+          "callee": "this.database\n      .prepare(\n        `\n          UPDATE documents\n          SET\n            processing_lease_expires_at = ?,\n            updated_at = ?\n          WHERE\n            project_id = ?\n            AND id = ?\n            AND processing_status = 'processing'\n            AND processing_generation = ?\n            AND processing_lease_owner = ?\n            AND processing_lease_expires_at > ?\n            AND updated_at <= ?\n        `,\n      )\n      .run",
+          "lineNumber": 330
+        },
+        {
+          "caller": "renewProcessingLease",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 330
+        },
+        {
+          "caller": "renewProcessingLease",
+          "callee": "this.findByProjectAndId",
+          "lineNumber": 360
+        },
+        {
+          "caller": "releaseProcessingLease",
+          "callee": "this.isIsoTimestamp",
+          "lineNumber": 366
+        },
+        {
+          "caller": "releaseProcessingLease",
+          "callee": "this.database\n      .prepare(\n        `\n          UPDATE documents\n          SET\n            processing_lease_owner = NULL,\n            processing_lease_expires_at = NULL,\n            updated_at = ?\n          WHERE\n            project_id = ?\n            AND id = ?\n            AND processing_status = 'processing'\n            AND processing_generation = ?\n            AND processing_lease_owner = ?\n            AND processing_lease_expires_at > ?\n            AND updated_at <= ?\n        `,\n      )\n      .run",
+          "lineNumber": 370
+        },
+        {
+          "caller": "releaseProcessingLease",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 370
+        },
+        {
+          "caller": "releaseProcessingLease",
+          "callee": "this.findByProjectAndId",
+          "lineNumber": 400
+        },
+        {
+          "caller": "completeProcessing",
+          "callee": "this.isIsoTimestamp",
+          "lineNumber": 407
+        },
+        {
+          "caller": "completeProcessing",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 408
+        },
+        {
+          "caller": "completeProcessing",
+          "callee": "this.isHash",
+          "lineNumber": 409
+        },
+        {
+          "caller": "completeProcessing",
+          "callee": "this.database\n      .prepare(\n        `\n          UPDATE documents\n          SET\n            extracted_text = ?,\n            processed_source_hash = ?,\n            processing_status = 'ready',\n            processing_error_code = NULL,\n            processing_error_retryable = 0,\n            processing_completed_at = ?,\n            processing_lease_owner = NULL,\n            processing_lease_expires_at = NULL,\n            updated_at = ?\n          WHERE\n            project_id = ?\n            AND id = ?\n            AND processing_status = 'processing'\n            AND processing_generation = ?\n            AND processing_lease_owner = ?\n            AND processing_lease_expires_at > ?\n            AND updated_at <= ?\n        `,\n      )\n      .run",
+          "lineNumber": 414
+        },
+        {
+          "caller": "completeProcessing",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 414
+        },
+        {
+          "caller": "completeProcessing",
+          "callee": "this.findByProjectAndId",
+          "lineNumber": 453
+        },
+        {
+          "caller": "failProcessing",
+          "callee": "this.isIsoTimestamp",
+          "lineNumber": 460
+        },
+        {
+          "caller": "failProcessing",
+          "callee": "this.processingErrorCode",
+          "lineNumber": 461
+        },
+        {
+          "caller": "failProcessing",
+          "callee": "this.database\n      .prepare(\n        `\n          UPDATE documents\n          SET\n            extracted_text = NULL,\n            processed_source_hash = NULL,\n            processing_status = 'failed',\n            processing_error_code = ?,\n            processing_error_retryable = ?,\n            processing_completed_at = ?,\n            processing_lease_owner = NULL,\n            processing_lease_expires_at = NULL,\n            updated_at = ?\n          WHERE\n            project_id = ?\n            AND id = ?\n            AND processing_status = 'processing'\n            AND processing_generation = ?\n            AND processing_lease_owner = ?\n            AND processing_lease_expires_at > ?\n            AND updated_at <= ?\n        `,\n      )\n      .run",
+          "lineNumber": 466
+        },
+        {
+          "caller": "failProcessing",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 466
+        },
+        {
+          "caller": "failProcessing",
+          "callee": "Number",
+          "lineNumber": 492
+        },
+        {
+          "caller": "failProcessing",
+          "callee": "this.findByProjectAndId",
+          "lineNumber": 505
+        },
+        {
+          "caller": "queueProcessingRetry",
+          "callee": "this.isIsoTimestamp",
+          "lineNumber": 511
+        },
+        {
+          "caller": "queueProcessingRetry",
+          "callee": "this.database\n      .prepare(\n        `\n          UPDATE documents\n          SET\n            extracted_text = NULL,\n            processed_source_hash = NULL,\n            processing_status = 'processing',\n            processing_error_code = NULL,\n            processing_error_retryable = 0,\n            processing_generation = processing_generation + 1,\n            processing_attempt_count = 0,\n            processing_started_at = NULL,\n            processing_completed_at = NULL,\n            processing_lease_owner = NULL,\n            processing_lease_expires_at = NULL,\n            updated_at = ?\n          WHERE\n            project_id = ?\n            AND id = ?\n            AND processing_status = 'failed'\n            AND processing_error_retryable = 1\n            AND processing_generation = ?\n            AND updated_at <= ?\n        `,\n      )\n      .run",
+          "lineNumber": 515
+        },
+        {
+          "caller": "queueProcessingRetry",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 515
+        },
+        {
+          "caller": "queueProcessingRetry",
+          "callee": "this.findByProjectAndId",
+          "lineNumber": 551
+        },
+        {
+          "caller": "toDocument",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 555
+        },
+        {
+          "caller": "toDocument",
+          "callee": "this.processingStatus",
+          "lineNumber": 556
+        },
+        {
+          "caller": "toDocument",
+          "callee": "this.processingErrorCode",
+          "lineNumber": 557
+        },
+        {
+          "caller": "toDocument",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 568
+        },
+        {
+          "caller": "toDocument",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 569
+        },
+        {
+          "caller": "toDocument",
+          "callee": "this.isBoundedString",
+          "lineNumber": 570
+        },
+        {
+          "caller": "toDocument",
+          "callee": "this.isBoundedString",
+          "lineNumber": 571
+        },
+        {
+          "caller": "toDocument",
+          "callee": "this.isBoundedString",
+          "lineNumber": 572
+        },
+        {
+          "caller": "toDocument",
+          "callee": "this.isDocumentFormat",
+          "lineNumber": 573
+        },
+        {
+          "caller": "toDocument",
+          "callee": "this.isBoundedString",
+          "lineNumber": 574
+        },
+        {
+          "caller": "toDocument",
+          "callee": "Number.isSafeInteger",
+          "lineNumber": 575
+        },
+        {
+          "caller": "toDocument",
+          "callee": "this.isHash",
+          "lineNumber": 577
+        },
+        {
+          "caller": "toDocument",
+          "callee": "this.isNullableString",
+          "lineNumber": 578
+        },
+        {
+          "caller": "toDocument",
+          "callee": "this.isNullableHash",
+          "lineNumber": 579
+        },
+        {
+          "caller": "toDocument",
+          "callee": "this.isBoundedString",
+          "lineNumber": 583
+        },
+        {
+          "caller": "toDocument",
+          "callee": "this.isHash",
+          "lineNumber": 584
+        },
+        {
+          "caller": "toDocument",
+          "callee": "Number.isSafeInteger",
+          "lineNumber": 585
+        },
+        {
+          "caller": "toDocument",
+          "callee": "Number.isSafeInteger",
+          "lineNumber": 587
+        },
+        {
+          "caller": "toDocument",
+          "callee": "this.isNullableIsoTimestamp",
+          "lineNumber": 589
+        },
+        {
+          "caller": "toDocument",
+          "callee": "this.isNullableIsoTimestamp",
+          "lineNumber": 590
+        },
+        {
+          "caller": "toDocument",
+          "callee": "this.isNullableNonEmptyString",
+          "lineNumber": 591
+        },
+        {
+          "caller": "toDocument",
+          "callee": "this.isNullableIsoTimestamp",
+          "lineNumber": 592
+        },
+        {
+          "caller": "toDocument",
+          "callee": "this.isIsoTimestamp",
+          "lineNumber": 593
+        },
+        {
+          "caller": "toDocument",
+          "callee": "this.isIsoTimestamp",
+          "lineNumber": 594
+        },
+        {
+          "caller": "toDocument",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 626
+        },
+        {
+          "caller": "isHash",
+          "callee": "/^[0-9a-f]{64}$/.test",
+          "lineNumber": 707
+        },
+        {
+          "caller": "isNullableHash",
+          "callee": "this.isHash",
+          "lineNumber": 711
+        },
+        {
+          "caller": "isNonEmptyString",
+          "callee": "value.trim",
+          "lineNumber": 715
+        },
+        {
+          "caller": "isBoundedString",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 722
+        },
+        {
+          "caller": "isNullableNonEmptyString",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 726
+        },
+        {
+          "caller": "isIsoTimestamp",
+          "callee": "new Date(value).toISOString",
+          "lineNumber": 739
+        },
+        {
+          "caller": "isNullableIsoTimestamp",
+          "callee": "this.isIsoTimestamp",
+          "lineNumber": 746
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/documents/utf8-document-text.extractors.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 57,
+      "nonEmptyLines": 48,
+      "classes": [
+        {
+          "name": "Utf8DocumentTextExtractor",
+          "startLine": 9,
+          "endLine": 43,
+          "methods": [
+            "constructor",
+            "extract",
+            "throwIfAborted"
+          ],
+          "properties": []
+        },
+        {
+          "name": "PlainTextDocumentTextExtractor",
+          "startLine": 46,
+          "endLine": 50,
+          "methods": [
+            "constructor"
+          ],
+          "properties": []
+        },
+        {
+          "name": "MarkdownDocumentTextExtractor",
+          "startLine": 53,
+          "endLine": 57,
+          "methods": [
+            "constructor"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "PlainTextDocumentTextExtractor",
+          "line": 45,
+          "isDefault": false
+        },
+        {
+          "name": "MarkdownDocumentTextExtractor",
+          "line": 52,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "extract",
+          "callee": "this.throwIfAborted",
+          "lineNumber": 14
+        },
+        {
+          "caller": "extract",
+          "callee": "new TextDecoder('utf-8', { fatal: true }).decode",
+          "lineNumber": 19
+        },
+        {
+          "caller": "extract",
+          "callee": "this.throwIfAborted",
+          "lineNumber": 26
+        },
+        {
+          "caller": "extract",
+          "callee": "Promise.resolve",
+          "lineNumber": 28
+        },
+        {
+          "caller": "extract",
+          "callee": "this.normalizer.normalize",
+          "lineNumber": 29
+        },
+        {
+          "caller": "extract",
+          "callee": "Promise.reject",
+          "lineNumber": 32
+        },
+        {
+          "caller": "constructor",
+          "callee": "super",
+          "lineNumber": 48
+        },
+        {
+          "caller": "constructor",
+          "callee": "super",
+          "lineNumber": 55
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 2,
+        "functionCount": 0,
+        "classCount": 3
+      }
+    },
+    {
+      "path": "backend/test/documents.e2e-spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 590,
+      "nonEmptyLines": 546,
+      "functions": [
+        {
+          "name": "restoreEnvironment",
+          "startLine": 578,
+          "endLine": 590,
+          "params": [
+            "key",
+            "value"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "createProject",
+          "callee": "request(app.getHttpServer())\n      .post('/projects')\n      .send({\n        title,\n        description: `Description for ${title}.`,\n      })\n      .expect",
+          "lineNumber": 68
+        },
+        {
+          "caller": "createProject",
+          "callee": "request(app.getHttpServer())\n      .post('/projects')\n      .send",
+          "lineNumber": 68
+        },
+        {
+          "caller": "createProject",
+          "callee": "request(app.getHttpServer())\n      .post",
+          "lineNumber": 68
+        },
+        {
+          "caller": "createProject",
+          "callee": "request",
+          "lineNumber": 68
+        },
+        {
+          "caller": "createProject",
+          "callee": "app.getHttpServer",
+          "lineNumber": 68
+        }
+      ],
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/test/fixtures/document-files.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 66,
+      "nonEmptyLines": 56,
+      "functions": [
+        {
+          "name": "textPdfDocumentFixture",
+          "startLine": 16,
+          "endLine": 22,
+          "params": [
+            "lines"
+          ]
+        },
+        {
+          "name": "noTextPdfDocumentFixture",
+          "startLine": 24,
+          "endLine": 26,
+          "params": []
+        },
+        {
+          "name": "buildPdf",
+          "startLine": 28,
+          "endLine": 59,
+          "params": [
+            "content",
+            "includeFont"
+          ]
+        },
+        {
+          "name": "escapePdfText",
+          "startLine": 61,
+          "endLine": 66,
+          "params": [
+            "value"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "plainTextDocumentFixture",
+          "line": 1,
+          "isDefault": false
+        },
+        {
+          "name": "markdownDocumentFixture",
+          "line": 6,
+          "isDefault": false
+        },
+        {
+          "name": "unsafeTextDocumentFixture",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "textPdfDocumentFixture",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "noTextPdfDocumentFixture",
+          "line": 24,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "textPdfDocumentFixture",
+          "callee": "lines\n    .map((line) => `(${escapePdfText(line)}) Tj T*`)\n    .join",
+          "lineNumber": 17
+        },
+        {
+          "caller": "textPdfDocumentFixture",
+          "callee": "lines\n    .map",
+          "lineNumber": 17
+        },
+        {
+          "caller": "textPdfDocumentFixture",
+          "callee": "escapePdfText",
+          "lineNumber": 18
+        },
+        {
+          "caller": "textPdfDocumentFixture",
+          "callee": "buildPdf",
+          "lineNumber": 21
+        },
+        {
+          "caller": "noTextPdfDocumentFixture",
+          "callee": "buildPdf",
+          "lineNumber": 25
+        },
+        {
+          "caller": "buildPdf",
+          "callee": "Buffer.byteLength",
+          "lineNumber": 36
+        },
+        {
+          "caller": "buildPdf",
+          "callee": "objects.forEach",
+          "lineNumber": 44
+        },
+        {
+          "caller": "buildPdf",
+          "callee": "offsets.push",
+          "lineNumber": 45
+        },
+        {
+          "caller": "buildPdf",
+          "callee": "Buffer.byteLength",
+          "lineNumber": 45
+        },
+        {
+          "caller": "buildPdf",
+          "callee": "Buffer.byteLength",
+          "lineNumber": 49
+        },
+        {
+          "caller": "buildPdf",
+          "callee": "offsets\n    .map((offset) => `${String(offset).padStart(10, '0')} 00000 n \\n`)\n    .join",
+          "lineNumber": 51
+        },
+        {
+          "caller": "buildPdf",
+          "callee": "offsets\n    .map",
+          "lineNumber": 51
+        },
+        {
+          "caller": "buildPdf",
+          "callee": "String(offset).padStart",
+          "lineNumber": 52
+        },
+        {
+          "caller": "buildPdf",
+          "callee": "String",
+          "lineNumber": 52
+        },
+        {
+          "caller": "buildPdf",
+          "callee": "Buffer.from",
+          "lineNumber": 58
+        },
+        {
+          "caller": "escapePdfText",
+          "callee": "value\n    .replaceAll('\\\\', '\\\\\\\\')\n    .replaceAll('(', '\\\\(')\n    .replaceAll",
+          "lineNumber": 62
+        },
+        {
+          "caller": "escapePdfText",
+          "callee": "value\n    .replaceAll('\\\\', '\\\\\\\\')\n    .replaceAll",
+          "lineNumber": 62
+        },
+        {
+          "caller": "escapePdfText",
+          "callee": "value\n    .replaceAll",
+          "lineNumber": 62
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 5,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    }
+  ]
+}

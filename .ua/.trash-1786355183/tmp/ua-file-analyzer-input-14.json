@@ -1,0 +1,28 @@
+{
+  "projectRoot": "/Users/alexandredemoura/Desktop/dev/nuee",
+  "batchFiles": [
+    {
+      "path": "AGENTS.md",
+      "language": "markdown",
+      "sizeLines": 205,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "CLAUDE.md",
+      "language": "markdown",
+      "sizeLines": 205,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "package.json",
+      "language": "json",
+      "sizeLines": 26,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "AGENTS.md": [],
+    "CLAUDE.md": [],
+    "package.json": []
+  }
+}

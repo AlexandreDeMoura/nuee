@@ -1,0 +1,259 @@
+{
+  "projectRoot": "/Users/alexandredemoura/Desktop/dev/nuee",
+  "batchFiles": [
+    {
+      "path": "backend/src/discussion-context/discussion-context.module.ts",
+      "language": "typescript",
+      "sizeLines": 12,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussion-context/discussion-context.types.ts",
+      "language": "typescript",
+      "sizeLines": 57,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussions/discussion.types.ts",
+      "language": "typescript",
+      "sizeLines": 206,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussions/discussions.controller.ts",
+      "language": "typescript",
+      "sizeLines": 80,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussions/discussions.module.ts",
+      "language": "typescript",
+      "sizeLines": 36,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussions/discussions.service.spec.ts",
+      "language": "typescript",
+      "sizeLines": 1481,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussions/discussions.service.ts",
+      "language": "typescript",
+      "sizeLines": 1067,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussions/sqlite-discussion.repository.spec.ts",
+      "language": "typescript",
+      "sizeLines": 874,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussions/sqlite-discussion.repository.ts",
+      "language": "typescript",
+      "sizeLines": 1186,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/sqlite-document.repository.spec.ts",
+      "language": "typescript",
+      "sizeLines": 506,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts",
+      "language": "typescript",
+      "sizeLines": 623,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/knowledge-extraction/knowledge-extraction.service.spec.ts",
+      "language": "typescript",
+      "sizeLines": 1944,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.spec.ts",
+      "language": "typescript",
+      "sizeLines": 381,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/projects/project.types.ts",
+      "language": "typescript",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/projects/projects.controller.spec.ts",
+      "language": "typescript",
+      "sizeLines": 90,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/projects/projects.controller.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/projects/projects.module.ts",
+      "language": "typescript",
+      "sizeLines": 19,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/projects/projects.service.spec.ts",
+      "language": "typescript",
+      "sizeLines": 235,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/projects/projects.service.ts",
+      "language": "typescript",
+      "sizeLines": 185,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/projects/sqlite-project.repository.ts",
+      "language": "typescript",
+      "sizeLines": 133,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "backend/src/discussion-context/discussion-context.module.ts": [
+      "backend/src/bubbles/bubbles.module.ts",
+      "backend/src/discussion-context/discussion-context.assembler.ts",
+      "backend/src/documents/documents.module.ts",
+      "backend/src/projects/projects.module.ts"
+    ],
+    "backend/src/discussion-context/discussion-context.types.ts": [],
+    "backend/src/discussions/discussion.types.ts": [],
+    "backend/src/discussions/discussions.controller.ts": [
+      "backend/src/discussions/discussions.service.ts"
+    ],
+    "backend/src/discussions/discussions.module.ts": [
+      "backend/src/ai/ai.module.ts",
+      "backend/src/bubbles/bubbles.module.ts",
+      "backend/src/discussion-context/discussion-context.module.ts",
+      "backend/src/discussions/discussion.types.ts",
+      "backend/src/discussions/discussions.controller.ts",
+      "backend/src/discussions/discussions.service.ts",
+      "backend/src/discussions/sqlite-discussion.repository.ts",
+      "backend/src/projects/projects.module.ts"
+    ],
+    "backend/src/discussions/discussions.service.spec.ts": [
+      "backend/src/ai/frozen-context.formatter.ts",
+      "backend/src/ai/input-token-estimator.ts",
+      "backend/src/ai/model-client.ts",
+      "backend/src/ai/model-input-budget.ts",
+      "backend/src/bubbles/bubbles.service.ts",
+      "backend/src/bubbles/sqlite-bubble.repository.ts",
+      "backend/src/database/database-transaction.ts",
+      "backend/src/database/database.provider.ts",
+      "backend/src/discussion-context/discussion-context.assembler.ts",
+      "backend/src/discussion-context/discussion-context.types.ts",
+      "backend/src/discussions/discussions.service.ts",
+      "backend/src/discussions/sqlite-discussion.repository.ts",
+      "backend/src/projects/projects.service.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/discussions/discussions.service.ts": [
+      "backend/src/ai/ai-capabilities.ts",
+      "backend/src/ai/frozen-context.formatter.ts",
+      "backend/src/ai/model-client.ts",
+      "backend/src/ai/model-input-budget.ts",
+      "backend/src/bubbles/bubble.types.ts",
+      "backend/src/database/database-transaction.ts",
+      "backend/src/discussion-context/discussion-context.assembler.ts",
+      "backend/src/discussion-context/discussion-context.types.ts",
+      "backend/src/discussions/discussion.types.ts",
+      "backend/src/projects/projects.service.ts"
+    ],
+    "backend/src/discussions/sqlite-discussion.repository.spec.ts": [
+      "backend/src/database/database.provider.ts",
+      "backend/src/discussions/discussion.types.ts",
+      "backend/src/discussions/sqlite-discussion.repository.ts",
+      "backend/src/projects/project.types.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/discussions/sqlite-discussion.repository.ts": [
+      "backend/src/database/database.provider.ts",
+      "backend/src/discussions/discussion.types.ts"
+    ],
+    "backend/src/documents/sqlite-document.repository.spec.ts": [
+      "backend/src/database/database.provider.ts",
+      "backend/src/documents/document.types.ts",
+      "backend/src/documents/sqlite-document.repository.ts",
+      "backend/src/projects/projects.service.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts": [
+      "backend/src/bubbles/bubble-placement.service.ts",
+      "backend/src/bubbles/bubble.types.ts",
+      "backend/src/database/database-transaction.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.prompt.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.types.ts",
+      "backend/src/projects/projects.service.ts"
+    ],
+    "backend/src/knowledge-extraction/knowledge-extraction.service.spec.ts": [
+      "backend/src/ai/fake-model.client.ts",
+      "backend/src/ai/input-token-estimator.ts",
+      "backend/src/ai/model-client.ts",
+      "backend/src/ai/model-input-budget.ts",
+      "backend/src/bubbles/bubble-links.service.ts",
+      "backend/src/bubbles/bubble-placement.service.ts",
+      "backend/src/bubbles/bubbles.service.ts",
+      "backend/src/bubbles/sqlite-bubble.repository.ts",
+      "backend/src/database/database-transaction.ts",
+      "backend/src/database/database.provider.ts",
+      "backend/src/discussions/discussion.types.ts",
+      "backend/src/discussions/sqlite-discussion.repository.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.service.ts",
+      "backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.ts",
+      "backend/src/projects/projects.service.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.spec.ts": [
+      "backend/src/database/database.provider.ts",
+      "backend/src/discussions/discussion.types.ts",
+      "backend/src/discussions/sqlite-discussion.repository.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.types.ts",
+      "backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.ts",
+      "backend/src/projects/project.types.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/projects/project.types.ts": [],
+    "backend/src/projects/projects.controller.spec.ts": [
+      "backend/src/database/database.provider.ts",
+      "backend/src/projects/projects.controller.ts",
+      "backend/src/projects/projects.service.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/projects/projects.controller.ts": [
+      "backend/src/projects/project.types.ts",
+      "backend/src/projects/projects.service.ts"
+    ],
+    "backend/src/projects/projects.module.ts": [
+      "backend/src/projects/project.types.ts",
+      "backend/src/projects/projects.controller.ts",
+      "backend/src/projects/projects.service.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/projects/projects.service.spec.ts": [
+      "backend/src/database/database.provider.ts",
+      "backend/src/projects/projects.service.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/projects/projects.service.ts": [
+      "backend/src/projects/project.types.ts"
+    ],
+    "backend/src/projects/sqlite-project.repository.ts": [
+      "backend/src/database/database.provider.ts",
+      "backend/src/projects/project.types.ts"
+    ]
+  }
+}

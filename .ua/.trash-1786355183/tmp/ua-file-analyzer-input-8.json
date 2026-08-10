@@ -1,0 +1,247 @@
+{
+  "projectRoot": "/Users/alexandredemoura/Desktop/dev/nuee",
+  "batchFiles": [
+    {
+      "path": "backend/src/ai/frozen-context.formatter.spec.ts",
+      "language": "typescript",
+      "sizeLines": 72,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/frozen-context.formatter.ts",
+      "language": "typescript",
+      "sizeLines": 110,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/bubble-links.controller.ts",
+      "language": "typescript",
+      "sizeLines": 40,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/bubble-links.service.spec.ts",
+      "language": "typescript",
+      "sizeLines": 146,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/bubble-links.service.ts",
+      "language": "typescript",
+      "sizeLines": 110,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/bubble-placement.service.spec.ts",
+      "language": "typescript",
+      "sizeLines": 146,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/bubble-placement.service.ts",
+      "language": "typescript",
+      "sizeLines": 241,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/bubble.types.ts",
+      "language": "typescript",
+      "sizeLines": 175,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/bubbles.controller.spec.ts",
+      "language": "typescript",
+      "sizeLines": 197,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/bubbles.controller.ts",
+      "language": "typescript",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/bubbles.module.ts",
+      "language": "typescript",
+      "sizeLines": 55,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/bubbles.service.spec.ts",
+      "language": "typescript",
+      "sizeLines": 612,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/bubbles.service.ts",
+      "language": "typescript",
+      "sizeLines": 562,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/sqlite-bubble.repository.spec.ts",
+      "language": "typescript",
+      "sizeLines": 183,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/sqlite-bubble.repository.ts",
+      "language": "typescript",
+      "sizeLines": 511,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/database/database-transaction.ts",
+      "language": "typescript",
+      "sizeLines": 25,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/database/database.module.ts",
+      "language": "typescript",
+      "sizeLines": 10,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/database/database.provider.spec.ts",
+      "language": "typescript",
+      "sizeLines": 74,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/database/database.provider.ts",
+      "language": "typescript",
+      "sizeLines": 47,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussion-context/discussion-context.assembler.spec.ts",
+      "language": "typescript",
+      "sizeLines": 406,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussion-context/discussion-context.assembler.ts",
+      "language": "typescript",
+      "sizeLines": 235,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "backend/src/ai/frozen-context.formatter.spec.ts": [
+      "backend/src/ai/frozen-context.formatter.ts"
+    ],
+    "backend/src/ai/frozen-context.formatter.ts": [],
+    "backend/src/bubbles/bubble-links.controller.ts": [
+      "backend/src/bubbles/bubble-links.service.ts",
+      "backend/src/bubbles/bubble.types.ts"
+    ],
+    "backend/src/bubbles/bubble-links.service.spec.ts": [
+      "backend/src/bubbles/bubble-links.service.ts",
+      "backend/src/bubbles/bubbles.service.ts",
+      "backend/src/bubbles/sqlite-bubble.repository.ts",
+      "backend/src/database/database.provider.ts",
+      "backend/src/projects/projects.service.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/bubbles/bubble-links.service.ts": [
+      "backend/src/bubbles/bubble.types.ts",
+      "backend/src/bubbles/bubbles.service.ts",
+      "backend/src/projects/projects.service.ts"
+    ],
+    "backend/src/bubbles/bubble-placement.service.spec.ts": [
+      "backend/src/bubbles/bubble-placement.service.ts",
+      "backend/src/bubbles/bubbles.service.ts",
+      "backend/src/bubbles/sqlite-bubble.repository.ts",
+      "backend/src/database/database.provider.ts",
+      "backend/src/projects/projects.service.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/bubbles/bubble-placement.service.ts": [
+      "backend/src/bubbles/bubble.types.ts",
+      "backend/src/projects/projects.service.ts"
+    ],
+    "backend/src/bubbles/bubble.types.ts": [],
+    "backend/src/bubbles/bubbles.controller.spec.ts": [
+      "backend/src/bubbles/bubble-placement.service.ts",
+      "backend/src/bubbles/bubbles.controller.ts",
+      "backend/src/bubbles/bubbles.service.ts",
+      "backend/src/bubbles/sqlite-bubble.repository.ts",
+      "backend/src/database/database.provider.ts",
+      "backend/src/projects/projects.service.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/bubbles/bubbles.controller.ts": [
+      "backend/src/bubbles/bubble-placement.service.ts",
+      "backend/src/bubbles/bubble.types.ts",
+      "backend/src/bubbles/bubbles.service.ts"
+    ],
+    "backend/src/bubbles/bubbles.module.ts": [
+      "backend/src/bubbles/bubble-links.controller.ts",
+      "backend/src/bubbles/bubble-links.service.ts",
+      "backend/src/bubbles/bubble-placement.service.ts",
+      "backend/src/bubbles/bubble.types.ts",
+      "backend/src/bubbles/bubbles.controller.ts",
+      "backend/src/bubbles/bubbles.service.ts",
+      "backend/src/bubbles/sqlite-bubble.repository.ts",
+      "backend/src/projects/projects.module.ts"
+    ],
+    "backend/src/bubbles/bubbles.service.spec.ts": [
+      "backend/src/bubbles/bubble.types.ts",
+      "backend/src/bubbles/bubbles.service.ts",
+      "backend/src/bubbles/sqlite-bubble.repository.ts",
+      "backend/src/database/database.provider.ts",
+      "backend/src/projects/projects.service.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/bubbles/bubbles.service.ts": [
+      "backend/src/bubbles/bubble.types.ts",
+      "backend/src/projects/projects.service.ts"
+    ],
+    "backend/src/bubbles/sqlite-bubble.repository.spec.ts": [
+      "backend/src/bubbles/bubble.types.ts",
+      "backend/src/bubbles/bubbles.service.ts",
+      "backend/src/bubbles/sqlite-bubble.repository.ts",
+      "backend/src/database/database.provider.ts",
+      "backend/src/projects/projects.service.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/bubbles/sqlite-bubble.repository.ts": [
+      "backend/src/bubbles/bubble.types.ts",
+      "backend/src/database/database.provider.ts"
+    ],
+    "backend/src/database/database-transaction.ts": [
+      "backend/src/database/database.provider.ts"
+    ],
+    "backend/src/database/database.module.ts": [
+      "backend/src/database/database-transaction.ts",
+      "backend/src/database/database.provider.ts"
+    ],
+    "backend/src/database/database.provider.spec.ts": [
+      "backend/src/bubbles/sqlite-bubble.repository.ts",
+      "backend/src/database/database.provider.ts",
+      "backend/src/discussions/sqlite-discussion.repository.ts",
+      "backend/src/documents/sqlite-document.repository.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/database/database.provider.ts": [
+      "backend/src/config/configuration.ts",
+      "backend/src/database/database.migrations.ts"
+    ],
+    "backend/src/discussion-context/discussion-context.assembler.spec.ts": [
+      "backend/src/bubbles/bubbles.service.ts",
+      "backend/src/bubbles/sqlite-bubble.repository.ts",
+      "backend/src/database/database.provider.ts",
+      "backend/src/discussion-context/discussion-context.assembler.ts",
+      "backend/src/discussion-context/discussion-context.types.ts",
+      "backend/src/projects/projects.service.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/discussion-context/discussion-context.assembler.ts": [
+      "backend/src/bubbles/bubble.types.ts",
+      "backend/src/discussion-context/discussion-context.types.ts",
+      "backend/src/projects/projects.service.ts"
+    ]
+  }
+}

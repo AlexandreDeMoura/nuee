@@ -1,0 +1,257 @@
+{
+  "projectRoot": "/Users/alexandredemoura/Desktop/dev/nuee",
+  "batchFiles": [
+    {
+      "path": "backend/src/ai/ai-capabilities.controller.ts",
+      "language": "typescript",
+      "sizeLines": 16,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/ai-capabilities.spec.ts",
+      "language": "typescript",
+      "sizeLines": 12,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/ai-capabilities.ts",
+      "language": "typescript",
+      "sizeLines": 12,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/ai.module.ts",
+      "language": "typescript",
+      "sizeLines": 66,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/answer-instructions.ts",
+      "language": "typescript",
+      "sizeLines": 12,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/fake-model.client.spec.ts",
+      "language": "typescript",
+      "sizeLines": 154,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/fake-model.client.ts",
+      "language": "typescript",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/input-token-estimator.spec.ts",
+      "language": "typescript",
+      "sizeLines": 12,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/input-token-estimator.ts",
+      "language": "typescript",
+      "sizeLines": 18,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/model-client.ts",
+      "language": "typescript",
+      "sizeLines": 68,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/model-input-budget.spec.ts",
+      "language": "typescript",
+      "sizeLines": 136,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/model-input-budget.ts",
+      "language": "typescript",
+      "sizeLines": 102,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/openai-model.client.spec.ts",
+      "language": "typescript",
+      "sizeLines": 383,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/ai/openai-model.client.ts",
+      "language": "typescript",
+      "sizeLines": 311,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/app.controller.spec.ts",
+      "language": "typescript",
+      "sizeLines": 23,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/app.controller.ts",
+      "language": "typescript",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/app.module.ts",
+      "language": "typescript",
+      "sizeLines": 38,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/app.service.ts",
+      "language": "typescript",
+      "sizeLines": 8,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/main.ts",
+      "language": "typescript",
+      "sizeLines": 17,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/test/app.e2e-spec.ts",
+      "language": "typescript",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/test/bubble-canvas.e2e-spec.ts",
+      "language": "typescript",
+      "sizeLines": 278,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/test/bubble-links.e2e-spec.ts",
+      "language": "typescript",
+      "sizeLines": 276,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/test/discussions.e2e-spec.ts",
+      "language": "typescript",
+      "sizeLines": 639,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/test/knowledge-extraction.e2e-spec.ts",
+      "language": "typescript",
+      "sizeLines": 810,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/test/projects.e2e-spec.ts",
+      "language": "typescript",
+      "sizeLines": 149,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "backend/src/ai/ai-capabilities.controller.ts": [
+      "backend/src/ai/ai-capabilities.ts"
+    ],
+    "backend/src/ai/ai-capabilities.spec.ts": [
+      "backend/src/ai/ai-capabilities.ts"
+    ],
+    "backend/src/ai/ai-capabilities.ts": [
+      "backend/src/config/configuration.ts"
+    ],
+    "backend/src/ai/ai.module.ts": [
+      "backend/src/ai/ai-capabilities.controller.ts",
+      "backend/src/ai/ai-capabilities.ts",
+      "backend/src/ai/fake-model.client.ts",
+      "backend/src/ai/frozen-context.formatter.ts",
+      "backend/src/ai/input-token-estimator.ts",
+      "backend/src/ai/model-client.ts",
+      "backend/src/ai/model-input-budget.ts",
+      "backend/src/ai/openai-model.client.ts",
+      "backend/src/config/configuration.ts"
+    ],
+    "backend/src/ai/answer-instructions.ts": [
+      "backend/src/ai/model-client.ts"
+    ],
+    "backend/src/ai/fake-model.client.spec.ts": [
+      "backend/src/ai/ai.module.ts",
+      "backend/src/ai/fake-model.client.ts",
+      "backend/src/ai/model-client.ts",
+      "backend/src/config/configuration.ts"
+    ],
+    "backend/src/ai/fake-model.client.ts": [
+      "backend/src/ai/model-client.ts"
+    ],
+    "backend/src/ai/input-token-estimator.spec.ts": [
+      "backend/src/ai/input-token-estimator.ts"
+    ],
+    "backend/src/ai/input-token-estimator.ts": [],
+    "backend/src/ai/model-client.ts": [],
+    "backend/src/ai/model-input-budget.spec.ts": [
+      "backend/src/ai/answer-instructions.ts",
+      "backend/src/ai/input-token-estimator.ts",
+      "backend/src/ai/model-input-budget.ts"
+    ],
+    "backend/src/ai/model-input-budget.ts": [
+      "backend/src/ai/answer-instructions.ts",
+      "backend/src/ai/input-token-estimator.ts",
+      "backend/src/ai/model-client.ts",
+      "backend/src/config/configuration.ts"
+    ],
+    "backend/src/ai/openai-model.client.spec.ts": [
+      "backend/src/ai/openai-model.client.ts",
+      "backend/src/config/configuration.ts"
+    ],
+    "backend/src/ai/openai-model.client.ts": [
+      "backend/src/ai/answer-instructions.ts",
+      "backend/src/ai/model-client.ts",
+      "backend/src/config/configuration.ts"
+    ],
+    "backend/src/app.controller.spec.ts": [
+      "backend/src/app.controller.ts"
+    ],
+    "backend/src/app.controller.ts": [],
+    "backend/src/app.module.ts": [
+      "backend/src/ai/ai.module.ts",
+      "backend/src/app.controller.ts",
+      "backend/src/app.service.ts",
+      "backend/src/bubbles/bubbles.module.ts",
+      "backend/src/config/configuration.ts",
+      "backend/src/database/database.module.ts",
+      "backend/src/discussions/discussions.module.ts",
+      "backend/src/documents/documents.module.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.module.ts",
+      "backend/src/projects/projects.module.ts"
+    ],
+    "backend/src/app.service.ts": [],
+    "backend/src/main.ts": [
+      "backend/src/app.module.ts",
+      "backend/src/config/configuration.ts"
+    ],
+    "backend/test/app.e2e-spec.ts": [
+      "backend/src/app.module.ts"
+    ],
+    "backend/test/bubble-canvas.e2e-spec.ts": [
+      "backend/src/app.module.ts"
+    ],
+    "backend/test/bubble-links.e2e-spec.ts": [
+      "backend/src/app.module.ts"
+    ],
+    "backend/test/discussions.e2e-spec.ts": [
+      "backend/src/ai/ai-capabilities.ts",
+      "backend/src/ai/fake-model.client.ts",
+      "backend/src/app.module.ts"
+    ],
+    "backend/test/knowledge-extraction.e2e-spec.ts": [
+      "backend/src/ai/fake-model.client.ts",
+      "backend/src/ai/model-client.ts",
+      "backend/src/app.module.ts"
+    ],
+    "backend/test/projects.e2e-spec.ts": [
+      "backend/src/app.module.ts"
+    ]
+  }
+}

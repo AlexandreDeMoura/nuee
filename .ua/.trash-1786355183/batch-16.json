@@ -1,0 +1,180 @@
+{
+  "nodes": [
+    {
+      "id": "document:frontend/README.md",
+      "type": "document",
+      "name": "README.md",
+      "filePath": "frontend/README.md",
+      "summary": "Unmodified `create-vite` React + TypeScript template README covering the two official React plugins, why the React Compiler is left disabled, and how to opt into type-aware ESLint rules. It carries no Nuée-specific guidance — the project's real architectural direction lives in the root CLAUDE.md.",
+      "tags": ["documentation", "boilerplate", "tooling", "eslint", "vite"],
+      "complexity": "simple",
+      "languageNotes": "The ESLint snippets are template suggestions referencing tsconfig.app.json and tsconfig.node.json as parser projects; the checked-in eslint.config.js does not currently apply them."
+    },
+    {
+      "id": "file:frontend/index.html",
+      "type": "file",
+      "name": "index.html",
+      "filePath": "frontend/index.html",
+      "summary": "Vite entry document for the client-rendered SPA: declares the `#root` mount point and loads `/src/main.tsx` as an ES module. Also preconnects to Google Fonts and pulls in IBM Plex Sans/Mono, which back the app's visual language.",
+      "tags": ["entry-point", "markup", "spa", "vite", "fonts"],
+      "complexity": "simple",
+      "languageNotes": "Vite treats index.html as the build graph root, so the `<script type=\"module\">` src is the real bundle entry rather than a config-declared one."
+    },
+    {
+      "id": "config:frontend/package.json",
+      "type": "config",
+      "name": "package.json",
+      "filePath": "frontend/package.json",
+      "summary": "Frontend workspace manifest pinning React 19, Tailwind 4 (via the `@tailwindcss/vite` plugin), lucide-react icons, and the workspace-local `@nuee/shared-types` contract package. Its scripts define the whole frontend toolchain: `vite` dev server, `tsc -b && vite build`, `eslint .`, and `vitest run --environment jsdom`.",
+      "tags": ["configuration", "build-system", "dependencies", "npm-workspace", "test-runner"],
+      "complexity": "simple",
+      "languageNotes": "`@nuee/shared-types` is depended on at version 0.0.0 as an npm-workspace link, so it resolves to the sibling source package rather than a registry download."
+    },
+    {
+      "id": "config:frontend/tsconfig.json",
+      "type": "config",
+      "name": "tsconfig.json",
+      "filePath": "frontend/tsconfig.json",
+      "summary": "Solution-style root tsconfig holding no files of its own; it exists purely to fan out project references to the app, test, and node-tooling configs so `tsc -b` builds all three.",
+      "tags": ["configuration", "typescript", "project-references", "build-system"],
+      "complexity": "simple",
+      "languageNotes": "The empty `files` array plus `references` is the canonical TypeScript solution-file pattern — it makes `tsc -b` the single type-check entry point."
+    },
+    {
+      "id": "config:frontend/tsconfig.app.json",
+      "type": "config",
+      "name": "tsconfig.app.json",
+      "filePath": "frontend/tsconfig.app.json",
+      "summary": "Compiles the SPA sources under `src/` in strict, no-emit bundler mode with `react-jsx`, ES2023/DOM libs, and Vite client types. Critically, it maps the `@nuee/shared-types` path alias straight to `../shared/src/index.ts`, so frontend type-checking reads shared source and never depends on a prebuilt `shared/dist`.",
+      "tags": ["configuration", "typescript", "strict-mode", "path-alias", "bundler-mode"],
+      "complexity": "simple",
+      "languageNotes": "`verbatimModuleSyntax` and `erasableSyntaxOnly` force type-only imports to be explicit and ban runtime-emitting TS syntax, which keeps the sources safe for a transpile-only bundler."
+    },
+    {
+      "id": "config:frontend/tsconfig.node.json",
+      "type": "config",
+      "name": "tsconfig.node.json",
+      "filePath": "frontend/tsconfig.node.json",
+      "summary": "Separate strict compilation unit for build-time tooling that runs under Node rather than the browser — its `include` is scoped to `vite.config.ts` alone, with `nodenext` module resolution and Node types instead of DOM.",
+      "tags": ["configuration", "typescript", "build-system", "node-tooling"],
+      "complexity": "simple",
+      "languageNotes": "Splitting tooling from app code keeps DOM globals out of the config file and Node globals out of the SPA."
+    },
+    {
+      "id": "config:frontend/tsconfig.test.json",
+      "type": "config",
+      "name": "tsconfig.test.json",
+      "filePath": "frontend/tsconfig.test.json",
+      "summary": "Thin extension of the app config for the `tests/` directory, adding Node types alongside the Vite client types so jsdom-based Vitest suites can use both browser and Node APIs.",
+      "tags": ["configuration", "typescript", "test", "vitest"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:frontend/index.html",
+      "target": "file:frontend/src/main.tsx",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:frontend/package.json",
+      "target": "file:frontend/vite.config.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:frontend/package.json",
+      "target": "file:frontend/eslint.config.js",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:frontend/package.json",
+      "target": "file:frontend/src/main.tsx",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:frontend/tsconfig.json",
+      "target": "config:frontend/tsconfig.app.json",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:frontend/tsconfig.json",
+      "target": "config:frontend/tsconfig.test.json",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:frontend/tsconfig.json",
+      "target": "config:frontend/tsconfig.node.json",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:frontend/tsconfig.test.json",
+      "target": "config:frontend/tsconfig.app.json",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:frontend/tsconfig.app.json",
+      "target": "file:frontend/src/main.tsx",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:frontend/tsconfig.app.json",
+      "target": "file:frontend/src/App.tsx",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:frontend/tsconfig.app.json",
+      "target": "file:shared/src/index.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:frontend/tsconfig.node.json",
+      "target": "file:frontend/vite.config.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "document:frontend/README.md",
+      "target": "config:frontend/tsconfig.app.json",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:frontend/README.md",
+      "target": "config:frontend/tsconfig.node.json",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:frontend/README.md",
+      "target": "file:frontend/eslint.config.js",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

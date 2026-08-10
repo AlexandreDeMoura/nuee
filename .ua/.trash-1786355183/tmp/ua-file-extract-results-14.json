@@ -1,0 +1,286 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 3,
+  "filesSkipped": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 3,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 0,
+      "failed": 0,
+      "skipped": 3
+    }
+  },
+  "results": [
+    {
+      "path": "AGENTS.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 205,
+      "nonEmptyLines": 173,
+      "sections": [
+        {
+          "heading": "Nuée Technical Direction",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Layout and commands",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "Cross-cutting rules",
+          "level": 2,
+          "line": 24
+        },
+        {
+          "heading": "Frontend (`frontend/src/`)",
+          "level": 2,
+          "line": 38
+        },
+        {
+          "heading": "Feature ownership",
+          "level": 3,
+          "line": 40
+        },
+        {
+          "heading": "Components, hooks, and state",
+          "level": 3,
+          "line": 60
+        },
+        {
+          "heading": "API boundary",
+          "level": 3,
+          "line": 71
+        },
+        {
+          "heading": "Styling and accessibility",
+          "level": 3,
+          "line": 82
+        },
+        {
+          "heading": "Backend (`backend/src/`)",
+          "level": 2,
+          "line": 89
+        },
+        {
+          "heading": "Feature ownership",
+          "level": 3,
+          "line": 96
+        },
+        {
+          "heading": "Discussion seams",
+          "level": 3,
+          "line": 120
+        },
+        {
+          "heading": "Document seams",
+          "level": 3,
+          "line": 137
+        },
+        {
+          "heading": "Services and persistence",
+          "level": 3,
+          "line": 153
+        },
+        {
+          "heading": "HTTP API",
+          "level": 3,
+          "line": 169
+        },
+        {
+          "heading": "Configuration and operations",
+          "level": 3,
+          "line": 180
+        },
+        {
+          "heading": "Security",
+          "level": 3,
+          "line": 199
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 16
+      }
+    },
+    {
+      "path": "CLAUDE.md",
+      "language": "markdown",
+      "fileCategory": "docs",
+      "totalLines": 205,
+      "nonEmptyLines": 173,
+      "sections": [
+        {
+          "heading": "Nuée Technical Direction",
+          "level": 1,
+          "line": 1
+        },
+        {
+          "heading": "Layout and commands",
+          "level": 2,
+          "line": 7
+        },
+        {
+          "heading": "Cross-cutting rules",
+          "level": 2,
+          "line": 24
+        },
+        {
+          "heading": "Frontend (`frontend/src/`)",
+          "level": 2,
+          "line": 38
+        },
+        {
+          "heading": "Feature ownership",
+          "level": 3,
+          "line": 40
+        },
+        {
+          "heading": "Components, hooks, and state",
+          "level": 3,
+          "line": 60
+        },
+        {
+          "heading": "API boundary",
+          "level": 3,
+          "line": 71
+        },
+        {
+          "heading": "Styling and accessibility",
+          "level": 3,
+          "line": 82
+        },
+        {
+          "heading": "Backend (`backend/src/`)",
+          "level": 2,
+          "line": 89
+        },
+        {
+          "heading": "Feature ownership",
+          "level": 3,
+          "line": 96
+        },
+        {
+          "heading": "Discussion seams",
+          "level": 3,
+          "line": 120
+        },
+        {
+          "heading": "Document seams",
+          "level": 3,
+          "line": 137
+        },
+        {
+          "heading": "Services and persistence",
+          "level": 3,
+          "line": 153
+        },
+        {
+          "heading": "HTTP API",
+          "level": 3,
+          "line": 169
+        },
+        {
+          "heading": "Configuration and operations",
+          "level": 3,
+          "line": 180
+        },
+        {
+          "heading": "Security",
+          "level": 3,
+          "line": 199
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 16
+      }
+    },
+    {
+      "path": "package.json",
+      "language": "json",
+      "fileCategory": "config",
+      "totalLines": 26,
+      "nonEmptyLines": 26,
+      "sections": [
+        {
+          "heading": "name",
+          "level": 1,
+          "line": 2
+        },
+        {
+          "heading": "version",
+          "level": 1,
+          "line": 3
+        },
+        {
+          "heading": "private",
+          "level": 1,
+          "line": 4
+        },
+        {
+          "heading": "description",
+          "level": 1,
+          "line": 5
+        },
+        {
+          "heading": "main",
+          "level": 1,
+          "line": 6
+        },
+        {
+          "heading": "workspaces",
+          "level": 1,
+          "line": 7
+        },
+        {
+          "heading": "scripts",
+          "level": 1,
+          "line": 12
+        },
+        {
+          "heading": "keywords",
+          "level": 1,
+          "line": 19
+        },
+        {
+          "heading": "author",
+          "level": 1,
+          "line": 20
+        },
+        {
+          "heading": "license",
+          "level": 1,
+          "line": 21
+        },
+        {
+          "heading": "type",
+          "level": 1,
+          "line": 22
+        },
+        {
+          "heading": "devDependencies",
+          "level": 1,
+          "line": 23
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0,
+        "sectionCount": 12
+      }
+    }
+  ]
+}

@@ -1,0 +1,177 @@
+[
+  {
+    "order": 1,
+    "title": "The Product Contract",
+    "description": "Nuée has no root README — its two authoritative documents are PRD_0, the product constitution, and CLAUDE.md, the technical direction. PRD_0 fixes the vocabulary you will meet everywhere in the code (project, bubble, discussion, document, frozen context) and the core habit loop: a focused discussion produces an answer, the user approves it into a bubble, and that bubble becomes reusable context for the next discussion. CLAUDE.md turns that product intent into architectural boundaries — feature ownership on both sides, the discussion and document seams, and the rule that persistence stays behind injectable repository ports. Read these two first; the rest of the tour follows that loop end to end.",
+    "nodeIds": [
+      "document:shared/PRD/PRD_0.md",
+      "document:CLAUDE.md"
+    ]
+  },
+  {
+    "order": 2,
+    "title": "Monorepo and Shared Contracts",
+    "description": "The root manifest declares three npm workspaces — `shared`, `frontend`, `backend` — and the aggregate `dev`, `build`, `lint`, and `test` scripts that fan out to them. `@nuee/shared-types` is the seam between the other two: it holds the serialized request/response contracts both sides import, and nothing else. Its `validation-limits.ts` is the sharpest expression of the project's discipline — a bound the client and server must both honour is declared once and imported, never re-typed on either side, though the server still enforces it independently because the client is never trusted.",
+    "nodeIds": [
+      "config:package.json",
+      "file:shared/src/index.ts",
+      "file:shared/src/validation-limits.ts"
+    ],
+    "languageLesson": "The shared package is deliberately dependency-free and side-effect free: types and constants only. This lets Vite and both Jest configs read `shared/src` directly while the backend runtime consumes `shared/dist`, so no workflow depends on a prebuilt artifact."
+  },
+  {
+    "order": 3,
+    "title": "The SPA Entry Chain",
+    "description": "Following the frontend's import graph from its root gives you the whole client in three hops. `index.html` declares the `#root` mount point and loads `main.tsx` as an ES module; `main.tsx` mounts `App` inside React StrictMode; `App.tsx` resolves the current route with a small first-party router and switches between the project list and the project canvas workspace. There is no React Router, no Redux, no React Query — routing is a pure function over the URL and state is local, which is a deliberate boundary rather than an omission.",
+    "nodeIds": [
+      "file:frontend/index.html",
+      "file:frontend/src/main.tsx",
+      "file:frontend/src/App.tsx"
+    ]
+  },
+  {
+    "order": 4,
+    "title": "The Single HTTP Boundary",
+    "description": "`api/index.ts` is the most depended-upon node in the entire graph — roughly seventy modules import it — because feature code is forbidden from calling `fetch` directly. The barrel re-exports one module per REST resource (projects, bubbles, discussions, documents, knowledge extraction, ai), and every one of them goes through `client.ts`, which owns the base URL, the JSON transport, and the normalization of any non-2xx response into a typed `ApiError` carrying status, a machine-readable code, and field-level details. Concentrating transport here is what lets each feature hook treat failure as one predictable shape instead of re-deriving error handling per call site.",
+    "nodeIds": [
+      "file:frontend/src/api/index.ts",
+      "file:frontend/src/api/client.ts"
+    ],
+    "languageLesson": "A barrel file (`export * from './projects'`) gives a feature one stable public import path while its internals stay free to move. It is the frontend counterpart to the backend's rule of exporting the narrowest cross-feature capability."
+  },
+  {
+    "order": 5,
+    "title": "Backend Bootstrap and Module Graph",
+    "description": "Now cross to the server. `main.ts` creates the Nest application from `AppModule`, reads the validated configuration, enables CORS for the configured frontend origin, and listens — a deliberately thin bootstrap. `app.module.ts` is where the monolith's shape becomes visible: configuration and database infrastructure plus one module per feature (projects, bubbles, discussions, documents, knowledge-extraction, ai). `configuration.ts` is the single typed config path, parsing environment variables into validated `appConfig`, `aiConfig`, and `documentsConfig` namespaces at startup so a bad environment fails fast rather than at first request.",
+    "nodeIds": [
+      "file:backend/src/main.ts",
+      "file:backend/src/app.module.ts",
+      "file:backend/src/config/configuration.ts"
+    ]
+  },
+  {
+    "order": 6,
+    "title": "One Connection, Ordered Migrations",
+    "description": "`database.provider.ts` is the second-highest fan-in node on the backend, and its ordering guarantee is the platform invariant to internalize: it owns the single application-scoped `node:sqlite` connection, enables foreign keys, sets a 5s busy timeout, and runs every pending migration at construction — before any repository is instantiated. The migration registry declares versions 1–13, each imported from its owning feature, and applies the pending set atomically inside one IMMEDIATE transaction against the authoritative `schema_migrations` table. `database-transaction.ts` is the thin wrapper features use for multi-write, all-or-nothing operations, rolling back while preserving the original workflow error.",
+    "nodeIds": [
+      "file:backend/src/database/database.provider.ts",
+      "file:backend/src/database/database.migrations.ts",
+      "file:backend/src/database/database-transaction.ts"
+    ],
+    "languageLesson": "`node:sqlite` is synchronous, which is why the whole backend can stay synchronous. Migrations live with the feature that owns the table but register centrally, so schema ordering is global while schema knowledge stays local — repositories never execute DDL."
+  },
+  {
+    "order": 7,
+    "title": "The Data Model",
+    "description": "These five tables are the durable shape of the product loop from Step 1. `projects` is the root of ownership and every other table cascades from it, also persisting the canvas viewport so a workspace reopens where you left it. `bubbles` stores content plus canvas position plus extraction provenance — the columns recording which discussion and which messages produced it. `discussions` holds the JSON frozen-context object and the `last_activity_at` timestamp that drives the Active ordering model, while `discussion_messages` makes turns immutable and carries the per-discussion unique `request_id` used as the turn idempotency key. `documents` fuses upload metadata with durable job state: status, attempt, generation, and lease.",
+    "nodeIds": [
+      "table:backend/src/projects/migrations/001-create-projects.ts:projects",
+      "table:backend/src/bubbles/migrations/002-create-bubbles.ts:bubbles",
+      "table:backend/src/discussions/migrations/004-create-discussions.ts:discussions",
+      "table:backend/src/discussions/migrations/005-create-discussion-messages.ts:discussion_messages",
+      "table:backend/src/documents/migrations/009-create-documents.ts:documents"
+    ],
+    "languageLesson": "Durable invariants are reinforced with SQLite constraints even where a service validates the same rule — foreign keys, uniqueness on `(discussion_id, request_id)`, length checks. Service validation gives good error messages; the constraint is what actually holds under a bug."
+  },
+  {
+    "order": 8,
+    "title": "The Spatial Canvas",
+    "description": "Back on the client, this is where a user actually works. `ProjectCanvasRoute` models the project load as an explicit state machine — loading, ready, failed, missing — rather than unrelated loading and error booleans, then mounts `ProjectWorkspace`, the highest fan-out component in the frontend and the lowest common owner coordinating canvas, inspector, discussions, documents, and extraction. `CanvasSurface` composes pan/zoom, drag, multi-selection, compact layout, and viewport persistence into the interactive surface. Note the split that the codebase enforces throughout: `canvasModel.ts` holds the pure logic (zoom clamping, wheel-delta normalization, runtime validation of bubble records) while `useProjectBubbles` owns the async load with guards against aborts, unmounts, stale attempts, and in-flight position writes.",
+    "nodeIds": [
+      "file:frontend/src/workspace/ProjectCanvasRoute.tsx",
+      "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "file:frontend/src/canvas/CanvasSurface.tsx",
+      "file:frontend/src/canvas/canvasModel.ts",
+      "file:frontend/src/canvas/useProjectBubbles.ts"
+    ],
+    "languageLesson": "Extract a custom hook when a state-and-ref cluster has its own transitions and failure semantics — not merely to shorten a component. Because request functions are injected rather than imported, tests exercise the abort and stale-response branches with plain fakes and no module mocking."
+  },
+  {
+    "order": 9,
+    "title": "Bubbles on the Server",
+    "description": "Each backend feature repeats one shape, and bubbles is the clearest specimen: a controller that only expresses HTTP, a service owning workflow validation, IDs, timestamps, and project scoping, and a SQLite repository behind an injectable port holding every parameterized statement. `bubble-placement.service.ts` shows the codebase's taste for pure algorithms — computing a non-overlapping canvas position by spiral search or cluster-adjacent anchoring, testable without a database. `projects.service.ts` appears here because it has the highest fan-in of any backend service: it is the shared project-existence check every other feature calls before scoping its own reads and writes.",
+    "nodeIds": [
+      "file:backend/src/bubbles/bubbles.controller.ts",
+      "file:backend/src/bubbles/bubbles.service.ts",
+      "file:backend/src/bubbles/sqlite-bubble.repository.ts",
+      "file:backend/src/bubbles/bubble-placement.service.ts",
+      "file:backend/src/projects/projects.service.ts"
+    ]
+  },
+  {
+    "order": 10,
+    "title": "The Document Library",
+    "description": "Documents are the second kind of context a discussion can freeze, and the only place the synchronous monolith admits a durable job. On the client, `useDocumentLibrary` runs per-file uploads with stable idempotency keys, policy-backed preflight, and processing polling. On the server, `documents.service.ts` durably pairs one SQLite record with one privately stored original under a server-generated opaque key before processing begins, and `document-processing.coordinator.ts` is the monolith's first durable job boundary: SQLite owns status, attempt, generation, and lease state while the coordinator owns only bounded execution, so an expired lease is recoverable after restart and a generation-guarded write cannot let a stale completion overwrite a newer result.",
+    "nodeIds": [
+      "file:frontend/src/documents/useDocumentLibrary.ts",
+      "file:backend/src/documents/documents.service.ts",
+      "file:backend/src/documents/document-processing.coordinator.ts",
+      "file:backend/src/documents/document.types.ts",
+      "document:backend/DOCUMENT_OPERATIONS.md"
+    ],
+    "languageLesson": "Leases plus a generation counter are how you get at-most-once effects without a broker: claim work by writing a lease with an expiry, and make the completion write conditional on the generation you claimed. The runbook explains why the database file and the private originals directory must be backed up and restored as one consistent set."
+  },
+  {
+    "order": 11,
+    "title": "Composing a Discussion",
+    "description": "Here the loop from Step 1 begins. `DiscussionExperience` is the composition root joining visibility, lifecycle, context selection, message rendering, and the extraction integration point. The composer is write-first: typing `@` opens one searchable list over the project's bubbles and ready documents — a design that PRD_09 introduced to replace an earlier four-surface selection flow. Follow the catalog seam carefully, because it shows how ownership is assigned: `workspace/projectSourceCatalog.ts` builds the catalog by projecting bubbles and documents into a uniform shape (marking unprocessed documents unselectable with a reason), while `discussions/discussionSourceCatalog.ts` only declares the contract it consumes — discussions never reach into the documents feature.",
+    "nodeIds": [
+      "file:frontend/src/discussions/DiscussionExperience.tsx",
+      "file:frontend/src/discussions/DiscussionComposer.tsx",
+      "file:frontend/src/discussions/discussionMention.ts",
+      "file:frontend/src/workspace/projectSourceCatalog.ts",
+      "file:frontend/src/discussions/discussionSourceCatalog.ts"
+    ],
+    "languageLesson": "`discussionMention.ts` is framework-independent: query detection, atomic token removal, and offset maintenance across edits are pure functions over a draft value. Keeping caret arithmetic out of React is what makes the trickiest part of the composer exhaustively unit-testable."
+  },
+  {
+    "order": 12,
+    "title": "Freezing the Context",
+    "description": "This is the idea that gives Nuée its shape. When a discussion is created, `discussion-context.assembler.ts` copies the project description plus the selected bubble and ready-document text into an immutable `FrozenContextV1` package, reading through narrow project-scoped ports declared in `discussion-context.types.ts` — never accepting client-supplied text and never dereferencing a live source again afterward. Edit a bubble tomorrow and the discussion that froze it yesterday still shows what the model actually saw. Discussions themselves treat the package as opaque: they guard its size and JSON shape, then persist and forward it without interpreting source semantics.",
+    "nodeIds": [
+      "file:backend/src/discussion-context/discussion-context.assembler.ts",
+      "file:backend/src/discussion-context/discussion-context.types.ts",
+      "file:backend/src/ai/frozen-context.formatter.ts"
+    ],
+    "languageLesson": "The formatter wraps every frozen item in reference-data delimiters so the model treats source text as data, never as instructions. That is prompt-injection defense expressed as a rendering rule, applied uniformly rather than per prompt."
+  },
+  {
+    "order": 13,
+    "title": "Turns and the Provider-Neutral AI Seam",
+    "description": "`discussions.service.ts` persists the discussion and its first user turn atomically with the frozen context from Step 12; later turns carry a per-discussion idempotency key, so pending and failed state lives on the persisted user turn and only valid model output becomes an immutable assistant message — which is exactly what makes `useDiscussionLifecycle`'s retry safe. The `ai/` module is a strict port: `model-client.ts` declares message, generation, structured-output, and citation contracts with no provider name anywhere, `ai-capabilities.ts` collapses provider identity into flags consumers can gate on, and `openai-model.client.ts` is the only file that knows about the Responses API — including attaching the web-search tool to answer generation but never to title generation or structured output.",
+    "nodeIds": [
+      "file:backend/src/discussions/discussions.service.ts",
+      "file:frontend/src/discussions/useDiscussionLifecycle.ts",
+      "file:backend/src/ai/model-client.ts",
+      "file:backend/src/ai/ai-capabilities.ts",
+      "file:backend/src/ai/openai-model.client.ts"
+    ],
+    "languageLesson": "A port-and-adapter seam earns its keep when a policy question has exactly one correct home. Web search is per-turn state, not frozen context: discussions gates the opt-in against the neutral capability and persists it on the user turn, while the adapter alone maps provider annotations into neutral citations."
+  },
+  {
+    "order": 14,
+    "title": "Closing the Loop: Knowledge Extraction",
+    "description": "Extraction is what turns an answer back into a durable bubble, completing the loop PRD_0 described. The client side is a reducer — `knowledgeExtractionStateMachine.ts` enumerates every status from idle through selecting, generating, reviewing, target selection, saving, and the resolved or discarded terminals — which is why the three-step dialog can be reasoned about without React. Server side, the service snapshots the chosen discussion messages and frozen-context items, enforces per-discussion idempotency, and calls the model through the same port from Step 13 with the structured-output schema defined in the prompt module. `knowledge-extraction-resolution.service.ts` then writes the reviewed proposal as a new bubble or an update to an existing one, guarded by a resolution fingerprint for replay and an `expected_updated_at` precondition against concurrent edits.",
+    "nodeIds": [
+      "file:frontend/src/knowledge-extraction/knowledgeExtractionStateMachine.ts",
+      "file:frontend/src/knowledge-extraction/useKnowledgeExtraction.ts",
+      "file:backend/src/knowledge-extraction/knowledge-extraction.service.ts",
+      "file:backend/src/knowledge-extraction/knowledge-extraction.prompt.ts",
+      "file:backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts"
+    ],
+    "languageLesson": "Extraction reaches discussions through an integration boundary rather than through `DiscussionsService` or `ModelClient` directly — which is what lets deleting a discussion leave independently persisted bubbles intact. A discriminated union over `status` makes impossible states unrepresentable in the reducer."
+  },
+  {
+    "order": 15,
+    "title": "How the Project Proves Itself",
+    "description": "Finally, look at how the invariants from every previous step are held in place. Unit suites like `discussions.service.spec.ts` cover creation idempotency, frozen-context assembly, model-input budgeting, retry of failed turns, and soft deletion using fakes and in-memory SQLite — never module mocks — which is only possible because persistence sits behind injectable ports. The e2e suites in `backend/test/` drive real HTTP journeys and swap in `fake-model.client.ts`, a deterministic in-process `ModelClient`, so AI-dependent flows assert exact outputs. On the client, tests such as the document-library suite target the hard branches directly: concurrent uploads reusing an idempotency key after a transport failure, aborts, and stale responses.",
+    "nodeIds": [
+      "file:backend/src/discussions/discussions.service.spec.ts",
+      "file:backend/test/discussions.e2e-spec.ts",
+      "file:backend/test/knowledge-extraction.e2e-spec.ts",
+      "file:backend/src/ai/fake-model.client.ts",
+      "file:frontend/src/documents/useDocumentLibrary.test.tsx"
+    ],
+    "languageLesson": "Tests live beside the code they cover and depend on ports, not implementations. Overriding the `MODEL_CLIENT` injection token in an e2e test is the payoff of Step 13's port: the whole HTTP stack runs for real while the non-deterministic edge is replaced."
+  }
+]

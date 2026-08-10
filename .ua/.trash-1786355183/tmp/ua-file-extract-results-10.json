@@ -1,0 +1,3371 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 15,
+  "filesSkipped": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 15,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 15,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "frontend/src/api/ai.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 38,
+      "nonEmptyLines": 29,
+      "functions": [
+        {
+          "name": "isAiCapabilities",
+          "startLine": 11,
+          "endLine": 18,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "assertAiCapabilities",
+          "startLine": 20,
+          "endLine": 26,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "createAiApi",
+          "startLine": 28,
+          "endLine": 36,
+          "params": [
+            "request"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "AiCapabilities",
+          "line": 4,
+          "isDefault": false
+        },
+        {
+          "name": "isAiCapabilities",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "assertAiCapabilities",
+          "line": 20,
+          "isDefault": false
+        },
+        {
+          "name": "createAiApi",
+          "line": 28,
+          "isDefault": false
+        },
+        {
+          "name": "{ getAiCapabilities }",
+          "line": 38,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "isAiCapabilities",
+          "callee": "Array.isArray",
+          "lineNumber": 15
+        },
+        {
+          "caller": "assertAiCapabilities",
+          "callee": "isAiCapabilities",
+          "lineNumber": 21
+        },
+        {
+          "caller": "getAiCapabilities",
+          "callee": "request<unknown>('/ai-capabilities', { signal }).then",
+          "lineNumber": 30
+        },
+        {
+          "caller": "getAiCapabilities",
+          "callee": "request",
+          "lineNumber": 30
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 5,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/api/bubbles.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 437,
+      "nonEmptyLines": 389,
+      "functions": [
+        {
+          "name": "isRecord",
+          "startLine": 50,
+          "endLine": 52,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isNonEmptyIdentifier",
+          "startLine": 54,
+          "endLine": 56,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isIdentifierList",
+          "startLine": 58,
+          "endLine": 64,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isIsoTimestamp",
+          "startLine": 66,
+          "endLine": 77,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isBubbleResponse",
+          "startLine": 79,
+          "endLine": 129,
+          "params": [
+            "value",
+            "projectId",
+            "bubbleId"
+          ]
+        },
+        {
+          "name": "assertBubbleResponse",
+          "startLine": 131,
+          "endLine": 141,
+          "params": [
+            "value",
+            "projectId",
+            "bubbleId"
+          ]
+        },
+        {
+          "name": "isBubbleListResponse",
+          "startLine": 143,
+          "endLine": 152,
+          "params": [
+            "value",
+            "projectId"
+          ]
+        },
+        {
+          "name": "assertBubbleListResponse",
+          "startLine": 154,
+          "endLine": 163,
+          "params": [
+            "value",
+            "projectId"
+          ]
+        },
+        {
+          "name": "isBubblePlacementResponse",
+          "startLine": 165,
+          "endLine": 175,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "assertBubblePlacementResponse",
+          "startLine": 177,
+          "endLine": 185,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "orderedLinkPair",
+          "startLine": 187,
+          "endLine": 194,
+          "params": [
+            "firstBubbleId",
+            "secondBubbleId"
+          ]
+        },
+        {
+          "name": "bubbleLinkPairKey",
+          "startLine": 196,
+          "endLine": 198,
+          "params": [
+            "link"
+          ]
+        },
+        {
+          "name": "isBubbleLinkResponse",
+          "startLine": 200,
+          "endLine": 227,
+          "params": [
+            "value",
+            "projectId",
+            "expectedBubbleIds"
+          ]
+        },
+        {
+          "name": "assertBubbleLinkResponse",
+          "startLine": 229,
+          "endLine": 239,
+          "params": [
+            "value",
+            "projectId",
+            "expectedBubbleIds"
+          ]
+        },
+        {
+          "name": "isBubbleLinkListResponse",
+          "startLine": 241,
+          "endLine": 256,
+          "params": [
+            "value",
+            "projectId"
+          ]
+        },
+        {
+          "name": "assertBubbleLinkListResponse",
+          "startLine": 258,
+          "endLine": 267,
+          "params": [
+            "value",
+            "projectId"
+          ]
+        },
+        {
+          "name": "createBubblesApi",
+          "startLine": 269,
+          "endLine": 424,
+          "params": [
+            "request"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Bubble",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "BubbleLink",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "BubblePlacement",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "BubblePlacementStrategy",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "BubblePositionUpdate",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "BubbleSourceKind",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "CreateBubbleLinkInput",
+          "line": 17,
+          "isDefault": false
+        },
+        {
+          "name": "isBubbleResponse",
+          "line": 79,
+          "isDefault": false
+        },
+        {
+          "name": "assertBubbleResponse",
+          "line": 131,
+          "isDefault": false
+        },
+        {
+          "name": "isBubbleListResponse",
+          "line": 143,
+          "isDefault": false
+        },
+        {
+          "name": "assertBubbleListResponse",
+          "line": 154,
+          "isDefault": false
+        },
+        {
+          "name": "isBubblePlacementResponse",
+          "line": 165,
+          "isDefault": false
+        },
+        {
+          "name": "assertBubblePlacementResponse",
+          "line": 177,
+          "isDefault": false
+        },
+        {
+          "name": "isBubbleLinkResponse",
+          "line": 200,
+          "isDefault": false
+        },
+        {
+          "name": "assertBubbleLinkResponse",
+          "line": 229,
+          "isDefault": false
+        },
+        {
+          "name": "isBubbleLinkListResponse",
+          "line": 241,
+          "isDefault": false
+        },
+        {
+          "name": "assertBubbleLinkListResponse",
+          "line": 258,
+          "isDefault": false
+        },
+        {
+          "name": "createBubblesApi",
+          "line": 269,
+          "isDefault": false
+        },
+        {
+          "name": "{\n  createBubble,\n  createBubbleLink,\n  deleteBubble,\n  deleteBubbleLink,\n  getBubbleLinks,\n  getBubblePlacement,\n  getProjectBubbles,\n  updateBubble,\n  updateBubblePosition,\n  updateBubblePositions,\n}",
+          "line": 426,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "isRecord",
+          "callee": "Array.isArray",
+          "lineNumber": 51
+        },
+        {
+          "caller": "isNonEmptyIdentifier",
+          "callee": "value.trim",
+          "lineNumber": 55
+        },
+        {
+          "caller": "isIdentifierList",
+          "callee": "Array.isArray",
+          "lineNumber": 60
+        },
+        {
+          "caller": "isIdentifierList",
+          "callee": "value.every",
+          "lineNumber": 61
+        },
+        {
+          "caller": "isIsoTimestamp",
+          "callee": "Date.parse",
+          "lineNumber": 71
+        },
+        {
+          "caller": "isIsoTimestamp",
+          "callee": "Number.isFinite",
+          "lineNumber": 74
+        },
+        {
+          "caller": "isIsoTimestamp",
+          "callee": "new Date(milliseconds).toISOString",
+          "lineNumber": 75
+        },
+        {
+          "caller": "isBubbleResponse",
+          "callee": "isRecord",
+          "lineNumber": 84
+        },
+        {
+          "caller": "isBubbleResponse",
+          "callee": "isNonEmptyIdentifier",
+          "lineNumber": 92
+        },
+        {
+          "caller": "isBubbleResponse",
+          "callee": "isNonEmptyIdentifier",
+          "lineNumber": 95
+        },
+        {
+          "caller": "isBubbleResponse",
+          "callee": "isNonEmptyIdentifier",
+          "lineNumber": 97
+        },
+        {
+          "caller": "isBubbleResponse",
+          "callee": "Number.isFinite",
+          "lineNumber": 99
+        },
+        {
+          "caller": "isBubbleResponse",
+          "callee": "Number.isFinite",
+          "lineNumber": 101
+        },
+        {
+          "caller": "isBubbleResponse",
+          "callee": "isIsoTimestamp",
+          "lineNumber": 102
+        },
+        {
+          "caller": "isBubbleResponse",
+          "callee": "isIsoTimestamp",
+          "lineNumber": 103
+        },
+        {
+          "caller": "isBubbleResponse",
+          "callee": "isIdentifierList",
+          "lineNumber": 104
+        },
+        {
+          "caller": "isBubbleResponse",
+          "callee": "isIdentifierList",
+          "lineNumber": 105
+        },
+        {
+          "caller": "isBubbleResponse",
+          "callee": "isNonEmptyIdentifier",
+          "lineNumber": 123
+        },
+        {
+          "caller": "isBubbleResponse",
+          "callee": "isNonEmptyIdentifier",
+          "lineNumber": 124
+        },
+        {
+          "caller": "isBubbleResponse",
+          "callee": "isIsoTimestamp",
+          "lineNumber": 126
+        },
+        {
+          "caller": "assertBubbleResponse",
+          "callee": "isBubbleResponse",
+          "lineNumber": 136
+        },
+        {
+          "caller": "isBubbleListResponse",
+          "callee": "Array.isArray",
+          "lineNumber": 148
+        },
+        {
+          "caller": "isBubbleListResponse",
+          "callee": "value.every",
+          "lineNumber": 149
+        },
+        {
+          "caller": "isBubbleListResponse",
+          "callee": "isBubbleResponse",
+          "lineNumber": 149
+        },
+        {
+          "caller": "isBubbleListResponse",
+          "callee": "value.map",
+          "lineNumber": 150
+        },
+        {
+          "caller": "assertBubbleListResponse",
+          "callee": "isBubbleListResponse",
+          "lineNumber": 158
+        },
+        {
+          "caller": "isBubblePlacementResponse",
+          "callee": "isRecord",
+          "lineNumber": 169
+        },
+        {
+          "caller": "isBubblePlacementResponse",
+          "callee": "Number.isFinite",
+          "lineNumber": 171
+        },
+        {
+          "caller": "isBubblePlacementResponse",
+          "callee": "Number.isFinite",
+          "lineNumber": 173
+        },
+        {
+          "caller": "assertBubblePlacementResponse",
+          "callee": "isBubblePlacementResponse",
+          "lineNumber": 180
+        },
+        {
+          "caller": "bubbleLinkPairKey",
+          "callee": "JSON.stringify",
+          "lineNumber": 197
+        },
+        {
+          "caller": "isBubbleLinkResponse",
+          "callee": "isRecord",
+          "lineNumber": 205
+        },
+        {
+          "caller": "isBubbleLinkResponse",
+          "callee": "isNonEmptyIdentifier",
+          "lineNumber": 210
+        },
+        {
+          "caller": "isBubbleLinkResponse",
+          "callee": "isNonEmptyIdentifier",
+          "lineNumber": 212
+        },
+        {
+          "caller": "isBubbleLinkResponse",
+          "callee": "isNonEmptyIdentifier",
+          "lineNumber": 213
+        },
+        {
+          "caller": "isBubbleLinkResponse",
+          "callee": "isIsoTimestamp",
+          "lineNumber": 215
+        },
+        {
+          "caller": "isBubbleLinkResponse",
+          "callee": "orderedLinkPair",
+          "lineNumber": 221
+        },
+        {
+          "caller": "assertBubbleLinkResponse",
+          "callee": "isBubbleLinkResponse",
+          "lineNumber": 234
+        },
+        {
+          "caller": "isBubbleLinkListResponse",
+          "callee": "Array.isArray",
+          "lineNumber": 246
+        },
+        {
+          "caller": "isBubbleLinkListResponse",
+          "callee": "value.every",
+          "lineNumber": 247
+        },
+        {
+          "caller": "isBubbleLinkListResponse",
+          "callee": "isBubbleLinkResponse",
+          "lineNumber": 247
+        },
+        {
+          "caller": "isBubbleLinkListResponse",
+          "callee": "value.map",
+          "lineNumber": 253
+        },
+        {
+          "caller": "isBubbleLinkListResponse",
+          "callee": "value.map",
+          "lineNumber": 254
+        },
+        {
+          "caller": "assertBubbleLinkListResponse",
+          "callee": "isBubbleLinkListResponse",
+          "lineNumber": 262
+        },
+        {
+          "caller": "getProjectBubbles",
+          "callee": "request<unknown>(\n      `/projects/${encodeURIComponent(projectId)}/bubbles`,\n      { signal },\n    ).then",
+          "lineNumber": 274
+        },
+        {
+          "caller": "getProjectBubbles",
+          "callee": "request",
+          "lineNumber": 274
+        },
+        {
+          "caller": "getProjectBubbles",
+          "callee": "encodeURIComponent",
+          "lineNumber": 275
+        },
+        {
+          "caller": "getProjectBubbles",
+          "callee": "assertBubbleListResponse",
+          "lineNumber": 277
+        },
+        {
+          "caller": "getBubblePlacement",
+          "callee": "request<unknown>(\n      `/projects/${encodeURIComponent(projectId)}/bubbles/placement`,\n      {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify(input),\n      },\n    ).then",
+          "lineNumber": 284
+        },
+        {
+          "caller": "getBubblePlacement",
+          "callee": "request",
+          "lineNumber": 284
+        },
+        {
+          "caller": "getBubblePlacement",
+          "callee": "encodeURIComponent",
+          "lineNumber": 285
+        },
+        {
+          "caller": "getBubblePlacement",
+          "callee": "JSON.stringify",
+          "lineNumber": 289
+        },
+        {
+          "caller": "createBubble",
+          "callee": "request<unknown>(\n      `/projects/${encodeURIComponent(projectId)}/bubbles`,\n      {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify(input),\n      },\n    ).then",
+          "lineNumber": 298
+        },
+        {
+          "caller": "createBubble",
+          "callee": "request",
+          "lineNumber": 298
+        },
+        {
+          "caller": "createBubble",
+          "callee": "encodeURIComponent",
+          "lineNumber": 299
+        },
+        {
+          "caller": "createBubble",
+          "callee": "JSON.stringify",
+          "lineNumber": 303
+        },
+        {
+          "caller": "createBubble",
+          "callee": "assertBubbleResponse",
+          "lineNumber": 305
+        },
+        {
+          "caller": "updateBubblePosition",
+          "callee": "request<unknown>(\n      `/projects/${encodeURIComponent(projectId)}/bubbles/${encodeURIComponent(bubbleId)}/position`,\n      {\n        method: 'PATCH',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify(input),\n      },\n    ).then",
+          "lineNumber": 313
+        },
+        {
+          "caller": "updateBubblePosition",
+          "callee": "request",
+          "lineNumber": 313
+        },
+        {
+          "caller": "updateBubblePosition",
+          "callee": "encodeURIComponent",
+          "lineNumber": 314
+        },
+        {
+          "caller": "updateBubblePosition",
+          "callee": "encodeURIComponent",
+          "lineNumber": 314
+        },
+        {
+          "caller": "updateBubblePosition",
+          "callee": "JSON.stringify",
+          "lineNumber": 318
+        },
+        {
+          "caller": "updateBubblePosition",
+          "callee": "assertBubbleResponse",
+          "lineNumber": 321
+        },
+        {
+          "caller": "updateBubblePositions",
+          "callee": "request<unknown>(\n      `/projects/${encodeURIComponent(projectId)}/bubbles/positions`,\n      {\n        method: 'PATCH',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify(input),\n      },\n    ).then",
+          "lineNumber": 329
+        },
+        {
+          "caller": "updateBubblePositions",
+          "callee": "request",
+          "lineNumber": 329
+        },
+        {
+          "caller": "updateBubblePositions",
+          "callee": "encodeURIComponent",
+          "lineNumber": 330
+        },
+        {
+          "caller": "updateBubblePositions",
+          "callee": "JSON.stringify",
+          "lineNumber": 334
+        },
+        {
+          "caller": "updateBubblePositions",
+          "callee": "assertBubbleListResponse",
+          "lineNumber": 336
+        },
+        {
+          "caller": "updateBubble",
+          "callee": "request<unknown>(\n      `/projects/${encodeURIComponent(projectId)}/bubbles/${encodeURIComponent(bubbleId)}`,\n      {\n        method: 'PATCH',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify(input),\n        signal,\n      },\n    ).then",
+          "lineNumber": 345
+        },
+        {
+          "caller": "updateBubble",
+          "callee": "request",
+          "lineNumber": 345
+        },
+        {
+          "caller": "updateBubble",
+          "callee": "encodeURIComponent",
+          "lineNumber": 346
+        },
+        {
+          "caller": "updateBubble",
+          "callee": "encodeURIComponent",
+          "lineNumber": 346
+        },
+        {
+          "caller": "updateBubble",
+          "callee": "JSON.stringify",
+          "lineNumber": 350
+        },
+        {
+          "caller": "updateBubble",
+          "callee": "assertBubbleResponse",
+          "lineNumber": 354
+        },
+        {
+          "caller": "deleteBubble",
+          "callee": "request",
+          "lineNumber": 363
+        },
+        {
+          "caller": "deleteBubble",
+          "callee": "encodeURIComponent",
+          "lineNumber": 364
+        },
+        {
+          "caller": "deleteBubble",
+          "callee": "encodeURIComponent",
+          "lineNumber": 364
+        },
+        {
+          "caller": "getBubbleLinks",
+          "callee": "request<unknown>(\n      `/projects/${encodeURIComponent(projectId)}/bubble-links`,\n      { signal },\n    ).then",
+          "lineNumber": 376
+        },
+        {
+          "caller": "getBubbleLinks",
+          "callee": "request",
+          "lineNumber": 376
+        },
+        {
+          "caller": "getBubbleLinks",
+          "callee": "encodeURIComponent",
+          "lineNumber": 377
+        },
+        {
+          "caller": "getBubbleLinks",
+          "callee": "assertBubbleLinkListResponse",
+          "lineNumber": 379
+        },
+        {
+          "caller": "createBubbleLink",
+          "callee": "request<unknown>(\n      `/projects/${encodeURIComponent(projectId)}/bubble-links`,\n      {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify(input),\n      },\n    ).then",
+          "lineNumber": 386
+        },
+        {
+          "caller": "createBubbleLink",
+          "callee": "request",
+          "lineNumber": 386
+        },
+        {
+          "caller": "createBubbleLink",
+          "callee": "encodeURIComponent",
+          "lineNumber": 387
+        },
+        {
+          "caller": "createBubbleLink",
+          "callee": "JSON.stringify",
+          "lineNumber": 391
+        },
+        {
+          "caller": "createBubbleLink",
+          "callee": "assertBubbleLinkResponse",
+          "lineNumber": 394
+        },
+        {
+          "caller": "deleteBubbleLink",
+          "callee": "request",
+          "lineNumber": 406
+        },
+        {
+          "caller": "deleteBubbleLink",
+          "callee": "encodeURIComponent",
+          "lineNumber": 407
+        },
+        {
+          "caller": "deleteBubbleLink",
+          "callee": "encodeURIComponent",
+          "lineNumber": 407
+        },
+        {
+          "caller": "deleteBubbleLink",
+          "callee": "encodeURIComponent",
+          "lineNumber": 407
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 19,
+        "functionCount": 17,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/api/client.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 55,
+      "nonEmptyLines": 45,
+      "functions": [
+        {
+          "name": "requestJson",
+          "startLine": 26,
+          "endLine": 55,
+          "params": [
+            "path",
+            "init"
+          ]
+        }
+      ],
+      "classes": [
+        {
+          "name": "ApiError",
+          "startLine": 12,
+          "endLine": 24,
+          "methods": [
+            "constructor"
+          ],
+          "properties": [
+            "status",
+            "code",
+            "body"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "ApiError",
+          "line": 12,
+          "isDefault": false
+        },
+        {
+          "name": "requestJson",
+          "line": 26,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "constructor",
+          "callee": "super",
+          "lineNumber": 18
+        },
+        {
+          "caller": "constructor",
+          "callee": "Object.freeze",
+          "lineNumber": 22
+        },
+        {
+          "caller": "requestJson",
+          "callee": "headers.set",
+          "lineNumber": 31
+        },
+        {
+          "caller": "requestJson",
+          "callee": "fetch",
+          "lineNumber": 33
+        },
+        {
+          "caller": "requestJson",
+          "callee": "response.json",
+          "lineNumber": 42
+        },
+        {
+          "caller": "requestJson",
+          "callee": "response.json",
+          "lineNumber": 54
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 2,
+        "functionCount": 1,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "frontend/src/api/discussionResponse.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 60,
+      "nonEmptyLines": 56,
+      "functions": [
+        {
+          "name": "responseWith",
+          "startLine": 6,
+          "endLine": 28,
+          "params": [
+            "message"
+          ]
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/api/discussionResponse.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 280,
+      "nonEmptyLines": 240,
+      "functions": [
+        {
+          "name": "isRecord",
+          "startLine": 10,
+          "endLine": 12,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isNonEmptyString",
+          "startLine": 14,
+          "endLine": 16,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isTimestamp",
+          "startLine": 18,
+          "endLine": 29,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isSupportedSourceKind",
+          "startLine": 31,
+          "endLine": 39,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isFrozenContextItem",
+          "startLine": 41,
+          "endLine": 60,
+          "params": [
+            "value",
+            "expectedDisplayOrder"
+          ]
+        },
+        {
+          "name": "deduplicate",
+          "startLine": 62,
+          "endLine": 64,
+          "params": [
+            "sourceIds"
+          ]
+        },
+        {
+          "name": "matchesExpectedSelection",
+          "startLine": 66,
+          "endLine": 92,
+          "params": [
+            "items",
+            "selection"
+          ]
+        },
+        {
+          "name": "isFrozenContextV1",
+          "startLine": 94,
+          "endLine": 155,
+          "params": [
+            "value",
+            "projectId",
+            "expectedSelection"
+          ]
+        },
+        {
+          "name": "isDiscussionFrozenContext",
+          "startLine": 157,
+          "endLine": 171,
+          "params": [
+            "value",
+            "projectId",
+            "expectedSelection"
+          ]
+        },
+        {
+          "name": "isDiscussionMessage",
+          "startLine": 173,
+          "endLine": 198,
+          "params": [
+            "value",
+            "discussionId"
+          ]
+        },
+        {
+          "name": "isMessageCitation",
+          "startLine": 200,
+          "endLine": 207,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isDiscussionDetails",
+          "startLine": 209,
+          "endLine": 260,
+          "params": [
+            "value",
+            "projectId",
+            "discussionId",
+            "expectedSelection"
+          ]
+        },
+        {
+          "name": "assertDiscussionDetails",
+          "startLine": 262,
+          "endLine": 280,
+          "params": [
+            "value",
+            "projectId",
+            "discussionId",
+            "expectedSelection"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "isFrozenContextV1",
+          "line": 94,
+          "isDefault": false
+        },
+        {
+          "name": "isDiscussionDetails",
+          "line": 209,
+          "isDefault": false
+        },
+        {
+          "name": "assertDiscussionDetails",
+          "line": 262,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "isRecord",
+          "callee": "Array.isArray",
+          "lineNumber": 11
+        },
+        {
+          "caller": "isNonEmptyString",
+          "callee": "value.trim",
+          "lineNumber": 15
+        },
+        {
+          "caller": "isTimestamp",
+          "callee": "isNonEmptyString",
+          "lineNumber": 19
+        },
+        {
+          "caller": "isTimestamp",
+          "callee": "Date.parse",
+          "lineNumber": 23
+        },
+        {
+          "caller": "isTimestamp",
+          "callee": "Number.isFinite",
+          "lineNumber": 26
+        },
+        {
+          "caller": "isTimestamp",
+          "callee": "new Date(milliseconds).toISOString",
+          "lineNumber": 27
+        },
+        {
+          "caller": "isFrozenContextItem",
+          "callee": "isRecord",
+          "lineNumber": 45
+        },
+        {
+          "caller": "isFrozenContextItem",
+          "callee": "isSupportedSourceKind",
+          "lineNumber": 45
+        },
+        {
+          "caller": "isFrozenContextItem",
+          "callee": "isNonEmptyString",
+          "lineNumber": 50
+        },
+        {
+          "caller": "isFrozenContextItem",
+          "callee": "isNonEmptyString",
+          "lineNumber": 51
+        },
+        {
+          "caller": "isFrozenContextItem",
+          "callee": "isNonEmptyString",
+          "lineNumber": 52
+        },
+        {
+          "caller": "isFrozenContextItem",
+          "callee": "value.frozen_content.trim",
+          "lineNumber": 55
+        },
+        {
+          "caller": "isFrozenContextItem",
+          "callee": "isTimestamp",
+          "lineNumber": 56
+        },
+        {
+          "caller": "isFrozenContextItem",
+          "callee": "Number.isInteger",
+          "lineNumber": 57
+        },
+        {
+          "caller": "matchesExpectedSelection",
+          "callee": "deduplicate(selection.bubble_ids).map",
+          "lineNumber": 71
+        },
+        {
+          "caller": "matchesExpectedSelection",
+          "callee": "deduplicate",
+          "lineNumber": 71
+        },
+        {
+          "caller": "matchesExpectedSelection",
+          "callee": "deduplicate(selection.document_ids).map",
+          "lineNumber": 75
+        },
+        {
+          "caller": "matchesExpectedSelection",
+          "callee": "deduplicate",
+          "lineNumber": 75
+        },
+        {
+          "caller": "matchesExpectedSelection",
+          "callee": "expectedSources.every",
+          "lineNumber": 83
+        },
+        {
+          "caller": "isFrozenContextV1",
+          "callee": "isRecord",
+          "lineNumber": 99
+        },
+        {
+          "caller": "isFrozenContextV1",
+          "callee": "Array.isArray",
+          "lineNumber": 99
+        },
+        {
+          "caller": "isFrozenContextV1",
+          "callee": "items.entries",
+          "lineNumber": 114
+        },
+        {
+          "caller": "isFrozenContextV1",
+          "callee": "isFrozenContextItem",
+          "lineNumber": 115
+        },
+        {
+          "caller": "isFrozenContextV1",
+          "callee": "itemIds.has",
+          "lineNumber": 123
+        },
+        {
+          "caller": "isFrozenContextV1",
+          "callee": "sourceIdentifiers.has",
+          "lineNumber": 124
+        },
+        {
+          "caller": "isFrozenContextV1",
+          "callee": "displayOrders.has",
+          "lineNumber": 125
+        },
+        {
+          "caller": "isFrozenContextV1",
+          "callee": "itemIds.add",
+          "lineNumber": 138
+        },
+        {
+          "caller": "isFrozenContextV1",
+          "callee": "sourceIdentifiers.add",
+          "lineNumber": 139
+        },
+        {
+          "caller": "isFrozenContextV1",
+          "callee": "displayOrders.add",
+          "lineNumber": 140
+        },
+        {
+          "caller": "isFrozenContextV1",
+          "callee": "items.every",
+          "lineNumber": 146
+        },
+        {
+          "caller": "isFrozenContextV1",
+          "callee": "displayOrders.has",
+          "lineNumber": 146
+        },
+        {
+          "caller": "isFrozenContextV1",
+          "callee": "matchesExpectedSelection",
+          "lineNumber": 153
+        },
+        {
+          "caller": "isDiscussionFrozenContext",
+          "callee": "isRecord",
+          "lineNumber": 162
+        },
+        {
+          "caller": "isDiscussionFrozenContext",
+          "callee": "isFrozenContextV1",
+          "lineNumber": 167
+        },
+        {
+          "caller": "isDiscussionMessage",
+          "callee": "isRecord",
+          "lineNumber": 177
+        },
+        {
+          "caller": "isDiscussionMessage",
+          "callee": "isNonEmptyString",
+          "lineNumber": 182
+        },
+        {
+          "caller": "isDiscussionMessage",
+          "callee": "isNonEmptyString",
+          "lineNumber": 185
+        },
+        {
+          "caller": "isDiscussionMessage",
+          "callee": "isTimestamp",
+          "lineNumber": 186
+        },
+        {
+          "caller": "isDiscussionMessage",
+          "callee": "isNonEmptyString",
+          "lineNumber": 190
+        },
+        {
+          "caller": "isDiscussionMessage",
+          "callee": "Array.isArray",
+          "lineNumber": 195
+        },
+        {
+          "caller": "isDiscussionMessage",
+          "callee": "value.citations.every",
+          "lineNumber": 196
+        },
+        {
+          "caller": "isMessageCitation",
+          "callee": "isRecord",
+          "lineNumber": 202
+        },
+        {
+          "caller": "isDiscussionDetails",
+          "callee": "isRecord",
+          "lineNumber": 215
+        },
+        {
+          "caller": "isDiscussionDetails",
+          "callee": "isNonEmptyString",
+          "lineNumber": 222
+        },
+        {
+          "caller": "isDiscussionDetails",
+          "callee": "isNonEmptyString",
+          "lineNumber": 225
+        },
+        {
+          "caller": "isDiscussionDetails",
+          "callee": "isDiscussionFrozenContext",
+          "lineNumber": 226
+        },
+        {
+          "caller": "isDiscussionDetails",
+          "callee": "isTimestamp",
+          "lineNumber": 231
+        },
+        {
+          "caller": "isDiscussionDetails",
+          "callee": "isTimestamp",
+          "lineNumber": 232
+        },
+        {
+          "caller": "isDiscussionDetails",
+          "callee": "isTimestamp",
+          "lineNumber": 233
+        },
+        {
+          "caller": "isDiscussionDetails",
+          "callee": "Array.isArray",
+          "lineNumber": 234
+        },
+        {
+          "caller": "isDiscussionDetails",
+          "callee": "value.messages.every",
+          "lineNumber": 242
+        },
+        {
+          "caller": "isDiscussionDetails",
+          "callee": "isDiscussionMessage",
+          "lineNumber": 244
+        },
+        {
+          "caller": "isDiscussionDetails",
+          "callee": "seenMessageIds.has",
+          "lineNumber": 245
+        },
+        {
+          "caller": "isDiscussionDetails",
+          "callee": "Date.parse",
+          "lineNumber": 250
+        },
+        {
+          "caller": "isDiscussionDetails",
+          "callee": "seenMessageIds.add",
+          "lineNumber": 256
+        },
+        {
+          "caller": "assertDiscussionDetails",
+          "callee": "isDiscussionDetails",
+          "lineNumber": 269
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 13,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/api/discussions.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 190,
+      "nonEmptyLines": 174,
+      "functions": [
+        {
+          "name": "createDiscussionsApi",
+          "startLine": 43,
+          "endLine": 179,
+          "params": [
+            "request"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "assertDiscussionDetails",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "isDiscussionDetails",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "isFrozenContextV1",
+          "line": 19,
+          "isDefault": false
+        },
+        {
+          "name": "CreateDiscussionInput",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "Discussion",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "DiscussionContextSelectionInput",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "DiscussionDetails",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "DiscussionFrozenContext",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "DiscussionListResponse",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "DiscussionMessage",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "DiscussionMessageStatus",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "DiscussionRole",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "DiscussionSummary",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "FrozenContext",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "FrozenContextItem",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "SendMessageInput",
+          "line": 25,
+          "isDefault": false
+        },
+        {
+          "name": "createDiscussionsApi",
+          "line": 43,
+          "isDefault": false
+        },
+        {
+          "name": "{\n  createDiscussion,\n  deleteDiscussion,\n  generateDiscussionTitle,\n  getDiscussion,\n  getProjectDiscussions,\n  recordDiscussionOpen,\n  retryDiscussionMessage,\n  sendDiscussionMessage,\n}",
+          "line": 181,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "collectionPath",
+          "callee": "encodeURIComponent",
+          "lineNumber": 45
+        },
+        {
+          "caller": "resourcePath",
+          "callee": "collectionPath",
+          "lineNumber": 49
+        },
+        {
+          "caller": "resourcePath",
+          "callee": "encodeURIComponent",
+          "lineNumber": 49
+        },
+        {
+          "caller": "createDiscussion",
+          "callee": "request<unknown>(collectionPath(projectId), {\n      method: 'POST',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify(input),\n      signal,\n    }).then",
+          "lineNumber": 57
+        },
+        {
+          "caller": "createDiscussion",
+          "callee": "request",
+          "lineNumber": 57
+        },
+        {
+          "caller": "createDiscussion",
+          "callee": "collectionPath",
+          "lineNumber": 57
+        },
+        {
+          "caller": "createDiscussion",
+          "callee": "JSON.stringify",
+          "lineNumber": 60
+        },
+        {
+          "caller": "createDiscussion",
+          "callee": "assertDiscussionDetails",
+          "lineNumber": 63
+        },
+        {
+          "caller": "getProjectDiscussions",
+          "callee": "request",
+          "lineNumber": 71
+        },
+        {
+          "caller": "getProjectDiscussions",
+          "callee": "collectionPath",
+          "lineNumber": 71
+        },
+        {
+          "caller": "getDiscussion",
+          "callee": "request<unknown>(\n      resourcePath(projectId, discussionId),\n      { signal },\n    ).then",
+          "lineNumber": 81
+        },
+        {
+          "caller": "getDiscussion",
+          "callee": "request",
+          "lineNumber": 81
+        },
+        {
+          "caller": "getDiscussion",
+          "callee": "resourcePath",
+          "lineNumber": 82
+        },
+        {
+          "caller": "getDiscussion",
+          "callee": "assertDiscussionDetails",
+          "lineNumber": 85
+        },
+        {
+          "caller": "requestMessage",
+          "callee": "request<unknown>(\n      `${resourcePath(projectId, discussionId)}/messages`,\n      {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify(input),\n        signal,\n      },\n    ).then",
+          "lineNumber": 95
+        },
+        {
+          "caller": "requestMessage",
+          "callee": "request",
+          "lineNumber": 95
+        },
+        {
+          "caller": "requestMessage",
+          "callee": "resourcePath",
+          "lineNumber": 96
+        },
+        {
+          "caller": "requestMessage",
+          "callee": "JSON.stringify",
+          "lineNumber": 100
+        },
+        {
+          "caller": "requestMessage",
+          "callee": "assertDiscussionDetails",
+          "lineNumber": 104
+        },
+        {
+          "caller": "sendDiscussionMessage",
+          "callee": "requestMessage",
+          "lineNumber": 114
+        },
+        {
+          "caller": "retryDiscussionMessage",
+          "callee": "requestMessage",
+          "lineNumber": 123
+        },
+        {
+          "caller": "generateDiscussionTitle",
+          "callee": "request<unknown>(\n      `${resourcePath(projectId, discussionId)}/title`,\n      {\n        method: 'POST',\n        signal,\n      },\n    ).then",
+          "lineNumber": 131
+        },
+        {
+          "caller": "generateDiscussionTitle",
+          "callee": "request",
+          "lineNumber": 131
+        },
+        {
+          "caller": "generateDiscussionTitle",
+          "callee": "resourcePath",
+          "lineNumber": 132
+        },
+        {
+          "caller": "generateDiscussionTitle",
+          "callee": "assertDiscussionDetails",
+          "lineNumber": 138
+        },
+        {
+          "caller": "recordDiscussionOpen",
+          "callee": "request<unknown>(\n      `${resourcePath(projectId, discussionId)}/open`,\n      {\n        method: 'POST',\n        signal,\n      },\n    ).then",
+          "lineNumber": 147
+        },
+        {
+          "caller": "recordDiscussionOpen",
+          "callee": "request",
+          "lineNumber": 147
+        },
+        {
+          "caller": "recordDiscussionOpen",
+          "callee": "resourcePath",
+          "lineNumber": 148
+        },
+        {
+          "caller": "recordDiscussionOpen",
+          "callee": "assertDiscussionDetails",
+          "lineNumber": 154
+        },
+        {
+          "caller": "deleteDiscussion",
+          "callee": "request",
+          "lineNumber": 163
+        },
+        {
+          "caller": "deleteDiscussion",
+          "callee": "resourcePath",
+          "lineNumber": 163
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 18,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/api/documents.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 347,
+      "nonEmptyLines": 302,
+      "functions": [
+        {
+          "name": "isRecord",
+          "startLine": 61,
+          "endLine": 63,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isNonEmptyString",
+          "startLine": 65,
+          "endLine": 67,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isPositiveInteger",
+          "startLine": 69,
+          "endLine": 71,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isIsoTimestamp",
+          "startLine": 73,
+          "endLine": 84,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isUniqueStringList",
+          "startLine": 86,
+          "endLine": 103,
+          "params": [
+            "value",
+            "predicate"
+          ]
+        },
+        {
+          "name": "isFormatPolicy",
+          "startLine": 105,
+          "endLine": 123,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isDocumentUploadPolicyResponse",
+          "startLine": 125,
+          "endLine": 144,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "assertDocumentUploadPolicyResponse",
+          "startLine": 146,
+          "endLine": 154,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "hasDocumentSummaryBase",
+          "startLine": 156,
+          "endLine": 172,
+          "params": [
+            "value",
+            "projectId"
+          ]
+        },
+        {
+          "name": "isDocumentSummaryResponse",
+          "startLine": 174,
+          "endLine": 201,
+          "params": [
+            "value",
+            "projectId",
+            "documentId"
+          ]
+        },
+        {
+          "name": "assertDocumentSummaryResponse",
+          "startLine": 203,
+          "endLine": 213,
+          "params": [
+            "value",
+            "projectId",
+            "documentId"
+          ]
+        },
+        {
+          "name": "isDocumentListResponse",
+          "startLine": 215,
+          "endLine": 224,
+          "params": [
+            "value",
+            "projectId"
+          ]
+        },
+        {
+          "name": "assertDocumentListResponse",
+          "startLine": 226,
+          "endLine": 235,
+          "params": [
+            "value",
+            "projectId"
+          ]
+        },
+        {
+          "name": "isDocumentDetailResponse",
+          "startLine": 237,
+          "endLine": 251,
+          "params": [
+            "value",
+            "projectId",
+            "documentId"
+          ]
+        },
+        {
+          "name": "assertDocumentDetailResponse",
+          "startLine": 253,
+          "endLine": 263,
+          "params": [
+            "value",
+            "projectId",
+            "documentId"
+          ]
+        },
+        {
+          "name": "createDocumentsApi",
+          "startLine": 265,
+          "endLine": 339,
+          "params": [
+            "request"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DocumentDetail",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "DocumentFormatCategory",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "DocumentListResponse",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "DocumentProcessingErrorCode",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "DocumentProcessingStatus",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "DocumentSummary",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "DocumentUploadFormatPolicy",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "DocumentUploadPolicy",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "DocumentUploadPolicyResponse",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "RetryDocumentProcessingResponse",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "UploadDocumentResponse",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "isDocumentUploadPolicyResponse",
+          "line": 125,
+          "isDefault": false
+        },
+        {
+          "name": "assertDocumentUploadPolicyResponse",
+          "line": 146,
+          "isDefault": false
+        },
+        {
+          "name": "isDocumentSummaryResponse",
+          "line": 174,
+          "isDefault": false
+        },
+        {
+          "name": "assertDocumentSummaryResponse",
+          "line": 203,
+          "isDefault": false
+        },
+        {
+          "name": "isDocumentListResponse",
+          "line": 215,
+          "isDefault": false
+        },
+        {
+          "name": "assertDocumentListResponse",
+          "line": 226,
+          "isDefault": false
+        },
+        {
+          "name": "isDocumentDetailResponse",
+          "line": 237,
+          "isDefault": false
+        },
+        {
+          "name": "assertDocumentDetailResponse",
+          "line": 253,
+          "isDefault": false
+        },
+        {
+          "name": "createDocumentsApi",
+          "line": 265,
+          "isDefault": false
+        },
+        {
+          "name": "{\n  getDocument,\n  getDocumentUploadPolicy,\n  getProjectDocuments,\n  retryDocumentProcessing,\n  uploadDocument,\n}",
+          "line": 341,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "isRecord",
+          "callee": "Array.isArray",
+          "lineNumber": 62
+        },
+        {
+          "caller": "isNonEmptyString",
+          "callee": "value.trim",
+          "lineNumber": 66
+        },
+        {
+          "caller": "isPositiveInteger",
+          "callee": "Number.isSafeInteger",
+          "lineNumber": 70
+        },
+        {
+          "caller": "isPositiveInteger",
+          "callee": "Number",
+          "lineNumber": 70
+        },
+        {
+          "caller": "isIsoTimestamp",
+          "callee": "Date.parse",
+          "lineNumber": 78
+        },
+        {
+          "caller": "isIsoTimestamp",
+          "callee": "Number.isFinite",
+          "lineNumber": 81
+        },
+        {
+          "caller": "isIsoTimestamp",
+          "callee": "new Date(milliseconds).toISOString",
+          "lineNumber": 82
+        },
+        {
+          "caller": "isUniqueStringList",
+          "callee": "Array.isArray",
+          "lineNumber": 90
+        },
+        {
+          "caller": "isUniqueStringList",
+          "callee": "value.flatMap",
+          "lineNumber": 94
+        },
+        {
+          "caller": "isUniqueStringList",
+          "callee": "isNonEmptyString",
+          "lineNumber": 95
+        },
+        {
+          "caller": "isUniqueStringList",
+          "callee": "entry.trim().toLowerCase",
+          "lineNumber": 95
+        },
+        {
+          "caller": "isUniqueStringList",
+          "callee": "entry.trim",
+          "lineNumber": 95
+        },
+        {
+          "caller": "isUniqueStringList",
+          "callee": "normalized.every",
+          "lineNumber": 100
+        },
+        {
+          "caller": "isFormatPolicy",
+          "callee": "isRecord",
+          "lineNumber": 107
+        },
+        {
+          "caller": "isFormatPolicy",
+          "callee": "DOCUMENT_FORMATS.has",
+          "lineNumber": 108
+        },
+        {
+          "caller": "isFormatPolicy",
+          "callee": "isUniqueStringList",
+          "lineNumber": 114
+        },
+        {
+          "caller": "isFormatPolicy",
+          "callee": "/^\\.[a-z0-9]+$/.test",
+          "lineNumber": 115
+        },
+        {
+          "caller": "isFormatPolicy",
+          "callee": "isUniqueStringList",
+          "lineNumber": 118
+        },
+        {
+          "caller": "isFormatPolicy",
+          "callee": "/^[a-z0-9!#$&^_.+-]+\\/[a-z0-9!#$&^_.+-]+$/.test",
+          "lineNumber": 119
+        },
+        {
+          "caller": "isDocumentUploadPolicyResponse",
+          "callee": "isRecord",
+          "lineNumber": 128
+        },
+        {
+          "caller": "isDocumentUploadPolicyResponse",
+          "callee": "Array.isArray",
+          "lineNumber": 128
+        },
+        {
+          "caller": "isDocumentUploadPolicyResponse",
+          "callee": "formats.every",
+          "lineNumber": 136
+        },
+        {
+          "caller": "isDocumentUploadPolicyResponse",
+          "callee": "formats.map",
+          "lineNumber": 137
+        },
+        {
+          "caller": "isDocumentUploadPolicyResponse",
+          "callee": "isPositiveInteger",
+          "lineNumber": 138
+        },
+        {
+          "caller": "isDocumentUploadPolicyResponse",
+          "callee": "isPositiveInteger",
+          "lineNumber": 139
+        },
+        {
+          "caller": "isDocumentUploadPolicyResponse",
+          "callee": "isPositiveInteger",
+          "lineNumber": 140
+        },
+        {
+          "caller": "isDocumentUploadPolicyResponse",
+          "callee": "isPositiveInteger",
+          "lineNumber": 141
+        },
+        {
+          "caller": "assertDocumentUploadPolicyResponse",
+          "callee": "isDocumentUploadPolicyResponse",
+          "lineNumber": 149
+        },
+        {
+          "caller": "hasDocumentSummaryBase",
+          "callee": "isNonEmptyString",
+          "lineNumber": 161
+        },
+        {
+          "caller": "hasDocumentSummaryBase",
+          "callee": "isNonEmptyString",
+          "lineNumber": 163
+        },
+        {
+          "caller": "hasDocumentSummaryBase",
+          "callee": "isNonEmptyString",
+          "lineNumber": 164
+        },
+        {
+          "caller": "hasDocumentSummaryBase",
+          "callee": "DOCUMENT_FORMATS.has",
+          "lineNumber": 165
+        },
+        {
+          "caller": "hasDocumentSummaryBase",
+          "callee": "isNonEmptyString",
+          "lineNumber": 166
+        },
+        {
+          "caller": "hasDocumentSummaryBase",
+          "callee": "isPositiveInteger",
+          "lineNumber": 167
+        },
+        {
+          "caller": "hasDocumentSummaryBase",
+          "callee": "isIsoTimestamp",
+          "lineNumber": 168
+        },
+        {
+          "caller": "hasDocumentSummaryBase",
+          "callee": "isIsoTimestamp",
+          "lineNumber": 169
+        },
+        {
+          "caller": "hasDocumentSummaryBase",
+          "callee": "Date.parse",
+          "lineNumber": 170
+        },
+        {
+          "caller": "hasDocumentSummaryBase",
+          "callee": "Date.parse",
+          "lineNumber": 170
+        },
+        {
+          "caller": "isDocumentSummaryResponse",
+          "callee": "isRecord",
+          "lineNumber": 180
+        },
+        {
+          "caller": "isDocumentSummaryResponse",
+          "callee": "hasDocumentSummaryBase",
+          "lineNumber": 181
+        },
+        {
+          "caller": "isDocumentSummaryResponse",
+          "callee": "DOCUMENT_ERROR_CODES.has",
+          "lineNumber": 189
+        },
+        {
+          "caller": "assertDocumentSummaryResponse",
+          "callee": "isDocumentSummaryResponse",
+          "lineNumber": 208
+        },
+        {
+          "caller": "isDocumentListResponse",
+          "callee": "Array.isArray",
+          "lineNumber": 220
+        },
+        {
+          "caller": "isDocumentListResponse",
+          "callee": "value.every",
+          "lineNumber": 221
+        },
+        {
+          "caller": "isDocumentListResponse",
+          "callee": "isDocumentSummaryResponse",
+          "lineNumber": 221
+        },
+        {
+          "caller": "isDocumentListResponse",
+          "callee": "value.map",
+          "lineNumber": 222
+        },
+        {
+          "caller": "assertDocumentListResponse",
+          "callee": "isDocumentListResponse",
+          "lineNumber": 230
+        },
+        {
+          "caller": "isDocumentDetailResponse",
+          "callee": "isDocumentSummaryResponse",
+          "lineNumber": 242
+        },
+        {
+          "caller": "isDocumentDetailResponse",
+          "callee": "isNonEmptyString",
+          "lineNumber": 249
+        },
+        {
+          "caller": "assertDocumentDetailResponse",
+          "callee": "isDocumentDetailResponse",
+          "lineNumber": 258
+        },
+        {
+          "caller": "collectionPath",
+          "callee": "encodeURIComponent",
+          "lineNumber": 267
+        },
+        {
+          "caller": "resourcePath",
+          "callee": "collectionPath",
+          "lineNumber": 271
+        },
+        {
+          "caller": "resourcePath",
+          "callee": "encodeURIComponent",
+          "lineNumber": 271
+        },
+        {
+          "caller": "getDocumentUploadPolicy",
+          "callee": "request<unknown>('/document-upload-policy', { signal }).then",
+          "lineNumber": 277
+        },
+        {
+          "caller": "getDocumentUploadPolicy",
+          "callee": "request",
+          "lineNumber": 277
+        },
+        {
+          "caller": "getProjectDocuments",
+          "callee": "request<unknown>(collectionPath(projectId), { signal }).then",
+          "lineNumber": 286
+        },
+        {
+          "caller": "getProjectDocuments",
+          "callee": "request",
+          "lineNumber": 286
+        },
+        {
+          "caller": "getProjectDocuments",
+          "callee": "collectionPath",
+          "lineNumber": 286
+        },
+        {
+          "caller": "getProjectDocuments",
+          "callee": "assertDocumentListResponse",
+          "lineNumber": 287
+        },
+        {
+          "caller": "getDocument",
+          "callee": "request<unknown>(resourcePath(projectId, documentId), {\n      signal,\n    }).then",
+          "lineNumber": 296
+        },
+        {
+          "caller": "getDocument",
+          "callee": "request",
+          "lineNumber": 296
+        },
+        {
+          "caller": "getDocument",
+          "callee": "resourcePath",
+          "lineNumber": 296
+        },
+        {
+          "caller": "getDocument",
+          "callee": "assertDocumentDetailResponse",
+          "lineNumber": 299
+        },
+        {
+          "caller": "uploadDocument",
+          "callee": "body.append",
+          "lineNumber": 309
+        },
+        {
+          "caller": "uploadDocument",
+          "callee": "body.append",
+          "lineNumber": 310
+        },
+        {
+          "caller": "uploadDocument",
+          "callee": "request<unknown>(collectionPath(projectId), {\n      body,\n      method: 'POST',\n      signal,\n    }).then",
+          "lineNumber": 312
+        },
+        {
+          "caller": "uploadDocument",
+          "callee": "request",
+          "lineNumber": 312
+        },
+        {
+          "caller": "uploadDocument",
+          "callee": "collectionPath",
+          "lineNumber": 312
+        },
+        {
+          "caller": "uploadDocument",
+          "callee": "assertDocumentSummaryResponse",
+          "lineNumber": 316
+        },
+        {
+          "caller": "retryDocumentProcessing",
+          "callee": "request<unknown>(`${resourcePath(projectId, documentId)}/retry`, {\n      method: 'POST',\n      signal,\n    }).then",
+          "lineNumber": 324
+        },
+        {
+          "caller": "retryDocumentProcessing",
+          "callee": "request",
+          "lineNumber": 324
+        },
+        {
+          "caller": "retryDocumentProcessing",
+          "callee": "resourcePath",
+          "lineNumber": 324
+        },
+        {
+          "caller": "retryDocumentProcessing",
+          "callee": "assertDocumentSummaryResponse",
+          "lineNumber": 328
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 21,
+        "functionCount": 16,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/api/knowledgeExtractions.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 355,
+      "nonEmptyLines": 315,
+      "functions": [
+        {
+          "name": "isRecord",
+          "startLine": 33,
+          "endLine": 35,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isNonEmptyString",
+          "startLine": 37,
+          "endLine": 39,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isIsoTimestamp",
+          "startLine": 41,
+          "endLine": 52,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isIdentifierList",
+          "startLine": 54,
+          "endLine": 60,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "haveSameIdentifiers",
+          "startLine": 62,
+          "endLine": 70,
+          "params": [
+            "first",
+            "second"
+          ]
+        },
+        {
+          "name": "isProposal",
+          "startLine": 72,
+          "endLine": 82,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isSourceReference",
+          "startLine": 84,
+          "endLine": 96,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "sourceMatchesInput",
+          "startLine": 98,
+          "endLine": 112,
+          "params": [
+            "source",
+            "input"
+          ]
+        },
+        {
+          "name": "isKnowledgeExtractionProposalResponse",
+          "startLine": 114,
+          "endLine": 138,
+          "params": [
+            "value",
+            "projectId",
+            "discussionId",
+            "input"
+          ]
+        },
+        {
+          "name": "assertKnowledgeExtractionProposalResponse",
+          "startLine": 140,
+          "endLine": 158,
+          "params": [
+            "value",
+            "projectId",
+            "discussionId",
+            "input"
+          ]
+        },
+        {
+          "name": "resolutionBubble",
+          "startLine": 160,
+          "endLine": 165,
+          "params": [
+            "value",
+            "projectId"
+          ]
+        },
+        {
+          "name": "isKnowledgeExtractionResolutionResponse",
+          "startLine": 167,
+          "endLine": 214,
+          "params": [
+            "value",
+            "projectId",
+            "discussionId",
+            "extractionId",
+            "expectedKind",
+            "expectedTargetBubbleId"
+          ]
+        },
+        {
+          "name": "assertKnowledgeExtractionResolutionResponse",
+          "startLine": 216,
+          "endLine": 239,
+          "params": [
+            "value",
+            "projectId",
+            "discussionId",
+            "extractionId",
+            "input"
+          ]
+        },
+        {
+          "name": "isKnowledgeExtractionTargetChangedError",
+          "startLine": 241,
+          "endLine": 262,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "createKnowledgeExtractionsApi",
+          "startLine": 264,
+          "endLine": 349,
+          "params": [
+            "request"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "CreateKnowledgeExtractionInput",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "KnowledgeExtractionDetailLevel",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "KnowledgeExtractionProposal",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "KnowledgeExtractionProposalResponse",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "KnowledgeExtractionResolutionResponse",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "KnowledgeExtractionSourceReference",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "KnowledgeExtractionTargetChangedError",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "KnowledgeExtractionTargetPreview",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "ResolveKnowledgeExtractionInput",
+          "line": 16,
+          "isDefault": false
+        },
+        {
+          "name": "isKnowledgeExtractionProposalResponse",
+          "line": 114,
+          "isDefault": false
+        },
+        {
+          "name": "assertKnowledgeExtractionProposalResponse",
+          "line": 140,
+          "isDefault": false
+        },
+        {
+          "name": "isKnowledgeExtractionResolutionResponse",
+          "line": 167,
+          "isDefault": false
+        },
+        {
+          "name": "assertKnowledgeExtractionResolutionResponse",
+          "line": 216,
+          "isDefault": false
+        },
+        {
+          "name": "isKnowledgeExtractionTargetChangedError",
+          "line": 241,
+          "isDefault": false
+        },
+        {
+          "name": "createKnowledgeExtractionsApi",
+          "line": 264,
+          "isDefault": false
+        },
+        {
+          "name": "{\n  createKnowledgeExtraction,\n  discardKnowledgeExtraction,\n  resolveKnowledgeExtraction,\n}",
+          "line": 351,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "isRecord",
+          "callee": "Array.isArray",
+          "lineNumber": 34
+        },
+        {
+          "caller": "isNonEmptyString",
+          "callee": "value.trim",
+          "lineNumber": 38
+        },
+        {
+          "caller": "isIsoTimestamp",
+          "callee": "Date.parse",
+          "lineNumber": 46
+        },
+        {
+          "caller": "isIsoTimestamp",
+          "callee": "Number.isFinite",
+          "lineNumber": 49
+        },
+        {
+          "caller": "isIsoTimestamp",
+          "callee": "new Date(milliseconds).toISOString",
+          "lineNumber": 50
+        },
+        {
+          "caller": "isIdentifierList",
+          "callee": "Array.isArray",
+          "lineNumber": 56
+        },
+        {
+          "caller": "isIdentifierList",
+          "callee": "value.every",
+          "lineNumber": 57
+        },
+        {
+          "caller": "haveSameIdentifiers",
+          "callee": "first.every",
+          "lineNumber": 68
+        },
+        {
+          "caller": "haveSameIdentifiers",
+          "callee": "second.includes",
+          "lineNumber": 68
+        },
+        {
+          "caller": "isProposal",
+          "callee": "isRecord",
+          "lineNumber": 73
+        },
+        {
+          "caller": "isProposal",
+          "callee": "isNonEmptyString",
+          "lineNumber": 78
+        },
+        {
+          "caller": "isProposal",
+          "callee": "isNonEmptyString",
+          "lineNumber": 79
+        },
+        {
+          "caller": "isProposal",
+          "callee": "isNonEmptyString",
+          "lineNumber": 80
+        },
+        {
+          "caller": "isSourceReference",
+          "callee": "isRecord",
+          "lineNumber": 87
+        },
+        {
+          "caller": "isSourceReference",
+          "callee": "isIdentifierList",
+          "lineNumber": 92
+        },
+        {
+          "caller": "isSourceReference",
+          "callee": "isIdentifierList",
+          "lineNumber": 93
+        },
+        {
+          "caller": "sourceMatchesInput",
+          "callee": "haveSameIdentifiers",
+          "lineNumber": 103
+        },
+        {
+          "caller": "sourceMatchesInput",
+          "callee": "haveSameIdentifiers",
+          "lineNumber": 111
+        },
+        {
+          "caller": "isKnowledgeExtractionProposalResponse",
+          "callee": "isRecord",
+          "lineNumber": 120
+        },
+        {
+          "caller": "isKnowledgeExtractionProposalResponse",
+          "callee": "isNonEmptyString",
+          "lineNumber": 127
+        },
+        {
+          "caller": "isKnowledgeExtractionProposalResponse",
+          "callee": "isProposal",
+          "lineNumber": 131
+        },
+        {
+          "caller": "isKnowledgeExtractionProposalResponse",
+          "callee": "isSourceReference",
+          "lineNumber": 132
+        },
+        {
+          "caller": "isKnowledgeExtractionProposalResponse",
+          "callee": "sourceMatchesInput",
+          "lineNumber": 133
+        },
+        {
+          "caller": "isKnowledgeExtractionProposalResponse",
+          "callee": "isIsoTimestamp",
+          "lineNumber": 134
+        },
+        {
+          "caller": "isKnowledgeExtractionProposalResponse",
+          "callee": "isIsoTimestamp",
+          "lineNumber": 135
+        },
+        {
+          "caller": "isKnowledgeExtractionProposalResponse",
+          "callee": "Date.parse",
+          "lineNumber": 136
+        },
+        {
+          "caller": "isKnowledgeExtractionProposalResponse",
+          "callee": "Date.parse",
+          "lineNumber": 136
+        },
+        {
+          "caller": "assertKnowledgeExtractionProposalResponse",
+          "callee": "isKnowledgeExtractionProposalResponse",
+          "lineNumber": 147
+        },
+        {
+          "caller": "resolutionBubble",
+          "callee": "isBubbleResponse",
+          "lineNumber": 164
+        },
+        {
+          "caller": "isKnowledgeExtractionResolutionResponse",
+          "callee": "isRecord",
+          "lineNumber": 176
+        },
+        {
+          "caller": "isKnowledgeExtractionResolutionResponse",
+          "callee": "isRecord",
+          "lineNumber": 181
+        },
+        {
+          "caller": "isKnowledgeExtractionResolutionResponse",
+          "callee": "resolutionBubble",
+          "lineNumber": 207
+        },
+        {
+          "caller": "assertKnowledgeExtractionResolutionResponse",
+          "callee": "isKnowledgeExtractionResolutionResponse",
+          "lineNumber": 224
+        },
+        {
+          "caller": "isKnowledgeExtractionTargetChangedError",
+          "callee": "isRecord",
+          "lineNumber": 245
+        },
+        {
+          "caller": "isKnowledgeExtractionTargetChangedError",
+          "callee": "isNonEmptyString",
+          "lineNumber": 247
+        },
+        {
+          "caller": "isKnowledgeExtractionTargetChangedError",
+          "callee": "isRecord",
+          "lineNumber": 248
+        },
+        {
+          "caller": "isKnowledgeExtractionTargetChangedError",
+          "callee": "isNonEmptyString",
+          "lineNumber": 256
+        },
+        {
+          "caller": "isKnowledgeExtractionTargetChangedError",
+          "callee": "isNonEmptyString",
+          "lineNumber": 257
+        },
+        {
+          "caller": "isKnowledgeExtractionTargetChangedError",
+          "callee": "isNonEmptyString",
+          "lineNumber": 259
+        },
+        {
+          "caller": "isKnowledgeExtractionTargetChangedError",
+          "callee": "isIsoTimestamp",
+          "lineNumber": 260
+        },
+        {
+          "caller": "collectionPath",
+          "callee": "encodeURIComponent",
+          "lineNumber": 271
+        },
+        {
+          "caller": "collectionPath",
+          "callee": "encodeURIComponent",
+          "lineNumber": 271
+        },
+        {
+          "caller": "resourcePath",
+          "callee": "collectionPath",
+          "lineNumber": 279
+        },
+        {
+          "caller": "resourcePath",
+          "callee": "encodeURIComponent",
+          "lineNumber": 279
+        },
+        {
+          "caller": "createKnowledgeExtraction",
+          "callee": "request<unknown>(collectionPath(projectId, discussionId), {\n      method: 'POST',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify(input),\n      signal,\n    }).then",
+          "lineNumber": 288
+        },
+        {
+          "caller": "createKnowledgeExtraction",
+          "callee": "request",
+          "lineNumber": 288
+        },
+        {
+          "caller": "createKnowledgeExtraction",
+          "callee": "collectionPath",
+          "lineNumber": 288
+        },
+        {
+          "caller": "createKnowledgeExtraction",
+          "callee": "JSON.stringify",
+          "lineNumber": 291
+        },
+        {
+          "caller": "createKnowledgeExtraction",
+          "callee": "assertKnowledgeExtractionProposalResponse",
+          "lineNumber": 294
+        },
+        {
+          "caller": "resolveKnowledgeExtraction",
+          "callee": "request<unknown>(\n      `${resourcePath(projectId, discussionId, extractionId)}/resolution`,\n      {\n        method: 'POST',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify(input),\n        signal,\n      },\n    ).then",
+          "lineNumber": 310
+        },
+        {
+          "caller": "resolveKnowledgeExtraction",
+          "callee": "request",
+          "lineNumber": 310
+        },
+        {
+          "caller": "resolveKnowledgeExtraction",
+          "callee": "resourcePath",
+          "lineNumber": 311
+        },
+        {
+          "caller": "resolveKnowledgeExtraction",
+          "callee": "JSON.stringify",
+          "lineNumber": 315
+        },
+        {
+          "caller": "resolveKnowledgeExtraction",
+          "callee": "assertKnowledgeExtractionResolutionResponse",
+          "lineNumber": 319
+        },
+        {
+          "caller": "discardKnowledgeExtraction",
+          "callee": "request",
+          "lineNumber": 335
+        },
+        {
+          "caller": "discardKnowledgeExtraction",
+          "callee": "resourcePath",
+          "lineNumber": 336
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 16,
+        "functionCount": 15,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/api/projects.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 174,
+      "nonEmptyLines": 151,
+      "functions": [
+        {
+          "name": "isRecord",
+          "startLine": 29,
+          "endLine": 31,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isNonEmptyString",
+          "startLine": 33,
+          "endLine": 35,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isIsoTimestamp",
+          "startLine": 37,
+          "endLine": 48,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "isProjectResponse",
+          "startLine": 50,
+          "endLine": 75,
+          "params": [
+            "value",
+            "projectId"
+          ]
+        },
+        {
+          "name": "assertProject",
+          "startLine": 77,
+          "endLine": 86,
+          "params": [
+            "value",
+            "projectId"
+          ]
+        },
+        {
+          "name": "isProjectsResponse",
+          "startLine": 88,
+          "endLine": 94,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "assertProjects",
+          "startLine": 96,
+          "endLine": 102,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "createProjectsApi",
+          "startLine": 104,
+          "endLine": 166,
+          "params": [
+            "request"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "CreateProjectInput",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "Project",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "UpdateProjectDescriptionInput",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "UpdateProjectViewportInput",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "isProjectResponse",
+          "line": 50,
+          "isDefault": false
+        },
+        {
+          "name": "assertProject",
+          "line": 77,
+          "isDefault": false
+        },
+        {
+          "name": "isProjectsResponse",
+          "line": 88,
+          "isDefault": false
+        },
+        {
+          "name": "assertProjects",
+          "line": 96,
+          "isDefault": false
+        },
+        {
+          "name": "createProjectsApi",
+          "line": 104,
+          "isDefault": false
+        },
+        {
+          "name": "{\n  createProject,\n  getProject,\n  getProjects,\n  updateProjectDescription,\n  updateProjectViewport,\n}",
+          "line": 168,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "isRecord",
+          "callee": "Array.isArray",
+          "lineNumber": 30
+        },
+        {
+          "caller": "isNonEmptyString",
+          "callee": "value.trim",
+          "lineNumber": 34
+        },
+        {
+          "caller": "isIsoTimestamp",
+          "callee": "Date.parse",
+          "lineNumber": 42
+        },
+        {
+          "caller": "isIsoTimestamp",
+          "callee": "Number.isFinite",
+          "lineNumber": 45
+        },
+        {
+          "caller": "isIsoTimestamp",
+          "callee": "new Date(milliseconds).toISOString",
+          "lineNumber": 46
+        },
+        {
+          "caller": "isProjectResponse",
+          "callee": "isRecord",
+          "lineNumber": 54
+        },
+        {
+          "caller": "isProjectResponse",
+          "callee": "isNonEmptyString",
+          "lineNumber": 59
+        },
+        {
+          "caller": "isProjectResponse",
+          "callee": "isNonEmptyString",
+          "lineNumber": 61
+        },
+        {
+          "caller": "isProjectResponse",
+          "callee": "isIsoTimestamp",
+          "lineNumber": 63
+        },
+        {
+          "caller": "isProjectResponse",
+          "callee": "isIsoTimestamp",
+          "lineNumber": 64
+        },
+        {
+          "caller": "isProjectResponse",
+          "callee": "Date.parse",
+          "lineNumber": 65
+        },
+        {
+          "caller": "isProjectResponse",
+          "callee": "Date.parse",
+          "lineNumber": 65
+        },
+        {
+          "caller": "isProjectResponse",
+          "callee": "Number.isFinite",
+          "lineNumber": 67
+        },
+        {
+          "caller": "isProjectResponse",
+          "callee": "Number.isFinite",
+          "lineNumber": 69
+        },
+        {
+          "caller": "isProjectResponse",
+          "callee": "Number.isFinite",
+          "lineNumber": 71
+        },
+        {
+          "caller": "assertProject",
+          "callee": "isProjectResponse",
+          "lineNumber": 81
+        },
+        {
+          "caller": "isProjectsResponse",
+          "callee": "Array.isArray",
+          "lineNumber": 90
+        },
+        {
+          "caller": "isProjectsResponse",
+          "callee": "value.every",
+          "lineNumber": 91
+        },
+        {
+          "caller": "isProjectsResponse",
+          "callee": "isProjectResponse",
+          "lineNumber": 91
+        },
+        {
+          "caller": "isProjectsResponse",
+          "callee": "value.map",
+          "lineNumber": 92
+        },
+        {
+          "caller": "assertProjects",
+          "callee": "isProjectsResponse",
+          "lineNumber": 97
+        },
+        {
+          "caller": "getProjects",
+          "callee": "request<unknown>('/projects', { signal }).then",
+          "lineNumber": 106
+        },
+        {
+          "caller": "getProjects",
+          "callee": "request",
+          "lineNumber": 106
+        },
+        {
+          "caller": "getProject",
+          "callee": "request<unknown>(\n      `/projects/${encodeURIComponent(projectId)}`,\n      { signal },\n    ).then",
+          "lineNumber": 113
+        },
+        {
+          "caller": "getProject",
+          "callee": "request",
+          "lineNumber": 113
+        },
+        {
+          "caller": "getProject",
+          "callee": "encodeURIComponent",
+          "lineNumber": 114
+        },
+        {
+          "caller": "getProject",
+          "callee": "assertProject",
+          "lineNumber": 116
+        },
+        {
+          "caller": "createProject",
+          "callee": "request<unknown>('/projects', {\n      method: 'POST',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify(input),\n    }).then",
+          "lineNumber": 120
+        },
+        {
+          "caller": "createProject",
+          "callee": "request",
+          "lineNumber": 120
+        },
+        {
+          "caller": "createProject",
+          "callee": "JSON.stringify",
+          "lineNumber": 123
+        },
+        {
+          "caller": "createProject",
+          "callee": "assertProject",
+          "lineNumber": 124
+        },
+        {
+          "caller": "updateProjectDescription",
+          "callee": "request<unknown>(\n      `/projects/${encodeURIComponent(projectId)}/description`,\n      {\n        method: 'PATCH',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify(input),\n        signal,\n      },\n    ).then",
+          "lineNumber": 132
+        },
+        {
+          "caller": "updateProjectDescription",
+          "callee": "request",
+          "lineNumber": 132
+        },
+        {
+          "caller": "updateProjectDescription",
+          "callee": "encodeURIComponent",
+          "lineNumber": 133
+        },
+        {
+          "caller": "updateProjectDescription",
+          "callee": "JSON.stringify",
+          "lineNumber": 137
+        },
+        {
+          "caller": "updateProjectDescription",
+          "callee": "assertProject",
+          "lineNumber": 140
+        },
+        {
+          "caller": "updateProjectViewport",
+          "callee": "request<unknown>(\n      `/projects/${encodeURIComponent(projectId)}/viewport`,\n      {\n        method: 'PATCH',\n        headers: { 'Content-Type': 'application/json' },\n        body: JSON.stringify(input),\n        keepalive: options.keepalive,\n      },\n    ).then",
+          "lineNumber": 148
+        },
+        {
+          "caller": "updateProjectViewport",
+          "callee": "request",
+          "lineNumber": 148
+        },
+        {
+          "caller": "updateProjectViewport",
+          "callee": "encodeURIComponent",
+          "lineNumber": 149
+        },
+        {
+          "caller": "updateProjectViewport",
+          "callee": "JSON.stringify",
+          "lineNumber": 153
+        },
+        {
+          "caller": "updateProjectViewport",
+          "callee": "assertProject",
+          "lineNumber": 156
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 10,
+        "functionCount": 8,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/aiApi.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 35,
+      "nonEmptyLines": 32,
+      "callGraph": [
+        {
+          "caller": "request",
+          "callee": "calls.push",
+          "lineNumber": 16
+        },
+        {
+          "caller": "request",
+          "callee": "Promise.resolve",
+          "lineNumber": 17
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/bubblesApi.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 222,
+      "nonEmptyLines": 209,
+      "functions": [
+        {
+          "name": "createRequestFake",
+          "startLine": 16,
+          "endLine": 27,
+          "params": [
+            "responses"
+          ]
+        },
+        {
+          "name": "bubble",
+          "startLine": 29,
+          "endLine": 48,
+          "params": [
+            "overrides"
+          ]
+        },
+        {
+          "name": "bubbleLink",
+          "startLine": 50,
+          "endLine": 59,
+          "params": [
+            "overrides"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "request",
+          "callee": "requests.push",
+          "lineNumber": 22
+        },
+        {
+          "caller": "request",
+          "callee": "Promise.resolve",
+          "lineNumber": 23
+        },
+        {
+          "caller": "request",
+          "callee": "responses.shift",
+          "lineNumber": 23
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 3,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/discussionsApi.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 393,
+      "nonEmptyLines": 368,
+      "functions": [
+        {
+          "name": "createRequestFake",
+          "startLine": 19,
+          "endLine": 30,
+          "params": [
+            "responses"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "request",
+          "callee": "requests.push",
+          "lineNumber": 25
+        },
+        {
+          "caller": "request",
+          "callee": "Promise.resolve",
+          "lineNumber": 26
+        },
+        {
+          "caller": "request",
+          "callee": "responses.shift",
+          "lineNumber": 26
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/documentsApi.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 264,
+      "nonEmptyLines": 249,
+      "functions": [
+        {
+          "name": "createRequestFake",
+          "startLine": 21,
+          "endLine": 32,
+          "params": [
+            "responses"
+          ]
+        },
+        {
+          "name": "documentSummary",
+          "startLine": 58,
+          "endLine": 76,
+          "params": [
+            "overrides"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "request",
+          "callee": "requests.push",
+          "lineNumber": 27
+        },
+        {
+          "caller": "request",
+          "callee": "Promise.resolve",
+          "lineNumber": 28
+        },
+        {
+          "caller": "request",
+          "callee": "responses.shift",
+          "lineNumber": 28
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/knowledgeExtractionsApi.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 331,
+      "nonEmptyLines": 314,
+      "functions": [
+        {
+          "name": "createRequestFake",
+          "startLine": 21,
+          "endLine": 32,
+          "params": [
+            "responses"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "request",
+          "callee": "requests.push",
+          "lineNumber": 27
+        },
+        {
+          "caller": "request",
+          "callee": "Promise.resolve",
+          "lineNumber": 28
+        },
+        {
+          "caller": "request",
+          "callee": "responses.shift",
+          "lineNumber": 28
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/projectsApi.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 170,
+      "nonEmptyLines": 156,
+      "functions": [
+        {
+          "name": "createRequestFake",
+          "startLine": 15,
+          "endLine": 26,
+          "params": [
+            "responses"
+          ]
+        },
+        {
+          "name": "project",
+          "startLine": 28,
+          "endLine": 40,
+          "params": [
+            "overrides"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "request",
+          "callee": "requests.push",
+          "lineNumber": 21
+        },
+        {
+          "caller": "request",
+          "callee": "Promise.resolve",
+          "lineNumber": 22
+        },
+        {
+          "caller": "request",
+          "callee": "responses.shift",
+          "lineNumber": 22
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    }
+  ]
+}

@@ -1,0 +1,323 @@
+{
+  "projectRoot": "/Users/alexandredemoura/Desktop/dev/nuee",
+  "batchFiles": [
+    {
+      "path": "backend/src/config/configuration.spec.ts",
+      "language": "typescript",
+      "sizeLines": 208,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/config/configuration.ts",
+      "language": "typescript",
+      "sizeLines": 421,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/clamav-document-malware.scanner.ts",
+      "language": "typescript",
+      "sizeLines": 163,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/deterministic-document-malware.scanner.ts",
+      "language": "typescript",
+      "sizeLines": 34,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/document-malware.scanner.spec.ts",
+      "language": "typescript",
+      "sizeLines": 35,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/document-processing.coordinator.spec.ts",
+      "language": "typescript",
+      "sizeLines": 364,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/document-processing.coordinator.ts",
+      "language": "typescript",
+      "sizeLines": 381,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/document-text.normalizer.spec.ts",
+      "language": "typescript",
+      "sizeLines": 71,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/document-text.normalizer.ts",
+      "language": "typescript",
+      "sizeLines": 46,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/document-upload.interceptor.ts",
+      "language": "typescript",
+      "sizeLines": 162,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/document-upload.validator.spec.ts",
+      "language": "typescript",
+      "sizeLines": 243,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/document-upload.validator.ts",
+      "language": "typescript",
+      "sizeLines": 308,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/document.telemetry.spec.ts",
+      "language": "typescript",
+      "sizeLines": 84,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/document.telemetry.ts",
+      "language": "typescript",
+      "sizeLines": 143,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/document.types.ts",
+      "language": "typescript",
+      "sizeLines": 366,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/documents.controller.ts",
+      "language": "typescript",
+      "sizeLines": 80,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/documents.module.ts",
+      "language": "typescript",
+      "sizeLines": 88,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/documents.service.spec.ts",
+      "language": "typescript",
+      "sizeLines": 489,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/documents.service.ts",
+      "language": "typescript",
+      "sizeLines": 549,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/pdfjs-adapters.spec.ts",
+      "language": "typescript",
+      "sizeLines": 76,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/pdfjs-document-text.extractor.spec.ts",
+      "language": "typescript",
+      "sizeLines": 177,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/pdfjs-document-text.extractor.ts",
+      "language": "typescript",
+      "sizeLines": 239,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/pdfjs-upload.inspector.ts",
+      "language": "typescript",
+      "sizeLines": 94,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/private-document-file.storage.spec.ts",
+      "language": "typescript",
+      "sizeLines": 62,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/private-document-file.storage.ts",
+      "language": "typescript",
+      "sizeLines": 134,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/sqlite-document.repository.ts",
+      "language": "typescript",
+      "sizeLines": 748,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/utf8-document-text.extractors.ts",
+      "language": "typescript",
+      "sizeLines": 57,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/test/documents.e2e-spec.ts",
+      "language": "typescript",
+      "sizeLines": 590,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/test/fixtures/document-files.ts",
+      "language": "typescript",
+      "sizeLines": 66,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "backend/src/config/configuration.spec.ts": [
+      "backend/src/config/configuration.ts"
+    ],
+    "backend/src/config/configuration.ts": [],
+    "backend/src/documents/clamav-document-malware.scanner.ts": [
+      "backend/src/config/configuration.ts",
+      "backend/src/documents/document.types.ts"
+    ],
+    "backend/src/documents/deterministic-document-malware.scanner.ts": [
+      "backend/src/documents/document.types.ts"
+    ],
+    "backend/src/documents/document-malware.scanner.spec.ts": [
+      "backend/src/documents/clamav-document-malware.scanner.ts",
+      "backend/src/documents/deterministic-document-malware.scanner.ts",
+      "backend/src/documents/document.types.ts"
+    ],
+    "backend/src/documents/document-processing.coordinator.spec.ts": [
+      "backend/src/config/configuration.ts",
+      "backend/src/database/database.provider.ts",
+      "backend/src/documents/document-processing.coordinator.ts",
+      "backend/src/documents/document-text.normalizer.ts",
+      "backend/src/documents/document.types.ts",
+      "backend/src/documents/pdfjs-document-text.extractor.ts",
+      "backend/src/documents/sqlite-document.repository.ts",
+      "backend/src/documents/utf8-document-text.extractors.ts",
+      "backend/src/projects/projects.service.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/documents/document-processing.coordinator.ts": [
+      "backend/src/config/configuration.ts",
+      "backend/src/documents/document.telemetry.ts",
+      "backend/src/documents/document.types.ts",
+      "backend/src/documents/pdfjs-document-text.extractor.ts",
+      "backend/src/documents/utf8-document-text.extractors.ts"
+    ],
+    "backend/src/documents/document-text.normalizer.spec.ts": [
+      "backend/src/documents/document-text.normalizer.ts",
+      "backend/src/documents/document.types.ts",
+      "backend/src/documents/utf8-document-text.extractors.ts"
+    ],
+    "backend/src/documents/document-text.normalizer.ts": [
+      "backend/src/documents/document.types.ts"
+    ],
+    "backend/src/documents/document-upload.interceptor.ts": [
+      "backend/src/config/configuration.ts"
+    ],
+    "backend/src/documents/document-upload.validator.spec.ts": [
+      "backend/src/config/configuration.ts",
+      "backend/src/documents/document-upload.validator.ts",
+      "backend/src/documents/document.types.ts"
+    ],
+    "backend/src/documents/document-upload.validator.ts": [
+      "backend/src/config/configuration.ts",
+      "backend/src/documents/document.types.ts"
+    ],
+    "backend/src/documents/document.telemetry.spec.ts": [
+      "backend/src/documents/document.telemetry.ts"
+    ],
+    "backend/src/documents/document.telemetry.ts": [],
+    "backend/src/documents/document.types.ts": [],
+    "backend/src/documents/documents.controller.ts": [
+      "backend/src/documents/document-upload.interceptor.ts",
+      "backend/src/documents/documents.service.ts"
+    ],
+    "backend/src/documents/documents.module.ts": [
+      "backend/src/config/configuration.ts",
+      "backend/src/discussion-context/discussion-context.types.ts",
+      "backend/src/documents/clamav-document-malware.scanner.ts",
+      "backend/src/documents/deterministic-document-malware.scanner.ts",
+      "backend/src/documents/document-processing.coordinator.ts",
+      "backend/src/documents/document-text.normalizer.ts",
+      "backend/src/documents/document-upload.interceptor.ts",
+      "backend/src/documents/document-upload.validator.ts",
+      "backend/src/documents/document.telemetry.ts",
+      "backend/src/documents/document.types.ts",
+      "backend/src/documents/documents.controller.ts",
+      "backend/src/documents/documents.service.ts",
+      "backend/src/documents/pdfjs-document-text.extractor.ts",
+      "backend/src/documents/pdfjs-upload.inspector.ts",
+      "backend/src/documents/private-document-file.storage.ts",
+      "backend/src/documents/sqlite-document.repository.ts",
+      "backend/src/documents/utf8-document-text.extractors.ts",
+      "backend/src/projects/projects.module.ts"
+    ],
+    "backend/src/documents/documents.service.spec.ts": [
+      "backend/src/config/configuration.ts",
+      "backend/src/database/database.provider.ts",
+      "backend/src/documents/document-upload.validator.ts",
+      "backend/src/documents/document.types.ts",
+      "backend/src/documents/documents.service.ts",
+      "backend/src/documents/sqlite-document.repository.ts",
+      "backend/src/projects/projects.service.ts",
+      "backend/src/projects/sqlite-project.repository.ts"
+    ],
+    "backend/src/documents/documents.service.ts": [
+      "backend/src/config/configuration.ts",
+      "backend/src/discussion-context/discussion-context.types.ts",
+      "backend/src/documents/document-upload.validator.ts",
+      "backend/src/documents/document.telemetry.ts",
+      "backend/src/documents/document.types.ts",
+      "backend/src/projects/projects.service.ts"
+    ],
+    "backend/src/documents/pdfjs-adapters.spec.ts": [
+      "backend/src/documents/document-text.normalizer.ts",
+      "backend/src/documents/pdfjs-document-text.extractor.ts",
+      "backend/src/documents/pdfjs-upload.inspector.ts"
+    ],
+    "backend/src/documents/pdfjs-document-text.extractor.spec.ts": [
+      "backend/src/documents/document-text.normalizer.ts",
+      "backend/src/documents/pdfjs-document-text.extractor.ts"
+    ],
+    "backend/src/documents/pdfjs-document-text.extractor.ts": [
+      "backend/src/documents/document-text.normalizer.ts",
+      "backend/src/documents/document.types.ts"
+    ],
+    "backend/src/documents/pdfjs-upload.inspector.ts": [
+      "backend/src/documents/document.types.ts"
+    ],
+    "backend/src/documents/private-document-file.storage.spec.ts": [
+      "backend/src/documents/document.types.ts",
+      "backend/src/documents/private-document-file.storage.ts"
+    ],
+    "backend/src/documents/private-document-file.storage.ts": [
+      "backend/src/config/configuration.ts",
+      "backend/src/documents/document.types.ts"
+    ],
+    "backend/src/documents/sqlite-document.repository.ts": [
+      "backend/src/database/database.provider.ts",
+      "backend/src/documents/document.types.ts"
+    ],
+    "backend/src/documents/utf8-document-text.extractors.ts": [
+      "backend/src/documents/document-text.normalizer.ts",
+      "backend/src/documents/document.types.ts"
+    ],
+    "backend/test/documents.e2e-spec.ts": [
+      "backend/src/app.module.ts",
+      "backend/src/database/database.provider.ts",
+      "backend/src/documents/document-processing.coordinator.ts",
+      "backend/src/documents/document.types.ts",
+      "backend/test/fixtures/document-files.ts"
+    ],
+    "backend/test/fixtures/document-files.ts": []
+  }
+}

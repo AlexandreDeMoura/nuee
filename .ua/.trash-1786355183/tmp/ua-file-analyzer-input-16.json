@@ -1,0 +1,56 @@
+{
+  "projectRoot": "/Users/alexandredemoura/Desktop/dev/nuee",
+  "batchFiles": [
+    {
+      "path": "frontend/README.md",
+      "language": "markdown",
+      "sizeLines": 75,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "frontend/index.html",
+      "language": "html",
+      "sizeLines": 23,
+      "fileCategory": "markup"
+    },
+    {
+      "path": "frontend/package.json",
+      "language": "json",
+      "sizeLines": 39,
+      "fileCategory": "config"
+    },
+    {
+      "path": "frontend/tsconfig.app.json",
+      "language": "json",
+      "sizeLines": 30,
+      "fileCategory": "config"
+    },
+    {
+      "path": "frontend/tsconfig.json",
+      "language": "json",
+      "sizeLines": 8,
+      "fileCategory": "config"
+    },
+    {
+      "path": "frontend/tsconfig.node.json",
+      "language": "json",
+      "sizeLines": 24,
+      "fileCategory": "config"
+    },
+    {
+      "path": "frontend/tsconfig.test.json",
+      "language": "json",
+      "sizeLines": 8,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "frontend/README.md": [],
+    "frontend/index.html": [],
+    "frontend/package.json": [],
+    "frontend/tsconfig.app.json": [],
+    "frontend/tsconfig.json": [],
+    "frontend/tsconfig.node.json": [],
+    "frontend/tsconfig.test.json": []
+  }
+}

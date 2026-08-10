@@ -1,0 +1,276 @@
+{
+  "projectRoot": "/Users/alexandredemoura/Desktop/dev/nuee",
+  "batchFiles": [
+    {
+      "path": "frontend/src/discussions/DiscussionComposer.test.tsx",
+      "language": "typescript",
+      "sizeLines": 488,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionComposer.tsx",
+      "language": "typescript",
+      "sizeLines": 853,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionContextBadges.tsx",
+      "language": "typescript",
+      "sizeLines": 152,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionExperience.tsx",
+      "language": "typescript",
+      "sizeLines": 706,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionKnowledgeAction.tsx",
+      "language": "typescript",
+      "sizeLines": 63,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionMentionChips.tsx",
+      "language": "typescript",
+      "sizeLines": 174,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionMentionList.tsx",
+      "language": "typescript",
+      "sizeLines": 253,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionMessageSources.tsx",
+      "language": "typescript",
+      "sizeLines": 111,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionMessages.test.tsx",
+      "language": "typescript",
+      "sizeLines": 148,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionMessages.tsx",
+      "language": "typescript",
+      "sizeLines": 255,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/DiscussionModal.tsx",
+      "language": "typescript",
+      "sizeLines": 309,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/FrozenContextInspector.tsx",
+      "language": "typescript",
+      "sizeLines": 125,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/discussionContextModel.test.ts",
+      "language": "typescript",
+      "sizeLines": 44,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/discussionContextModel.ts",
+      "language": "typescript",
+      "sizeLines": 99,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/discussionCreationFailure.ts",
+      "language": "typescript",
+      "sizeLines": 115,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/discussionMention.test.ts",
+      "language": "typescript",
+      "sizeLines": 126,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/discussionMention.ts",
+      "language": "typescript",
+      "sizeLines": 290,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/discussionMentionAnalytics.ts",
+      "language": "typescript",
+      "sizeLines": 107,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/discussionModel.ts",
+      "language": "typescript",
+      "sizeLines": 29,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/discussionSourceCatalog.ts",
+      "language": "typescript",
+      "sizeLines": 54,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/useAutoGrowTextarea.ts",
+      "language": "typescript",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/useDiscussionContextSelection.ts",
+      "language": "typescript",
+      "sizeLines": 405,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/useDiscussionLifecycle.test.tsx",
+      "language": "typescript",
+      "sizeLines": 236,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/useDiscussionLifecycle.ts",
+      "language": "typescript",
+      "sizeLines": 1087,
+      "fileCategory": "code"
+    },
+    {
+      "path": "frontend/src/discussions/useDiscussionVisibility.ts",
+      "language": "typescript",
+      "sizeLines": 128,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "frontend/src/discussions/DiscussionComposer.test.tsx": [
+      "frontend/src/analytics.ts",
+      "frontend/src/discussions/DiscussionComposer.tsx",
+      "frontend/src/discussions/discussionSourceCatalog.ts"
+    ],
+    "frontend/src/discussions/DiscussionComposer.tsx": [
+      "frontend/src/analytics.ts",
+      "frontend/src/discussions/DiscussionMentionChips.tsx",
+      "frontend/src/discussions/DiscussionMentionList.tsx",
+      "frontend/src/discussions/discussionCreationFailure.ts",
+      "frontend/src/discussions/discussionMention.ts",
+      "frontend/src/discussions/discussionMentionAnalytics.ts",
+      "frontend/src/discussions/discussionSourceCatalog.ts",
+      "frontend/src/discussions/useAutoGrowTextarea.ts",
+      "frontend/src/ui/focusRing.ts"
+    ],
+    "frontend/src/discussions/DiscussionContextBadges.tsx": [
+      "frontend/src/discussions/discussionContextModel.ts"
+    ],
+    "frontend/src/discussions/DiscussionExperience.tsx": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/DiscussionComposer.tsx",
+      "frontend/src/discussions/DiscussionContextBadges.tsx",
+      "frontend/src/discussions/DiscussionDeleteDialog.tsx",
+      "frontend/src/discussions/DiscussionKnowledgeAction.tsx",
+      "frontend/src/discussions/DiscussionMessages.tsx",
+      "frontend/src/discussions/DiscussionModal.tsx",
+      "frontend/src/discussions/FrozenContextInspector.tsx",
+      "frontend/src/discussions/discussionContextModel.ts",
+      "frontend/src/discussions/discussionModel.ts",
+      "frontend/src/discussions/discussionSourceCatalog.ts",
+      "frontend/src/discussions/useDiscussionContextSelection.ts",
+      "frontend/src/discussions/useDiscussionLifecycle.ts",
+      "frontend/src/discussions/useDiscussionVisibility.ts",
+      "frontend/src/knowledge-extraction/index.ts"
+    ],
+    "frontend/src/discussions/DiscussionKnowledgeAction.tsx": [
+      "frontend/src/ui/focusRing.ts"
+    ],
+    "frontend/src/discussions/DiscussionMentionChips.tsx": [
+      "frontend/src/discussions/discussionCreationFailure.ts",
+      "frontend/src/discussions/discussionMention.ts",
+      "frontend/src/discussions/discussionSourceCatalog.ts",
+      "frontend/src/ui/focusRing.ts"
+    ],
+    "frontend/src/discussions/DiscussionMentionList.tsx": [
+      "frontend/src/discussions/discussionMention.ts",
+      "frontend/src/discussions/discussionSourceCatalog.ts",
+      "frontend/src/ui/focusRing.ts"
+    ],
+    "frontend/src/discussions/DiscussionMessageSources.tsx": [
+      "frontend/src/api/index.ts"
+    ],
+    "frontend/src/discussions/DiscussionMessages.test.tsx": [
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/DiscussionMessages.tsx",
+      "frontend/src/discussions/useDiscussionLifecycle.ts"
+    ],
+    "frontend/src/discussions/DiscussionMessages.tsx": [
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/DiscussionKnowledgeAction.tsx",
+      "frontend/src/discussions/DiscussionMessageSources.tsx",
+      "frontend/src/discussions/useDiscussionLifecycle.ts",
+      "frontend/src/ui/RichResponse.tsx"
+    ],
+    "frontend/src/discussions/DiscussionModal.tsx": [
+      "frontend/src/discussions/discussionModel.ts",
+      "frontend/src/discussions/useDiscussionVisibility.ts",
+      "frontend/src/ui/focusRing.ts",
+      "frontend/src/ui/useModalShell.ts"
+    ],
+    "frontend/src/discussions/FrozenContextInspector.tsx": [
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/discussionContextModel.ts"
+    ],
+    "frontend/src/discussions/discussionContextModel.test.ts": [
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/discussionContextModel.ts"
+    ],
+    "frontend/src/discussions/discussionContextModel.ts": [
+      "frontend/src/api/index.ts"
+    ],
+    "frontend/src/discussions/discussionCreationFailure.ts": [
+      "frontend/src/api/index.ts"
+    ],
+    "frontend/src/discussions/discussionMention.test.ts": [
+      "frontend/src/discussions/discussionMention.ts",
+      "frontend/src/discussions/discussionSourceCatalog.ts"
+    ],
+    "frontend/src/discussions/discussionMention.ts": [
+      "frontend/src/discussions/discussionSourceCatalog.ts"
+    ],
+    "frontend/src/discussions/discussionMentionAnalytics.ts": [
+      "frontend/src/analytics.ts"
+    ],
+    "frontend/src/discussions/discussionModel.ts": [],
+    "frontend/src/discussions/discussionSourceCatalog.ts": [],
+    "frontend/src/discussions/useAutoGrowTextarea.ts": [],
+    "frontend/src/discussions/useDiscussionContextSelection.ts": [
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/discussionCreationFailure.ts"
+    ],
+    "frontend/src/discussions/useDiscussionLifecycle.test.tsx": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/useDiscussionLifecycle.ts"
+    ],
+    "frontend/src/discussions/useDiscussionLifecycle.ts": [
+      "frontend/src/analytics.ts",
+      "frontend/src/api/index.ts",
+      "frontend/src/discussions/discussionCreationFailure.ts",
+      "frontend/src/discussions/discussionMentionAnalytics.ts",
+      "frontend/src/discussions/discussionModel.ts",
+      "frontend/src/discussions/useDiscussionVisibility.ts"
+    ],
+    "frontend/src/discussions/useDiscussionVisibility.ts": [
+      "frontend/src/discussions/discussionModel.ts"
+    ]
+  }
+}

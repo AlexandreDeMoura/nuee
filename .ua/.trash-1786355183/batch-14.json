@@ -1,0 +1,176 @@
+{
+  "nodes": [
+    {
+      "id": "document:CLAUDE.md",
+      "type": "document",
+      "name": "CLAUDE.md",
+      "filePath": "CLAUDE.md",
+      "summary": "\"Nuée Technical Direction\" — the authoritative architectural boundary document governing the entire repository, spanning 16 sections that fix workspace layout and root commands, cross-cutting constraints (incremental refactors, no redundant dependencies), per-feature ownership for both frontend and backend, and the discussion, document, persistence, HTTP API, operations, and security seams. It records boundaries rather than product requirements, and is meant to be updated only when a change deliberately moves one.",
+      "tags": ["documentation", "architecture", "governance", "conventions", "overview"],
+      "complexity": "moderate",
+      "languageNotes": "Structured as a prescriptive boundary spec rather than a tutorial: each section states an invariant plus the escape hatch that would justify breaking it (e.g. SQLite stays until measured load requires a server database)."
+    },
+    {
+      "id": "document:AGENTS.md",
+      "type": "document",
+      "name": "AGENTS.md",
+      "filePath": "AGENTS.md",
+      "summary": "Verbatim copy of CLAUDE.md, carrying the identical 16-section \"Nuée Technical Direction\" architectural boundary spec for the whole repository under the conventional AGENTS.md filename that tool-agnostic coding agents look for. It holds no independent content; the two files are explicitly required to be kept in sync.",
+      "tags": ["documentation", "architecture", "governance", "conventions", "mirror"],
+      "complexity": "moderate",
+      "languageNotes": "Duplicate-by-design file: the same guidance is published under two filenames so different agent toolchains each find a document at the path they expect."
+    },
+    {
+      "id": "config:package.json",
+      "type": "config",
+      "name": "package.json",
+      "filePath": "package.json",
+      "summary": "Root npm-workspaces manifest for the private `nuee` monorepo, declaring the `shared`, `frontend`, and `backend` workspaces and the aggregate `dev`, `build`, `lint`, `test`, and `test:e2e` scripts that fan out to them. `dev` runs the Vite frontend and NestJS backend side by side via `concurrently`, its only devDependency.",
+      "tags": ["configuration", "build-system", "monorepo", "workspaces", "npm"],
+      "complexity": "simple",
+      "languageNotes": "Workspace root is `type: commonjs` and `private: true`; it publishes nothing and exists purely to hoist dependencies and orchestrate per-workspace scripts."
+    }
+  ],
+  "edges": [
+    {
+      "source": "document:CLAUDE.md",
+      "target": "document:AGENTS.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:CLAUDE.md",
+      "target": "config:package.json",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:CLAUDE.md",
+      "target": "file:frontend/src/main.tsx",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:CLAUDE.md",
+      "target": "file:backend/src/app.module.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:CLAUDE.md",
+      "target": "file:shared/src/index.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:CLAUDE.md",
+      "target": "file:shared/src/validation-limits.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:CLAUDE.md",
+      "target": "file:frontend/src/api/client.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:CLAUDE.md",
+      "target": "file:backend/src/database/database.provider.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:CLAUDE.md",
+      "target": "file:backend/src/config/configuration.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:CLAUDE.md",
+      "target": "document:backend/DOCUMENT_OPERATIONS.md",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:AGENTS.md",
+      "target": "config:package.json",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:AGENTS.md",
+      "target": "file:frontend/src/main.tsx",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:AGENTS.md",
+      "target": "file:backend/src/app.module.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "document:AGENTS.md",
+      "target": "file:shared/src/index.ts",
+      "type": "documents",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "config:package.json",
+      "target": "config:frontend/package.json",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:package.json",
+      "target": "config:backend/package.json",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:package.json",
+      "target": "config:shared/package.json",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:package.json",
+      "target": "file:frontend/src/main.tsx",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:package.json",
+      "target": "file:backend/src/main.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "config:package.json",
+      "target": "file:shared/src/index.ts",
+      "type": "configures",
+      "direction": "forward",
+      "weight": 0.6
+    }
+  ]
+}

@@ -1,0 +1,263 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 9,
+  "filesSkipped": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 9,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 9,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "frontend/src/discussions/index.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 21,
+      "nonEmptyLines": 21,
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/DiscussionComposerAutoGrow.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 108,
+      "nonEmptyLines": 85,
+      "functions": [
+        {
+          "name": "stubTextareaLayout",
+          "startLine": 13,
+          "endLine": 38,
+          "params": []
+        },
+        {
+          "name": "renderComposer",
+          "startLine": 40,
+          "endLine": 51,
+          "params": [
+            "value"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "stubTextareaLayout",
+          "callee": "window.getComputedStyle.bind",
+          "lineNumber": 14
+        },
+        {
+          "caller": "stubTextareaLayout",
+          "callee": "vi.spyOn(window, 'getComputedStyle').mockImplementation",
+          "lineNumber": 16
+        },
+        {
+          "caller": "stubTextareaLayout",
+          "callee": "vi.spyOn",
+          "lineNumber": 16
+        },
+        {
+          "caller": "stubTextareaLayout",
+          "callee": "realGetComputedStyle",
+          "lineNumber": 17
+        },
+        {
+          "caller": "stubTextareaLayout",
+          "callee": "vi.spyOn(HTMLTextAreaElement.prototype, 'scrollHeight', 'get').mockImplementation",
+          "lineNumber": 31
+        },
+        {
+          "caller": "stubTextareaLayout",
+          "callee": "vi.spyOn",
+          "lineNumber": 31
+        },
+        {
+          "caller": "stubTextareaLayout",
+          "callee": "Math.max",
+          "lineNumber": 33
+        },
+        {
+          "caller": "stubTextareaLayout",
+          "callee": "this.value.split",
+          "lineNumber": 33
+        },
+        {
+          "caller": "renderComposer",
+          "callee": "render",
+          "lineNumber": 41
+        },
+        {
+          "caller": "renderComposer",
+          "callee": "screen.getByRole",
+          "lineNumber": 50
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/DiscussionModal.test.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 111,
+      "nonEmptyLines": 91,
+      "functions": [
+        {
+          "name": "DraftModal",
+          "startLine": 11,
+          "endLine": 33,
+          "params": [
+            "{\n  onMinimize,\n  onSubmit,\n}"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "DraftModal",
+          "callee": "useState",
+          "lineNumber": 18
+        },
+        {
+          "caller": "Harness",
+          "callee": "useState",
+          "lineNumber": 64
+        },
+        {
+          "caller": "Harness",
+          "callee": "setIsOpen",
+          "lineNumber": 68
+        },
+        {
+          "caller": "Harness",
+          "callee": "setIsOpen",
+          "lineNumber": 71
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/discussionContextSelection.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 179,
+      "nonEmptyLines": 162,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/discussionCreationFailure.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 96,
+      "nonEmptyLines": 92,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/discussionListModel.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 101,
+      "nonEmptyLines": 92,
+      "functions": [
+        {
+          "name": "summary",
+          "startLine": 7,
+          "endLine": 22,
+          "params": [
+            "id",
+            "lastActivityAt",
+            "overrides"
+          ]
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/discussionMentionAnalytics.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 56,
+      "nonEmptyLines": 52,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/discussionVisibility.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 74,
+      "nonEmptyLines": 62,
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/tests/useProjectDiscussions.test.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 281,
+      "nonEmptyLines": 248,
+      "functions": [
+        {
+          "name": "deferred",
+          "startLine": 11,
+          "endLine": 18,
+          "params": []
+        },
+        {
+          "name": "listFor",
+          "startLine": 20,
+          "endLine": 32,
+          "params": [
+            "projectId"
+          ]
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    }
+  ]
+}

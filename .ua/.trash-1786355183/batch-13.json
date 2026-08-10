@@ -1,0 +1,186 @@
+{
+  "nodes": [
+    {
+      "id": "file:frontend/src/documents/DocumentContextSelectionPanel.tsx",
+      "type": "file",
+      "name": "DocumentContextSelectionPanel.tsx",
+      "filePath": "frontend/src/documents/DocumentContextSelectionPanel.tsx",
+      "summary": "Presentational panel that renders the whole-document context picker: a header with a live selected count, a scrollable list of documents with per-status affordances, an empty state, and cancel/confirm actions. It holds no state of its own and drives everything through the injected DocumentMultiSelectionController.",
+      "tags": ["component", "documents", "context-selection", "accessibility", "presentational"],
+      "complexity": "moderate",
+      "languageNotes": "Fully controlled React component: every value and handler comes from a single controller prop, so the panel stays free of local state and can be tested by passing a plain object."
+    },
+    {
+      "id": "function:frontend/src/documents/DocumentContextSelectionPanel.tsx:DocumentSelectionRow",
+      "type": "function",
+      "name": "DocumentSelectionRow",
+      "filePath": "frontend/src/documents/DocumentContextSelectionPanel.tsx",
+      "lineRange": [30, 134],
+      "summary": "Renders one document as a checkbox-role button showing title, processing status label, and a status explanation, choosing icon and palette from the document's processing status. Only ready documents are enabled; processing and failed rows are disabled and non-toggleable.",
+      "tags": ["component", "list-item", "accessibility", "documents", "status-display"],
+      "complexity": "moderate",
+      "languageNotes": "Uses role=\"checkbox\" with aria-checked, aria-disabled, and aria-describedby so the selection state and the reason a row is unavailable are both announced by screen readers."
+    },
+    {
+      "id": "function:frontend/src/documents/DocumentContextSelectionPanel.tsx:DocumentContextSelectionPanel",
+      "type": "function",
+      "name": "DocumentContextSelectionPanel",
+      "filePath": "frontend/src/documents/DocumentContextSelectionPanel.tsx",
+      "lineRange": [136, 219],
+      "summary": "Exported panel component composing the instruction header, aria-live selected count, document list or empty state, and the cancel/confirm footer. The confirm button is disabled when nothing is selected unless the controller allows an empty selection.",
+      "tags": ["component", "documents", "context-selection", "accessibility", "exported"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/src/documents/documentContextSelectionTypes.ts",
+      "type": "file",
+      "name": "documentContextSelectionTypes.ts",
+      "filePath": "frontend/src/documents/documentContextSelectionTypes.ts",
+      "summary": "Declares the typed port for whole-document context selection: the DocumentContextSource metadata projection, the DocumentMultiSelection request a consuming feature supplies, its result payload, and the DocumentMultiSelectionController the panel renders against.",
+      "tags": ["type-definition", "documents", "context-selection", "contract", "port"],
+      "complexity": "simple",
+      "languageNotes": "DocumentContextSource is a Pick over the shared DocumentSummary contract, deliberately exposing only metadata so processed document bodies stay behind the server-side context-source reader."
+    },
+    {
+      "id": "file:frontend/src/documents/useDocumentMultiSelection.ts",
+      "type": "file",
+      "name": "useDocumentMultiSelection.ts",
+      "filePath": "frontend/src/documents/useDocumentMultiSelection.ts",
+      "summary": "Hook owning the tentative whole-document selection state so choices survive panel switches, exposing a controller with normalized documents, toggling restricted to ready same-project records, and one-shot cancel/confirm outcomes. Also wires Escape-to-cancel and resets state when the selection request appears or disappears.",
+      "tags": ["hook", "documents", "context-selection", "state-management", "validation"],
+      "complexity": "complex",
+      "languageNotes": "Uses refs (wasActiveRef, outcomeCompletedRef) as latch flags rather than shadow state: they gate the activation reset and guarantee onConfirm/onCancel fire at most once per selection session without triggering re-renders."
+    },
+    {
+      "id": "function:frontend/src/documents/useDocumentMultiSelection.ts:normalizeDocuments",
+      "type": "function",
+      "name": "normalizeDocuments",
+      "filePath": "frontend/src/documents/useDocumentMultiSelection.ts",
+      "lineRange": [29, 67],
+      "summary": "Filters incoming documents down to trusted selectable records: trims id and title, drops entries from another project or with blank fields or an unrecognized processing status, and de-duplicates by id keeping the last occurrence in first-seen order.",
+      "tags": ["validation", "normalization", "utility", "documents", "deduplication"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/src/documents/useDocumentMultiSelection.ts:normalizeInitialIds",
+      "type": "function",
+      "name": "normalizeInitialIds",
+      "filePath": "frontend/src/documents/useDocumentMultiSelection.ts",
+      "lineRange": [69, 79],
+      "summary": "Normalizes a caller-supplied list of pre-selected document ids by trimming, discarding empty strings, and removing duplicates, returning an empty array when no ids were provided.",
+      "tags": ["utility", "normalization", "validation", "documents"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/documents/useDocumentMultiSelection.ts:useDocumentMultiSelection",
+      "type": "function",
+      "name": "useDocumentMultiSelection",
+      "filePath": "frontend/src/documents/useDocumentMultiSelection.ts",
+      "lineRange": [86, 229],
+      "summary": "Exported hook that turns a nullable DocumentMultiSelection request plus a document list into a stable controller, memoizing normalized documents, ready ids, and the active selection set. Confirm reports only currently ready documents and is suppressed on an empty selection unless the request allows it.",
+      "tags": ["hook", "state-management", "documents", "context-selection", "exported"],
+      "complexity": "complex",
+      "languageNotes": "Selection is derived, not stored: raw selectedDocumentIds are intersected with readyDocumentIds on every render, so a document that stops being ready silently drops out of the effective selection instead of leaking into confirm."
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:frontend/src/documents/DocumentContextSelectionPanel.tsx",
+      "target": "file:frontend/src/documents/documentContextSelectionTypes.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/documents/DocumentContextSelectionPanel.tsx",
+      "target": "file:frontend/src/ui/focusRing.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/documents/useDocumentMultiSelection.ts",
+      "target": "file:frontend/src/documents/documentContextSelectionTypes.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/documents/DocumentContextSelectionPanel.tsx",
+      "target": "function:frontend/src/documents/DocumentContextSelectionPanel.tsx:DocumentSelectionRow",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:frontend/src/documents/DocumentContextSelectionPanel.tsx",
+      "target": "function:frontend/src/documents/DocumentContextSelectionPanel.tsx:DocumentContextSelectionPanel",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:frontend/src/documents/useDocumentMultiSelection.ts",
+      "target": "function:frontend/src/documents/useDocumentMultiSelection.ts:normalizeDocuments",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:frontend/src/documents/useDocumentMultiSelection.ts",
+      "target": "function:frontend/src/documents/useDocumentMultiSelection.ts:normalizeInitialIds",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:frontend/src/documents/useDocumentMultiSelection.ts",
+      "target": "function:frontend/src/documents/useDocumentMultiSelection.ts:useDocumentMultiSelection",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:frontend/src/documents/DocumentContextSelectionPanel.tsx",
+      "target": "function:frontend/src/documents/DocumentContextSelectionPanel.tsx:DocumentContextSelectionPanel",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/src/documents/useDocumentMultiSelection.ts",
+      "target": "function:frontend/src/documents/useDocumentMultiSelection.ts:useDocumentMultiSelection",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:frontend/src/documents/useDocumentMultiSelection.ts:useDocumentMultiSelection",
+      "target": "function:frontend/src/documents/useDocumentMultiSelection.ts:normalizeDocuments",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:frontend/src/documents/useDocumentMultiSelection.ts:useDocumentMultiSelection",
+      "target": "function:frontend/src/documents/useDocumentMultiSelection.ts:normalizeInitialIds",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "function:frontend/src/documents/DocumentContextSelectionPanel.tsx:DocumentContextSelectionPanel",
+      "target": "function:frontend/src/documents/DocumentContextSelectionPanel.tsx:DocumentSelectionRow",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:frontend/src/documents/useDocumentMultiSelection.ts",
+      "target": "file:frontend/src/documents/DocumentContextSelectionPanel.tsx",
+      "type": "related",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

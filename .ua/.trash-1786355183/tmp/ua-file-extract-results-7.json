@@ -1,0 +1,1921 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 22,
+  "filesSkipped": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 22,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 22,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "backend/src/bubbles/migrations/002-create-bubbles.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 26,
+      "nonEmptyLines": 25,
+      "exports": [
+        {
+          "name": "CREATE_BUBBLES_MIGRATION",
+          "line": 1,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/bubbles/migrations/003-create-bubble-links.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 28,
+      "nonEmptyLines": 24,
+      "exports": [
+        {
+          "name": "CREATE_BUBBLE_LINKS_MIGRATION",
+          "line": 1,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/bubbles/migrations/007-complete-discussion-extraction-provenance.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 167,
+      "nonEmptyLines": 159,
+      "exports": [
+        {
+          "name": "COMPLETE_DISCUSSION_EXTRACTION_PROVENANCE_MIGRATION",
+          "line": 1,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/database/database.migrations.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 1071,
+      "nonEmptyLines": 1024,
+      "callGraph": [
+        {
+          "caller": "insertWithDescriptionLength",
+          "callee": "insertProject.run",
+          "lineNumber": 1047
+        },
+        {
+          "caller": "insertWithDescriptionLength",
+          "callee": "'a'.repeat",
+          "lineNumber": 1050
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/database/database.migrations.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 261,
+      "nonEmptyLines": 229,
+      "functions": [
+        {
+          "name": "validateMigrationDefinitions",
+          "startLine": 103,
+          "endLine": 125,
+          "params": [
+            "migrations"
+          ]
+        },
+        {
+          "name": "validateAppliedMigrations",
+          "startLine": 127,
+          "endLine": 153,
+          "params": [
+            "appliedMigrations",
+            "migrations"
+          ]
+        },
+        {
+          "name": "getUserVersion",
+          "startLine": 155,
+          "endLine": 161,
+          "params": [
+            "database"
+          ]
+        },
+        {
+          "name": "getForeignKeysEnabled",
+          "startLine": 163,
+          "endLine": 169,
+          "params": [
+            "database"
+          ]
+        },
+        {
+          "name": "runDatabaseMigrations",
+          "startLine": 184,
+          "endLine": 211,
+          "params": [
+            "database",
+            "migrations"
+          ]
+        },
+        {
+          "name": "runMigrationTransaction",
+          "startLine": 213,
+          "endLine": 261,
+          "params": [
+            "database",
+            "migrations"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DATABASE_MIGRATIONS",
+          "line": 27,
+          "isDefault": false
+        },
+        {
+          "name": "runDatabaseMigrations",
+          "line": 184,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "validateMigrationDefinitions",
+          "callee": "migrations.forEach",
+          "lineNumber": 108
+        },
+        {
+          "caller": "validateMigrationDefinitions",
+          "callee": "migration.name.trim",
+          "lineNumber": 117
+        },
+        {
+          "caller": "validateMigrationDefinitions",
+          "callee": "names.has",
+          "lineNumber": 117
+        },
+        {
+          "caller": "validateMigrationDefinitions",
+          "callee": "names.add",
+          "lineNumber": 123
+        },
+        {
+          "caller": "validateAppliedMigrations",
+          "callee": "appliedMigrations.forEach",
+          "lineNumber": 131
+        },
+        {
+          "caller": "getUserVersion",
+          "callee": "database.prepare('PRAGMA user_version;').get",
+          "lineNumber": 156
+        },
+        {
+          "caller": "getUserVersion",
+          "callee": "database.prepare",
+          "lineNumber": 156
+        },
+        {
+          "caller": "getForeignKeysEnabled",
+          "callee": "database.prepare('PRAGMA foreign_keys;').get",
+          "lineNumber": 164
+        },
+        {
+          "caller": "getForeignKeysEnabled",
+          "callee": "database.prepare",
+          "lineNumber": 164
+        },
+        {
+          "caller": "runDatabaseMigrations",
+          "callee": "validateMigrationDefinitions",
+          "lineNumber": 188
+        },
+        {
+          "caller": "runDatabaseMigrations",
+          "callee": "getForeignKeysEnabled",
+          "lineNumber": 190
+        },
+        {
+          "caller": "runDatabaseMigrations",
+          "callee": "database.exec",
+          "lineNumber": 193
+        },
+        {
+          "caller": "runDatabaseMigrations",
+          "callee": "runMigrationTransaction",
+          "lineNumber": 197
+        },
+        {
+          "caller": "runDatabaseMigrations",
+          "callee": "database.prepare('PRAGMA foreign_key_check;').all",
+          "lineNumber": 199
+        },
+        {
+          "caller": "runDatabaseMigrations",
+          "callee": "database.prepare",
+          "lineNumber": 199
+        },
+        {
+          "caller": "runDatabaseMigrations",
+          "callee": "database.exec",
+          "lineNumber": 208
+        },
+        {
+          "caller": "runMigrationTransaction",
+          "callee": "database.exec",
+          "lineNumber": 217
+        },
+        {
+          "caller": "runMigrationTransaction",
+          "callee": "database.exec",
+          "lineNumber": 220
+        },
+        {
+          "caller": "runMigrationTransaction",
+          "callee": "database\n      .prepare(\n        `\n          SELECT version, name\n          FROM schema_migrations\n          ORDER BY version ASC\n        `,\n      )\n      .all",
+          "lineNumber": 222
+        },
+        {
+          "caller": "runMigrationTransaction",
+          "callee": "database\n      .prepare",
+          "lineNumber": 222
+        },
+        {
+          "caller": "runMigrationTransaction",
+          "callee": "validateAppliedMigrations",
+          "lineNumber": 232
+        },
+        {
+          "caller": "runMigrationTransaction",
+          "callee": "getUserVersion",
+          "lineNumber": 234
+        },
+        {
+          "caller": "runMigrationTransaction",
+          "callee": "migrations.at",
+          "lineNumber": 235
+        },
+        {
+          "caller": "runMigrationTransaction",
+          "callee": "database.prepare",
+          "lineNumber": 243
+        },
+        {
+          "caller": "runMigrationTransaction",
+          "callee": "migrations.slice",
+          "lineNumber": 250
+        },
+        {
+          "caller": "runMigrationTransaction",
+          "callee": "database.exec",
+          "lineNumber": 251
+        },
+        {
+          "caller": "runMigrationTransaction",
+          "callee": "recordMigration.run",
+          "lineNumber": 252
+        },
+        {
+          "caller": "runMigrationTransaction",
+          "callee": "database.exec",
+          "lineNumber": 255
+        },
+        {
+          "caller": "runMigrationTransaction",
+          "callee": "database.exec",
+          "lineNumber": 256
+        },
+        {
+          "caller": "runMigrationTransaction",
+          "callee": "database.exec",
+          "lineNumber": 258
+        }
+      ],
+      "metrics": {
+        "importCount": 13,
+        "exportCount": 2,
+        "functionCount": 6,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/discussions/migrations/004-create-discussions.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 30,
+      "nonEmptyLines": 29,
+      "exports": [
+        {
+          "name": "CREATE_DISCUSSIONS_MIGRATION",
+          "line": 1,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/discussions/migrations/005-create-discussion-messages.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 20,
+      "nonEmptyLines": 19,
+      "exports": [
+        {
+          "name": "CREATE_DISCUSSION_MESSAGES_MIGRATION",
+          "line": 1,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/discussions/migrations/006-persist-discussion-context-items.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 171,
+      "nonEmptyLines": 157,
+      "exports": [
+        {
+          "name": "PERSIST_DISCUSSION_CONTEXT_ITEMS_MIGRATION",
+          "line": 1,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/discussions/migrations/010-persist-discussion-search-attribution.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 68,
+      "nonEmptyLines": 64,
+      "exports": [
+        {
+          "name": "PERSIST_DISCUSSION_SEARCH_ATTRIBUTION_MIGRATION",
+          "line": 1,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/documents/migrations/009-create-documents.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 226,
+      "nonEmptyLines": 222,
+      "exports": [
+        {
+          "name": "CREATE_DOCUMENTS_MIGRATION",
+          "line": 1,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/knowledge-extraction/knowledge-extraction.controller.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 62,
+      "nonEmptyLines": 58,
+      "classes": [
+        {
+          "name": "KnowledgeExtractionController",
+          "startLine": 22,
+          "endLine": 62,
+          "methods": [
+            "constructor",
+            "create",
+            "resolve",
+            "discard"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "KnowledgeExtractionController",
+          "line": 19,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "create",
+          "callee": "Param",
+          "lineNumber": 30
+        },
+        {
+          "caller": "create",
+          "callee": "Param",
+          "lineNumber": 31
+        },
+        {
+          "caller": "create",
+          "callee": "Body",
+          "lineNumber": 32
+        },
+        {
+          "caller": "create",
+          "callee": "this.extractions.generateProposal",
+          "lineNumber": 34
+        },
+        {
+          "caller": "resolve",
+          "callee": "Param",
+          "lineNumber": 40
+        },
+        {
+          "caller": "resolve",
+          "callee": "Param",
+          "lineNumber": 41
+        },
+        {
+          "caller": "resolve",
+          "callee": "Param",
+          "lineNumber": 42
+        },
+        {
+          "caller": "resolve",
+          "callee": "Body",
+          "lineNumber": 43
+        },
+        {
+          "caller": "resolve",
+          "callee": "this.resolutions.resolveProposal",
+          "lineNumber": 45
+        },
+        {
+          "caller": "discard",
+          "callee": "Param",
+          "lineNumber": 56
+        },
+        {
+          "caller": "discard",
+          "callee": "Param",
+          "lineNumber": 57
+        },
+        {
+          "caller": "discard",
+          "callee": "Param",
+          "lineNumber": 58
+        },
+        {
+          "caller": "discard",
+          "callee": "this.resolutions.discardProposal",
+          "lineNumber": 60
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/knowledge-extraction/knowledge-extraction.module.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 26,
+      "nonEmptyLines": 25,
+      "classes": [
+        {
+          "name": "KnowledgeExtractionModule",
+          "startLine": 26,
+          "endLine": 26,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "KnowledgeExtractionModule",
+          "line": 12,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 9,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/knowledge-extraction/knowledge-extraction.prompt.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 178,
+      "nonEmptyLines": 167,
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/knowledge-extraction/knowledge-extraction.prompt.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 109,
+      "nonEmptyLines": 98,
+      "functions": [
+        {
+          "name": "buildKnowledgeExtractionModelInput",
+          "startLine": 64,
+          "endLine": 109,
+          "params": [
+            "snapshot",
+            "options"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "KNOWLEDGE_PROPOSAL_TITLE_MAX_LENGTH",
+          "line": 5,
+          "isDefault": false
+        },
+        {
+          "name": "KNOWLEDGE_PROPOSAL_SUMMARY_MAX_LENGTH",
+          "line": 6,
+          "isDefault": false
+        },
+        {
+          "name": "KNOWLEDGE_PROPOSAL_CONTENT_MAX_LENGTH",
+          "line": 7,
+          "isDefault": false
+        },
+        {
+          "name": "KNOWLEDGE_EXTRACTION_INSTRUCTIONS",
+          "line": 9,
+          "isDefault": false
+        },
+        {
+          "name": "KNOWLEDGE_EXTRACTION_PROPOSAL_FORMAT",
+          "line": 26,
+          "isDefault": false
+        },
+        {
+          "name": "buildKnowledgeExtractionModelInput",
+          "line": 64,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "buildKnowledgeExtractionModelInput",
+          "callee": "snapshot.messages.map",
+          "lineNumber": 68
+        },
+        {
+          "caller": "buildKnowledgeExtractionModelInput",
+          "callee": "snapshot.frozen_context_items.map",
+          "lineNumber": 72
+        },
+        {
+          "caller": "buildKnowledgeExtractionModelInput",
+          "callee": "JSON.stringify",
+          "lineNumber": 82
+        },
+        {
+          "caller": "buildKnowledgeExtractionModelInput",
+          "callee": "JSON.stringify",
+          "lineNumber": 84
+        },
+        {
+          "caller": "buildKnowledgeExtractionModelInput",
+          "callee": "serializedRequest.push",
+          "lineNumber": 88
+        },
+        {
+          "caller": "buildKnowledgeExtractionModelInput",
+          "callee": "JSON.stringify",
+          "lineNumber": 90
+        },
+        {
+          "caller": "buildKnowledgeExtractionModelInput",
+          "callee": "[\n    KNOWLEDGE_EXTRACTION_INSTRUCTIONS,\n    '',\n    'Detail guidance:',\n    '- The selected detail level changes content length only. Title and summary expectations remain unchanged.',\n    '- Markdown structure is optional and should follow the content naturally.',\n    `- ${DETAIL_LEVEL_GUIDANCE[options.detailLevel]}`,\n  ].join",
+          "lineNumber": 95
+        },
+        {
+          "caller": "buildKnowledgeExtractionModelInput",
+          "callee": "serializedRequest.join",
+          "lineNumber": 106
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 6,
+        "functionCount": 1,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/knowledge-extraction/knowledge-extraction.service.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 732,
+      "nonEmptyLines": 639,
+      "classes": [
+        {
+          "name": "KnowledgeExtractionService",
+          "startLine": 55,
+          "endLine": 732,
+          "methods": [
+            "constructor",
+            "generateProposal",
+            "createSourceSnapshot",
+            "buildSourceSnapshot",
+            "replayOrRetry",
+            "startGeneration",
+            "runGeneration",
+            "prepareModelInput",
+            "normalizeProposal",
+            "normalizedSingleLine",
+            "toProposalResponse",
+            "findByIdempotencyKey",
+            "snapshotPersistenceFailed",
+            "proposalPersistenceFailed",
+            "validateInput",
+            "instructions",
+            "detailLevel",
+            "idempotencyKey",
+            "identifierArray",
+            "requestFingerprint",
+            "rejectUnknownFields",
+            "validationFailed",
+            "isRecord"
+          ],
+          "properties": [
+            "inFlightGenerations"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "KnowledgeExtractionService",
+          "line": 54,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 63
+        },
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 65
+        },
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 67
+        },
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 69
+        },
+        {
+          "caller": "generateProposal",
+          "callee": "this.projects.get",
+          "lineNumber": 78
+        },
+        {
+          "caller": "generateProposal",
+          "callee": "this.validateInput",
+          "lineNumber": 79
+        },
+        {
+          "caller": "generateProposal",
+          "callee": "this.requestFingerprint",
+          "lineNumber": 80
+        },
+        {
+          "caller": "generateProposal",
+          "callee": "this.findByIdempotencyKey",
+          "lineNumber": 81
+        },
+        {
+          "caller": "generateProposal",
+          "callee": "this.replayOrRetry",
+          "lineNumber": 88
+        },
+        {
+          "caller": "generateProposal",
+          "callee": "this.buildSourceSnapshot",
+          "lineNumber": 91
+        },
+        {
+          "caller": "generateProposal",
+          "callee": "this.prepareModelInput",
+          "lineNumber": 97
+        },
+        {
+          "caller": "generateProposal",
+          "callee": "this.extractions.create",
+          "lineNumber": 101
+        },
+        {
+          "caller": "generateProposal",
+          "callee": "this.findByIdempotencyKey",
+          "lineNumber": 103
+        },
+        {
+          "caller": "generateProposal",
+          "callee": "this.replayOrRetry",
+          "lineNumber": 110
+        },
+        {
+          "caller": "generateProposal",
+          "callee": "this.snapshotPersistenceFailed",
+          "lineNumber": 113
+        },
+        {
+          "caller": "generateProposal",
+          "callee": "this.startGeneration",
+          "lineNumber": 116
+        },
+        {
+          "caller": "createSourceSnapshot",
+          "callee": "this.projects.get",
+          "lineNumber": 124
+        },
+        {
+          "caller": "createSourceSnapshot",
+          "callee": "this.validateInput",
+          "lineNumber": 125
+        },
+        {
+          "caller": "createSourceSnapshot",
+          "callee": "this.buildSourceSnapshot",
+          "lineNumber": 126
+        },
+        {
+          "caller": "createSourceSnapshot",
+          "callee": "this.requestFingerprint",
+          "lineNumber": 130
+        },
+        {
+          "caller": "createSourceSnapshot",
+          "callee": "this.extractions.create",
+          "lineNumber": 134
+        },
+        {
+          "caller": "createSourceSnapshot",
+          "callee": "this.snapshotPersistenceFailed",
+          "lineNumber": 136
+        },
+        {
+          "caller": "buildSourceSnapshot",
+          "callee": "new Date().toISOString",
+          "lineNumber": 146
+        },
+        {
+          "caller": "buildSourceSnapshot",
+          "callee": "this.discussionSources.readExtractionSources",
+          "lineNumber": 147
+        },
+        {
+          "caller": "buildSourceSnapshot",
+          "callee": "this.validationFailed",
+          "lineNumber": 176
+        },
+        {
+          "caller": "buildSourceSnapshot",
+          "callee": "this.validationFailed",
+          "lineNumber": 183
+        },
+        {
+          "caller": "buildSourceSnapshot",
+          "callee": "sourceResult.messages.map",
+          "lineNumber": 195
+        },
+        {
+          "caller": "buildSourceSnapshot",
+          "callee": "sourceResult.frozen_context_items.map",
+          "lineNumber": 203
+        },
+        {
+          "caller": "buildSourceSnapshot",
+          "callee": "new Date(\n      Date.parse(requestedAt) + ATTEMPT_RETENTION_MILLISECONDS,\n    ).toISOString",
+          "lineNumber": 213
+        },
+        {
+          "caller": "buildSourceSnapshot",
+          "callee": "Date.parse",
+          "lineNumber": 214
+        },
+        {
+          "caller": "buildSourceSnapshot",
+          "callee": "randomUUID",
+          "lineNumber": 217
+        },
+        {
+          "caller": "replayOrRetry",
+          "callee": "Promise.resolve",
+          "lineNumber": 255
+        },
+        {
+          "caller": "replayOrRetry",
+          "callee": "this.toProposalResponse",
+          "lineNumber": 255
+        },
+        {
+          "caller": "replayOrRetry",
+          "callee": "this.inFlightGenerations.get",
+          "lineNumber": 265
+        },
+        {
+          "caller": "replayOrRetry",
+          "callee": "this.prepareModelInput",
+          "lineNumber": 271
+        },
+        {
+          "caller": "replayOrRetry",
+          "callee": "this.extractions.markGeneratingForRetry",
+          "lineNumber": 275
+        },
+        {
+          "caller": "replayOrRetry",
+          "callee": "new Date().toISOString",
+          "lineNumber": 279
+        },
+        {
+          "caller": "replayOrRetry",
+          "callee": "this.proposalPersistenceFailed",
+          "lineNumber": 282
+        },
+        {
+          "caller": "replayOrRetry",
+          "callee": "this.findByIdempotencyKey",
+          "lineNumber": 286
+        },
+        {
+          "caller": "replayOrRetry",
+          "callee": "Promise.resolve",
+          "lineNumber": 297
+        },
+        {
+          "caller": "replayOrRetry",
+          "callee": "this.toProposalResponse",
+          "lineNumber": 297
+        },
+        {
+          "caller": "replayOrRetry",
+          "callee": "this.proposalPersistenceFailed",
+          "lineNumber": 300
+        },
+        {
+          "caller": "replayOrRetry",
+          "callee": "this.startGeneration",
+          "lineNumber": 303
+        },
+        {
+          "caller": "startGeneration",
+          "callee": "this.inFlightGenerations.get",
+          "lineNumber": 310
+        },
+        {
+          "caller": "startGeneration",
+          "callee": "this.runGeneration",
+          "lineNumber": 316
+        },
+        {
+          "caller": "startGeneration",
+          "callee": "this.inFlightGenerations.set",
+          "lineNumber": 317
+        },
+        {
+          "caller": "clear",
+          "callee": "this.inFlightGenerations.get",
+          "lineNumber": 319
+        },
+        {
+          "caller": "clear",
+          "callee": "this.inFlightGenerations.delete",
+          "lineNumber": 320
+        },
+        {
+          "caller": "startGeneration",
+          "callee": "generation.then",
+          "lineNumber": 323
+        },
+        {
+          "caller": "runGeneration",
+          "callee": "this.modelClient.generateStructuredOutput",
+          "lineNumber": 336
+        },
+        {
+          "caller": "runGeneration",
+          "callee": "this.normalizeProposal",
+          "lineNumber": 337
+        },
+        {
+          "caller": "runGeneration",
+          "callee": "this.extractions.markGenerationFailed",
+          "lineNumber": 340
+        },
+        {
+          "caller": "runGeneration",
+          "callee": "new Date().toISOString",
+          "lineNumber": 344
+        },
+        {
+          "caller": "runGeneration",
+          "callee": "this.proposalPersistenceFailed",
+          "lineNumber": 351
+        },
+        {
+          "caller": "runGeneration",
+          "callee": "this.extractions.saveProposal",
+          "lineNumber": 364
+        },
+        {
+          "caller": "runGeneration",
+          "callee": "new Date().toISOString",
+          "lineNumber": 369
+        },
+        {
+          "caller": "runGeneration",
+          "callee": "this.proposalPersistenceFailed",
+          "lineNumber": 372
+        },
+        {
+          "caller": "runGeneration",
+          "callee": "this.proposalPersistenceFailed",
+          "lineNumber": 376
+        },
+        {
+          "caller": "runGeneration",
+          "callee": "this.toProposalResponse",
+          "lineNumber": 379
+        },
+        {
+          "caller": "prepareModelInput",
+          "callee": "buildKnowledgeExtractionModelInput",
+          "lineNumber": 388
+        },
+        {
+          "caller": "prepareModelInput",
+          "callee": "this.modelInputBudget.evaluateStructuredOutput",
+          "lineNumber": 392
+        },
+        {
+          "caller": "normalizeProposal",
+          "callee": "this.isRecord",
+          "lineNumber": 412
+        },
+        {
+          "caller": "normalizeProposal",
+          "callee": "Object.keys",
+          "lineNumber": 413
+        },
+        {
+          "caller": "normalizeProposal",
+          "callee": "Object.keys(output).every",
+          "lineNumber": 414
+        },
+        {
+          "caller": "normalizeProposal",
+          "callee": "Object.keys",
+          "lineNumber": 414
+        },
+        {
+          "caller": "normalizeProposal",
+          "callee": "['title', 'summary', 'content'].includes",
+          "lineNumber": 415
+        },
+        {
+          "caller": "normalizeProposal",
+          "callee": "this.normalizedSingleLine",
+          "lineNumber": 421
+        },
+        {
+          "caller": "normalizeProposal",
+          "callee": "this.normalizedSingleLine",
+          "lineNumber": 425
+        },
+        {
+          "caller": "normalizeProposal",
+          "callee": "output.content.trim",
+          "lineNumber": 430
+        },
+        {
+          "caller": "normalizedSingleLine",
+          "callee": "value.trim().replace",
+          "lineNumber": 449
+        },
+        {
+          "caller": "normalizedSingleLine",
+          "callee": "value.trim",
+          "lineNumber": 449
+        },
+        {
+          "caller": "toProposalResponse",
+          "callee": "attempt.source_snapshot.messages.map",
+          "lineNumber": 468
+        },
+        {
+          "caller": "toProposalResponse",
+          "callee": "attempt.source_snapshot.frozen_context_items.map",
+          "lineNumber": 472
+        },
+        {
+          "caller": "findByIdempotencyKey",
+          "callee": "this.extractions.findByProjectDiscussionAndIdempotencyKey",
+          "lineNumber": 487
+        },
+        {
+          "caller": "findByIdempotencyKey",
+          "callee": "this.proposalPersistenceFailed",
+          "lineNumber": 493
+        },
+        {
+          "caller": "validateInput",
+          "callee": "this.isRecord",
+          "lineNumber": 516
+        },
+        {
+          "caller": "validateInput",
+          "callee": "this.validationFailed",
+          "lineNumber": 517
+        },
+        {
+          "caller": "validateInput",
+          "callee": "this.rejectUnknownFields",
+          "lineNumber": 522
+        },
+        {
+          "caller": "validateInput",
+          "callee": "this.idempotencyKey",
+          "lineNumber": 533
+        },
+        {
+          "caller": "validateInput",
+          "callee": "this.identifierArray",
+          "lineNumber": 537
+        },
+        {
+          "caller": "validateInput",
+          "callee": "this.identifierArray",
+          "lineNumber": 542
+        },
+        {
+          "caller": "validateInput",
+          "callee": "this.instructions",
+          "lineNumber": 547
+        },
+        {
+          "caller": "validateInput",
+          "callee": "this.detailLevel",
+          "lineNumber": 548
+        },
+        {
+          "caller": "validateInput",
+          "callee": "Object.keys",
+          "lineNumber": 568
+        },
+        {
+          "caller": "validateInput",
+          "callee": "this.validationFailed",
+          "lineNumber": 569
+        },
+        {
+          "caller": "instructions",
+          "callee": "value.trim",
+          "lineNumber": 605
+        },
+        {
+          "caller": "idempotencyKey",
+          "callee": "value.trim",
+          "lineNumber": 636
+        },
+        {
+          "caller": "idempotencyKey",
+          "callee": "value.trim",
+          "lineNumber": 641
+        },
+        {
+          "caller": "identifierArray",
+          "callee": "Array.isArray",
+          "lineNumber": 656
+        },
+        {
+          "caller": "identifierArray",
+          "callee": "value.forEach",
+          "lineNumber": 668
+        },
+        {
+          "caller": "identifierArray",
+          "callee": "identifier.trim",
+          "lineNumber": 669
+        },
+        {
+          "caller": "identifierArray",
+          "callee": "identifier.trim",
+          "lineNumber": 675
+        },
+        {
+          "caller": "identifierArray",
+          "callee": "identifiers.push",
+          "lineNumber": 683
+        },
+        {
+          "caller": "requestFingerprint",
+          "callee": "[...input.message_ids].sort",
+          "lineNumber": 695
+        },
+        {
+          "caller": "requestFingerprint",
+          "callee": "[...input.frozen_context_item_ids].sort",
+          "lineNumber": 696
+        },
+        {
+          "caller": "requestFingerprint",
+          "callee": "input.instructions?.replace",
+          "lineNumber": 697
+        },
+        {
+          "caller": "requestFingerprint",
+          "callee": "createHash('sha256')\n      .update(JSON.stringify(canonicalSelection))\n      .digest",
+          "lineNumber": 701
+        },
+        {
+          "caller": "requestFingerprint",
+          "callee": "createHash('sha256')\n      .update",
+          "lineNumber": 701
+        },
+        {
+          "caller": "requestFingerprint",
+          "callee": "createHash",
+          "lineNumber": 701
+        },
+        {
+          "caller": "requestFingerprint",
+          "callee": "JSON.stringify",
+          "lineNumber": 702
+        },
+        {
+          "caller": "rejectUnknownFields",
+          "callee": "Object.keys",
+          "lineNumber": 712
+        },
+        {
+          "caller": "rejectUnknownFields",
+          "callee": "allowedFields.includes",
+          "lineNumber": 713
+        },
+        {
+          "caller": "isRecord",
+          "callee": "Array.isArray",
+          "lineNumber": 730
+        }
+      ],
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/knowledge-extraction/knowledge-extraction.types.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 138,
+      "nonEmptyLines": 126,
+      "classes": [
+        {
+          "name": "KnowledgeExtractionIntegrityError",
+          "startLine": 125,
+          "endLine": 134,
+          "methods": [
+            "constructor"
+          ],
+          "properties": [
+            "code"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "KNOWLEDGE_EXTRACTION_INSTRUCTIONS_MAX_LENGTH",
+          "line": 8,
+          "isDefault": false
+        },
+        {
+          "name": "KnowledgeExtractionIntegrityError",
+          "line": 125,
+          "isDefault": false
+        },
+        {
+          "name": "KNOWLEDGE_EXTRACTION_REPOSITORY",
+          "line": 136,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "constructor",
+          "callee": "super",
+          "lineNumber": 129
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/knowledge-extraction/migrations/008-create-knowledge-extraction-attempts.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 157,
+      "nonEmptyLines": 153,
+      "exports": [
+        {
+          "name": "CREATE_KNOWLEDGE_EXTRACTION_ATTEMPTS_MIGRATION",
+          "line": 1,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/knowledge-extraction/migrations/011-persist-extraction-intent.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 39,
+      "nonEmptyLines": 35,
+      "exports": [
+        {
+          "name": "PERSIST_EXTRACTION_INTENT_MIGRATION",
+          "line": 3,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 754,
+      "nonEmptyLines": 691,
+      "classes": [
+        {
+          "name": "SqliteKnowledgeExtractionRepository",
+          "startLine": 46,
+          "endLine": 754,
+          "methods": [
+            "constructor",
+            "create",
+            "findByProjectDiscussionAndId",
+            "findByProjectDiscussionAndIdempotencyKey",
+            "markGeneratingForRetry",
+            "saveProposal",
+            "markGenerationFailed",
+            "markResolved",
+            "markDiscarded",
+            "toAttempt",
+            "isNullableInstructions",
+            "isDetailLevel",
+            "parseSourceSnapshot",
+            "messageSnapshot",
+            "contextSnapshot",
+            "parseNullableJsonObject",
+            "attemptStatus",
+            "resolutionKind",
+            "isRecord",
+            "hasExactKeys",
+            "isNonEmptyString",
+            "isNormalizedText",
+            "isNullableNonEmptyString",
+            "isFingerprint",
+            "isNullableFingerprint",
+            "isIsoTimestamp"
+          ],
+          "properties": [
+            "database"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "SqliteKnowledgeExtractionRepository",
+          "line": 45,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "create",
+          "callee": "JSON.stringify",
+          "lineNumber": 54
+        },
+        {
+          "caller": "create",
+          "callee": "JSON.stringify",
+          "lineNumber": 56
+        },
+        {
+          "caller": "create",
+          "callee": "this.toAttempt",
+          "lineNumber": 57
+        },
+        {
+          "caller": "create",
+          "callee": "this.database\n      .prepare(\n        `\n          INSERT INTO knowledge_extraction_attempts (\n            id,\n            project_id,\n            discussion_id,\n            idempotency_key,\n            request_fingerprint,\n            source_snapshot,\n            instructions,\n            detail_level,\n            proposal,\n            status,\n            resolution_fingerprint,\n            resolution_kind,\n            resulting_bubble_id,\n            retry_count,\n            created_at,\n            updated_at,\n            expires_at\n          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n        `,\n      )\n      .run",
+          "lineNumber": 63
+        },
+        {
+          "caller": "create",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 63
+        },
+        {
+          "caller": "findByProjectDiscussionAndId",
+          "callee": "this.database\n      .prepare(\n        `\n          SELECT *\n          FROM knowledge_extraction_attempts\n          WHERE project_id = ? AND discussion_id = ? AND id = ?\n        `,\n      )\n      .get",
+          "lineNumber": 115
+        },
+        {
+          "caller": "findByProjectDiscussionAndId",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 115
+        },
+        {
+          "caller": "findByProjectDiscussionAndId",
+          "callee": "this.toAttempt",
+          "lineNumber": 126
+        },
+        {
+          "caller": "findByProjectDiscussionAndIdempotencyKey",
+          "callee": "this.database\n      .prepare(\n        `\n          SELECT *\n          FROM knowledge_extraction_attempts\n          WHERE\n            project_id = ?\n            AND discussion_id = ?\n            AND idempotency_key = ?\n        `,\n      )\n      .get",
+          "lineNumber": 134
+        },
+        {
+          "caller": "findByProjectDiscussionAndIdempotencyKey",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 134
+        },
+        {
+          "caller": "findByProjectDiscussionAndIdempotencyKey",
+          "callee": "this.toAttempt",
+          "lineNumber": 148
+        },
+        {
+          "caller": "markGeneratingForRetry",
+          "callee": "this.database\n      .prepare(\n        `\n          UPDATE knowledge_extraction_attempts\n          SET\n            status = 'generating',\n            retry_count = retry_count + 1,\n            updated_at = ?\n          WHERE\n            project_id = ?\n            AND discussion_id = ?\n            AND id = ?\n            AND status IN ('generating', 'failed')\n            AND proposal IS NULL\n        `,\n      )\n      .run",
+          "lineNumber": 157
+        },
+        {
+          "caller": "markGeneratingForRetry",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 157
+        },
+        {
+          "caller": "markGeneratingForRetry",
+          "callee": "this.findByProjectDiscussionAndId",
+          "lineNumber": 177
+        },
+        {
+          "caller": "saveProposal",
+          "callee": "JSON.stringify",
+          "lineNumber": 191
+        },
+        {
+          "caller": "saveProposal",
+          "callee": "this.database\n      .prepare(\n        `\n          UPDATE knowledge_extraction_attempts\n          SET\n            proposal = ?,\n            status = 'ready',\n            updated_at = ?\n          WHERE\n            project_id = ?\n            AND discussion_id = ?\n            AND id = ?\n            AND status = 'generating'\n            AND proposal IS NULL\n        `,\n      )\n      .run",
+          "lineNumber": 192
+        },
+        {
+          "caller": "saveProposal",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 192
+        },
+        {
+          "caller": "saveProposal",
+          "callee": "this.findByProjectDiscussionAndId",
+          "lineNumber": 218
+        },
+        {
+          "caller": "markGenerationFailed",
+          "callee": "this.database\n      .prepare(\n        `\n          UPDATE knowledge_extraction_attempts\n          SET\n            status = 'failed',\n            updated_at = ?\n          WHERE\n            project_id = ?\n            AND discussion_id = ?\n            AND id = ?\n            AND status = 'generating'\n            AND proposal IS NULL\n        `,\n      )\n      .run",
+          "lineNumber": 231
+        },
+        {
+          "caller": "markGenerationFailed",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 231
+        },
+        {
+          "caller": "markGenerationFailed",
+          "callee": "this.findByProjectDiscussionAndId",
+          "lineNumber": 250
+        },
+        {
+          "caller": "markResolved",
+          "callee": "this.database\n      .prepare(\n        `\n          UPDATE knowledge_extraction_attempts\n          SET\n            status = 'resolved',\n            resolution_fingerprint = ?,\n            resolution_kind = ?,\n            resulting_bubble_id = ?,\n            updated_at = ?\n          WHERE\n            project_id = ?\n            AND discussion_id = ?\n            AND id = ?\n            AND status = 'ready'\n            AND proposal IS NOT NULL\n            AND resolution_fingerprint IS NULL\n            AND resolution_kind IS NULL\n            AND resulting_bubble_id IS NULL\n        `,\n      )\n      .run",
+          "lineNumber": 268
+        },
+        {
+          "caller": "markResolved",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 268
+        },
+        {
+          "caller": "markResolved",
+          "callee": "this.findByProjectDiscussionAndId",
+          "lineNumber": 301
+        },
+        {
+          "caller": "markDiscarded",
+          "callee": "this.database\n      .prepare(\n        `\n          UPDATE knowledge_extraction_attempts\n          SET\n            proposal = NULL,\n            status = 'discarded',\n            updated_at = ?\n          WHERE\n            project_id = ?\n            AND discussion_id = ?\n            AND id = ?\n            AND status IN ('generating', 'ready', 'failed')\n            AND resolution_fingerprint IS NULL\n            AND resolution_kind IS NULL\n            AND resulting_bubble_id IS NULL\n        `,\n      )\n      .run",
+          "lineNumber": 314
+        },
+        {
+          "caller": "markDiscarded",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 314
+        },
+        {
+          "caller": "markDiscarded",
+          "callee": "this.findByProjectDiscussionAndId",
+          "lineNumber": 336
+        },
+        {
+          "caller": "toAttempt",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 346
+        },
+        {
+          "caller": "toAttempt",
+          "callee": "this.parseNullableJsonObject",
+          "lineNumber": 347
+        },
+        {
+          "caller": "toAttempt",
+          "callee": "this.attemptStatus",
+          "lineNumber": 348
+        },
+        {
+          "caller": "toAttempt",
+          "callee": "this.resolutionKind",
+          "lineNumber": 349
+        },
+        {
+          "caller": "toAttempt",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 355
+        },
+        {
+          "caller": "toAttempt",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 356
+        },
+        {
+          "caller": "toAttempt",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 357
+        },
+        {
+          "caller": "toAttempt",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 358
+        },
+        {
+          "caller": "toAttempt",
+          "callee": "this.isFingerprint",
+          "lineNumber": 360
+        },
+        {
+          "caller": "toAttempt",
+          "callee": "this.isNullableInstructions",
+          "lineNumber": 361
+        },
+        {
+          "caller": "toAttempt",
+          "callee": "this.isDetailLevel",
+          "lineNumber": 362
+        },
+        {
+          "caller": "toAttempt",
+          "callee": "Number.isInteger",
+          "lineNumber": 363
+        },
+        {
+          "caller": "toAttempt",
+          "callee": "this.isIsoTimestamp",
+          "lineNumber": 365
+        },
+        {
+          "caller": "toAttempt",
+          "callee": "this.isIsoTimestamp",
+          "lineNumber": 366
+        },
+        {
+          "caller": "toAttempt",
+          "callee": "this.isIsoTimestamp",
+          "lineNumber": 367
+        },
+        {
+          "caller": "toAttempt",
+          "callee": "this.isNullableFingerprint",
+          "lineNumber": 370
+        },
+        {
+          "caller": "toAttempt",
+          "callee": "this.isNullableNonEmptyString",
+          "lineNumber": 371
+        },
+        {
+          "caller": "toAttempt",
+          "callee": "this.parseSourceSnapshot",
+          "lineNumber": 376
+        },
+        {
+          "caller": "isNullableInstructions",
+          "callee": "value.trim",
+          "lineNumber": 428
+        },
+        {
+          "caller": "parseSourceSnapshot",
+          "callee": "JSON.parse",
+          "lineNumber": 449
+        },
+        {
+          "caller": "parseSourceSnapshot",
+          "callee": "this.isRecord",
+          "lineNumber": 455
+        },
+        {
+          "caller": "parseSourceSnapshot",
+          "callee": "this.hasExactKeys",
+          "lineNumber": 456
+        },
+        {
+          "caller": "parseSourceSnapshot",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 467
+        },
+        {
+          "caller": "parseSourceSnapshot",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 468
+        },
+        {
+          "caller": "parseSourceSnapshot",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 469
+        },
+        {
+          "caller": "parseSourceSnapshot",
+          "callee": "this.isIsoTimestamp",
+          "lineNumber": 470
+        },
+        {
+          "caller": "parseSourceSnapshot",
+          "callee": "Array.isArray",
+          "lineNumber": 473
+        },
+        {
+          "caller": "parseSourceSnapshot",
+          "callee": "Array.isArray",
+          "lineNumber": 474
+        },
+        {
+          "caller": "parseSourceSnapshot",
+          "callee": "value.messages.map",
+          "lineNumber": 482
+        },
+        {
+          "caller": "parseSourceSnapshot",
+          "callee": "this.messageSnapshot",
+          "lineNumber": 483
+        },
+        {
+          "caller": "parseSourceSnapshot",
+          "callee": "value.frozen_context_items.map",
+          "lineNumber": 486
+        },
+        {
+          "caller": "parseSourceSnapshot",
+          "callee": "this.contextSnapshot",
+          "lineNumber": 487
+        },
+        {
+          "caller": "messageSnapshot",
+          "callee": "this.isRecord",
+          "lineNumber": 535
+        },
+        {
+          "caller": "messageSnapshot",
+          "callee": "this.hasExactKeys",
+          "lineNumber": 536
+        },
+        {
+          "caller": "messageSnapshot",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 545
+        },
+        {
+          "caller": "messageSnapshot",
+          "callee": "ids.has",
+          "lineNumber": 546
+        },
+        {
+          "caller": "messageSnapshot",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 548
+        },
+        {
+          "caller": "messageSnapshot",
+          "callee": "this.isIsoTimestamp",
+          "lineNumber": 549
+        },
+        {
+          "caller": "messageSnapshot",
+          "callee": "ids.add",
+          "lineNumber": 555
+        },
+        {
+          "caller": "contextSnapshot",
+          "callee": "this.isRecord",
+          "lineNumber": 572
+        },
+        {
+          "caller": "contextSnapshot",
+          "callee": "this.hasExactKeys",
+          "lineNumber": 573
+        },
+        {
+          "caller": "contextSnapshot",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 583
+        },
+        {
+          "caller": "contextSnapshot",
+          "callee": "ids.has",
+          "lineNumber": 584
+        },
+        {
+          "caller": "contextSnapshot",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 588
+        },
+        {
+          "caller": "contextSnapshot",
+          "callee": "this.isIsoTimestamp",
+          "lineNumber": 590
+        },
+        {
+          "caller": "contextSnapshot",
+          "callee": "Number.isInteger",
+          "lineNumber": 591
+        },
+        {
+          "caller": "contextSnapshot",
+          "callee": "ids.add",
+          "lineNumber": 597
+        },
+        {
+          "caller": "parseNullableJsonObject",
+          "callee": "JSON.parse",
+          "lineNumber": 622
+        },
+        {
+          "caller": "parseNullableJsonObject",
+          "callee": "this.isRecord",
+          "lineNumber": 625
+        },
+        {
+          "caller": "parseNullableJsonObject",
+          "callee": "this.hasExactKeys",
+          "lineNumber": 626
+        },
+        {
+          "caller": "parseNullableJsonObject",
+          "callee": "this.isNormalizedText",
+          "lineNumber": 627
+        },
+        {
+          "caller": "parseNullableJsonObject",
+          "callee": "this.isNormalizedText",
+          "lineNumber": 632
+        },
+        {
+          "caller": "parseNullableJsonObject",
+          "callee": "this.isNormalizedText",
+          "lineNumber": 637
+        },
+        {
+          "caller": "isRecord",
+          "callee": "Array.isArray",
+          "lineNumber": 697
+        },
+        {
+          "caller": "hasExactKeys",
+          "callee": "Object.keys",
+          "lineNumber": 704
+        },
+        {
+          "caller": "hasExactKeys",
+          "callee": "actualKeys.every",
+          "lineNumber": 708
+        },
+        {
+          "caller": "hasExactKeys",
+          "callee": "keys.includes",
+          "lineNumber": 708
+        },
+        {
+          "caller": "isNonEmptyString",
+          "callee": "value.trim",
+          "lineNumber": 713
+        },
+        {
+          "caller": "isNormalizedText",
+          "callee": "value.trim",
+          "lineNumber": 725
+        },
+        {
+          "caller": "isNormalizedText",
+          "callee": "/[\\r\\n]|\\s{2,}/.test",
+          "lineNumber": 726
+        },
+        {
+          "caller": "isNullableNonEmptyString",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 731
+        },
+        {
+          "caller": "isFingerprint",
+          "callee": "/^[a-f0-9]{64}$/.test",
+          "lineNumber": 735
+        },
+        {
+          "caller": "isNullableFingerprint",
+          "callee": "this.isFingerprint",
+          "lineNumber": 739
+        },
+        {
+          "caller": "isIsoTimestamp",
+          "callee": "Date.parse",
+          "lineNumber": 747
+        },
+        {
+          "caller": "isIsoTimestamp",
+          "callee": "Number.isFinite",
+          "lineNumber": 750
+        },
+        {
+          "caller": "isIsoTimestamp",
+          "callee": "new Date(milliseconds).toISOString",
+          "lineNumber": 751
+        }
+      ],
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/projects/migrations/001-create-projects.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 26,
+      "nonEmptyLines": 25,
+      "exports": [
+        {
+          "name": "CREATE_PROJECTS_MIGRATION",
+          "line": 10,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/projects/migrations/012-widen-project-description.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 69,
+      "nonEmptyLines": 65,
+      "exports": [
+        {
+          "name": "WIDEN_PROJECT_DESCRIPTION_MIGRATION",
+          "line": 28,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/projects/migrations/013-repair-project-foreign-keys.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 22,
+      "nonEmptyLines": 19,
+      "exports": [
+        {
+          "name": "REPAIR_PROJECT_FOREIGN_KEYS_MIGRATION",
+          "line": 14,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    }
+  ]
+}

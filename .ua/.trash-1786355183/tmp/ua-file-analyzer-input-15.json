@@ -1,0 +1,49 @@
+{
+  "projectRoot": "/Users/alexandredemoura/Desktop/dev/nuee",
+  "batchFiles": [
+    {
+      "path": "backend/DOCUMENT_OPERATIONS.md",
+      "language": "markdown",
+      "sizeLines": 154,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "backend/README.md",
+      "language": "markdown",
+      "sizeLines": 142,
+      "fileCategory": "docs"
+    },
+    {
+      "path": "backend/nest-cli.json",
+      "language": "json",
+      "sizeLines": 8,
+      "fileCategory": "config"
+    },
+    {
+      "path": "backend/package.json",
+      "language": "json",
+      "sizeLines": 84,
+      "fileCategory": "config"
+    },
+    {
+      "path": "backend/tsconfig.build.json",
+      "language": "json",
+      "sizeLines": 4,
+      "fileCategory": "config"
+    },
+    {
+      "path": "backend/tsconfig.json",
+      "language": "json",
+      "sizeLines": 28,
+      "fileCategory": "config"
+    }
+  ],
+  "batchImportData": {
+    "backend/DOCUMENT_OPERATIONS.md": [],
+    "backend/README.md": [],
+    "backend/nest-cli.json": [],
+    "backend/package.json": [],
+    "backend/tsconfig.build.json": [],
+    "backend/tsconfig.json": []
+  }
+}

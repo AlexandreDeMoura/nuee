@@ -1,0 +1,1119 @@
+{
+  "nodes": [
+    {
+      "id": "file:frontend/src/workspace/panelModel.ts",
+      "type": "file",
+      "name": "panelModel.ts",
+      "filePath": "frontend/src/workspace/panelModel.ts",
+      "summary": "Declares the WorkspacePanelView union of the four workspace side-panel views and the pure rule that picks the default panel — discussions when the project already has discussions, otherwise project.",
+      "tags": [
+        "workspace",
+        "panel",
+        "pure-function",
+        "type-definition",
+        "utility"
+      ],
+      "complexity": "simple",
+      "languageNotes": "A tiny pure module: a string-literal union type plus one branch-free selector, keeping panel-default policy testable and free of React state."
+    },
+    {
+      "id": "function:frontend/src/workspace/panelModel.ts:getDefaultPanelView",
+      "type": "function",
+      "name": "getDefaultPanelView",
+      "filePath": "frontend/src/workspace/panelModel.ts",
+      "lineRange": [
+        7,
+        9
+      ],
+      "summary": "Returns the panel view a workspace should open with: \"discussions\" when the project has at least one discussion, otherwise \"project\".",
+      "tags": [
+        "workspace",
+        "panel",
+        "pure-function",
+        "default-state"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/tests/BubbleCanvasJourney.test.tsx",
+      "type": "file",
+      "name": "BubbleCanvasJourney.test.tsx",
+      "filePath": "frontend/tests/BubbleCanvasJourney.test.tsx",
+      "summary": "End-to-end journey suite driving the bubble canvas through the real App router with a stubbed fetch: bubble creation, compact layout placement, dragging, multi-selection, and viewport persistence.",
+      "tags": [
+        "test",
+        "journey-test",
+        "canvas",
+        "integration",
+        "fetch-stub"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Uses Testing Library against the real router and a hand-rolled fetch stub instead of module mocks, so the canvas is exercised through its HTTP boundary."
+    },
+    {
+      "id": "function:frontend/tests/BubbleCanvasJourney.test.tsx:bubble",
+      "type": "function",
+      "name": "bubble",
+      "filePath": "frontend/tests/BubbleCanvasJourney.test.tsx",
+      "lineRange": [
+        35,
+        54
+      ],
+      "summary": "Fixture factory producing a fully populated bubble response object with overridable fields for journey assertions.",
+      "tags": [
+        "test-fixture",
+        "factory",
+        "bubble"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/tests/BubbleCanvasJourney.test.tsx:bubblePositions",
+      "type": "function",
+      "name": "bubblePositions",
+      "filePath": "frontend/tests/BubbleCanvasJourney.test.tsx",
+      "lineRange": [
+        56,
+        66
+      ],
+      "summary": "Maps a bubble collection to a list of positioned rectangles used when checking layout invariants.",
+      "tags": [
+        "test-helper",
+        "canvas",
+        "layout"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/tests/BubbleCanvasJourney.test.tsx:expectNoOverlaps",
+      "type": "function",
+      "name": "expectNoOverlaps",
+      "filePath": "frontend/tests/BubbleCanvasJourney.test.tsx",
+      "lineRange": [
+        68,
+        86
+      ],
+      "summary": "Custom assertion verifying that no two rendered bubble cards overlap in the compact layout.",
+      "tags": [
+        "test-helper",
+        "assertion",
+        "layout",
+        "canvas"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/tests/BubbleCard.test.tsx",
+      "type": "file",
+      "name": "BubbleCard.test.tsx",
+      "filePath": "frontend/tests/BubbleCard.test.tsx",
+      "summary": "Component suite for the canvas BubbleCard: title and preview rendering, source metadata display, selection affordances, and drag handle behavior.",
+      "tags": [
+        "test",
+        "component-test",
+        "canvas",
+        "bubble-card",
+        "rendering"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/tests/BubbleCard.test.tsx:bubble",
+      "type": "function",
+      "name": "bubble",
+      "filePath": "frontend/tests/BubbleCard.test.tsx",
+      "lineRange": [
+        7,
+        26
+      ],
+      "summary": "Fixture factory creating a bubble record with sensible defaults so each test only states the field it cares about.",
+      "tags": [
+        "test-fixture",
+        "factory",
+        "bubble"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/tests/BubbleInspector.test.tsx",
+      "type": "file",
+      "name": "BubbleInspector.test.tsx",
+      "filePath": "frontend/tests/BubbleInspector.test.tsx",
+      "summary": "Component suite for BubbleInspector covering content editing, save-status transitions, validation limits, source metadata, manual link create/delete, and deletion flows including failure and retry.",
+      "tags": [
+        "test",
+        "component-test",
+        "bubbles",
+        "validation",
+        "save-status"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:frontend/tests/BubbleInspector.test.tsx:deferred",
+      "type": "function",
+      "name": "deferred",
+      "filePath": "frontend/tests/BubbleInspector.test.tsx",
+      "lineRange": [
+        15,
+        24
+      ],
+      "summary": "Creates a manually resolvable promise so tests can hold a request pending and assert intermediate save states.",
+      "tags": [
+        "test-helper",
+        "async",
+        "deferred-promise"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/tests/BubbleInspector.test.tsx:bubble",
+      "type": "function",
+      "name": "bubble",
+      "filePath": "frontend/tests/BubbleInspector.test.tsx",
+      "lineRange": [
+        26,
+        46
+      ],
+      "summary": "Fixture factory producing a bubble record with overridable fields for inspector tests.",
+      "tags": [
+        "test-fixture",
+        "factory",
+        "bubble"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/tests/BubbleInspector.test.tsx:bubbleLink",
+      "type": "function",
+      "name": "bubbleLink",
+      "filePath": "frontend/tests/BubbleInspector.test.tsx",
+      "lineRange": [
+        48,
+        57
+      ],
+      "summary": "Fixture factory producing a manual bubble-link record used by the link section tests.",
+      "tags": [
+        "test-fixture",
+        "factory",
+        "bubble-link"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/tests/CanvasSurface.test.tsx",
+      "type": "file",
+      "name": "CanvasSurface.test.tsx",
+      "filePath": "frontend/tests/CanvasSurface.test.tsx",
+      "summary": "The batch's largest suite, exercising CanvasSurface across bubble collection loading, pan and zoom, drag placement, multi-selection, empty-state actions, and debounced viewport persistence with failure branches.",
+      "tags": [
+        "test",
+        "component-test",
+        "canvas",
+        "viewport",
+        "interaction"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Leans on injectable request functions and deferred promises rather than module mocking, matching the project rule that async failure, abort, and stale-response branches must each be covered."
+    },
+    {
+      "id": "function:frontend/tests/CanvasSurface.test.tsx:deferred",
+      "type": "function",
+      "name": "deferred",
+      "filePath": "frontend/tests/CanvasSurface.test.tsx",
+      "lineRange": [
+        17,
+        26
+      ],
+      "summary": "Creates a manually resolvable promise for holding canvas requests pending across assertions.",
+      "tags": [
+        "test-helper",
+        "async",
+        "deferred-promise"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/tests/CanvasSurface.test.tsx:bubble",
+      "type": "function",
+      "name": "bubble",
+      "filePath": "frontend/tests/CanvasSurface.test.tsx",
+      "lineRange": [
+        40,
+        59
+      ],
+      "summary": "Fixture factory producing a bubble record with overridable placement and content fields.",
+      "tags": [
+        "test-fixture",
+        "factory",
+        "bubble"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/tests/CanvasSurface.test.tsx:bubbleCollection",
+      "type": "function",
+      "name": "bubbleCollection",
+      "filePath": "frontend/tests/CanvasSurface.test.tsx",
+      "lineRange": [
+        65,
+        76
+      ],
+      "summary": "Wraps a set of bubbles into the project bubble collection response shape the canvas expects.",
+      "tags": [
+        "test-fixture",
+        "factory",
+        "canvas"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/tests/CreateBubbleDialog.test.tsx",
+      "type": "file",
+      "name": "CreateBubbleDialog.test.tsx",
+      "filePath": "frontend/tests/CreateBubbleDialog.test.tsx",
+      "summary": "Component suite for the bubble creation dialog covering required-field validation, shared length limits, submit success, and API error surfacing.",
+      "tags": [
+        "test",
+        "component-test",
+        "bubbles",
+        "dialog",
+        "validation"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/tests/CreateBubbleDialog.test.tsx:fillValidForm",
+      "type": "function",
+      "name": "fillValidForm",
+      "filePath": "frontend/tests/CreateBubbleDialog.test.tsx",
+      "lineRange": [
+        33,
+        42
+      ],
+      "summary": "Types a complete, valid set of bubble fields into the dialog so each test can focus on a single deviation.",
+      "tags": [
+        "test-helper",
+        "form",
+        "user-event"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/tests/CreateProjectDialog.test.tsx",
+      "type": "file",
+      "name": "CreateProjectDialog.test.tsx",
+      "filePath": "frontend/tests/CreateProjectDialog.test.tsx",
+      "summary": "Component suite for the project creation dialog: field validation against shared limits, document-policy preflight, submit and navigation, and error and retry handling.",
+      "tags": [
+        "test",
+        "component-test",
+        "projects",
+        "dialog",
+        "validation"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:frontend/tests/DiscussionExperience.test.tsx",
+      "type": "file",
+      "name": "DiscussionExperience.test.tsx",
+      "filePath": "frontend/tests/DiscussionExperience.test.tsx",
+      "summary": "The batch's broadest discussion suite, covering the write-first draft, single-visible-modal rule, composer and message states, failed-turn retry, generated titles, per-turn web search, source attribution, and the knowledge-extraction integration point.",
+      "tags": [
+        "test",
+        "integration-test",
+        "discussions",
+        "knowledge-extraction",
+        "test-harness"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Builds a reusable Harness component that injects every request function and analytics client, so the discussion lifecycle is driven through its real props rather than mocked modules."
+    },
+    {
+      "id": "function:frontend/tests/DiscussionExperience.test.tsx:deferred",
+      "type": "function",
+      "name": "deferred",
+      "filePath": "frontend/tests/DiscussionExperience.test.tsx",
+      "lineRange": [
+        34,
+        43
+      ],
+      "summary": "Creates a manually resolvable promise for holding generation requests pending mid-assertion.",
+      "tags": [
+        "test-helper",
+        "async",
+        "deferred-promise"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/tests/DiscussionExperience.test.tsx:activateButtonWithKeyboard",
+      "type": "function",
+      "name": "activateButtonWithKeyboard",
+      "filePath": "frontend/tests/DiscussionExperience.test.tsx",
+      "lineRange": [
+        45,
+        54
+      ],
+      "summary": "Focuses a button and fires the given key so keyboard activation paths are exercised alongside clicks.",
+      "tags": [
+        "test-helper",
+        "accessibility",
+        "keyboard"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/tests/DiscussionExperience.test.tsx:details",
+      "type": "function",
+      "name": "details",
+      "filePath": "frontend/tests/DiscussionExperience.test.tsx",
+      "lineRange": [
+        60,
+        106
+      ],
+      "summary": "Fixture factory assembling a full discussion detail payload — messages, frozen context, and status — with deep overrides.",
+      "tags": [
+        "test-fixture",
+        "factory",
+        "discussions"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/tests/DiscussionExperience.test.tsx:proposalResponse",
+      "type": "function",
+      "name": "proposalResponse",
+      "filePath": "frontend/tests/DiscussionExperience.test.tsx",
+      "lineRange": [
+        115,
+        129
+      ],
+      "summary": "Builds a knowledge-extraction proposal response used by the extraction integration tests.",
+      "tags": [
+        "test-fixture",
+        "factory",
+        "knowledge-extraction"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/tests/DiscussionExperience.test.tsx:Harness",
+      "type": "function",
+      "name": "Harness",
+      "filePath": "frontend/tests/DiscussionExperience.test.tsx",
+      "lineRange": [
+        141,
+        207
+      ],
+      "summary": "Test harness component wiring the discussion experience with injectable request functions, analytics, and extraction callbacks so suites render a realistic composition.",
+      "tags": [
+        "test-harness",
+        "component",
+        "dependency-injection",
+        "discussions"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/tests/DiscussionsPanelLifecycle.test.tsx",
+      "type": "file",
+      "name": "DiscussionsPanelLifecycle.test.tsx",
+      "filePath": "frontend/tests/DiscussionsPanelLifecycle.test.tsx",
+      "summary": "Integration suite for the workspace discussions panel: list ordering by last activity, the Active discussion model, explicit open, reopening, minimization, and deletion.",
+      "tags": [
+        "test",
+        "integration-test",
+        "discussions",
+        "workspace",
+        "lifecycle"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Encodes the last_activity_at ordering rule — creation, open, and new messages requalify a discussion as Active, while titling, minimizing, and scrolling do not."
+    },
+    {
+      "id": "function:frontend/tests/DiscussionsPanelLifecycle.test.tsx:summary",
+      "type": "function",
+      "name": "summary",
+      "filePath": "frontend/tests/DiscussionsPanelLifecycle.test.tsx",
+      "lineRange": [
+        30,
+        45
+      ],
+      "summary": "Fixture factory building a discussion summary row with explicit id, title, last-activity timestamp, and active flag.",
+      "tags": [
+        "test-fixture",
+        "factory",
+        "discussions"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/tests/DiscussionsPanelLifecycle.test.tsx:details",
+      "type": "function",
+      "name": "details",
+      "filePath": "frontend/tests/DiscussionsPanelLifecycle.test.tsx",
+      "lineRange": [
+        47,
+        94
+      ],
+      "summary": "Fixture factory expanding a discussion summary into a full detail payload with overridable messages and status.",
+      "tags": [
+        "test-fixture",
+        "factory",
+        "discussions"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/tests/DocumentsPanel.test.tsx",
+      "type": "file",
+      "name": "DocumentsPanel.test.tsx",
+      "filePath": "frontend/tests/DocumentsPanel.test.tsx",
+      "summary": "Component suite for the documents panel covering ready, processing, and failed document states, retry actions, inspection, and whole-document context selection.",
+      "tags": [
+        "test",
+        "component-test",
+        "documents",
+        "processing-states",
+        "rendering"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:frontend/tests/DocumentsPanel.test.tsx:readyDocument",
+      "type": "function",
+      "name": "readyDocument",
+      "filePath": "frontend/tests/DocumentsPanel.test.tsx",
+      "lineRange": [
+        46,
+        64
+      ],
+      "summary": "Fixture factory producing a processed, ready document summary usable as a context source.",
+      "tags": [
+        "test-fixture",
+        "factory",
+        "documents"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/tests/DocumentsPanel.test.tsx:failedDocument",
+      "type": "function",
+      "name": "failedDocument",
+      "filePath": "frontend/tests/DocumentsPanel.test.tsx",
+      "lineRange": [
+        66,
+        84
+      ],
+      "summary": "Fixture factory producing a failed document summary so error and retry rendering can be asserted.",
+      "tags": [
+        "test-fixture",
+        "factory",
+        "documents"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/tests/DocumentsPanel.test.tsx:libraryController",
+      "type": "function",
+      "name": "libraryController",
+      "filePath": "frontend/tests/DocumentsPanel.test.tsx",
+      "lineRange": [
+        86,
+        108
+      ],
+      "summary": "Builds a fake document-library controller with overridable state and actions, injected in place of the real hook.",
+      "tags": [
+        "test-fixture",
+        "fake",
+        "documents",
+        "dependency-injection"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/tests/ProjectCreationJourney.test.tsx",
+      "type": "file",
+      "name": "ProjectCreationJourney.test.tsx",
+      "filePath": "frontend/tests/ProjectCreationJourney.test.tsx",
+      "summary": "End-to-end journey suite that boots the real App, creates a project through the dialog, and asserts navigation into the workspace plus the resulting HTTP calls.",
+      "tags": [
+        "test",
+        "journey-test",
+        "projects",
+        "routing",
+        "fetch-stub"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:frontend/tests/ProjectDescriptionEditor.test.tsx",
+      "type": "file",
+      "name": "ProjectDescriptionEditor.test.tsx",
+      "filePath": "frontend/tests/ProjectDescriptionEditor.test.tsx",
+      "summary": "Two-part suite covering the project description editor in isolation and its integration with the workspace, including the current-description context that keeps consumers in sync after a save.",
+      "tags": [
+        "test",
+        "component-test",
+        "projects",
+        "workspace",
+        "context"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Renders a small probe component under the description context to assert that context propagation, not just local state, reflects a saved edit."
+    },
+    {
+      "id": "function:frontend/tests/ProjectDescriptionEditor.test.tsx:deferred",
+      "type": "function",
+      "name": "deferred",
+      "filePath": "frontend/tests/ProjectDescriptionEditor.test.tsx",
+      "lineRange": [
+        31,
+        40
+      ],
+      "summary": "Creates a manually resolvable promise so a pending save can be observed before it settles.",
+      "tags": [
+        "test-helper",
+        "async",
+        "deferred-promise"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:frontend/src/workspace/panelModel.ts",
+      "target": "function:frontend/src/workspace/panelModel.ts:getDefaultPanelView",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/workspace/panelModel.ts",
+      "target": "function:frontend/src/workspace/panelModel.ts:getDefaultPanelView",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:frontend/tests/BubbleCanvasJourney.test.tsx",
+      "target": "function:frontend/tests/BubbleCanvasJourney.test.tsx:bubble",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/tests/BubbleCanvasJourney.test.tsx",
+      "target": "function:frontend/tests/BubbleCanvasJourney.test.tsx:bubblePositions",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/tests/BubbleCanvasJourney.test.tsx",
+      "target": "function:frontend/tests/BubbleCanvasJourney.test.tsx:expectNoOverlaps",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "target": "file:frontend/tests/BubbleCanvasJourney.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/src/canvas/compactLayout.ts",
+      "target": "file:frontend/tests/BubbleCanvasJourney.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/src/App.tsx",
+      "target": "file:frontend/tests/BubbleCanvasJourney.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/tests/BubbleCard.test.tsx",
+      "target": "function:frontend/tests/BubbleCard.test.tsx:bubble",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/canvas/BubbleCard.tsx",
+      "target": "file:frontend/tests/BubbleCard.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/src/canvas/bubbleCardPreview.ts",
+      "target": "file:frontend/tests/BubbleCard.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/tests/BubbleInspector.test.tsx",
+      "target": "function:frontend/tests/BubbleInspector.test.tsx:deferred",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/tests/BubbleInspector.test.tsx",
+      "target": "function:frontend/tests/BubbleInspector.test.tsx:bubble",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/tests/BubbleInspector.test.tsx",
+      "target": "function:frontend/tests/BubbleInspector.test.tsx:bubbleLink",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/bubbles/BubbleInspector.tsx",
+      "target": "file:frontend/tests/BubbleInspector.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/tests/CanvasSurface.test.tsx",
+      "target": "function:frontend/tests/CanvasSurface.test.tsx:deferred",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/tests/CanvasSurface.test.tsx",
+      "target": "function:frontend/tests/CanvasSurface.test.tsx:bubble",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/tests/CanvasSurface.test.tsx",
+      "target": "function:frontend/tests/CanvasSurface.test.tsx:bubbleCollection",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/canvas/CanvasSurface.tsx",
+      "target": "file:frontend/tests/CanvasSurface.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/tests/CreateBubbleDialog.test.tsx",
+      "target": "function:frontend/tests/CreateBubbleDialog.test.tsx:fillValidForm",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/bubbles/CreateBubbleDialog.tsx",
+      "target": "file:frontend/tests/CreateBubbleDialog.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/src/projects/CreateProjectDialog.tsx",
+      "target": "file:frontend/tests/CreateProjectDialog.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/src/App.tsx",
+      "target": "file:frontend/tests/CreateProjectDialog.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/tests/DiscussionExperience.test.tsx",
+      "target": "function:frontend/tests/DiscussionExperience.test.tsx:deferred",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/tests/DiscussionExperience.test.tsx",
+      "target": "function:frontend/tests/DiscussionExperience.test.tsx:activateButtonWithKeyboard",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/tests/DiscussionExperience.test.tsx",
+      "target": "function:frontend/tests/DiscussionExperience.test.tsx:details",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/tests/DiscussionExperience.test.tsx",
+      "target": "function:frontend/tests/DiscussionExperience.test.tsx:proposalResponse",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/tests/DiscussionExperience.test.tsx",
+      "target": "function:frontend/tests/DiscussionExperience.test.tsx:Harness",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/discussions/index.ts",
+      "target": "file:frontend/tests/DiscussionExperience.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/index.ts",
+      "target": "file:frontend/tests/DiscussionExperience.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/tests/DiscussionsPanelLifecycle.test.tsx",
+      "target": "function:frontend/tests/DiscussionsPanelLifecycle.test.tsx:summary",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/tests/DiscussionsPanelLifecycle.test.tsx",
+      "target": "function:frontend/tests/DiscussionsPanelLifecycle.test.tsx:details",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "target": "file:frontend/tests/DiscussionsPanelLifecycle.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/tests/DocumentsPanel.test.tsx",
+      "target": "function:frontend/tests/DocumentsPanel.test.tsx:readyDocument",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/tests/DocumentsPanel.test.tsx",
+      "target": "function:frontend/tests/DocumentsPanel.test.tsx:failedDocument",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/tests/DocumentsPanel.test.tsx",
+      "target": "function:frontend/tests/DocumentsPanel.test.tsx:libraryController",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/documents/index.ts",
+      "target": "file:frontend/tests/DocumentsPanel.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/src/App.tsx",
+      "target": "file:frontend/tests/ProjectCreationJourney.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/tests/ProjectDescriptionEditor.test.tsx",
+      "target": "function:frontend/tests/ProjectDescriptionEditor.test.tsx:deferred",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/projects/ProjectDescriptionEditor.tsx",
+      "target": "file:frontend/tests/ProjectDescriptionEditor.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/src/workspace/currentProjectDescription.ts",
+      "target": "file:frontend/tests/ProjectDescriptionEditor.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "target": "file:frontend/tests/ProjectDescriptionEditor.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/tests/BubbleCanvasJourney.test.tsx",
+      "target": "file:frontend/src/App.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/BubbleCanvasJourney.test.tsx",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/BubbleCanvasJourney.test.tsx",
+      "target": "file:frontend/src/canvas/compactLayout.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/BubbleCanvasJourney.test.tsx",
+      "target": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/BubbleCard.test.tsx",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/BubbleCard.test.tsx",
+      "target": "file:frontend/src/canvas/BubbleCard.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/BubbleCard.test.tsx",
+      "target": "file:frontend/src/canvas/bubbleCardPreview.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/BubbleInspector.test.tsx",
+      "target": "file:frontend/src/analytics.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/BubbleInspector.test.tsx",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/BubbleInspector.test.tsx",
+      "target": "file:frontend/src/bubbles/BubbleInspector.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/CanvasSurface.test.tsx",
+      "target": "file:frontend/src/analytics.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/CanvasSurface.test.tsx",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/CanvasSurface.test.tsx",
+      "target": "file:frontend/src/canvas/CanvasSurface.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/CreateBubbleDialog.test.tsx",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/CreateBubbleDialog.test.tsx",
+      "target": "file:frontend/src/bubbles/CreateBubbleDialog.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/CreateProjectDialog.test.tsx",
+      "target": "file:frontend/src/App.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/CreateProjectDialog.test.tsx",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/CreateProjectDialog.test.tsx",
+      "target": "file:frontend/src/projects/CreateProjectDialog.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/DiscussionExperience.test.tsx",
+      "target": "file:frontend/src/analytics.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/DiscussionExperience.test.tsx",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/DiscussionExperience.test.tsx",
+      "target": "file:frontend/src/discussions/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/DiscussionExperience.test.tsx",
+      "target": "file:frontend/src/knowledge-extraction/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/DiscussionsPanelLifecycle.test.tsx",
+      "target": "file:frontend/src/analytics.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/DiscussionsPanelLifecycle.test.tsx",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/DiscussionsPanelLifecycle.test.tsx",
+      "target": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/DocumentsPanel.test.tsx",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/DocumentsPanel.test.tsx",
+      "target": "file:frontend/src/documents/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/ProjectCreationJourney.test.tsx",
+      "target": "file:frontend/src/App.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/ProjectCreationJourney.test.tsx",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/ProjectDescriptionEditor.test.tsx",
+      "target": "file:frontend/src/App.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/ProjectDescriptionEditor.test.tsx",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/ProjectDescriptionEditor.test.tsx",
+      "target": "file:frontend/src/projects/ProjectDescriptionEditor.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/ProjectDescriptionEditor.test.tsx",
+      "target": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/ProjectDescriptionEditor.test.tsx",
+      "target": "file:frontend/src/workspace/currentProjectDescription.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

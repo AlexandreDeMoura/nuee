@@ -1,0 +1,708 @@
+{
+  "nodes": [
+    {
+      "id": "file:backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts",
+      "type": "file",
+      "name": "knowledge-extraction-resolution.service.ts",
+      "filePath": "backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts",
+      "summary": "Resolves a reviewed knowledge-extraction proposal into a new bubble, an update to an existing bubble, or a rejection, guarding with a resolution fingerprint for idempotent replay and an expected_updated_at precondition against concurrent target changes.",
+      "tags": [
+        "service",
+        "workflow",
+        "idempotency",
+        "validation",
+        "knowledge-extraction"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Resolution runs inside a database transaction and hashes the normalized input into a fingerprint, so a repeated request replays the stored outcome instead of creating a second bubble."
+    },
+    {
+      "id": "file:backend/src/knowledge-extraction/knowledge-extraction.service.spec.ts",
+      "type": "file",
+      "name": "knowledge-extraction.service.spec.ts",
+      "filePath": "backend/src/knowledge-extraction/knowledge-extraction.service.spec.ts",
+      "summary": "Large unit suite for the knowledge-extraction workflow: source selection from discussion messages and frozen-context items, prompt construction and token budgeting, structured model output validation, and proposal resolution into bubbles.",
+      "tags": [
+        "test",
+        "unit-test",
+        "knowledge-extraction",
+        "workflow",
+        "validation"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.spec.ts",
+      "type": "file",
+      "name": "sqlite-knowledge-extraction.repository.spec.ts",
+      "filePath": "backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.spec.ts",
+      "summary": "Tests for SqliteKnowledgeExtractionRepository against in-memory SQLite, covering attempt persistence, project/discussion scoping, status transitions, and integrity errors on corrupt proposal rows.",
+      "tags": [
+        "test",
+        "integration-test",
+        "sqlite",
+        "persistence",
+        "knowledge-extraction"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:backend/src/projects/project.types.ts",
+      "type": "file",
+      "name": "project.types.ts",
+      "filePath": "backend/src/projects/project.types.ts",
+      "summary": "Backend project contracts: re-exports the shared Project types and declares the ProjectRepository port plus its PROJECT_REPOSITORY DI token.",
+      "tags": [
+        "type-definition",
+        "port",
+        "repository-interface",
+        "data-model",
+        "barrel"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/src/projects/projects.controller.spec.ts",
+      "type": "file",
+      "name": "projects.controller.spec.ts",
+      "filePath": "backend/src/projects/projects.controller.spec.ts",
+      "summary": "Controller-level tests wiring ProjectsController to a real ProjectsService and SQLite repository, verifying the HTTP-facing create, list, get, and update flows.",
+      "tags": [
+        "test",
+        "unit-test",
+        "controller",
+        "projects",
+        "sqlite"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/src/projects/projects.controller.ts",
+      "type": "file",
+      "name": "projects.controller.ts",
+      "filePath": "backend/src/projects/projects.controller.ts",
+      "summary": "REST controller for the projects resource, exposing create, list, get, description-update, and viewport-update routes that delegate to ProjectsService.",
+      "tags": [
+        "api-handler",
+        "controller",
+        "rest",
+        "nestjs",
+        "routing"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/src/projects/projects.module.ts",
+      "type": "file",
+      "name": "projects.module.ts",
+      "filePath": "backend/src/projects/projects.module.ts",
+      "summary": "NestJS module for the projects feature, binding PROJECT_REPOSITORY to SqliteProjectRepository and exporting ProjectsService as the cross-feature project-scoping capability.",
+      "tags": [
+        "module",
+        "dependency-injection",
+        "nestjs",
+        "repository-binding",
+        "projects"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/src/projects/projects.service.spec.ts",
+      "type": "file",
+      "name": "projects.service.spec.ts",
+      "filePath": "backend/src/projects/projects.service.spec.ts",
+      "summary": "Unit tests for ProjectsService covering title and description validation, viewport numeric-range checks, not-found handling, and timestamp monotonicity.",
+      "tags": [
+        "test",
+        "unit-test",
+        "projects",
+        "validation",
+        "service"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/src/projects/projects.service.ts",
+      "type": "file",
+      "name": "projects.service.ts",
+      "filePath": "backend/src/projects/projects.service.ts",
+      "summary": "Owns the project workflow: validates and normalizes titles, descriptions, and canvas viewport values, generates IDs and timestamps, and is the shared project-existence check other features call before scoping their own reads and writes.",
+      "tags": [
+        "service",
+        "workflow",
+        "validation",
+        "projects",
+        "cross-feature"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/src/projects/sqlite-project.repository.ts",
+      "type": "file",
+      "name": "sqlite-project.repository.ts",
+      "filePath": "backend/src/projects/sqlite-project.repository.ts",
+      "summary": "SQLite implementation of ProjectRepository using explicit parameterized statements over the shared DatabaseProvider connection, mapping flat viewport columns to the nested Project shape.",
+      "tags": [
+        "repository",
+        "sqlite",
+        "persistence",
+        "projects",
+        "data-mapping"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts:KnowledgeExtractionResolutionService",
+      "type": "class",
+      "name": "KnowledgeExtractionResolutionService",
+      "filePath": "backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts",
+      "lineRange": [
+        59,
+        623
+      ],
+      "summary": "Turns a reviewed extraction proposal into a persisted bubble creation, bubble update, or rejection inside one transaction, replaying prior outcomes on fingerprint match and rejecting stale update targets.",
+      "tags": [
+        "service",
+        "workflow",
+        "idempotency",
+        "knowledge-extraction"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "class:backend/src/projects/projects.controller.ts:ProjectsController",
+      "type": "class",
+      "name": "ProjectsController",
+      "filePath": "backend/src/projects/projects.controller.ts",
+      "lineRange": [
+        11,
+        44
+      ],
+      "summary": "HTTP boundary for the projects resource, mapping create, list, get, description-update, and viewport-update routes onto ProjectsService.",
+      "tags": [
+        "api-handler",
+        "controller",
+        "rest",
+        "nestjs"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/src/projects/projects.module.ts:ProjectsModule",
+      "type": "class",
+      "name": "ProjectsModule",
+      "filePath": "backend/src/projects/projects.module.ts",
+      "lineRange": [
+        19,
+        19
+      ],
+      "summary": "Module definition binding PROJECT_REPOSITORY to SqliteProjectRepository and exporting ProjectsService for cross-feature project scoping.",
+      "tags": [
+        "module",
+        "nestjs",
+        "dependency-injection"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/src/projects/projects.service.ts:ProjectsService",
+      "type": "class",
+      "name": "ProjectsService",
+      "filePath": "backend/src/projects/projects.service.ts",
+      "lineRange": [
+        22,
+        185
+      ],
+      "summary": "Validates and normalizes project input, owns ID and timestamp generation, and provides the `get` project-existence check that discussions, documents, and knowledge extraction call before scoping their own work.",
+      "tags": [
+        "service",
+        "workflow",
+        "validation",
+        "cross-feature"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:backend/src/projects/sqlite-project.repository.ts:SqliteProjectRepository",
+      "type": "class",
+      "name": "SqliteProjectRepository",
+      "filePath": "backend/src/projects/sqlite-project.repository.ts",
+      "lineRange": [
+        22,
+        133
+      ],
+      "summary": "Implements ProjectRepository with parameterized SQL over the shared DatabaseProvider connection, translating ProjectRow columns into the nested Project canvas viewport shape.",
+      "tags": [
+        "repository",
+        "sqlite",
+        "persistence",
+        "data-mapping"
+      ],
+      "complexity": "moderate"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts",
+      "target": "file:backend/src/bubbles/bubble-placement.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts",
+      "target": "file:backend/src/bubbles/bubble.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts",
+      "target": "file:backend/src/database/database-transaction.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts",
+      "target": "file:backend/src/knowledge-extraction/knowledge-extraction.prompt.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts",
+      "target": "file:backend/src/knowledge-extraction/knowledge-extraction.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts",
+      "target": "file:backend/src/projects/projects.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/knowledge-extraction.service.spec.ts",
+      "target": "file:backend/src/ai/fake-model.client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/knowledge-extraction.service.spec.ts",
+      "target": "file:backend/src/ai/input-token-estimator.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/knowledge-extraction.service.spec.ts",
+      "target": "file:backend/src/ai/model-client.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/knowledge-extraction.service.spec.ts",
+      "target": "file:backend/src/ai/model-input-budget.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/knowledge-extraction.service.spec.ts",
+      "target": "file:backend/src/bubbles/bubble-links.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/knowledge-extraction.service.spec.ts",
+      "target": "file:backend/src/bubbles/bubble-placement.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/knowledge-extraction.service.spec.ts",
+      "target": "file:backend/src/bubbles/bubbles.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/knowledge-extraction.service.spec.ts",
+      "target": "file:backend/src/bubbles/sqlite-bubble.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/knowledge-extraction.service.spec.ts",
+      "target": "file:backend/src/database/database-transaction.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/knowledge-extraction.service.spec.ts",
+      "target": "file:backend/src/database/database.provider.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/knowledge-extraction.service.spec.ts",
+      "target": "file:backend/src/discussions/discussion.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/knowledge-extraction.service.spec.ts",
+      "target": "file:backend/src/discussions/sqlite-discussion.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/knowledge-extraction.service.spec.ts",
+      "target": "file:backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/knowledge-extraction.service.spec.ts",
+      "target": "file:backend/src/knowledge-extraction/knowledge-extraction.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/knowledge-extraction.service.spec.ts",
+      "target": "file:backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/knowledge-extraction.service.spec.ts",
+      "target": "file:backend/src/projects/projects.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/knowledge-extraction.service.spec.ts",
+      "target": "file:backend/src/projects/sqlite-project.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.spec.ts",
+      "target": "file:backend/src/database/database.provider.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.spec.ts",
+      "target": "file:backend/src/discussions/discussion.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.spec.ts",
+      "target": "file:backend/src/discussions/sqlite-discussion.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.spec.ts",
+      "target": "file:backend/src/knowledge-extraction/knowledge-extraction.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.spec.ts",
+      "target": "file:backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.spec.ts",
+      "target": "file:backend/src/projects/project.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.spec.ts",
+      "target": "file:backend/src/projects/sqlite-project.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/projects/projects.controller.spec.ts",
+      "target": "file:backend/src/database/database.provider.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/projects/projects.controller.spec.ts",
+      "target": "file:backend/src/projects/projects.controller.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/projects/projects.controller.spec.ts",
+      "target": "file:backend/src/projects/projects.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/projects/projects.controller.spec.ts",
+      "target": "file:backend/src/projects/sqlite-project.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/projects/projects.controller.ts",
+      "target": "file:backend/src/projects/project.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/projects/projects.controller.ts",
+      "target": "file:backend/src/projects/projects.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/projects/projects.module.ts",
+      "target": "file:backend/src/projects/project.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/projects/projects.module.ts",
+      "target": "file:backend/src/projects/projects.controller.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/projects/projects.module.ts",
+      "target": "file:backend/src/projects/projects.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/projects/projects.module.ts",
+      "target": "file:backend/src/projects/sqlite-project.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/projects/projects.service.spec.ts",
+      "target": "file:backend/src/database/database.provider.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/projects/projects.service.spec.ts",
+      "target": "file:backend/src/projects/projects.service.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/projects/projects.service.spec.ts",
+      "target": "file:backend/src/projects/sqlite-project.repository.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/projects/projects.service.ts",
+      "target": "file:backend/src/projects/project.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/projects/sqlite-project.repository.ts",
+      "target": "file:backend/src/database/database.provider.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/projects/sqlite-project.repository.ts",
+      "target": "file:backend/src/projects/project.types.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts",
+      "target": "class:backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts:KnowledgeExtractionResolutionService",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts",
+      "target": "class:backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts:KnowledgeExtractionResolutionService",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/projects/projects.controller.ts",
+      "target": "class:backend/src/projects/projects.controller.ts:ProjectsController",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/projects/projects.controller.ts",
+      "target": "class:backend/src/projects/projects.controller.ts:ProjectsController",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/projects/projects.module.ts",
+      "target": "class:backend/src/projects/projects.module.ts:ProjectsModule",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/projects/projects.module.ts",
+      "target": "class:backend/src/projects/projects.module.ts:ProjectsModule",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/projects/projects.service.ts",
+      "target": "class:backend/src/projects/projects.service.ts:ProjectsService",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/projects/projects.service.ts",
+      "target": "class:backend/src/projects/projects.service.ts:ProjectsService",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "file:backend/src/projects/sqlite-project.repository.ts",
+      "target": "class:backend/src/projects/sqlite-project.repository.ts:SqliteProjectRepository",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:backend/src/projects/sqlite-project.repository.ts",
+      "target": "class:backend/src/projects/sqlite-project.repository.ts:SqliteProjectRepository",
+      "type": "exports",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:backend/src/projects/sqlite-project.repository.ts:SqliteProjectRepository",
+      "target": "file:backend/src/projects/project.types.ts",
+      "type": "implements",
+      "direction": "forward",
+      "weight": 0.9
+    },
+    {
+      "source": "class:backend/src/projects/projects.controller.ts:ProjectsController",
+      "target": "class:backend/src/projects/projects.service.ts:ProjectsService",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts:KnowledgeExtractionResolutionService",
+      "target": "class:backend/src/projects/projects.service.ts:ProjectsService",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts:KnowledgeExtractionResolutionService",
+      "target": "class:backend/src/bubbles/bubble-placement.service.ts:BubblePlacementService",
+      "type": "calls",
+      "direction": "forward",
+      "weight": 0.8
+    },
+    {
+      "source": "class:backend/src/projects/sqlite-project.repository.ts:SqliteProjectRepository",
+      "target": "class:backend/src/database/database.provider.ts:DatabaseProvider",
+      "type": "depends_on",
+      "direction": "forward",
+      "weight": 0.6
+    },
+    {
+      "source": "file:backend/src/projects/projects.service.ts",
+      "target": "file:backend/src/projects/projects.service.spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/src/projects/projects.controller.ts",
+      "target": "file:backend/src/projects/projects.controller.spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts",
+      "target": "file:backend/src/knowledge-extraction/knowledge-extraction.service.spec.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/knowledge-extraction.service.spec.ts",
+      "target": "file:backend/src/knowledge-extraction/knowledge-extraction.service.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.spec.ts",
+      "target": "file:backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

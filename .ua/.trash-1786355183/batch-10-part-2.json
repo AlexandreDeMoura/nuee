@@ -1,0 +1,199 @@
+{
+  "nodes": [
+    {
+      "id": "file:frontend/src/api/projects.ts",
+      "type": "file",
+      "name": "projects.ts",
+      "filePath": "frontend/src/api/projects.ts",
+      "summary": "Project REST resource module — the canonical example of the per-resource pattern: list, fetch, create, update description, and update viewport, each bound through a `createProjectsApi(request)` factory and validated by guards that check the payload's identifiers, name, description, viewport numbers, and ISO timestamps.",
+      "tags": ["api-client", "validation", "factory", "service", "data-model"],
+      "complexity": "moderate",
+      "languageNotes": "Viewport persistence rides the same PATCH-plus-guard shape as description editing, so canvas pan/zoom state needs no bespoke transport."
+    },
+    {
+      "id": "function:frontend/src/api/projects.ts:isProjectResponse",
+      "type": "function",
+      "name": "isProjectResponse",
+      "filePath": "frontend/src/api/projects.ts",
+      "lineRange": [50, 75],
+      "summary": "Type predicate for a project payload, validating identifier agreement with the requested project, name, optional description, numeric viewport fields, and ISO timestamps.",
+      "tags": ["validation", "type-guard", "data-model", "api-client"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/src/api/projects.ts:assertProject",
+      "type": "function",
+      "name": "assertProject",
+      "filePath": "frontend/src/api/projects.ts",
+      "lineRange": [77, 86],
+      "summary": "Throws a descriptive error when a project payload fails validation, otherwise narrows it to `Project`.",
+      "tags": ["validation", "error-handling", "api-client"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/api/projects.ts:isProjectsResponse",
+      "type": "function",
+      "name": "isProjectsResponse",
+      "filePath": "frontend/src/api/projects.ts",
+      "lineRange": [88, 94],
+      "summary": "Type predicate verifying a project collection is an array whose every entry is a valid project.",
+      "tags": ["validation", "type-guard", "api-client"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/api/projects.ts:assertProjects",
+      "type": "function",
+      "name": "assertProjects",
+      "filePath": "frontend/src/api/projects.ts",
+      "lineRange": [96, 102],
+      "summary": "Throws when the project collection payload is malformed, otherwise narrows it to `Project[]`.",
+      "tags": ["validation", "error-handling", "api-client"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/api/projects.ts:createProjectsApi",
+      "type": "function",
+      "name": "createProjectsApi",
+      "filePath": "frontend/src/api/projects.ts",
+      "lineRange": [104, 166],
+      "summary": "Factory returning getProjects, getProject, createProject, updateProjectDescription, and updateProjectViewport bound to an injected request function, each asserting its response before resolving.",
+      "tags": ["factory", "api-client", "dependency-injection", "service"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/tests/aiApi.test.ts",
+      "type": "file",
+      "name": "aiApi.test.ts",
+      "filePath": "frontend/tests/aiApi.test.ts",
+      "summary": "Unit test for the AI capabilities module, asserting the endpoint path and that a response missing or mistyping `web_search` is rejected rather than passed through.",
+      "tags": ["test", "validation", "api-client"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/tests/bubblesApi.test.ts",
+      "type": "file",
+      "name": "bubblesApi.test.ts",
+      "filePath": "frontend/tests/bubblesApi.test.ts",
+      "summary": "Unit test suite for the bubbles resource module, driving every operation through an injected request fake and covering malformed payloads, mismatched project or bubble identifiers, and duplicate link pairs.",
+      "tags": ["test", "validation", "api-client", "dependency-injection"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:frontend/tests/bubblesApi.test.ts:createRequestFake",
+      "type": "function",
+      "name": "createRequestFake",
+      "filePath": "frontend/tests/bubblesApi.test.ts",
+      "lineRange": [16, 27],
+      "summary": "Builds a queued stand-in for `requestJson` that records each call's path and init while returning scripted responses, letting the suite avoid module mocking.",
+      "tags": ["test", "test-fixture", "dependency-injection"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/tests/discussionsApi.test.ts",
+      "type": "file",
+      "name": "discussionsApi.test.ts",
+      "filePath": "frontend/tests/discussionsApi.test.ts",
+      "summary": "Largest suite in the batch, exercising discussion creation with frozen context, message send and retry under an idempotency key, title generation, open recording, and deletion, plus rejection of frozen contexts that do not match the requested source selection.",
+      "tags": ["test", "validation", "api-client", "dependency-injection"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:frontend/tests/discussionsApi.test.ts:createRequestFake",
+      "type": "function",
+      "name": "createRequestFake",
+      "filePath": "frontend/tests/discussionsApi.test.ts",
+      "lineRange": [19, 30],
+      "summary": "Queued request stand-in recording paths and init options so the suite can assert route shapes and request bodies without touching fetch.",
+      "tags": ["test", "test-fixture", "dependency-injection"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/tests/documentsApi.test.ts",
+      "type": "file",
+      "name": "documentsApi.test.ts",
+      "filePath": "frontend/tests/documentsApi.test.ts",
+      "summary": "Unit test suite for the documents resource module, covering upload policy retrieval, multipart upload, list and detail reads across processing statuses, and retry, with fixtures for processing, ready, and failed records.",
+      "tags": ["test", "validation", "api-client", "dependency-injection"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:frontend/tests/documentsApi.test.ts:createRequestFake",
+      "type": "function",
+      "name": "createRequestFake",
+      "filePath": "frontend/tests/documentsApi.test.ts",
+      "lineRange": [21, 32],
+      "summary": "Queued request stand-in capturing path and init for each document call, including multipart upload bodies.",
+      "tags": ["test", "test-fixture", "dependency-injection"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/tests/knowledgeExtractionsApi.test.ts",
+      "type": "file",
+      "name": "knowledgeExtractionsApi.test.ts",
+      "filePath": "frontend/tests/knowledgeExtractionsApi.test.ts",
+      "summary": "Unit test suite for the knowledge extraction module, covering proposal creation, resolution into a new or existing bubble, discard, source-reference mismatch rejection, and recognition of the target-changed conflict error.",
+      "tags": ["test", "validation", "error-handling", "api-client"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:frontend/tests/knowledgeExtractionsApi.test.ts:createRequestFake",
+      "type": "function",
+      "name": "createRequestFake",
+      "filePath": "frontend/tests/knowledgeExtractionsApi.test.ts",
+      "lineRange": [21, 32],
+      "summary": "Queued request stand-in recording extraction call paths and bodies so resolution and conflict branches can be driven deterministically.",
+      "tags": ["test", "test-fixture", "dependency-injection"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/tests/projectsApi.test.ts",
+      "type": "file",
+      "name": "projectsApi.test.ts",
+      "filePath": "frontend/tests/projectsApi.test.ts",
+      "summary": "Unit test suite for the projects resource module, asserting route shapes for list, fetch, create, description update, and viewport update, and that identifier-mismatched or malformed payloads throw.",
+      "tags": ["test", "validation", "api-client", "dependency-injection"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/tests/projectsApi.test.ts:createRequestFake",
+      "type": "function",
+      "name": "createRequestFake",
+      "filePath": "frontend/tests/projectsApi.test.ts",
+      "lineRange": [15, 26],
+      "summary": "Queued request stand-in returning scripted project responses while recording the path and init of each call.",
+      "tags": ["test", "test-fixture", "dependency-injection"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    { "source": "file:frontend/src/api/projects.ts", "target": "file:frontend/src/api/client.ts", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:frontend/tests/aiApi.test.ts", "target": "file:frontend/src/api/ai.ts", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:frontend/tests/bubblesApi.test.ts", "target": "file:frontend/src/api/bubbles.ts", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:frontend/tests/discussionsApi.test.ts", "target": "file:frontend/src/api/discussions.ts", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:frontend/tests/documentsApi.test.ts", "target": "file:frontend/src/api/documents.ts", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:frontend/tests/knowledgeExtractionsApi.test.ts", "target": "file:frontend/src/api/knowledgeExtractions.ts", "type": "imports", "direction": "forward", "weight": 0.7 },
+    { "source": "file:frontend/tests/projectsApi.test.ts", "target": "file:frontend/src/api/projects.ts", "type": "imports", "direction": "forward", "weight": 0.7 },
+
+    { "source": "file:frontend/src/api/projects.ts", "target": "function:frontend/src/api/projects.ts:isProjectResponse", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:frontend/src/api/projects.ts", "target": "function:frontend/src/api/projects.ts:assertProject", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:frontend/src/api/projects.ts", "target": "function:frontend/src/api/projects.ts:isProjectsResponse", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:frontend/src/api/projects.ts", "target": "function:frontend/src/api/projects.ts:assertProjects", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:frontend/src/api/projects.ts", "target": "function:frontend/src/api/projects.ts:createProjectsApi", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:frontend/tests/bubblesApi.test.ts", "target": "function:frontend/tests/bubblesApi.test.ts:createRequestFake", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:frontend/tests/discussionsApi.test.ts", "target": "function:frontend/tests/discussionsApi.test.ts:createRequestFake", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:frontend/tests/documentsApi.test.ts", "target": "function:frontend/tests/documentsApi.test.ts:createRequestFake", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:frontend/tests/knowledgeExtractionsApi.test.ts", "target": "function:frontend/tests/knowledgeExtractionsApi.test.ts:createRequestFake", "type": "contains", "direction": "forward", "weight": 1.0 },
+    { "source": "file:frontend/tests/projectsApi.test.ts", "target": "function:frontend/tests/projectsApi.test.ts:createRequestFake", "type": "contains", "direction": "forward", "weight": 1.0 },
+
+    { "source": "file:frontend/src/api/projects.ts", "target": "function:frontend/src/api/projects.ts:isProjectResponse", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:frontend/src/api/projects.ts", "target": "function:frontend/src/api/projects.ts:assertProject", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:frontend/src/api/projects.ts", "target": "function:frontend/src/api/projects.ts:isProjectsResponse", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:frontend/src/api/projects.ts", "target": "function:frontend/src/api/projects.ts:assertProjects", "type": "exports", "direction": "forward", "weight": 0.8 },
+    { "source": "file:frontend/src/api/projects.ts", "target": "function:frontend/src/api/projects.ts:createProjectsApi", "type": "exports", "direction": "forward", "weight": 0.8 },
+
+    { "source": "function:frontend/src/api/projects.ts:createProjectsApi", "target": "function:frontend/src/api/client.ts:requestJson", "type": "calls", "direction": "forward", "weight": 0.8 },
+    { "source": "function:frontend/src/api/projects.ts:createProjectsApi", "target": "function:frontend/src/api/projects.ts:assertProject", "type": "calls", "direction": "forward", "weight": 0.8 },
+
+    { "source": "file:frontend/src/api/projects.ts", "target": "file:frontend/tests/projectsApi.test.ts", "type": "tested_by", "direction": "forward", "weight": 0.5 }
+  ]
+}

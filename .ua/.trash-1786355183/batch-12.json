@@ -1,0 +1,330 @@
+{
+  "nodes": [
+    {
+      "id": "file:frontend/src/discussions/index.ts",
+      "type": "file",
+      "name": "index.ts",
+      "filePath": "frontend/src/discussions/index.ts",
+      "summary": "Public barrel for the discussions feature, re-exporting every component, model helper, and hook (composer, modal, panel, context badges, list/visibility/lifecycle hooks) as the single import surface consumers and tests use.",
+      "tags": ["barrel", "entry-point", "discussions", "module-surface"],
+      "complexity": "simple",
+      "languageNotes": "Pure `export * from` barrel with no local declarations; it also re-exports `../ui/RichResponse`, pulling one shared UI primitive into the feature's public surface."
+    },
+    {
+      "id": "file:frontend/tests/DiscussionComposerAutoGrow.test.tsx",
+      "type": "file",
+      "name": "DiscussionComposerAutoGrow.test.tsx",
+      "filePath": "frontend/tests/DiscussionComposerAutoGrow.test.tsx",
+      "summary": "Vitest + Testing Library suite verifying that the discussion composer textarea grows with its content up to three rows, scrolls beyond that cap, and shrinks back once the value is cleared after sending.",
+      "tags": ["test", "component-test", "discussions", "composer", "accessibility"],
+      "complexity": "moderate",
+      "languageNotes": "Stubs `HTMLTextAreaElement` layout getters (scrollHeight/lineHeight) via property redefinition because jsdom reports zero-height boxes, so auto-grow logic can be asserted deterministically."
+    },
+    {
+      "id": "file:frontend/tests/DiscussionModal.test.tsx",
+      "type": "file",
+      "name": "DiscussionModal.test.tsx",
+      "filePath": "frontend/tests/DiscussionModal.test.tsx",
+      "summary": "Component suite covering the write-first discussion modal shell: accessible markup and normalized prompt submission, focus trapping with Escape-to-minimize and focus restoration, and the rule that backdrop pointer input is not a close action.",
+      "tags": ["test", "component-test", "discussions", "accessibility", "focus-management"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/tests/discussionContextSelection.test.ts",
+      "type": "file",
+      "name": "discussionContextSelection.test.ts",
+      "filePath": "frontend/tests/discussionContextSelection.test.ts",
+      "summary": "Hook suite for the draft context-selection coordinator, asserting ordered identifier-only sources with deduplicated replacements, source preservation across recoverable failures, selection-identity rotation on attachment removal/restore, and no pending-state leakage across projects.",
+      "tags": ["test", "hook-test", "discussions", "context-selection", "state-machine"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/tests/discussionCreationFailure.test.ts",
+      "type": "file",
+      "name": "discussionCreationFailure.test.ts",
+      "filePath": "frontend/tests/discussionCreationFailure.test.ts",
+      "summary": "Unit suite for discussion creation-failure normalization, checking that valid per-source issues are surfaced without trusting malformed server payloads and that size and snapshot failures stay actionable without inventing source issues.",
+      "tags": ["test", "error-handling", "discussions", "validation", "api-boundary"],
+      "complexity": "moderate",
+      "languageNotes": "Exercises the project rule that compile-time contracts do not replace runtime response checks: the normalizer must defensively reject malformed `ApiError` detail shapes."
+    },
+    {
+      "id": "file:frontend/tests/discussionListModel.test.ts",
+      "type": "file",
+      "name": "discussionListModel.test.ts",
+      "filePath": "frontend/tests/discussionListModel.test.ts",
+      "summary": "Unit suite for the discussion list model, verifying ordering by qualifying activity with exactly one derived Active discussion, deterministic creation-time and id tie-breakers, and rejection of duplicate, malformed, or cross-project records.",
+      "tags": ["test", "data-model", "discussions", "ordering", "validation"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/tests/discussionMentionAnalytics.test.ts",
+      "type": "file",
+      "name": "discussionMentionAnalytics.test.ts",
+      "filePath": "frontend/tests/discussionMentionAnalytics.test.ts",
+      "summary": "Privacy-boundary suite for discussion mention analytics, asserting that only aggregate creation counts and identifiers reach the analytics client and that no mention content is emitted.",
+      "tags": ["test", "analytics", "discussions", "privacy", "telemetry"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/tests/discussionVisibility.test.ts",
+      "type": "file",
+      "name": "discussionVisibility.test.ts",
+      "filePath": "frontend/tests/discussionVisibility.test.ts",
+      "summary": "Hook suite for the discussion visibility controller, enforcing the single-visible-modal rule across draft and persisted discussions and confirming a visible discussion is never carried into another project.",
+      "tags": ["test", "hook-test", "discussions", "visibility", "state-machine"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/tests/useProjectDiscussions.test.ts",
+      "type": "file",
+      "name": "useProjectDiscussions.test.ts",
+      "filePath": "frontend/tests/useProjectDiscussions.test.ts",
+      "summary": "Extensive hook suite for the project discussions loader covering abort of a previous project load with stale-response rejection, invalid-response surfacing and retry through an injected request, deletion with Active recalculation, failed-delete recovery, and identifier-only analytics for open/delete/Active transitions.",
+      "tags": ["test", "hook-test", "discussions", "async-lifecycle", "analytics"],
+      "complexity": "complex",
+      "languageNotes": "Uses a hand-rolled deferred-promise helper plus a per-project request fake to drive abort, stale-response, and retry branches without module mocking — matching the project rule that request functions stay injectable."
+    },
+    {
+      "id": "function:frontend/tests/DiscussionComposerAutoGrow.test.tsx:stubTextareaLayout",
+      "type": "function",
+      "name": "stubTextareaLayout",
+      "filePath": "frontend/tests/DiscussionComposerAutoGrow.test.tsx",
+      "lineRange": [13, 38],
+      "summary": "Test harness that redefines jsdom's textarea layout getters so scrollHeight derives from the line count, making auto-grow height assertions deterministic.",
+      "tags": ["test-helper", "jsdom", "stub", "layout"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/tests/DiscussionComposerAutoGrow.test.tsx:renderComposer",
+      "type": "function",
+      "name": "renderComposer",
+      "filePath": "frontend/tests/DiscussionComposerAutoGrow.test.tsx",
+      "lineRange": [40, 51],
+      "summary": "Renders DiscussionComposer with a given value and default props, returning the textarea handle used by each auto-grow assertion.",
+      "tags": ["test-helper", "render", "composer", "fixture"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/tests/DiscussionModal.test.tsx:DraftModal",
+      "type": "function",
+      "name": "DraftModal",
+      "filePath": "frontend/tests/DiscussionModal.test.tsx",
+      "lineRange": [11, 33],
+      "summary": "Stateful test wrapper component that hosts DiscussionModal with local draft state, forwarding minimize and submit callbacks so focus and submission behavior can be driven through real React updates.",
+      "tags": ["test-helper", "component", "fixture", "discussions"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/tests/discussionListModel.test.ts:summary",
+      "type": "function",
+      "name": "summary",
+      "filePath": "frontend/tests/discussionListModel.test.ts",
+      "lineRange": [7, 22],
+      "summary": "Builder producing a DiscussionSummary fixture from an id and activity timestamp with optional overrides, used to construct ordering and validation scenarios.",
+      "tags": ["test-helper", "fixture", "factory", "data-model"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/tests/useProjectDiscussions.test.ts:listFor",
+      "type": "function",
+      "name": "listFor",
+      "filePath": "frontend/tests/useProjectDiscussions.test.ts",
+      "lineRange": [20, 32],
+      "summary": "Builds the discussion list response for a given project id, giving each test a stable per-project payload for the injected request fake.",
+      "tags": ["test-helper", "fixture", "factory", "async"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:frontend/tests/DiscussionComposerAutoGrow.test.tsx",
+      "target": "function:frontend/tests/DiscussionComposerAutoGrow.test.tsx:stubTextareaLayout",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:frontend/tests/DiscussionComposerAutoGrow.test.tsx",
+      "target": "function:frontend/tests/DiscussionComposerAutoGrow.test.tsx:renderComposer",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:frontend/tests/DiscussionModal.test.tsx",
+      "target": "function:frontend/tests/DiscussionModal.test.tsx:DraftModal",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:frontend/tests/discussionListModel.test.ts",
+      "target": "function:frontend/tests/discussionListModel.test.ts:summary",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:frontend/tests/useProjectDiscussions.test.ts",
+      "target": "function:frontend/tests/useProjectDiscussions.test.ts:listFor",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1.0
+    },
+    {
+      "source": "file:frontend/tests/DiscussionComposerAutoGrow.test.tsx",
+      "target": "file:frontend/src/discussions/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/DiscussionModal.test.tsx",
+      "target": "file:frontend/src/discussions/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/discussionContextSelection.test.ts",
+      "target": "file:frontend/src/discussions/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/discussionCreationFailure.test.ts",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/discussionCreationFailure.test.ts",
+      "target": "file:frontend/src/discussions/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/discussionListModel.test.ts",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/discussionListModel.test.ts",
+      "target": "file:frontend/src/discussions/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/discussionMentionAnalytics.test.ts",
+      "target": "file:frontend/src/analytics.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/discussionMentionAnalytics.test.ts",
+      "target": "file:frontend/src/discussions/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/discussionVisibility.test.ts",
+      "target": "file:frontend/src/discussions/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/useProjectDiscussions.test.ts",
+      "target": "file:frontend/src/analytics.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/useProjectDiscussions.test.ts",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/useProjectDiscussions.test.ts",
+      "target": "file:frontend/src/discussions/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/discussions/DiscussionComposer.tsx",
+      "target": "file:frontend/tests/DiscussionComposerAutoGrow.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/src/discussions/useAutoGrowTextarea.ts",
+      "target": "file:frontend/tests/DiscussionComposerAutoGrow.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/src/discussions/DiscussionModal.tsx",
+      "target": "file:frontend/tests/DiscussionModal.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/src/discussions/useDiscussionContextSelection.ts",
+      "target": "file:frontend/tests/discussionContextSelection.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/src/discussions/discussionCreationFailure.ts",
+      "target": "file:frontend/tests/discussionCreationFailure.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/src/discussions/discussionListModel.ts",
+      "target": "file:frontend/tests/discussionListModel.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/src/discussions/discussionMentionAnalytics.ts",
+      "target": "file:frontend/tests/discussionMentionAnalytics.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/src/discussions/useDiscussionVisibility.ts",
+      "target": "file:frontend/tests/discussionVisibility.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/src/discussions/useProjectDiscussions.ts",
+      "target": "file:frontend/tests/useProjectDiscussions.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    }
+  ]
+}

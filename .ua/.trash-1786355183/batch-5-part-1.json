@@ -1,0 +1,433 @@
+{
+  "nodes": [
+    {
+      "id": "file:frontend/src/discussions/DiscussionComposer.test.tsx",
+      "type": "file",
+      "name": "DiscussionComposer.test.tsx",
+      "filePath": "frontend/src/discussions/DiscussionComposer.test.tsx",
+      "summary": "Vitest/RTL suite covering the discussion composer's mention flow: @-trigger detection, keyboard navigation of the mention list, atomic token deletion, chip attach/remove announcements, and the privacy-safe analytics emitted for each interaction.",
+      "tags": ["test", "component-test", "mention-flow", "accessibility", "analytics"],
+      "complexity": "complex",
+      "languageNotes": "Uses controlled-wrapper harnesses (ControlledComposer) so the composer's uncontrolled caret and mention-draft state can be driven deterministically from tests."
+    },
+    {
+      "id": "function:frontend/src/discussions/DiscussionComposer.tsx:DiscussionComposer",
+      "type": "function",
+      "name": "DiscussionComposer",
+      "filePath": "frontend/src/discussions/DiscussionComposer.tsx",
+      "lineRange": [123, 853],
+      "summary": "The discussion message composer component: auto-growing textarea, @-mention detection and source attachment, pending mention chips with exit animation, frozen-context badges, and the per-turn web-search toggle.",
+      "tags": ["component", "composer", "mention-flow", "form", "accessibility"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:frontend/src/discussions/DiscussionComposer.tsx:DiscussionMentionMirror",
+      "type": "function",
+      "name": "DiscussionMentionMirror",
+      "filePath": "frontend/src/discussions/DiscussionComposer.tsx",
+      "lineRange": [53, 97],
+      "summary": "Renders a hidden mirror of the textarea value with mention tokens highlighted, so attached @-mentions appear visually distinct behind the transparent input text.",
+      "tags": ["component", "rendering", "mention-flow", "presentation"],
+      "complexity": "moderate",
+      "languageNotes": "Textarea-mirror technique: an absolutely positioned div replays the textarea's exact typography so token highlights line up with the real caret."
+    },
+    {
+      "id": "file:frontend/src/discussions/DiscussionComposer.tsx",
+      "type": "file",
+      "name": "DiscussionComposer.tsx",
+      "filePath": "frontend/src/discussions/DiscussionComposer.tsx",
+      "summary": "Owns the write-first composer surface for discussions, wiring the mention draft model, source catalog filtering, mention chips and list, auto-grow behavior, and web-search opt-in into a single controlled form.",
+      "tags": ["component", "composer", "mention-flow", "entry-point", "accessibility"],
+      "complexity": "complex",
+      "languageNotes": "Keeps mention state in a draft object rather than in the DOM, so caret restoration after token edits is done explicitly via useLayoutEffect + setSelectionRange."
+    },
+    {
+      "id": "function:frontend/src/discussions/DiscussionContextBadges.tsx:DiscussionContextBadges",
+      "type": "function",
+      "name": "DiscussionContextBadges",
+      "filePath": "frontend/src/discussions/DiscussionContextBadges.tsx",
+      "lineRange": [36, 152],
+      "summary": "Renders the frozen-context badges attached to a discussion, collapsing beyond three items behind an expand control and exposing each badge as an inspect trigger.",
+      "tags": ["component", "presentation", "frozen-context", "accessibility", "disclosure"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/src/discussions/DiscussionContextBadges.tsx",
+      "type": "file",
+      "name": "DiscussionContextBadges.tsx",
+      "filePath": "frontend/src/discussions/DiscussionContextBadges.tsx",
+      "summary": "Presentational component that displays a discussion's frozen context items as compact, icon-typed badges with overflow disclosure and per-badge inspection triggers.",
+      "tags": ["component", "presentation", "frozen-context", "ui", "accessibility"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/src/discussions/DiscussionExperience.tsx:DiscussionExperience",
+      "type": "function",
+      "name": "DiscussionExperience",
+      "filePath": "frontend/src/discussions/DiscussionExperience.tsx",
+      "lineRange": [74, 131],
+      "summary": "Public entry component that gates rendering on a visible discussion target and forwards props to the inner modal implementation.",
+      "tags": ["component", "entry-point", "guard", "composition"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/discussions/DiscussionExperience.tsx:DiscussionExperienceModal",
+      "type": "function",
+      "name": "DiscussionExperienceModal",
+      "filePath": "frontend/src/discussions/DiscussionExperience.tsx",
+      "lineRange": [133, 706],
+      "summary": "Composes the full focused-discussion modal: lifecycle hook, context selection, frozen-context badges and inspector, message list, composer, and the knowledge-extraction integration surface with its focus-restoration bookkeeping.",
+      "tags": ["component", "orchestration", "modal", "knowledge-extraction", "focus-management"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:frontend/src/discussions/DiscussionExperience.tsx",
+      "type": "file",
+      "name": "DiscussionExperience.tsx",
+      "filePath": "frontend/src/discussions/DiscussionExperience.tsx",
+      "summary": "Top-level composition root for the focused discussion experience, joining visibility, lifecycle, context selection, message rendering, and the knowledge-extraction integration point behind one component.",
+      "tags": ["component", "entry-point", "orchestration", "modal", "knowledge-extraction"],
+      "complexity": "complex",
+      "languageNotes": "Renders knowledge-extraction integration points without owning that workflow — extraction state comes entirely from useKnowledgeExtraction."
+    },
+    {
+      "id": "function:frontend/src/discussions/DiscussionKnowledgeAction.tsx:DiscussionKnowledgeAction",
+      "type": "function",
+      "name": "DiscussionKnowledgeAction",
+      "filePath": "frontend/src/discussions/DiscussionKnowledgeAction.tsx",
+      "lineRange": [22, 63],
+      "summary": "Renders the per-message 'extract knowledge' affordance, tagging the button with a data attribute the experience uses to restore focus after extraction.",
+      "tags": ["component", "ui", "knowledge-extraction", "event-handler", "accessibility"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/src/discussions/DiscussionKnowledgeAction.tsx",
+      "type": "file",
+      "name": "DiscussionKnowledgeAction.tsx",
+      "filePath": "frontend/src/discussions/DiscussionKnowledgeAction.tsx",
+      "summary": "Small presentational button that offers knowledge extraction from a discussion message and defines the DiscussionKnowledgeSource contract passed to the extraction workflow.",
+      "tags": ["component", "ui", "knowledge-extraction", "type-definition"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/discussions/DiscussionMentionChips.tsx:DiscussionMentionChips",
+      "type": "function",
+      "name": "DiscussionMentionChips",
+      "filePath": "frontend/src/discussions/DiscussionMentionChips.tsx",
+      "lineRange": [36, 174],
+      "summary": "Renders attached mention sources as removable chips, surfacing per-source creation issues and animating chips that are exiting after removal.",
+      "tags": ["component", "mention-flow", "presentation", "error-display", "accessibility"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/src/discussions/DiscussionMentionChips.tsx",
+      "type": "file",
+      "name": "DiscussionMentionChips.tsx",
+      "filePath": "frontend/src/discussions/DiscussionMentionChips.tsx",
+      "summary": "Presentational chip row for the composer's attached mention sources, with overflow disclosure, removal controls, and inline source-issue messaging.",
+      "tags": ["component", "mention-flow", "ui", "presentation", "validation"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/src/discussions/DiscussionMentionList.tsx:DiscussionMentionList",
+      "type": "function",
+      "name": "DiscussionMentionList",
+      "filePath": "frontend/src/discussions/DiscussionMentionList.tsx",
+      "lineRange": [113, 253],
+      "summary": "Renders the @-mention picker as an ARIA listbox split into bubble and document groups, including the empty state with create-bubble and upload-document calls to action.",
+      "tags": ["component", "mention-flow", "listbox", "accessibility", "empty-state"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:frontend/src/discussions/DiscussionMentionList.tsx:MentionOption",
+      "type": "function",
+      "name": "MentionOption",
+      "filePath": "frontend/src/discussions/DiscussionMentionList.tsx",
+      "lineRange": [43, 111],
+      "summary": "Renders a single mention candidate row with its readiness state, preventing default on mousedown so the textarea keeps focus while selecting.",
+      "tags": ["component", "mention-flow", "presentation", "event-handler"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/src/discussions/DiscussionMentionList.tsx",
+      "type": "file",
+      "name": "DiscussionMentionList.tsx",
+      "filePath": "frontend/src/discussions/DiscussionMentionList.tsx",
+      "summary": "The @-mention suggestion popover for the composer, grouping catalog results into bubbles and documents and communicating document readiness before attachment.",
+      "tags": ["component", "mention-flow", "ui", "accessibility", "listbox"],
+      "complexity": "complex",
+      "languageNotes": "Implements the combobox/listbox ARIA pattern with a roving aria-activedescendant rather than moving DOM focus off the textarea."
+    },
+    {
+      "id": "function:frontend/src/discussions/DiscussionMessageSources.tsx:DiscussionMessageSources",
+      "type": "function",
+      "name": "DiscussionMessageSources",
+      "filePath": "frontend/src/discussions/DiscussionMessageSources.tsx",
+      "lineRange": [59, 111],
+      "summary": "Renders the web-search citations attached to an assistant message as an ordered list of external links, rendering nothing when no citation survives validation.",
+      "tags": ["component", "presentation", "citations", "web-search"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/src/discussions/DiscussionMessageSources.tsx:safeMessageCitations",
+      "type": "function",
+      "name": "safeMessageCitations",
+      "filePath": "frontend/src/discussions/DiscussionMessageSources.tsx",
+      "lineRange": [24, 57],
+      "summary": "Validates an unknown citations payload at runtime, discarding entries without a safe HTTP(S) URL and normalizing optional title and snippet fields.",
+      "tags": ["validation", "runtime-guard", "serialization", "security"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/src/discussions/DiscussionMessageSources.tsx:safeHttpUrl",
+      "type": "function",
+      "name": "safeHttpUrl",
+      "filePath": "frontend/src/discussions/DiscussionMessageSources.tsx",
+      "lineRange": [10, 22],
+      "summary": "Parses a candidate citation URL and returns it only when it uses the http or https protocol, blocking javascript: and other unsafe schemes.",
+      "tags": ["validation", "security", "utility", "url"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/src/discussions/DiscussionMessageSources.tsx",
+      "type": "file",
+      "name": "DiscussionMessageSources.tsx",
+      "filePath": "frontend/src/discussions/DiscussionMessageSources.tsx",
+      "summary": "Displays source attribution for assistant answers produced with web search, applying runtime validation and protocol allowlisting before rendering any external link.",
+      "tags": ["component", "citations", "validation", "security", "web-search"],
+      "complexity": "moderate",
+      "languageNotes": "Compile-time contract types are not trusted here — every citation is re-validated at runtime because the payload originates from a model response."
+    },
+    {
+      "id": "file:frontend/src/discussions/DiscussionMessages.test.tsx",
+      "type": "file",
+      "name": "DiscussionMessages.test.tsx",
+      "filePath": "frontend/src/discussions/DiscussionMessages.test.tsx",
+      "summary": "Component tests for the message list covering assistant rendering with citations, the used-search indicator, and the failed-turn retry affordance.",
+      "tags": ["test", "component-test", "retry", "citations"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/src/discussions/DiscussionMessages.tsx:DiscussionMessages",
+      "type": "function",
+      "name": "DiscussionMessages",
+      "filePath": "frontend/src/discussions/DiscussionMessages.tsx",
+      "lineRange": [160, 255],
+      "summary": "Renders the discussion transcript, appending a synthetic pending or failed turn when the last user message has no assistant answer yet.",
+      "tags": ["component", "presentation", "transcript", "state-machine"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/src/discussions/DiscussionMessages.tsx:ResponseStatus",
+      "type": "function",
+      "name": "ResponseStatus",
+      "filePath": "frontend/src/discussions/DiscussionMessages.tsx",
+      "lineRange": [36, 95],
+      "summary": "Renders the pending, failed, and retryable status region for an unanswered user turn, exposing the retry action and live status text.",
+      "tags": ["component", "retry", "error-display", "accessibility", "live-region"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/src/discussions/DiscussionMessages.tsx:Message",
+      "type": "function",
+      "name": "Message",
+      "filePath": "frontend/src/discussions/DiscussionMessages.tsx",
+      "lineRange": [97, 137],
+      "summary": "Renders one immutable message bubble, switching between plain user text and rich assistant output with its search indicator, sources, and extraction action.",
+      "tags": ["component", "presentation", "message", "rendering"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/src/discussions/DiscussionMessages.tsx:EmptyDiscussion",
+      "type": "function",
+      "name": "EmptyDiscussion",
+      "filePath": "frontend/src/discussions/DiscussionMessages.tsx",
+      "lineRange": [139, 158],
+      "summary": "Renders the placeholder shown before a discussion has any persisted message.",
+      "tags": ["component", "empty-state", "presentation"],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/discussions/DiscussionMessages.tsx:unansweredTurn",
+      "type": "function",
+      "name": "unansweredTurn",
+      "filePath": "frontend/src/discussions/DiscussionMessages.tsx",
+      "lineRange": [20, 34],
+      "summary": "Determines whether the trailing user message still awaits an assistant answer, which drives the pending/failed status row.",
+      "tags": ["utility", "predicate", "state-machine", "transcript"],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/src/discussions/DiscussionMessages.tsx",
+      "type": "file",
+      "name": "DiscussionMessages.tsx",
+      "filePath": "frontend/src/discussions/DiscussionMessages.tsx",
+      "summary": "Renders the discussion transcript with per-message states, assistant rich output, web-search attribution, retryable failed turns, and the knowledge-extraction entry point.",
+      "tags": ["component", "transcript", "retry", "citations", "presentation"],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:frontend/src/discussions/DiscussionModal.tsx:DiscussionModal",
+      "type": "function",
+      "name": "DiscussionModal",
+      "filePath": "frontend/src/discussions/DiscussionModal.tsx",
+      "lineRange": [39, 309],
+      "summary": "Renders the discussion dialog shell with header, slot regions for context, messages, actions, inspector, and composer, plus the write-first draft form used before a discussion exists.",
+      "tags": ["component", "modal", "slots", "accessibility", "focus-management"],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:frontend/src/discussions/DiscussionModal.tsx",
+      "type": "file",
+      "name": "DiscussionModal.tsx",
+      "filePath": "frontend/src/discussions/DiscussionModal.tsx",
+      "summary": "Slot-based modal chrome for the single visible discussion, owning dialog semantics, minimize and delete controls, and the draft prompt submission path.",
+      "tags": ["component", "modal", "ui", "accessibility", "presentation"],
+      "complexity": "complex",
+      "languageNotes": "Uses a slot-props shape (composerSlot, messagesSlot, ...) so the chrome stays free of any discussion domain logic."
+    },
+    {
+      "id": "function:frontend/src/discussions/FrozenContextInspector.tsx:FrozenContextInspector",
+      "type": "function",
+      "name": "FrozenContextInspector",
+      "filePath": "frontend/src/discussions/FrozenContextInspector.tsx",
+      "lineRange": [37, 125],
+      "summary": "Renders the read-only inspector panel for a single frozen context item, showing its captured-at timestamp and snapshot text and taking focus on open.",
+      "tags": ["component", "frozen-context", "presentation", "focus-management", "accessibility"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/src/discussions/FrozenContextInspector.tsx",
+      "type": "file",
+      "name": "FrozenContextInspector.tsx",
+      "filePath": "frontend/src/discussions/FrozenContextInspector.tsx",
+      "summary": "Read-only inspection surface for a frozen context snapshot captured at discussion creation, rendering the copied title, timestamp, and content without dereferencing live project data.",
+      "tags": ["component", "frozen-context", "presentation", "read-only", "accessibility"],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/src/discussions/discussionContextModel.test.ts",
+      "type": "file",
+      "name": "discussionContextModel.test.ts",
+      "filePath": "frontend/src/discussions/discussionContextModel.test.ts",
+      "summary": "Unit tests for the frozen-context derivation helpers, covering badge extraction, captured-at resolution, and lookup against malformed or missing frozen context.",
+      "tags": ["test", "unit-test", "frozen-context", "validation"],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {"source": "file:frontend/src/discussions/DiscussionComposer.test.tsx", "target": "file:frontend/src/analytics.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionComposer.test.tsx", "target": "file:frontend/src/discussions/DiscussionComposer.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionComposer.test.tsx", "target": "file:frontend/src/discussions/discussionSourceCatalog.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+
+    {"source": "file:frontend/src/discussions/DiscussionComposer.tsx", "target": "file:frontend/src/analytics.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionComposer.tsx", "target": "file:frontend/src/discussions/DiscussionMentionChips.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionComposer.tsx", "target": "file:frontend/src/discussions/DiscussionMentionList.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionComposer.tsx", "target": "file:frontend/src/discussions/discussionCreationFailure.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionComposer.tsx", "target": "file:frontend/src/discussions/discussionMention.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionComposer.tsx", "target": "file:frontend/src/discussions/discussionMentionAnalytics.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionComposer.tsx", "target": "file:frontend/src/discussions/discussionSourceCatalog.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionComposer.tsx", "target": "file:frontend/src/discussions/useAutoGrowTextarea.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionComposer.tsx", "target": "file:frontend/src/ui/focusRing.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+
+    {"source": "file:frontend/src/discussions/DiscussionContextBadges.tsx", "target": "file:frontend/src/discussions/discussionContextModel.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+
+    {"source": "file:frontend/src/discussions/DiscussionExperience.tsx", "target": "file:frontend/src/analytics.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionExperience.tsx", "target": "file:frontend/src/api/index.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionExperience.tsx", "target": "file:frontend/src/discussions/DiscussionComposer.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionExperience.tsx", "target": "file:frontend/src/discussions/DiscussionContextBadges.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionExperience.tsx", "target": "file:frontend/src/discussions/DiscussionDeleteDialog.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionExperience.tsx", "target": "file:frontend/src/discussions/DiscussionKnowledgeAction.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionExperience.tsx", "target": "file:frontend/src/discussions/DiscussionMessages.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionExperience.tsx", "target": "file:frontend/src/discussions/DiscussionModal.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionExperience.tsx", "target": "file:frontend/src/discussions/FrozenContextInspector.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionExperience.tsx", "target": "file:frontend/src/discussions/discussionContextModel.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionExperience.tsx", "target": "file:frontend/src/discussions/discussionModel.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionExperience.tsx", "target": "file:frontend/src/discussions/discussionSourceCatalog.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionExperience.tsx", "target": "file:frontend/src/discussions/useDiscussionContextSelection.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionExperience.tsx", "target": "file:frontend/src/discussions/useDiscussionLifecycle.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionExperience.tsx", "target": "file:frontend/src/discussions/useDiscussionVisibility.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionExperience.tsx", "target": "file:frontend/src/knowledge-extraction/index.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+
+    {"source": "file:frontend/src/discussions/DiscussionKnowledgeAction.tsx", "target": "file:frontend/src/ui/focusRing.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+
+    {"source": "file:frontend/src/discussions/DiscussionMentionChips.tsx", "target": "file:frontend/src/discussions/discussionCreationFailure.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionMentionChips.tsx", "target": "file:frontend/src/discussions/discussionMention.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionMentionChips.tsx", "target": "file:frontend/src/discussions/discussionSourceCatalog.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionMentionChips.tsx", "target": "file:frontend/src/ui/focusRing.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+
+    {"source": "file:frontend/src/discussions/DiscussionMentionList.tsx", "target": "file:frontend/src/discussions/discussionMention.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionMentionList.tsx", "target": "file:frontend/src/discussions/discussionSourceCatalog.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionMentionList.tsx", "target": "file:frontend/src/ui/focusRing.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+
+    {"source": "file:frontend/src/discussions/DiscussionMessageSources.tsx", "target": "file:frontend/src/api/index.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+
+    {"source": "file:frontend/src/discussions/DiscussionMessages.test.tsx", "target": "file:frontend/src/api/index.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionMessages.test.tsx", "target": "file:frontend/src/discussions/DiscussionMessages.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionMessages.test.tsx", "target": "file:frontend/src/discussions/useDiscussionLifecycle.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+
+    {"source": "file:frontend/src/discussions/DiscussionMessages.tsx", "target": "file:frontend/src/api/index.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionMessages.tsx", "target": "file:frontend/src/discussions/DiscussionKnowledgeAction.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionMessages.tsx", "target": "file:frontend/src/discussions/DiscussionMessageSources.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionMessages.tsx", "target": "file:frontend/src/discussions/useDiscussionLifecycle.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionMessages.tsx", "target": "file:frontend/src/ui/RichResponse.tsx", "type": "imports", "direction": "forward", "weight": 0.7},
+
+    {"source": "file:frontend/src/discussions/DiscussionModal.tsx", "target": "file:frontend/src/discussions/discussionModel.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionModal.tsx", "target": "file:frontend/src/discussions/useDiscussionVisibility.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionModal.tsx", "target": "file:frontend/src/ui/focusRing.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/DiscussionModal.tsx", "target": "file:frontend/src/ui/useModalShell.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+
+    {"source": "file:frontend/src/discussions/FrozenContextInspector.tsx", "target": "file:frontend/src/api/index.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/FrozenContextInspector.tsx", "target": "file:frontend/src/discussions/discussionContextModel.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+
+    {"source": "file:frontend/src/discussions/discussionContextModel.test.ts", "target": "file:frontend/src/api/index.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+    {"source": "file:frontend/src/discussions/discussionContextModel.test.ts", "target": "file:frontend/src/discussions/discussionContextModel.ts", "type": "imports", "direction": "forward", "weight": 0.7},
+
+    {"source": "file:frontend/src/discussions/DiscussionComposer.tsx", "target": "function:frontend/src/discussions/DiscussionComposer.tsx:DiscussionComposer", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:frontend/src/discussions/DiscussionComposer.tsx", "target": "function:frontend/src/discussions/DiscussionComposer.tsx:DiscussionMentionMirror", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:frontend/src/discussions/DiscussionContextBadges.tsx", "target": "function:frontend/src/discussions/DiscussionContextBadges.tsx:DiscussionContextBadges", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:frontend/src/discussions/DiscussionExperience.tsx", "target": "function:frontend/src/discussions/DiscussionExperience.tsx:DiscussionExperience", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:frontend/src/discussions/DiscussionExperience.tsx", "target": "function:frontend/src/discussions/DiscussionExperience.tsx:DiscussionExperienceModal", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:frontend/src/discussions/DiscussionKnowledgeAction.tsx", "target": "function:frontend/src/discussions/DiscussionKnowledgeAction.tsx:DiscussionKnowledgeAction", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:frontend/src/discussions/DiscussionMentionChips.tsx", "target": "function:frontend/src/discussions/DiscussionMentionChips.tsx:DiscussionMentionChips", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:frontend/src/discussions/DiscussionMentionList.tsx", "target": "function:frontend/src/discussions/DiscussionMentionList.tsx:DiscussionMentionList", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:frontend/src/discussions/DiscussionMentionList.tsx", "target": "function:frontend/src/discussions/DiscussionMentionList.tsx:MentionOption", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:frontend/src/discussions/DiscussionMessageSources.tsx", "target": "function:frontend/src/discussions/DiscussionMessageSources.tsx:DiscussionMessageSources", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:frontend/src/discussions/DiscussionMessageSources.tsx", "target": "function:frontend/src/discussions/DiscussionMessageSources.tsx:safeMessageCitations", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:frontend/src/discussions/DiscussionMessageSources.tsx", "target": "function:frontend/src/discussions/DiscussionMessageSources.tsx:safeHttpUrl", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:frontend/src/discussions/DiscussionMessages.tsx", "target": "function:frontend/src/discussions/DiscussionMessages.tsx:DiscussionMessages", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:frontend/src/discussions/DiscussionMessages.tsx", "target": "function:frontend/src/discussions/DiscussionMessages.tsx:ResponseStatus", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:frontend/src/discussions/DiscussionMessages.tsx", "target": "function:frontend/src/discussions/DiscussionMessages.tsx:Message", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:frontend/src/discussions/DiscussionMessages.tsx", "target": "function:frontend/src/discussions/DiscussionMessages.tsx:EmptyDiscussion", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:frontend/src/discussions/DiscussionMessages.tsx", "target": "function:frontend/src/discussions/DiscussionMessages.tsx:unansweredTurn", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:frontend/src/discussions/DiscussionModal.tsx", "target": "function:frontend/src/discussions/DiscussionModal.tsx:DiscussionModal", "type": "contains", "direction": "forward", "weight": 1.0},
+    {"source": "file:frontend/src/discussions/FrozenContextInspector.tsx", "target": "function:frontend/src/discussions/FrozenContextInspector.tsx:FrozenContextInspector", "type": "contains", "direction": "forward", "weight": 1.0},
+
+    {"source": "file:frontend/src/discussions/DiscussionComposer.tsx", "target": "function:frontend/src/discussions/DiscussionComposer.tsx:DiscussionComposer", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:frontend/src/discussions/DiscussionContextBadges.tsx", "target": "function:frontend/src/discussions/DiscussionContextBadges.tsx:DiscussionContextBadges", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:frontend/src/discussions/DiscussionExperience.tsx", "target": "function:frontend/src/discussions/DiscussionExperience.tsx:DiscussionExperience", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:frontend/src/discussions/DiscussionKnowledgeAction.tsx", "target": "function:frontend/src/discussions/DiscussionKnowledgeAction.tsx:DiscussionKnowledgeAction", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:frontend/src/discussions/DiscussionMentionChips.tsx", "target": "function:frontend/src/discussions/DiscussionMentionChips.tsx:DiscussionMentionChips", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:frontend/src/discussions/DiscussionMentionList.tsx", "target": "function:frontend/src/discussions/DiscussionMentionList.tsx:DiscussionMentionList", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:frontend/src/discussions/DiscussionMessageSources.tsx", "target": "function:frontend/src/discussions/DiscussionMessageSources.tsx:DiscussionMessageSources", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:frontend/src/discussions/DiscussionMessages.tsx", "target": "function:frontend/src/discussions/DiscussionMessages.tsx:DiscussionMessages", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:frontend/src/discussions/DiscussionModal.tsx", "target": "function:frontend/src/discussions/DiscussionModal.tsx:DiscussionModal", "type": "exports", "direction": "forward", "weight": 0.8},
+    {"source": "file:frontend/src/discussions/FrozenContextInspector.tsx", "target": "function:frontend/src/discussions/FrozenContextInspector.tsx:FrozenContextInspector", "type": "exports", "direction": "forward", "weight": 0.8},
+
+    {"source": "file:frontend/src/discussions/DiscussionComposer.tsx", "target": "file:frontend/src/discussions/DiscussionComposer.test.tsx", "type": "tested_by", "direction": "forward", "weight": 0.5},
+    {"source": "file:frontend/src/discussions/DiscussionMessages.tsx", "target": "file:frontend/src/discussions/DiscussionMessages.test.tsx", "type": "tested_by", "direction": "forward", "weight": 0.5},
+
+    {"source": "function:frontend/src/discussions/DiscussionComposer.tsx:DiscussionComposer", "target": "function:frontend/src/discussions/discussionMention.ts:updateDiscussionMentionDraft", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:frontend/src/discussions/DiscussionComposer.tsx:DiscussionComposer", "target": "function:frontend/src/discussions/discussionMention.ts:attachDiscussionMentionSource", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:frontend/src/discussions/DiscussionComposer.tsx:DiscussionComposer", "target": "function:frontend/src/discussions/discussionMention.ts:findDiscussionMentionQuery", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:frontend/src/discussions/DiscussionComposer.tsx:DiscussionComposer", "target": "function:frontend/src/discussions/discussionSourceCatalog.ts:filterDiscussionSourceCatalog", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:frontend/src/discussions/DiscussionComposer.tsx:DiscussionComposer", "target": "function:frontend/src/discussions/useAutoGrowTextarea.ts:useAutoGrowTextarea", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:frontend/src/discussions/DiscussionComposer.tsx:DiscussionComposer", "target": "function:frontend/src/discussions/discussionMentionAnalytics.ts:trackDiscussionMentionAnalytics", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:frontend/src/discussions/DiscussionMentionChips.tsx:DiscussionMentionChips", "target": "function:frontend/src/discussions/discussionCreationFailure.ts:discussionCreationSourceIssueMessage", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:frontend/src/discussions/DiscussionExperience.tsx:DiscussionExperienceModal", "target": "function:frontend/src/discussions/useDiscussionLifecycle.ts:useDiscussionLifecycle", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:frontend/src/discussions/DiscussionExperience.tsx:DiscussionExperienceModal", "target": "function:frontend/src/discussions/discussionContextModel.ts:getDiscussionContextBadges", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:frontend/src/discussions/DiscussionExperience.tsx:DiscussionExperienceModal", "target": "function:frontend/src/discussions/discussionContextModel.ts:findFrozenContextItem", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:frontend/src/discussions/DiscussionExperience.tsx:DiscussionExperienceModal", "target": "function:frontend/src/analytics.ts:trackAnalytics", "type": "calls", "direction": "forward", "weight": 0.8},
+    {"source": "function:frontend/src/discussions/DiscussionModal.tsx:DiscussionModal", "target": "function:frontend/src/ui/useModalShell.ts:useModalShell", "type": "calls", "direction": "forward", "weight": 0.8}
+  ]
+}

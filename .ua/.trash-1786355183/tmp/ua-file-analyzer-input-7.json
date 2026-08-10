@@ -1,0 +1,209 @@
+{
+  "projectRoot": "/Users/alexandredemoura/Desktop/dev/nuee",
+  "batchFiles": [
+    {
+      "path": "backend/src/bubbles/migrations/002-create-bubbles.ts",
+      "language": "typescript",
+      "sizeLines": 26,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/migrations/003-create-bubble-links.ts",
+      "language": "typescript",
+      "sizeLines": 28,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/bubbles/migrations/007-complete-discussion-extraction-provenance.ts",
+      "language": "typescript",
+      "sizeLines": 167,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/database/database.migrations.spec.ts",
+      "language": "typescript",
+      "sizeLines": 1071,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/database/database.migrations.ts",
+      "language": "typescript",
+      "sizeLines": 261,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussions/migrations/004-create-discussions.ts",
+      "language": "typescript",
+      "sizeLines": 30,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussions/migrations/005-create-discussion-messages.ts",
+      "language": "typescript",
+      "sizeLines": 20,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussions/migrations/006-persist-discussion-context-items.ts",
+      "language": "typescript",
+      "sizeLines": 171,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/discussions/migrations/010-persist-discussion-search-attribution.ts",
+      "language": "typescript",
+      "sizeLines": 68,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/documents/migrations/009-create-documents.ts",
+      "language": "typescript",
+      "sizeLines": 226,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/knowledge-extraction/knowledge-extraction.controller.ts",
+      "language": "typescript",
+      "sizeLines": 62,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/knowledge-extraction/knowledge-extraction.module.ts",
+      "language": "typescript",
+      "sizeLines": 26,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/knowledge-extraction/knowledge-extraction.prompt.spec.ts",
+      "language": "typescript",
+      "sizeLines": 178,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/knowledge-extraction/knowledge-extraction.prompt.ts",
+      "language": "typescript",
+      "sizeLines": 109,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/knowledge-extraction/knowledge-extraction.service.ts",
+      "language": "typescript",
+      "sizeLines": 732,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/knowledge-extraction/knowledge-extraction.types.ts",
+      "language": "typescript",
+      "sizeLines": 138,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/knowledge-extraction/migrations/008-create-knowledge-extraction-attempts.ts",
+      "language": "typescript",
+      "sizeLines": 157,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/knowledge-extraction/migrations/011-persist-extraction-intent.ts",
+      "language": "typescript",
+      "sizeLines": 39,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.ts",
+      "language": "typescript",
+      "sizeLines": 754,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/projects/migrations/001-create-projects.ts",
+      "language": "typescript",
+      "sizeLines": 26,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/projects/migrations/012-widen-project-description.ts",
+      "language": "typescript",
+      "sizeLines": 69,
+      "fileCategory": "code"
+    },
+    {
+      "path": "backend/src/projects/migrations/013-repair-project-foreign-keys.ts",
+      "language": "typescript",
+      "sizeLines": 22,
+      "fileCategory": "code"
+    }
+  ],
+  "batchImportData": {
+    "backend/src/bubbles/migrations/002-create-bubbles.ts": [],
+    "backend/src/bubbles/migrations/003-create-bubble-links.ts": [],
+    "backend/src/bubbles/migrations/007-complete-discussion-extraction-provenance.ts": [],
+    "backend/src/database/database.migrations.spec.ts": [
+      "backend/src/database/database.migrations.ts"
+    ],
+    "backend/src/database/database.migrations.ts": [
+      "backend/src/bubbles/migrations/002-create-bubbles.ts",
+      "backend/src/bubbles/migrations/003-create-bubble-links.ts",
+      "backend/src/bubbles/migrations/007-complete-discussion-extraction-provenance.ts",
+      "backend/src/discussions/migrations/004-create-discussions.ts",
+      "backend/src/discussions/migrations/005-create-discussion-messages.ts",
+      "backend/src/discussions/migrations/006-persist-discussion-context-items.ts",
+      "backend/src/discussions/migrations/010-persist-discussion-search-attribution.ts",
+      "backend/src/documents/migrations/009-create-documents.ts",
+      "backend/src/knowledge-extraction/migrations/008-create-knowledge-extraction-attempts.ts",
+      "backend/src/knowledge-extraction/migrations/011-persist-extraction-intent.ts",
+      "backend/src/projects/migrations/001-create-projects.ts",
+      "backend/src/projects/migrations/012-widen-project-description.ts",
+      "backend/src/projects/migrations/013-repair-project-foreign-keys.ts"
+    ],
+    "backend/src/discussions/migrations/004-create-discussions.ts": [],
+    "backend/src/discussions/migrations/005-create-discussion-messages.ts": [],
+    "backend/src/discussions/migrations/006-persist-discussion-context-items.ts": [],
+    "backend/src/discussions/migrations/010-persist-discussion-search-attribution.ts": [],
+    "backend/src/documents/migrations/009-create-documents.ts": [],
+    "backend/src/knowledge-extraction/knowledge-extraction.controller.ts": [
+      "backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.service.ts"
+    ],
+    "backend/src/knowledge-extraction/knowledge-extraction.module.ts": [
+      "backend/src/ai/ai.module.ts",
+      "backend/src/bubbles/bubbles.module.ts",
+      "backend/src/discussions/discussions.module.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.controller.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.service.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.types.ts",
+      "backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.ts",
+      "backend/src/projects/projects.module.ts"
+    ],
+    "backend/src/knowledge-extraction/knowledge-extraction.prompt.spec.ts": [
+      "backend/src/knowledge-extraction/knowledge-extraction.prompt.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.types.ts"
+    ],
+    "backend/src/knowledge-extraction/knowledge-extraction.prompt.ts": [
+      "backend/src/ai/model-client.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.types.ts"
+    ],
+    "backend/src/knowledge-extraction/knowledge-extraction.service.ts": [
+      "backend/src/ai/model-client.ts",
+      "backend/src/ai/model-input-budget.ts",
+      "backend/src/discussions/discussion.types.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.prompt.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.types.ts",
+      "backend/src/projects/projects.service.ts"
+    ],
+    "backend/src/knowledge-extraction/knowledge-extraction.types.ts": [],
+    "backend/src/knowledge-extraction/migrations/008-create-knowledge-extraction-attempts.ts": [],
+    "backend/src/knowledge-extraction/migrations/011-persist-extraction-intent.ts": [
+      "backend/src/knowledge-extraction/knowledge-extraction.types.ts"
+    ],
+    "backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.ts": [
+      "backend/src/database/database.provider.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.prompt.ts",
+      "backend/src/knowledge-extraction/knowledge-extraction.types.ts"
+    ],
+    "backend/src/projects/migrations/001-create-projects.ts": [],
+    "backend/src/projects/migrations/012-widen-project-description.ts": [],
+    "backend/src/projects/migrations/013-repair-project-foreign-keys.ts": []
+  }
+}

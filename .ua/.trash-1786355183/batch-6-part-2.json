@@ -1,0 +1,928 @@
+{
+  "nodes": [
+    {
+      "id": "file:frontend/tests/ProjectWorkspaceAnalytics.test.tsx",
+      "type": "file",
+      "name": "ProjectWorkspaceAnalytics.test.tsx",
+      "filePath": "frontend/tests/ProjectWorkspaceAnalytics.test.tsx",
+      "summary": "Contract suite pinning the analytics events the project workspace emits — names, payload shape, and the privacy boundary that keeps user content out of event properties.",
+      "tags": [
+        "test",
+        "contract-test",
+        "analytics",
+        "workspace",
+        "privacy"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Treats analytics as a versioned contract: the spy asserts event names and property keys, so a rename or an accidental content leak fails the build."
+    },
+    {
+      "id": "file:frontend/tests/ProjectWorkspaceIntegration.test.tsx",
+      "type": "file",
+      "name": "ProjectWorkspaceIntegration.test.tsx",
+      "filePath": "frontend/tests/ProjectWorkspaceIntegration.test.tsx",
+      "summary": "Large integration suite asserting the cross-feature contracts the workspace coordinates: panel switching, canvas and inspector wiring, discussions, documents, and knowledge-extraction hand-offs.",
+      "tags": [
+        "test",
+        "integration-test",
+        "workspace",
+        "cross-feature",
+        "contract-test"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Acts as the seam test for the workspace as lowest common owner: each feature is exercised through the callbacks the workspace passes down rather than directly."
+    },
+    {
+      "id": "function:frontend/tests/ProjectWorkspaceIntegration.test.tsx:deferred",
+      "type": "function",
+      "name": "deferred",
+      "filePath": "frontend/tests/ProjectWorkspaceIntegration.test.tsx",
+      "lineRange": [
+        43,
+        52
+      ],
+      "summary": "Creates a manually resolvable promise for holding workspace requests pending across assertions.",
+      "tags": [
+        "test-helper",
+        "async",
+        "deferred-promise"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/tests/ProjectWorkspaceIntegration.test.tsx:activateButtonWithKeyboard",
+      "type": "function",
+      "name": "activateButtonWithKeyboard",
+      "filePath": "frontend/tests/ProjectWorkspaceIntegration.test.tsx",
+      "lineRange": [
+        54,
+        63
+      ],
+      "summary": "Focuses a button and dispatches the given key so keyboard paths are covered alongside pointer interaction.",
+      "tags": [
+        "test-helper",
+        "accessibility",
+        "keyboard"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/tests/ProjectWorkspaceIntegration.test.tsx:bubble",
+      "type": "function",
+      "name": "bubble",
+      "filePath": "frontend/tests/ProjectWorkspaceIntegration.test.tsx",
+      "lineRange": [
+        65,
+        84
+      ],
+      "summary": "Fixture factory producing a bubble record for the canvas portions of the workspace suite.",
+      "tags": [
+        "test-fixture",
+        "factory",
+        "bubble"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/tests/ProjectWorkspaceIntegration.test.tsx:documentSummary",
+      "type": "function",
+      "name": "documentSummary",
+      "filePath": "frontend/tests/ProjectWorkspaceIntegration.test.tsx",
+      "lineRange": [
+        100,
+        118
+      ],
+      "summary": "Fixture factory producing a document summary row for the documents-panel portions of the suite.",
+      "tags": [
+        "test-fixture",
+        "factory",
+        "documents"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/tests/ProjectWorkspaceIntegration.test.tsx:discussionDetails",
+      "type": "function",
+      "name": "discussionDetails",
+      "filePath": "frontend/tests/ProjectWorkspaceIntegration.test.tsx",
+      "lineRange": [
+        120,
+        156
+      ],
+      "summary": "Fixture factory assembling a discussion detail payload with messages and frozen context for the discussions portions of the suite.",
+      "tags": [
+        "test-fixture",
+        "factory",
+        "discussions"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/tests/ProjectWorkspaceIntegration.test.tsx:extractionProposalResponse",
+      "type": "function",
+      "name": "extractionProposalResponse",
+      "filePath": "frontend/tests/ProjectWorkspaceIntegration.test.tsx",
+      "lineRange": [
+        158,
+        176
+      ],
+      "summary": "Builds a knowledge-extraction proposal response used to drive the extraction hand-off assertions.",
+      "tags": [
+        "test-fixture",
+        "factory",
+        "knowledge-extraction"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/tests/bubbleResponse.test.ts",
+      "type": "file",
+      "name": "bubbleResponse.test.ts",
+      "filePath": "frontend/tests/bubbleResponse.test.ts",
+      "summary": "Unit suite for the isBubbleResponse runtime guard, asserting that valid payloads pass and that missing, mistyped, or extra-shaped responses are rejected.",
+      "tags": [
+        "test",
+        "unit-test",
+        "validation",
+        "type-guard",
+        "api"
+      ],
+      "complexity": "moderate",
+      "languageNotes": "Encodes the rule that compile-time contracts do not replace runtime response checks on mutation-critical paths."
+    },
+    {
+      "id": "function:frontend/tests/bubbleResponse.test.ts:manualBubble",
+      "type": "function",
+      "name": "manualBubble",
+      "filePath": "frontend/tests/bubbleResponse.test.ts",
+      "lineRange": [
+        5,
+        24
+      ],
+      "summary": "Fixture factory producing a well-formed manual bubble response that individual cases then corrupt field by field.",
+      "tags": [
+        "test-fixture",
+        "factory",
+        "bubble"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/tests/compactLayout.test.ts",
+      "type": "file",
+      "name": "compactLayout.test.ts",
+      "filePath": "frontend/tests/compactLayout.test.ts",
+      "summary": "Unit suite for getCompactBubblePositions, verifying deterministic grid placement, gap spacing, and stable ordering by creation time.",
+      "tags": [
+        "test",
+        "unit-test",
+        "canvas",
+        "layout",
+        "algorithm"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/tests/compactLayout.test.ts:bubble",
+      "type": "function",
+      "name": "bubble",
+      "filePath": "frontend/tests/compactLayout.test.ts",
+      "lineRange": [
+        10,
+        33
+      ],
+      "summary": "Fixture factory producing a bubble with explicit id, coordinates, and creation timestamp so layout ordering is deterministic.",
+      "tags": [
+        "test-fixture",
+        "factory",
+        "canvas"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/tests/documentAnalytics.test.ts",
+      "type": "file",
+      "name": "documentAnalytics.test.ts",
+      "filePath": "frontend/tests/documentAnalytics.test.ts",
+      "summary": "Focused suite asserting the privacy boundary for document analytics: emitted events carry identifiers and counts, never filenames or document text.",
+      "tags": [
+        "test",
+        "unit-test",
+        "analytics",
+        "documents",
+        "privacy"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/tests/documentContextSelection.test.ts",
+      "type": "file",
+      "name": "documentContextSelection.test.ts",
+      "filePath": "frontend/tests/documentContextSelection.test.ts",
+      "summary": "Unit suite for the adapter that turns ready documents into whole-document context sources, covering eligibility, selection toggling, and exclusion of non-ready documents.",
+      "tags": [
+        "test",
+        "unit-test",
+        "documents",
+        "context-selection",
+        "adapter"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/tests/documentContextSelection.test.ts:documentSource",
+      "type": "function",
+      "name": "documentSource",
+      "filePath": "frontend/tests/documentContextSelection.test.ts",
+      "lineRange": [
+        12,
+        22
+      ],
+      "summary": "Fixture factory producing a document context-source candidate with overridable status and metadata.",
+      "tags": [
+        "test-fixture",
+        "factory",
+        "documents"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/tests/documentUploadPreflight.test.ts",
+      "type": "file",
+      "name": "documentUploadPreflight.test.ts",
+      "filePath": "frontend/tests/documentUploadPreflight.test.ts",
+      "summary": "Unit suite for policy-backed upload preflight, asserting that size, MIME type, and count limits are checked client-side before any transfer starts.",
+      "tags": [
+        "test",
+        "unit-test",
+        "documents",
+        "validation",
+        "upload"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/tests/knowledgeExtractionStateMachine.test.ts",
+      "type": "file",
+      "name": "knowledgeExtractionStateMachine.test.ts",
+      "filePath": "frontend/tests/knowledgeExtractionStateMachine.test.ts",
+      "summary": "Unit suite driving the knowledge-extraction state machine through idle, requesting, reviewing, and resolved transitions, including per-proposal accept/reject resolutions and invalid-event handling.",
+      "tags": [
+        "test",
+        "unit-test",
+        "knowledge-extraction",
+        "state-machine",
+        "reducer"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Tests the reducer as a pure function via a fold-over-events dispatch helper, so transitions are verified without rendering any component."
+    },
+    {
+      "id": "function:frontend/tests/knowledgeExtractionStateMachine.test.ts:resolution",
+      "type": "function",
+      "name": "resolution",
+      "filePath": "frontend/tests/knowledgeExtractionStateMachine.test.ts",
+      "lineRange": [
+        40,
+        53
+      ],
+      "summary": "Builds a proposal resolution of the requested kind for exercising accept and reject branches.",
+      "tags": [
+        "test-fixture",
+        "factory",
+        "knowledge-extraction"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/tests/knowledgeExtractionStateMachine.test.ts:reviewingState",
+      "type": "function",
+      "name": "reviewingState",
+      "filePath": "frontend/tests/knowledgeExtractionStateMachine.test.ts",
+      "lineRange": [
+        62,
+        76
+      ],
+      "summary": "Produces a state machine value already in the reviewing phase so transition tests can start mid-flow.",
+      "tags": [
+        "test-fixture",
+        "state-machine",
+        "knowledge-extraction"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/tests/useDocumentLibrary.test.ts",
+      "type": "file",
+      "name": "useDocumentLibrary.test.ts",
+      "filePath": "frontend/tests/useDocumentLibrary.test.ts",
+      "summary": "Hook suite for useDocumentLibrary covering list load states, upload transfers, processing polling and retry, and guarding against stale, aborted, and malformed responses.",
+      "tags": [
+        "test",
+        "hook-test",
+        "documents",
+        "polling",
+        "async"
+      ],
+      "complexity": "complex",
+      "languageNotes": "Exercises the abort, unmount, stale-attempt, and invalid-shape branches the frontend rules require for any async result."
+    },
+    {
+      "id": "function:frontend/tests/useDocumentLibrary.test.ts:documentSummary",
+      "type": "function",
+      "name": "documentSummary",
+      "filePath": "frontend/tests/useDocumentLibrary.test.ts",
+      "lineRange": [
+        36,
+        54
+      ],
+      "summary": "Fixture factory producing a document summary with overridable processing status and timestamps.",
+      "tags": [
+        "test-fixture",
+        "factory",
+        "documents"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/tests/useFieldValidity.test.tsx",
+      "type": "file",
+      "name": "useFieldValidity.test.tsx",
+      "filePath": "frontend/tests/useFieldValidity.test.tsx",
+      "summary": "Hook suite for useFieldValidity, rendering a small test form to assert when a field reports invalid and when its error message becomes visible or is suppressed.",
+      "tags": [
+        "test",
+        "hook-test",
+        "validation",
+        "accessibility",
+        "ui"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/tests/useFieldValidity.test.tsx:TestForm",
+      "type": "function",
+      "name": "TestForm",
+      "filePath": "frontend/tests/useFieldValidity.test.tsx",
+      "lineRange": [
+        8,
+        33
+      ],
+      "summary": "Minimal form component that mounts the hook and exposes its validity and error-visibility state to assertions.",
+      "tags": [
+        "test-harness",
+        "component",
+        "validation"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/tests/useKnowledgeExtraction.test.ts",
+      "type": "file",
+      "name": "useKnowledgeExtraction.test.ts",
+      "filePath": "frontend/tests/useKnowledgeExtraction.test.ts",
+      "summary": "Hook suite for useKnowledgeExtraction covering source and target selection, proposal requests and review, bubble resolution, attempt idempotency, failure retry, and emitted analytics.",
+      "tags": [
+        "test",
+        "hook-test",
+        "knowledge-extraction",
+        "async",
+        "analytics"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:frontend/tests/useKnowledgeExtraction.test.ts:deferred",
+      "type": "function",
+      "name": "deferred",
+      "filePath": "frontend/tests/useKnowledgeExtraction.test.ts",
+      "lineRange": [
+        25,
+        34
+      ],
+      "summary": "Creates a manually resolvable promise so an in-flight extraction attempt can be inspected before it settles.",
+      "tags": [
+        "test-helper",
+        "async",
+        "deferred-promise"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/tests/useKnowledgeExtraction.test.ts:proposalResponse",
+      "type": "function",
+      "name": "proposalResponse",
+      "filePath": "frontend/tests/useKnowledgeExtraction.test.ts",
+      "lineRange": [
+        36,
+        57
+      ],
+      "summary": "Fixture factory building an extraction proposal response with overridable proposals and metadata.",
+      "tags": [
+        "test-fixture",
+        "factory",
+        "knowledge-extraction"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/tests/useKnowledgeExtraction.test.ts:bubble",
+      "type": "function",
+      "name": "bubble",
+      "filePath": "frontend/tests/useKnowledgeExtraction.test.ts",
+      "lineRange": [
+        59,
+        80
+      ],
+      "summary": "Fixture factory producing a bubble record representing an extraction target or result.",
+      "tags": [
+        "test-fixture",
+        "factory",
+        "bubble"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/tests/useKnowledgeExtraction.test.ts:newBubbleResolution",
+      "type": "function",
+      "name": "newBubbleResolution",
+      "filePath": "frontend/tests/useKnowledgeExtraction.test.ts",
+      "lineRange": [
+        82,
+        101
+      ],
+      "summary": "Builds the resolution payload for accepting a proposal as a newly created bubble.",
+      "tags": [
+        "test-fixture",
+        "factory",
+        "knowledge-extraction"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/tests/useKnowledgeExtraction.test.ts:analyticsDiscussion",
+      "type": "function",
+      "name": "analyticsDiscussion",
+      "filePath": "frontend/tests/useKnowledgeExtraction.test.ts",
+      "lineRange": [
+        103,
+        155
+      ],
+      "summary": "Assembles the discussion payload used by the analytics assertions, covering the identifiers extraction events are allowed to carry.",
+      "tags": [
+        "test-fixture",
+        "factory",
+        "analytics",
+        "discussions"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/tests/useProjectBubbles.test.ts",
+      "type": "file",
+      "name": "useProjectBubbles.test.ts",
+      "filePath": "frontend/tests/useProjectBubbles.test.ts",
+      "summary": "Hook suite for useProjectBubbles covering the load state machine, optimistic position updates, failure rollback, and stale-response guarding.",
+      "tags": [
+        "test",
+        "hook-test",
+        "canvas",
+        "load-state",
+        "optimistic-update"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/tests/useProjectBubbles.test.ts:bubble",
+      "type": "function",
+      "name": "bubble",
+      "filePath": "frontend/tests/useProjectBubbles.test.ts",
+      "lineRange": [
+        20,
+        39
+      ],
+      "summary": "Fixture factory producing a bubble record with overridable position fields for collection assertions.",
+      "tags": [
+        "test-fixture",
+        "factory",
+        "bubble"
+      ],
+      "complexity": "simple"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:frontend/src/workspace/ProjectCanvasRoute.tsx",
+      "target": "file:frontend/tests/ProjectWorkspaceAnalytics.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "target": "file:frontend/tests/ProjectWorkspaceAnalytics.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/src/analytics.ts",
+      "target": "file:frontend/tests/ProjectWorkspaceAnalytics.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/src/projects/ProjectDescriptionEditor.tsx",
+      "target": "file:frontend/tests/ProjectWorkspaceAnalytics.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/tests/ProjectWorkspaceIntegration.test.tsx",
+      "target": "function:frontend/tests/ProjectWorkspaceIntegration.test.tsx:deferred",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/tests/ProjectWorkspaceIntegration.test.tsx",
+      "target": "function:frontend/tests/ProjectWorkspaceIntegration.test.tsx:activateButtonWithKeyboard",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/tests/ProjectWorkspaceIntegration.test.tsx",
+      "target": "function:frontend/tests/ProjectWorkspaceIntegration.test.tsx:bubble",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/tests/ProjectWorkspaceIntegration.test.tsx",
+      "target": "function:frontend/tests/ProjectWorkspaceIntegration.test.tsx:documentSummary",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/tests/ProjectWorkspaceIntegration.test.tsx",
+      "target": "function:frontend/tests/ProjectWorkspaceIntegration.test.tsx:discussionDetails",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/tests/ProjectWorkspaceIntegration.test.tsx",
+      "target": "function:frontend/tests/ProjectWorkspaceIntegration.test.tsx:extractionProposalResponse",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "target": "file:frontend/tests/ProjectWorkspaceIntegration.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/tests/bubbleResponse.test.ts",
+      "target": "function:frontend/tests/bubbleResponse.test.ts:manualBubble",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/api/index.ts",
+      "target": "file:frontend/tests/bubbleResponse.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/tests/compactLayout.test.ts",
+      "target": "function:frontend/tests/compactLayout.test.ts:bubble",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/canvas/compactLayout.ts",
+      "target": "file:frontend/tests/compactLayout.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/src/documents/index.ts",
+      "target": "file:frontend/tests/documentAnalytics.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/src/analytics.ts",
+      "target": "file:frontend/tests/documentAnalytics.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/tests/documentContextSelection.test.ts",
+      "target": "function:frontend/tests/documentContextSelection.test.ts:documentSource",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/documents/index.ts",
+      "target": "file:frontend/tests/documentContextSelection.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/src/documents/index.ts",
+      "target": "file:frontend/tests/documentUploadPreflight.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/tests/knowledgeExtractionStateMachine.test.ts",
+      "target": "function:frontend/tests/knowledgeExtractionStateMachine.test.ts:resolution",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/tests/knowledgeExtractionStateMachine.test.ts",
+      "target": "function:frontend/tests/knowledgeExtractionStateMachine.test.ts:reviewingState",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/index.ts",
+      "target": "file:frontend/tests/knowledgeExtractionStateMachine.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/tests/useDocumentLibrary.test.ts",
+      "target": "function:frontend/tests/useDocumentLibrary.test.ts:documentSummary",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/documents/index.ts",
+      "target": "file:frontend/tests/useDocumentLibrary.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/tests/useFieldValidity.test.tsx",
+      "target": "function:frontend/tests/useFieldValidity.test.tsx:TestForm",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/ui/useFieldValidity.ts",
+      "target": "file:frontend/tests/useFieldValidity.test.tsx",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/tests/useKnowledgeExtraction.test.ts",
+      "target": "function:frontend/tests/useKnowledgeExtraction.test.ts:deferred",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/tests/useKnowledgeExtraction.test.ts",
+      "target": "function:frontend/tests/useKnowledgeExtraction.test.ts:proposalResponse",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/tests/useKnowledgeExtraction.test.ts",
+      "target": "function:frontend/tests/useKnowledgeExtraction.test.ts:bubble",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/tests/useKnowledgeExtraction.test.ts",
+      "target": "function:frontend/tests/useKnowledgeExtraction.test.ts:newBubbleResolution",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/tests/useKnowledgeExtraction.test.ts",
+      "target": "function:frontend/tests/useKnowledgeExtraction.test.ts:analyticsDiscussion",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/knowledge-extraction/index.ts",
+      "target": "file:frontend/tests/useKnowledgeExtraction.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/tests/useProjectBubbles.test.ts",
+      "target": "function:frontend/tests/useProjectBubbles.test.ts:bubble",
+      "type": "contains",
+      "direction": "forward",
+      "weight": 1
+    },
+    {
+      "source": "file:frontend/src/canvas/useProjectBubbles.ts",
+      "target": "file:frontend/tests/useProjectBubbles.test.ts",
+      "type": "tested_by",
+      "direction": "forward",
+      "weight": 0.5
+    },
+    {
+      "source": "file:frontend/tests/ProjectWorkspaceAnalytics.test.tsx",
+      "target": "file:frontend/src/App.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/ProjectWorkspaceAnalytics.test.tsx",
+      "target": "file:frontend/src/analytics.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/ProjectWorkspaceAnalytics.test.tsx",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/ProjectWorkspaceAnalytics.test.tsx",
+      "target": "file:frontend/src/projects/ProjectDescriptionEditor.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/ProjectWorkspaceAnalytics.test.tsx",
+      "target": "file:frontend/src/workspace/ProjectCanvasRoute.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/ProjectWorkspaceAnalytics.test.tsx",
+      "target": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/ProjectWorkspaceIntegration.test.tsx",
+      "target": "file:frontend/src/analytics.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/ProjectWorkspaceIntegration.test.tsx",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/ProjectWorkspaceIntegration.test.tsx",
+      "target": "file:frontend/src/workspace/ProjectWorkspace.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/bubbleResponse.test.ts",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/compactLayout.test.ts",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/compactLayout.test.ts",
+      "target": "file:frontend/src/canvas/compactLayout.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/documentAnalytics.test.ts",
+      "target": "file:frontend/src/analytics.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/documentAnalytics.test.ts",
+      "target": "file:frontend/src/documents/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/documentContextSelection.test.ts",
+      "target": "file:frontend/src/documents/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/documentUploadPreflight.test.ts",
+      "target": "file:frontend/src/documents/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/knowledgeExtractionStateMachine.test.ts",
+      "target": "file:frontend/src/knowledge-extraction/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/useDocumentLibrary.test.ts",
+      "target": "file:frontend/src/documents/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/useFieldValidity.test.tsx",
+      "target": "file:frontend/src/ui/useFieldValidity.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/useKnowledgeExtraction.test.ts",
+      "target": "file:frontend/src/analytics.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/useKnowledgeExtraction.test.ts",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/useKnowledgeExtraction.test.ts",
+      "target": "file:frontend/src/knowledge-extraction/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/useProjectBubbles.test.ts",
+      "target": "file:frontend/src/api/index.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/useProjectBubbles.test.ts",
+      "target": "file:frontend/src/canvas/useProjectBubbles.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ]
+}

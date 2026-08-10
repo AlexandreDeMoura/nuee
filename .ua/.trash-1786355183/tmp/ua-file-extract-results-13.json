@@ -1,0 +1,370 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 3,
+  "filesSkipped": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 3,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 3,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "frontend/src/documents/DocumentContextSelectionPanel.tsx",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 219,
+      "nonEmptyLines": 213,
+      "functions": [
+        {
+          "name": "DocumentSelectionRow",
+          "startLine": 30,
+          "endLine": 134,
+          "params": [
+            "{\n  controller,\n  document,\n}"
+          ]
+        },
+        {
+          "name": "DocumentContextSelectionPanel",
+          "startLine": 136,
+          "endLine": 219,
+          "params": [
+            "{\n  controller,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DocumentContextSelectionPanel",
+          "line": 136,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "DocumentSelectionRow",
+          "callee": "controller.selectedDocumentIdSet.has",
+          "lineNumber": 38
+        },
+        {
+          "caller": "DocumentSelectionRow",
+          "callee": "controller.toggle",
+          "lineNumber": 68
+        },
+        {
+          "caller": "DocumentContextSelectionPanel",
+          "callee": "controller.documents.map",
+          "lineNumber": 170
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 2,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/documents/documentContextSelectionTypes.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 45,
+      "nonEmptyLines": 40,
+      "exports": [
+        {
+          "name": "DocumentProcessingStatus",
+          "line": 3,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "frontend/src/documents/useDocumentMultiSelection.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 229,
+      "nonEmptyLines": 202,
+      "functions": [
+        {
+          "name": "isProcessingStatus",
+          "startLine": 21,
+          "endLine": 27,
+          "params": [
+            "value"
+          ]
+        },
+        {
+          "name": "normalizeDocuments",
+          "startLine": 29,
+          "endLine": 67,
+          "params": [
+            "projectId",
+            "documents"
+          ]
+        },
+        {
+          "name": "normalizeInitialIds",
+          "startLine": 69,
+          "endLine": 79,
+          "params": [
+            "ids"
+          ]
+        },
+        {
+          "name": "useDocumentMultiSelection",
+          "startLine": 86,
+          "endLine": 229,
+          "params": [
+            "{\n  documents,\n  multiSelection,\n  projectId,\n}"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "useDocumentMultiSelection",
+          "line": 86,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "normalizeDocuments",
+          "callee": "document.id.trim",
+          "lineNumber": 37
+        },
+        {
+          "caller": "normalizeDocuments",
+          "callee": "document.title.trim",
+          "lineNumber": 39
+        },
+        {
+          "caller": "normalizeDocuments",
+          "callee": "isProcessingStatus",
+          "lineNumber": 45
+        },
+        {
+          "caller": "normalizeDocuments",
+          "callee": "indicesById.get",
+          "lineNumber": 56
+        },
+        {
+          "caller": "normalizeDocuments",
+          "callee": "indicesById.set",
+          "lineNumber": 59
+        },
+        {
+          "caller": "normalizeDocuments",
+          "callee": "normalized.push",
+          "lineNumber": 60
+        },
+        {
+          "caller": "normalizeInitialIds",
+          "callee": "ids.map((id) => id.trim()).filter",
+          "lineNumber": 76
+        },
+        {
+          "caller": "normalizeInitialIds",
+          "callee": "ids.map",
+          "lineNumber": 76
+        },
+        {
+          "caller": "normalizeInitialIds",
+          "callee": "id.trim",
+          "lineNumber": 76
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "useState",
+          "lineNumber": 91
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "useRef",
+          "lineNumber": 92
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "useRef",
+          "lineNumber": 93
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "useMemo",
+          "lineNumber": 94
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "normalizeDocuments",
+          "lineNumber": 95
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "useMemo",
+          "lineNumber": 98
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "normalizedDocuments.map",
+          "lineNumber": 101
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "useMemo",
+          "lineNumber": 105
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "normalizedDocuments\n          .filter(({ processing_status }) => processing_status === 'ready')\n          .map",
+          "lineNumber": 108
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "normalizedDocuments\n          .filter",
+          "lineNumber": 108
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "useMemo",
+          "lineNumber": 114
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "selectedDocumentIds.filter",
+          "lineNumber": 116
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "readyDocumentIds.has",
+          "lineNumber": 117
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "useMemo",
+          "lineNumber": 121
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "useCallback",
+          "lineNumber": 126
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "multiSelection.onCancel",
+          "lineNumber": 132
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "useCallback",
+          "lineNumber": 135
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "activeSelectedDocumentIds.flatMap",
+          "lineNumber": 140
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "documentsById.get",
+          "lineNumber": 142
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "multiSelection.onConfirm",
+          "lineNumber": 155
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "selectedDocuments.map",
+          "lineNumber": 156
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "useCallback",
+          "lineNumber": 167
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "readyDocumentIds.has",
+          "lineNumber": 169
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "setSelectedDocumentIds",
+          "lineNumber": 173
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "current.includes",
+          "lineNumber": 174
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "current.filter",
+          "lineNumber": 175
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "useEffect",
+          "lineNumber": 182
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "setSelectedDocumentIds",
+          "lineNumber": 186
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "normalizeInitialIds",
+          "lineNumber": 187
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "setSelectedDocumentIds",
+          "lineNumber": 191
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "useEffect",
+          "lineNumber": 198
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "event.preventDefault",
+          "lineNumber": 208
+        },
+        {
+          "caller": "handleKeyDown",
+          "callee": "cancel",
+          "lineNumber": 209
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "window.addEventListener",
+          "lineNumber": 212
+        },
+        {
+          "caller": "useDocumentMultiSelection",
+          "callee": "window.removeEventListener",
+          "lineNumber": 213
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 4,
+        "classCount": 0
+      }
+    }
+  ]
+}

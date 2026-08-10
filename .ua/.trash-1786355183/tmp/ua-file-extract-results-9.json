@@ -1,0 +1,3274 @@
+{
+  "scriptCompleted": true,
+  "filesAnalyzed": 20,
+  "filesSkipped": [],
+  "analysisOutcomes": {
+    "structure": {
+      "succeeded": 20,
+      "failed": 0
+    },
+    "callGraph": {
+      "succeeded": 20,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "results": [
+    {
+      "path": "backend/src/discussion-context/discussion-context.module.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 12,
+      "nonEmptyLines": 11,
+      "classes": [
+        {
+          "name": "DiscussionContextModule",
+          "startLine": 12,
+          "endLine": 12,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "DiscussionContextModule",
+          "line": 7,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/discussion-context/discussion-context.types.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 57,
+      "nonEmptyLines": 48,
+      "classes": [
+        {
+          "name": "DiscussionContextSourceError",
+          "startLine": 50,
+          "endLine": 57,
+          "methods": [
+            "constructor"
+          ],
+          "properties": [
+            "code"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DocumentProcessingStatus",
+          "line": 6,
+          "isDefault": false
+        },
+        {
+          "name": "DOCUMENT_CONTEXT_SOURCE_READER",
+          "line": 46,
+          "isDefault": false
+        },
+        {
+          "name": "DiscussionContextSourceError",
+          "line": 50,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "constructor",
+          "callee": "super",
+          "lineNumber": 54
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 3,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/discussions/discussion.types.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 206,
+      "nonEmptyLines": 183,
+      "classes": [
+        {
+          "name": "DiscussionContextIntegrityError",
+          "startLine": 188,
+          "endLine": 197,
+          "methods": [
+            "constructor"
+          ],
+          "properties": [
+            "code"
+          ]
+        },
+        {
+          "name": "DiscussionMessageIntegrityError",
+          "startLine": 199,
+          "endLine": 206,
+          "methods": [
+            "constructor"
+          ],
+          "properties": [
+            "code"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "Discussion",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "DiscussionMessage",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "DiscussionMessageStatus",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "DiscussionRole",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "DiscussionFrozenContext",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "FrozenContextItem",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "FrozenContextV1",
+          "line": 11,
+          "isDefault": false
+        },
+        {
+          "name": "DISCUSSION_REPOSITORY",
+          "line": 180,
+          "isDefault": false
+        },
+        {
+          "name": "DISCUSSION_MESSAGE_REPOSITORY",
+          "line": 181,
+          "isDefault": false
+        },
+        {
+          "name": "DISCUSSION_EXTRACTION_SOURCE_READER",
+          "line": 184,
+          "isDefault": false
+        },
+        {
+          "name": "DiscussionContextIntegrityError",
+          "line": 188,
+          "isDefault": false
+        },
+        {
+          "name": "DiscussionMessageIntegrityError",
+          "line": 199,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "constructor",
+          "callee": "super",
+          "lineNumber": 192
+        },
+        {
+          "caller": "constructor",
+          "callee": "super",
+          "lineNumber": 203
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 12,
+        "functionCount": 0,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "backend/src/discussions/discussions.controller.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 80,
+      "nonEmptyLines": 72,
+      "classes": [
+        {
+          "name": "DiscussionsController",
+          "startLine": 20,
+          "endLine": 80,
+          "methods": [
+            "constructor",
+            "create",
+            "list",
+            "get",
+            "recordOpen",
+            "sendMessage",
+            "generateTitle",
+            "delete"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "DiscussionsController",
+          "line": 19,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "create",
+          "callee": "Param",
+          "lineNumber": 25
+        },
+        {
+          "caller": "create",
+          "callee": "Body",
+          "lineNumber": 26
+        },
+        {
+          "caller": "create",
+          "callee": "this.discussions.create",
+          "lineNumber": 28
+        },
+        {
+          "caller": "list",
+          "callee": "Param",
+          "lineNumber": 32
+        },
+        {
+          "caller": "list",
+          "callee": "this.discussions.list",
+          "lineNumber": 33
+        },
+        {
+          "caller": "get",
+          "callee": "Param",
+          "lineNumber": 38
+        },
+        {
+          "caller": "get",
+          "callee": "Param",
+          "lineNumber": 39
+        },
+        {
+          "caller": "get",
+          "callee": "this.discussions.get",
+          "lineNumber": 41
+        },
+        {
+          "caller": "recordOpen",
+          "callee": "Param",
+          "lineNumber": 47
+        },
+        {
+          "caller": "recordOpen",
+          "callee": "Param",
+          "lineNumber": 48
+        },
+        {
+          "caller": "recordOpen",
+          "callee": "this.discussions.recordOpen",
+          "lineNumber": 50
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "Param",
+          "lineNumber": 56
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "Param",
+          "lineNumber": 57
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "Body",
+          "lineNumber": 58
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.discussions.sendMessage",
+          "lineNumber": 60
+        },
+        {
+          "caller": "generateTitle",
+          "callee": "Param",
+          "lineNumber": 66
+        },
+        {
+          "caller": "generateTitle",
+          "callee": "Param",
+          "lineNumber": 67
+        },
+        {
+          "caller": "generateTitle",
+          "callee": "this.discussions.generateTitle",
+          "lineNumber": 69
+        },
+        {
+          "caller": "delete",
+          "callee": "Param",
+          "lineNumber": 75
+        },
+        {
+          "caller": "delete",
+          "callee": "Param",
+          "lineNumber": 76
+        },
+        {
+          "caller": "delete",
+          "callee": "this.discussions.delete",
+          "lineNumber": 78
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/discussions/discussions.module.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 36,
+      "nonEmptyLines": 35,
+      "classes": [
+        {
+          "name": "DiscussionsModule",
+          "startLine": 36,
+          "endLine": 36,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "DiscussionsModule",
+          "line": 15,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 8,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/discussions/discussions.service.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 1481,
+      "nonEmptyLines": 1366,
+      "classes": [
+        {
+          "name": "FakeDocumentContextSourceReader",
+          "startLine": 34,
+          "endLine": 48,
+          "methods": [
+            "readContextSource"
+          ],
+          "properties": [
+            "results"
+          ]
+        },
+        {
+          "name": "ControllableModelClient",
+          "startLine": 50,
+          "endLine": 90,
+          "methods": [
+            "generateAnswer",
+            "generateTitle"
+          ],
+          "properties": [
+            "answerInputs",
+            "titleInputs",
+            "answer",
+            "title",
+            "answerFailure",
+            "answerAttribution",
+            "titleFailure",
+            "titleGeneration"
+          ]
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "readContextSource",
+          "callee": "this.results.get",
+          "lineNumber": 42
+        },
+        {
+          "caller": "generateAnswer",
+          "callee": "this.answerInputs.push",
+          "lineNumber": 61
+        },
+        {
+          "caller": "generateAnswer",
+          "callee": "Promise.reject",
+          "lineNumber": 64
+        },
+        {
+          "caller": "generateAnswer",
+          "callee": "Promise.resolve",
+          "lineNumber": 67
+        },
+        {
+          "caller": "generateTitle",
+          "callee": "this.titleInputs.push",
+          "lineNumber": 75
+        },
+        {
+          "caller": "generateTitle",
+          "callee": "Promise.reject",
+          "lineNumber": 78
+        },
+        {
+          "caller": "generateTitle",
+          "callee": "Promise.resolve",
+          "lineNumber": 85
+        },
+        {
+          "caller": "createProject",
+          "callee": "projects.create",
+          "lineNumber": 154
+        },
+        {
+          "caller": "createDiscussion",
+          "callee": "service.create",
+          "lineNumber": 175
+        }
+      ],
+      "metrics": {
+        "importCount": 14,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 2
+      }
+    },
+    {
+      "path": "backend/src/discussions/discussions.service.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 1067,
+      "nonEmptyLines": 924,
+      "classes": [
+        {
+          "name": "DiscussionsService",
+          "startLine": 74,
+          "endLine": 1067,
+          "methods": [
+            "constructor",
+            "create",
+            "list",
+            "get",
+            "recordOpen",
+            "sendMessage",
+            "generateTitle",
+            "delete",
+            "generateAndPersistTitle",
+            "generateAnswer",
+            "getPersisted",
+            "toDetails",
+            "toPublicMessage",
+            "toSummary",
+            "messageText",
+            "idempotencyKey",
+            "contextSourceIds",
+            "webSearch",
+            "requiredText",
+            "deduplicate",
+            "creationRequestFingerprint",
+            "findCreationReplay",
+            "rejectUnknownFields",
+            "throwIfInvalid",
+            "assertWebSearchAvailable",
+            "generatedAttribution",
+            "validatedCitation",
+            "prepareModelInput",
+            "snapshotPersistenceFailed",
+            "toModelMessages",
+            "assertIdempotentTurn",
+            "assertNoUnansweredTurn",
+            "assertCompletedExchange",
+            "generatedTitle",
+            "latestTimestamp",
+            "nextTimestamp",
+            "notFound"
+          ],
+          "properties": [
+            "titleGenerations"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "DiscussionsService",
+          "line": 73,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 82
+        },
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 84
+        },
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 86
+        },
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 88
+        },
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 90
+        },
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 93
+        },
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 96
+        },
+        {
+          "caller": "create",
+          "callee": "this.projects.get",
+          "lineNumber": 104
+        },
+        {
+          "caller": "create",
+          "callee": "this.rejectUnknownFields",
+          "lineNumber": 107
+        },
+        {
+          "caller": "create",
+          "callee": "this.requiredText",
+          "lineNumber": 119
+        },
+        {
+          "caller": "create",
+          "callee": "this.messageText",
+          "lineNumber": 124
+        },
+        {
+          "caller": "create",
+          "callee": "this.idempotencyKey",
+          "lineNumber": 129
+        },
+        {
+          "caller": "create",
+          "callee": "this.contextSourceIds",
+          "lineNumber": 133
+        },
+        {
+          "caller": "create",
+          "callee": "this.contextSourceIds",
+          "lineNumber": 138
+        },
+        {
+          "caller": "create",
+          "callee": "this.webSearch",
+          "lineNumber": 143
+        },
+        {
+          "caller": "create",
+          "callee": "this.throwIfInvalid",
+          "lineNumber": 150
+        },
+        {
+          "caller": "create",
+          "callee": "this.assertWebSearchAvailable",
+          "lineNumber": 151
+        },
+        {
+          "caller": "create",
+          "callee": "this.deduplicate",
+          "lineNumber": 158
+        },
+        {
+          "caller": "create",
+          "callee": "this.deduplicate",
+          "lineNumber": 159
+        },
+        {
+          "caller": "create",
+          "callee": "this.creationRequestFingerprint",
+          "lineNumber": 161
+        },
+        {
+          "caller": "create",
+          "callee": "this.findCreationReplay",
+          "lineNumber": 165
+        },
+        {
+          "caller": "create",
+          "callee": "this.contextAssembler.assemble",
+          "lineNumber": 179
+        },
+        {
+          "caller": "create",
+          "callee": "this.prepareModelInput",
+          "lineNumber": 193
+        },
+        {
+          "caller": "create",
+          "callee": "new Date().toISOString",
+          "lineNumber": 199
+        },
+        {
+          "caller": "create",
+          "callee": "randomUUID",
+          "lineNumber": 201
+        },
+        {
+          "caller": "create",
+          "callee": "randomUUID",
+          "lineNumber": 215
+        },
+        {
+          "caller": "create",
+          "callee": "randomUUID",
+          "lineNumber": 221
+        },
+        {
+          "caller": "create",
+          "callee": "this.discussions.createWithFirstMessage",
+          "lineNumber": 226
+        },
+        {
+          "caller": "create",
+          "callee": "this.findCreationReplay",
+          "lineNumber": 228
+        },
+        {
+          "caller": "create",
+          "callee": "this.snapshotPersistenceFailed",
+          "lineNumber": 239
+        },
+        {
+          "caller": "create",
+          "callee": "this.generateAnswer",
+          "lineNumber": 242
+        },
+        {
+          "caller": "create",
+          "callee": "this.get",
+          "lineNumber": 244
+        },
+        {
+          "caller": "list",
+          "callee": "this.projects.get",
+          "lineNumber": 248
+        },
+        {
+          "caller": "list",
+          "callee": "this.discussions\n      .findAllByProjectId(projectId)\n      .map",
+          "lineNumber": 250
+        },
+        {
+          "caller": "list",
+          "callee": "this.discussions\n      .findAllByProjectId",
+          "lineNumber": 250
+        },
+        {
+          "caller": "list",
+          "callee": "this.toSummary",
+          "lineNumber": 252
+        },
+        {
+          "caller": "get",
+          "callee": "this.getPersisted",
+          "lineNumber": 256
+        },
+        {
+          "caller": "get",
+          "callee": "this.toDetails",
+          "lineNumber": 258
+        },
+        {
+          "caller": "get",
+          "callee": "this.messages.findAllMessages",
+          "lineNumber": 260
+        },
+        {
+          "caller": "recordOpen",
+          "callee": "this.getPersisted",
+          "lineNumber": 265
+        },
+        {
+          "caller": "recordOpen",
+          "callee": "this.nextTimestamp",
+          "lineNumber": 266
+        },
+        {
+          "caller": "recordOpen",
+          "callee": "this.discussions.updateActivity",
+          "lineNumber": 267
+        },
+        {
+          "caller": "recordOpen",
+          "callee": "this.notFound",
+          "lineNumber": 274
+        },
+        {
+          "caller": "recordOpen",
+          "callee": "this.toDetails",
+          "lineNumber": 277
+        },
+        {
+          "caller": "recordOpen",
+          "callee": "this.messages.findAllMessages",
+          "lineNumber": 279
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.getPersisted",
+          "lineNumber": 288
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.rejectUnknownFields",
+          "lineNumber": 290
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.messageText",
+          "lineNumber": 295
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.idempotencyKey",
+          "lineNumber": 296
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.webSearch",
+          "lineNumber": 297
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.throwIfInvalid",
+          "lineNumber": 298
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.assertWebSearchAvailable",
+          "lineNumber": 299
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.messages.findAllMessages",
+          "lineNumber": 305
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.messages.findMessageByRequestId",
+          "lineNumber": 309
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.assertIdempotentTurn",
+          "lineNumber": 316
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.get",
+          "lineNumber": 319
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.get",
+          "lineNumber": 323
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.prepareModelInput",
+          "lineNumber": 326
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.toModelMessages",
+          "lineNumber": 328
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.nextTimestamp",
+          "lineNumber": 332
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.messages.updateMessageStatus",
+          "lineNumber": 333
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.notFound",
+          "lineNumber": 342
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.generateAnswer",
+          "lineNumber": 345
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.get",
+          "lineNumber": 346
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.assertNoUnansweredTurn",
+          "lineNumber": 349
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.prepareModelInput",
+          "lineNumber": 350
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.toModelMessages",
+          "lineNumber": 352
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.nextTimestamp",
+          "lineNumber": 356
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.latestTimestamp",
+          "lineNumber": 357
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "randomUUID",
+          "lineNumber": 360
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.messages.appendMessage",
+          "lineNumber": 371
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.notFound",
+          "lineNumber": 378
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.messages.findMessageByRequestId",
+          "lineNumber": 381
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.assertIdempotentTurn",
+          "lineNumber": 391
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.get",
+          "lineNumber": 392
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.generateAnswer",
+          "lineNumber": 395
+        },
+        {
+          "caller": "sendMessage",
+          "callee": "this.get",
+          "lineNumber": 405
+        },
+        {
+          "caller": "generateTitle",
+          "callee": "this.getPersisted",
+          "lineNumber": 412
+        },
+        {
+          "caller": "generateTitle",
+          "callee": "this.get",
+          "lineNumber": 415
+        },
+        {
+          "caller": "generateTitle",
+          "callee": "this.messages.findAllMessages",
+          "lineNumber": 418
+        },
+        {
+          "caller": "generateTitle",
+          "callee": "this.assertCompletedExchange",
+          "lineNumber": 419
+        },
+        {
+          "caller": "generateTitle",
+          "callee": "this.titleGenerations.get",
+          "lineNumber": 422
+        },
+        {
+          "caller": "generateTitle",
+          "callee": "this.generateAndPersistTitle",
+          "lineNumber": 428
+        },
+        {
+          "caller": "generateTitle",
+          "callee": "this.titleGenerations.set",
+          "lineNumber": 429
+        },
+        {
+          "caller": "generateTitle",
+          "callee": "this.titleGenerations.get",
+          "lineNumber": 434
+        },
+        {
+          "caller": "generateTitle",
+          "callee": "this.titleGenerations.delete",
+          "lineNumber": 435
+        },
+        {
+          "caller": "delete",
+          "callee": "this.getPersisted",
+          "lineNumber": 441
+        },
+        {
+          "caller": "delete",
+          "callee": "this.nextTimestamp",
+          "lineNumber": 442
+        },
+        {
+          "caller": "delete",
+          "callee": "this.latestTimestamp",
+          "lineNumber": 443
+        },
+        {
+          "caller": "delete",
+          "callee": "this.transactions.run",
+          "lineNumber": 446
+        },
+        {
+          "caller": "delete",
+          "callee": "this.discussions.softDelete",
+          "lineNumber": 447
+        },
+        {
+          "caller": "delete",
+          "callee": "this.notFound",
+          "lineNumber": 448
+        },
+        {
+          "caller": "delete",
+          "callee": "this.bubbleProvenance.markSourceDiscussionDeleted",
+          "lineNumber": 451
+        },
+        {
+          "caller": "generateAndPersistTitle",
+          "callee": "this.modelClient.generateTitle",
+          "lineNumber": 466
+        },
+        {
+          "caller": "generateAndPersistTitle",
+          "callee": "this.toModelMessages",
+          "lineNumber": 467
+        },
+        {
+          "caller": "generateAndPersistTitle",
+          "callee": "messages.filter",
+          "lineNumber": 468
+        },
+        {
+          "caller": "generateAndPersistTitle",
+          "callee": "this.generatedTitle",
+          "lineNumber": 471
+        },
+        {
+          "caller": "generateAndPersistTitle",
+          "callee": "this.nextTimestamp",
+          "lineNumber": 481
+        },
+        {
+          "caller": "generateAndPersistTitle",
+          "callee": "this.discussions.updateTitle",
+          "lineNumber": 482
+        },
+        {
+          "caller": "generateAndPersistTitle",
+          "callee": "this.toDetails",
+          "lineNumber": 490
+        },
+        {
+          "caller": "generateAndPersistTitle",
+          "callee": "this.messages.findAllMessages",
+          "lineNumber": 492
+        },
+        {
+          "caller": "generateAndPersistTitle",
+          "callee": "this.discussions.findByProjectAndId",
+          "lineNumber": 496
+        },
+        {
+          "caller": "generateAndPersistTitle",
+          "callee": "this.toDetails",
+          "lineNumber": 502
+        },
+        {
+          "caller": "generateAndPersistTitle",
+          "callee": "this.messages.findAllMessages",
+          "lineNumber": 504
+        },
+        {
+          "caller": "generateAndPersistTitle",
+          "callee": "this.notFound",
+          "lineNumber": 508
+        },
+        {
+          "caller": "generateAnswer",
+          "callee": "this.modelClient.generateAnswer",
+          "lineNumber": 517
+        },
+        {
+          "caller": "generateAnswer",
+          "callee": "generation.content?.trim",
+          "lineNumber": 518
+        },
+        {
+          "caller": "generateAnswer",
+          "callee": "this.generatedAttribution",
+          "lineNumber": 524
+        },
+        {
+          "caller": "generateAnswer",
+          "callee": "this.nextTimestamp",
+          "lineNumber": 529
+        },
+        {
+          "caller": "generateAnswer",
+          "callee": "this.latestTimestamp",
+          "lineNumber": 530
+        },
+        {
+          "caller": "generateAnswer",
+          "callee": "this.messages.completeMessageGeneration",
+          "lineNumber": 536
+        },
+        {
+          "caller": "generateAnswer",
+          "callee": "randomUUID",
+          "lineNumber": 541
+        },
+        {
+          "caller": "generateAnswer",
+          "callee": "this.nextTimestamp",
+          "lineNumber": 557
+        },
+        {
+          "caller": "generateAnswer",
+          "callee": "this.latestTimestamp",
+          "lineNumber": 558
+        },
+        {
+          "caller": "generateAnswer",
+          "callee": "this.messages.updateMessageStatus",
+          "lineNumber": 560
+        },
+        {
+          "caller": "getPersisted",
+          "callee": "this.projects.get",
+          "lineNumber": 586
+        },
+        {
+          "caller": "getPersisted",
+          "callee": "this.discussions.findByProjectAndId",
+          "lineNumber": 587
+        },
+        {
+          "caller": "getPersisted",
+          "callee": "this.notFound",
+          "lineNumber": 593
+        },
+        {
+          "caller": "toDetails",
+          "callee": "messages.map",
+          "lineNumber": 611
+        },
+        {
+          "caller": "toDetails",
+          "callee": "this.toPublicMessage",
+          "lineNumber": 611
+        },
+        {
+          "caller": "messageText",
+          "callee": "this.requiredText",
+          "lineNumber": 643
+        },
+        {
+          "caller": "idempotencyKey",
+          "callee": "this.requiredText",
+          "lineNumber": 658
+        },
+        {
+          "caller": "contextSourceIds",
+          "callee": "Array.isArray",
+          "lineNumber": 675
+        },
+        {
+          "caller": "contextSourceIds",
+          "callee": "sourceLabel.toLowerCase",
+          "lineNumber": 682
+        },
+        {
+          "caller": "contextSourceIds",
+          "callee": "value.forEach",
+          "lineNumber": 689
+        },
+        {
+          "caller": "contextSourceIds",
+          "callee": "sourceId.trim",
+          "lineNumber": 692
+        },
+        {
+          "caller": "contextSourceIds",
+          "callee": "sourceId.trim",
+          "lineNumber": 698
+        },
+        {
+          "caller": "contextSourceIds",
+          "callee": "sourceIds.push",
+          "lineNumber": 707
+        },
+        {
+          "caller": "requiredText",
+          "callee": "value.trim",
+          "lineNumber": 734
+        },
+        {
+          "caller": "requiredText",
+          "callee": "value.trim",
+          "lineNumber": 744
+        },
+        {
+          "caller": "creationRequestFingerprint",
+          "callee": "createHash('sha256')\n      .update(\n        JSON.stringify({\n          first_prompt: firstPrompt,\n          bubble_ids: selection.bubble_ids,\n          document_ids: selection.document_ids,\n        }),\n      )\n      .digest",
+          "lineNumber": 755
+        },
+        {
+          "caller": "creationRequestFingerprint",
+          "callee": "createHash('sha256')\n      .update",
+          "lineNumber": 755
+        },
+        {
+          "caller": "creationRequestFingerprint",
+          "callee": "createHash",
+          "lineNumber": 755
+        },
+        {
+          "caller": "creationRequestFingerprint",
+          "callee": "JSON.stringify",
+          "lineNumber": 757
+        },
+        {
+          "caller": "findCreationReplay",
+          "callee": "this.discussions.findByProjectAndCreationIdempotencyKey",
+          "lineNumber": 775
+        },
+        {
+          "caller": "findCreationReplay",
+          "callee": "this.snapshotPersistenceFailed",
+          "lineNumber": 780
+        },
+        {
+          "caller": "findCreationReplay",
+          "callee": "this.messages.findAllMessages",
+          "lineNumber": 787
+        },
+        {
+          "caller": "findCreationReplay",
+          "callee": "existingMessages.find",
+          "lineNumber": 791
+        },
+        {
+          "caller": "findCreationReplay",
+          "callee": "this.toDetails",
+          "lineNumber": 806
+        },
+        {
+          "caller": "rejectUnknownFields",
+          "callee": "Array.isArray",
+          "lineNumber": 814
+        },
+        {
+          "caller": "rejectUnknownFields",
+          "callee": "Object.keys",
+          "lineNumber": 818
+        },
+        {
+          "caller": "rejectUnknownFields",
+          "callee": "allowedFields.includes",
+          "lineNumber": 819
+        },
+        {
+          "caller": "throwIfInvalid",
+          "callee": "Object.keys",
+          "lineNumber": 826
+        },
+        {
+          "caller": "generatedAttribution",
+          "callee": "Array.isArray",
+          "lineNumber": 867
+        },
+        {
+          "caller": "generatedAttribution",
+          "callee": "(rawCitations ?? []).map",
+          "lineNumber": 871
+        },
+        {
+          "caller": "generatedAttribution",
+          "callee": "this.validatedCitation",
+          "lineNumber": 872
+        },
+        {
+          "caller": "generatedAttribution",
+          "callee": "JSON.stringify",
+          "lineNumber": 874
+        },
+        {
+          "caller": "generatedAttribution",
+          "callee": "Buffer.byteLength",
+          "lineNumber": 877
+        },
+        {
+          "caller": "validatedCitation",
+          "callee": "Array.isArray",
+          "lineNumber": 889
+        },
+        {
+          "caller": "validatedCitation",
+          "callee": "Object.keys(citation).every",
+          "lineNumber": 895
+        },
+        {
+          "caller": "validatedCitation",
+          "callee": "Object.keys",
+          "lineNumber": 895
+        },
+        {
+          "caller": "validatedCitation",
+          "callee": "['url', 'title', 'snippet'].includes",
+          "lineNumber": 896
+        },
+        {
+          "caller": "validatedCitation",
+          "callee": "url.trim",
+          "lineNumber": 902
+        },
+        {
+          "caller": "validatedCitation",
+          "callee": "title.trim",
+          "lineNumber": 904
+        },
+        {
+          "caller": "prepareModelInput",
+          "callee": "this.contextFormatter.format",
+          "lineNumber": 922
+        },
+        {
+          "caller": "prepareModelInput",
+          "callee": "this.modelInputBudget.evaluateAnswer",
+          "lineNumber": 928
+        },
+        {
+          "caller": "toModelMessages",
+          "callee": "messages.map",
+          "lineNumber": 958
+        },
+        {
+          "caller": "assertNoUnansweredTurn",
+          "callee": "messages.find",
+          "lineNumber": 987
+        },
+        {
+          "caller": "assertCompletedExchange",
+          "callee": "messages.findIndex",
+          "lineNumber": 1013
+        },
+        {
+          "caller": "assertCompletedExchange",
+          "callee": "messages\n        .slice(firstCompletedUserIndex + 1)\n        .some",
+          "lineNumber": 1018
+        },
+        {
+          "caller": "assertCompletedExchange",
+          "callee": "messages\n        .slice",
+          "lineNumber": 1018
+        },
+        {
+          "caller": "generatedTitle",
+          "callee": "value.trim().replace",
+          "lineNumber": 1037
+        },
+        {
+          "caller": "generatedTitle",
+          "callee": "value.trim",
+          "lineNumber": 1037
+        },
+        {
+          "caller": "latestTimestamp",
+          "callee": "timestamps.reduce",
+          "lineNumber": 1047
+        },
+        {
+          "caller": "latestTimestamp",
+          "callee": "new Date(candidate).getTime",
+          "lineNumber": 1048
+        },
+        {
+          "caller": "latestTimestamp",
+          "callee": "new Date(latest).getTime",
+          "lineNumber": 1048
+        },
+        {
+          "caller": "nextTimestamp",
+          "callee": "Date.now",
+          "lineNumber": 1055
+        },
+        {
+          "caller": "nextTimestamp",
+          "callee": "new Date(previousTimestamp).getTime",
+          "lineNumber": 1056
+        },
+        {
+          "caller": "nextTimestamp",
+          "callee": "new Date(Math.max(currentTime, previousTime + 1)).toISOString",
+          "lineNumber": 1058
+        },
+        {
+          "caller": "nextTimestamp",
+          "callee": "Math.max",
+          "lineNumber": 1058
+        }
+      ],
+      "metrics": {
+        "importCount": 10,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/discussions/sqlite-discussion.repository.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 874,
+      "nonEmptyLines": 812,
+      "callGraph": [
+        {
+          "caller": "createProject",
+          "callee": "projects.create",
+          "lineNumber": 43
+        },
+        {
+          "caller": "versionedDiscussion",
+          "callee": "'a'.repeat",
+          "lineNumber": 133
+        }
+      ],
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/discussions/sqlite-discussion.repository.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 1186,
+      "nonEmptyLines": 1063,
+      "classes": [
+        {
+          "name": "SqliteDiscussionRepository",
+          "startLine": 81,
+          "endLine": 1186,
+          "methods": [
+            "constructor",
+            "createWithFirstMessage",
+            "findAllByProjectId",
+            "findByProjectAndId",
+            "findByProjectAndCreationIdempotencyKey",
+            "updateTitle",
+            "updateActivity",
+            "softDelete",
+            "appendMessage",
+            "findAllMessages",
+            "readExtractionSources",
+            "findMessageByRequestId",
+            "completeMessageGeneration",
+            "updateMessageStatus",
+            "insertDiscussion",
+            "insertContextItems",
+            "finalizeContextMetadata",
+            "insertMessage",
+            "findMessageById",
+            "readSelectedExtractionMessages",
+            "readSelectedExtractionContextItems",
+            "validateExtractionContextItem",
+            "toDiscussion",
+            "toDiscussionBase",
+            "parseLegacyFrozenContext",
+            "loadContextItems",
+            "validateContextItems",
+            "isRecord",
+            "isNonEmptyString",
+            "isPositiveInteger",
+            "isIsoTimestamp",
+            "isRequestFingerprint",
+            "toMessage",
+            "serializeCitations",
+            "parseCitations"
+          ],
+          "properties": [
+            "database"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "SqliteDiscussionRepository",
+          "line": 80,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "createWithFirstMessage",
+          "callee": "this.database.exec",
+          "lineNumber": 108
+        },
+        {
+          "caller": "createWithFirstMessage",
+          "callee": "this.insertDiscussion",
+          "lineNumber": 111
+        },
+        {
+          "caller": "createWithFirstMessage",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 116
+        },
+        {
+          "caller": "createWithFirstMessage",
+          "callee": "this.isRequestFingerprint",
+          "lineNumber": 118
+        },
+        {
+          "caller": "createWithFirstMessage",
+          "callee": "this.validateContextItems",
+          "lineNumber": 123
+        },
+        {
+          "caller": "createWithFirstMessage",
+          "callee": "this.insertContextItems",
+          "lineNumber": 129
+        },
+        {
+          "caller": "createWithFirstMessage",
+          "callee": "this.finalizeContextMetadata",
+          "lineNumber": 130
+        },
+        {
+          "caller": "createWithFirstMessage",
+          "callee": "this.insertMessage",
+          "lineNumber": 133
+        },
+        {
+          "caller": "createWithFirstMessage",
+          "callee": "this.database.exec",
+          "lineNumber": 134
+        },
+        {
+          "caller": "createWithFirstMessage",
+          "callee": "this.database.exec",
+          "lineNumber": 136
+        },
+        {
+          "caller": "findAllByProjectId",
+          "callee": "this.database\n      .prepare(\n        `\n          SELECT *\n          FROM discussions\n          WHERE project_id = ? AND deleted_at IS NULL\n          ORDER BY last_activity_at DESC, created_at DESC, id ASC\n        `,\n      )\n      .all",
+          "lineNumber": 144
+        },
+        {
+          "caller": "findAllByProjectId",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 144
+        },
+        {
+          "caller": "findAllByProjectId",
+          "callee": "rows.map",
+          "lineNumber": 155
+        },
+        {
+          "caller": "findAllByProjectId",
+          "callee": "this.toDiscussion",
+          "lineNumber": 155
+        },
+        {
+          "caller": "findByProjectAndId",
+          "callee": "this.database\n      .prepare(\n        `\n          SELECT *\n          FROM discussions\n          WHERE project_id = ? AND id = ? AND deleted_at IS NULL\n        `,\n      )\n      .get",
+          "lineNumber": 162
+        },
+        {
+          "caller": "findByProjectAndId",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 162
+        },
+        {
+          "caller": "findByProjectAndId",
+          "callee": "this.toDiscussion",
+          "lineNumber": 172
+        },
+        {
+          "caller": "findByProjectAndCreationIdempotencyKey",
+          "callee": "this.database\n      .prepare(\n        `\n          SELECT *\n          FROM discussions\n          WHERE\n            project_id = ?\n            AND creation_idempotency_key = ?\n            AND deleted_at IS NULL\n        `,\n      )\n      .get",
+          "lineNumber": 179
+        },
+        {
+          "caller": "findByProjectAndCreationIdempotencyKey",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 179
+        },
+        {
+          "caller": "findByProjectAndCreationIdempotencyKey",
+          "callee": "this.toDiscussion",
+          "lineNumber": 192
+        },
+        {
+          "caller": "updateTitle",
+          "callee": "this.database\n      .prepare(\n        `\n          UPDATE discussions\n          SET title = ?, updated_at = ?\n          WHERE project_id = ?\n            AND id = ?\n            AND title IS NULL\n            AND deleted_at IS NULL\n        `,\n      )\n      .run",
+          "lineNumber": 201
+        },
+        {
+          "caller": "updateTitle",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 201
+        },
+        {
+          "caller": "updateTitle",
+          "callee": "this.findByProjectAndId",
+          "lineNumber": 216
+        },
+        {
+          "caller": "updateActivity",
+          "callee": "this.database\n      .prepare(\n        `\n          UPDATE discussions\n          SET last_activity_at = ?\n          WHERE project_id = ? AND id = ? AND deleted_at IS NULL\n        `,\n      )\n      .run",
+          "lineNumber": 224
+        },
+        {
+          "caller": "updateActivity",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 224
+        },
+        {
+          "caller": "updateActivity",
+          "callee": "this.findByProjectAndId",
+          "lineNumber": 236
+        },
+        {
+          "caller": "softDelete",
+          "callee": "this.database\n      .prepare(\n        `\n          UPDATE discussions\n          SET deleted_at = ?, updated_at = ?\n          WHERE project_id = ? AND id = ? AND deleted_at IS NULL\n        `,\n      )\n      .run",
+          "lineNumber": 244
+        },
+        {
+          "caller": "softDelete",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 244
+        },
+        {
+          "caller": "appendMessage",
+          "callee": "this.database.exec",
+          "lineNumber": 262
+        },
+        {
+          "caller": "appendMessage",
+          "callee": "this.database\n        .prepare(\n          `\n            SELECT id\n            FROM discussions\n            WHERE project_id = ? AND id = ? AND deleted_at IS NULL\n          `,\n        )\n        .get",
+          "lineNumber": 265
+        },
+        {
+          "caller": "appendMessage",
+          "callee": "this.database\n        .prepare",
+          "lineNumber": 265
+        },
+        {
+          "caller": "appendMessage",
+          "callee": "this.database.exec",
+          "lineNumber": 276
+        },
+        {
+          "caller": "appendMessage",
+          "callee": "this.insertMessage",
+          "lineNumber": 280
+        },
+        {
+          "caller": "appendMessage",
+          "callee": "this.database\n        .prepare(\n          `\n            UPDATE discussions\n            SET updated_at = ?, last_activity_at = ?\n            WHERE id = ?\n          `,\n        )\n        .run",
+          "lineNumber": 281
+        },
+        {
+          "caller": "appendMessage",
+          "callee": "this.database\n        .prepare",
+          "lineNumber": 281
+        },
+        {
+          "caller": "appendMessage",
+          "callee": "this.database.exec",
+          "lineNumber": 290
+        },
+        {
+          "caller": "appendMessage",
+          "callee": "this.database.exec",
+          "lineNumber": 293
+        },
+        {
+          "caller": "findAllMessages",
+          "callee": "this.database\n      .prepare(\n        `\n          SELECT message.*\n          FROM discussion_messages AS message\n          INNER JOIN discussions AS discussion\n            ON discussion.id = message.discussion_id\n          WHERE\n            discussion.project_id = ?\n            AND discussion.id = ?\n            AND discussion.deleted_at IS NULL\n          ORDER BY message.created_at ASC, message.id ASC\n        `,\n      )\n      .all",
+          "lineNumber": 302
+        },
+        {
+          "caller": "findAllMessages",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 302
+        },
+        {
+          "caller": "findAllMessages",
+          "callee": "rows.map",
+          "lineNumber": 318
+        },
+        {
+          "caller": "findAllMessages",
+          "callee": "this.toMessage",
+          "lineNumber": 318
+        },
+        {
+          "caller": "readExtractionSources",
+          "callee": "this.database\n      .prepare(\n        `\n          SELECT id, project_id, title\n          FROM discussions\n          WHERE\n            id = ?\n            AND project_id = ?\n            AND deleted_at IS NULL\n        `,\n      )\n      .get",
+          "lineNumber": 326
+        },
+        {
+          "caller": "readExtractionSources",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 326
+        },
+        {
+          "caller": "readExtractionSources",
+          "callee": "this.readSelectedExtractionMessages",
+          "lineNumber": 348
+        },
+        {
+          "caller": "readExtractionSources",
+          "callee": "this.readSelectedExtractionContextItems",
+          "lineNumber": 354
+        },
+        {
+          "caller": "readExtractionSources",
+          "callee": "discussion.title.trim",
+          "lineNumber": 369
+        },
+        {
+          "caller": "findMessageByRequestId",
+          "callee": "this.database\n      .prepare(\n        `\n          SELECT message.*\n          FROM discussion_messages AS message\n          INNER JOIN discussions AS discussion\n            ON discussion.id = message.discussion_id\n          WHERE\n            discussion.project_id = ?\n            AND discussion.id = ?\n            AND discussion.deleted_at IS NULL\n            AND message.request_id = ?\n        `,\n      )\n      .get",
+          "lineNumber": 382
+        },
+        {
+          "caller": "findMessageByRequestId",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 382
+        },
+        {
+          "caller": "findMessageByRequestId",
+          "callee": "this.toMessage",
+          "lineNumber": 399
+        },
+        {
+          "caller": "completeMessageGeneration",
+          "callee": "this.database.exec",
+          "lineNumber": 419
+        },
+        {
+          "caller": "completeMessageGeneration",
+          "callee": "this.database\n        .prepare(\n          `\n            UPDATE discussion_messages\n            SET status = 'completed'\n            WHERE\n              id = ?\n              AND discussion_id = ?\n              AND role = 'user'\n              AND status IN ('pending', 'failed')\n              AND EXISTS (\n                SELECT 1\n                FROM discussions\n                WHERE\n                  id = discussion_messages.discussion_id\n                  AND project_id = ?\n                  AND deleted_at IS NULL\n              )\n          `,\n        )\n        .run",
+          "lineNumber": 422
+        },
+        {
+          "caller": "completeMessageGeneration",
+          "callee": "this.database\n        .prepare",
+          "lineNumber": 422
+        },
+        {
+          "caller": "completeMessageGeneration",
+          "callee": "this.database.exec",
+          "lineNumber": 445
+        },
+        {
+          "caller": "completeMessageGeneration",
+          "callee": "this.insertMessage",
+          "lineNumber": 449
+        },
+        {
+          "caller": "completeMessageGeneration",
+          "callee": "this.database\n        .prepare(\n          `\n            UPDATE discussions\n            SET updated_at = ?, last_activity_at = ?\n            WHERE id = ?\n          `,\n        )\n        .run",
+          "lineNumber": 450
+        },
+        {
+          "caller": "completeMessageGeneration",
+          "callee": "this.database\n        .prepare",
+          "lineNumber": 450
+        },
+        {
+          "caller": "completeMessageGeneration",
+          "callee": "this.database.exec",
+          "lineNumber": 459
+        },
+        {
+          "caller": "completeMessageGeneration",
+          "callee": "this.database.exec",
+          "lineNumber": 461
+        },
+        {
+          "caller": "updateMessageStatus",
+          "callee": "this.database.exec",
+          "lineNumber": 475
+        },
+        {
+          "caller": "updateMessageStatus",
+          "callee": "this.database\n        .prepare(\n          `\n            UPDATE discussion_messages\n            SET status = ?\n            WHERE\n              id = ?\n              AND discussion_id = ?\n              AND EXISTS (\n                SELECT 1\n                FROM discussions\n                WHERE\n                  id = discussion_messages.discussion_id\n                  AND project_id = ?\n                  AND deleted_at IS NULL\n              )\n          `,\n        )\n        .run",
+          "lineNumber": 478
+        },
+        {
+          "caller": "updateMessageStatus",
+          "callee": "this.database\n        .prepare",
+          "lineNumber": 478
+        },
+        {
+          "caller": "updateMessageStatus",
+          "callee": "this.database.exec",
+          "lineNumber": 499
+        },
+        {
+          "caller": "updateMessageStatus",
+          "callee": "this.database\n        .prepare(\n          `\n            UPDATE discussions\n            SET updated_at = ?\n            WHERE id = ?\n          `,\n        )\n        .run",
+          "lineNumber": 503
+        },
+        {
+          "caller": "updateMessageStatus",
+          "callee": "this.database\n        .prepare",
+          "lineNumber": 503
+        },
+        {
+          "caller": "updateMessageStatus",
+          "callee": "this.database.exec",
+          "lineNumber": 512
+        },
+        {
+          "caller": "updateMessageStatus",
+          "callee": "this.database.exec",
+          "lineNumber": 514
+        },
+        {
+          "caller": "updateMessageStatus",
+          "callee": "this.findMessageById",
+          "lineNumber": 518
+        },
+        {
+          "caller": "insertDiscussion",
+          "callee": "this.database\n      .prepare(\n        `\n          INSERT INTO discussions (\n            id,\n            project_id,\n            title,\n            frozen_context,\n            created_at,\n            updated_at,\n            last_activity_at,\n            deleted_at,\n            context_version,\n            expected_context_item_count,\n            creation_idempotency_key,\n            creation_request_fingerprint\n          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n        `,\n      )\n      .run",
+          "lineNumber": 522
+        },
+        {
+          "caller": "insertDiscussion",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 522
+        },
+        {
+          "caller": "insertDiscussion",
+          "callee": "JSON.stringify",
+          "lineNumber": 545
+        },
+        {
+          "caller": "insertContextItems",
+          "callee": "this.database.prepare",
+          "lineNumber": 561
+        },
+        {
+          "caller": "insertContextItems",
+          "callee": "insert.run",
+          "lineNumber": 577
+        },
+        {
+          "caller": "finalizeContextMetadata",
+          "callee": "this.database\n      .prepare(\n        `\n          UPDATE discussions\n          SET\n            context_version = ?,\n            expected_context_item_count = ?,\n            creation_idempotency_key = ?,\n            creation_request_fingerprint = ?\n          WHERE id = ? AND context_version IS NULL\n        `,\n      )\n      .run",
+          "lineNumber": 593
+        },
+        {
+          "caller": "finalizeContextMetadata",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 593
+        },
+        {
+          "caller": "insertMessage",
+          "callee": "this.database\n      .prepare(\n        `\n          INSERT INTO discussion_messages (\n            id,\n            discussion_id,\n            role,\n            content,\n            created_at,\n            status,\n            request_id,\n            web_search,\n            web_search_used,\n            citations\n          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\n        `,\n      )\n      .run",
+          "lineNumber": 619
+        },
+        {
+          "caller": "insertMessage",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 619
+        },
+        {
+          "caller": "insertMessage",
+          "callee": "this.serializeCitations",
+          "lineNumber": 648
+        },
+        {
+          "caller": "findMessageById",
+          "callee": "this.database\n      .prepare(\n        `\n          SELECT message.*\n          FROM discussion_messages AS message\n          INNER JOIN discussions AS discussion\n            ON discussion.id = message.discussion_id\n          WHERE\n            discussion.project_id = ?\n            AND discussion.id = ?\n            AND discussion.deleted_at IS NULL\n            AND message.id = ?\n        `,\n      )\n      .get",
+          "lineNumber": 657
+        },
+        {
+          "caller": "findMessageById",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 657
+        },
+        {
+          "caller": "findMessageById",
+          "callee": "this.toMessage",
+          "lineNumber": 674
+        },
+        {
+          "caller": "readSelectedExtractionMessages",
+          "callee": "this.database.prepare",
+          "lineNumber": 686
+        },
+        {
+          "caller": "readSelectedExtractionMessages",
+          "callee": "findMessage.get",
+          "lineNumber": 701
+        },
+        {
+          "caller": "readSelectedExtractionMessages",
+          "callee": "issues.push",
+          "lineNumber": 705
+        },
+        {
+          "caller": "readSelectedExtractionMessages",
+          "callee": "issues.push",
+          "lineNumber": 723
+        },
+        {
+          "caller": "readSelectedExtractionMessages",
+          "callee": "messages.push",
+          "lineNumber": 731
+        },
+        {
+          "caller": "readSelectedExtractionMessages",
+          "callee": "messages.sort",
+          "lineNumber": 739
+        },
+        {
+          "caller": "readSelectedExtractionMessages",
+          "callee": "first.created_at.localeCompare",
+          "lineNumber": 741
+        },
+        {
+          "caller": "readSelectedExtractionMessages",
+          "callee": "first.id.localeCompare",
+          "lineNumber": 742
+        },
+        {
+          "caller": "readSelectedExtractionContextItems",
+          "callee": "this.database.prepare",
+          "lineNumber": 755
+        },
+        {
+          "caller": "readSelectedExtractionContextItems",
+          "callee": "findContextItem.get",
+          "lineNumber": 770
+        },
+        {
+          "caller": "readSelectedExtractionContextItems",
+          "callee": "issues.push",
+          "lineNumber": 774
+        },
+        {
+          "caller": "readSelectedExtractionContextItems",
+          "callee": "issues.push",
+          "lineNumber": 792
+        },
+        {
+          "caller": "readSelectedExtractionContextItems",
+          "callee": "contextItems.push",
+          "lineNumber": 800
+        },
+        {
+          "caller": "readSelectedExtractionContextItems",
+          "callee": "this.validateExtractionContextItem",
+          "lineNumber": 800
+        },
+        {
+          "caller": "readSelectedExtractionContextItems",
+          "callee": "contextItems.sort",
+          "lineNumber": 803
+        },
+        {
+          "caller": "readSelectedExtractionContextItems",
+          "callee": "first.id.localeCompare",
+          "lineNumber": 806
+        },
+        {
+          "caller": "validateExtractionContextItem",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 824
+        },
+        {
+          "caller": "validateExtractionContextItem",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 828
+        },
+        {
+          "caller": "validateExtractionContextItem",
+          "callee": "this.isIsoTimestamp",
+          "lineNumber": 830
+        },
+        {
+          "caller": "validateExtractionContextItem",
+          "callee": "Number.isInteger",
+          "lineNumber": 831
+        },
+        {
+          "caller": "toDiscussion",
+          "callee": "this.toDiscussionBase",
+          "lineNumber": 858
+        },
+        {
+          "caller": "toDiscussion",
+          "callee": "this.parseLegacyFrozenContext",
+          "lineNumber": 859
+        },
+        {
+          "caller": "toDiscussion",
+          "callee": "this.isPositiveInteger",
+          "lineNumber": 872
+        },
+        {
+          "caller": "toDiscussion",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 873
+        },
+        {
+          "caller": "toDiscussion",
+          "callee": "this.isRequestFingerprint",
+          "lineNumber": 875
+        },
+        {
+          "caller": "toDiscussion",
+          "callee": "this.loadContextItems",
+          "lineNumber": 881
+        },
+        {
+          "caller": "toDiscussion",
+          "callee": "this.toDiscussionBase",
+          "lineNumber": 888
+        },
+        {
+          "caller": "parseLegacyFrozenContext",
+          "callee": "JSON.parse",
+          "lineNumber": 917
+        },
+        {
+          "caller": "parseLegacyFrozenContext",
+          "callee": "this.isRecord",
+          "lineNumber": 919
+        },
+        {
+          "caller": "loadContextItems",
+          "callee": "this.database\n      .prepare(\n        `\n          SELECT\n            id,\n            discussion_id,\n            source_kind,\n            source_id,\n            source_title,\n            frozen_content,\n            created_at,\n            display_order\n          FROM discussion_context_items\n          WHERE discussion_id = ?\n          ORDER BY display_order ASC\n        `,\n      )\n      .all",
+          "lineNumber": 938
+        },
+        {
+          "caller": "loadContextItems",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 938
+        },
+        {
+          "caller": "loadContextItems",
+          "callee": "this.validateContextItems",
+          "lineNumber": 957
+        },
+        {
+          "caller": "validateContextItems",
+          "callee": "values.forEach",
+          "lineNumber": 980
+        },
+        {
+          "caller": "validateContextItems",
+          "callee": "this.isRecord",
+          "lineNumber": 981
+        },
+        {
+          "caller": "validateContextItems",
+          "callee": "String",
+          "lineNumber": 999
+        },
+        {
+          "caller": "validateContextItems",
+          "callee": "String",
+          "lineNumber": 999
+        },
+        {
+          "caller": "validateContextItems",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 1002
+        },
+        {
+          "caller": "validateContextItems",
+          "callee": "itemIds.has",
+          "lineNumber": 1003
+        },
+        {
+          "caller": "validateContextItems",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 1007
+        },
+        {
+          "caller": "validateContextItems",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 1008
+        },
+        {
+          "caller": "validateContextItems",
+          "callee": "frozenContent.trim",
+          "lineNumber": 1011
+        },
+        {
+          "caller": "validateContextItems",
+          "callee": "this.isIsoTimestamp",
+          "lineNumber": 1012
+        },
+        {
+          "caller": "validateContextItems",
+          "callee": "Number.isInteger",
+          "lineNumber": 1013
+        },
+        {
+          "caller": "validateContextItems",
+          "callee": "sources.has",
+          "lineNumber": 1015
+        },
+        {
+          "caller": "validateContextItems",
+          "callee": "itemIds.add",
+          "lineNumber": 1028
+        },
+        {
+          "caller": "validateContextItems",
+          "callee": "sources.add",
+          "lineNumber": 1029
+        },
+        {
+          "caller": "validateContextItems",
+          "callee": "items.push",
+          "lineNumber": 1030
+        },
+        {
+          "caller": "isRecord",
+          "callee": "Array.isArray",
+          "lineNumber": 1049
+        },
+        {
+          "caller": "isNonEmptyString",
+          "callee": "value.trim",
+          "lineNumber": 1053
+        },
+        {
+          "caller": "isPositiveInteger",
+          "callee": "Number.isInteger",
+          "lineNumber": 1057
+        },
+        {
+          "caller": "isIsoTimestamp",
+          "callee": "Date.parse",
+          "lineNumber": 1065
+        },
+        {
+          "caller": "isIsoTimestamp",
+          "callee": "Number.isFinite",
+          "lineNumber": 1068
+        },
+        {
+          "caller": "isIsoTimestamp",
+          "callee": "new Date(milliseconds).toISOString",
+          "lineNumber": 1069
+        },
+        {
+          "caller": "isRequestFingerprint",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 1074
+        },
+        {
+          "caller": "toMessage",
+          "callee": "this.parseCitations",
+          "lineNumber": 1119
+        },
+        {
+          "caller": "serializeCitations",
+          "callee": "JSON.stringify",
+          "lineNumber": 1127
+        },
+        {
+          "caller": "parseCitations",
+          "callee": "Buffer.byteLength",
+          "lineNumber": 1141
+        },
+        {
+          "caller": "parseCitations",
+          "callee": "JSON.parse",
+          "lineNumber": 1147
+        },
+        {
+          "caller": "parseCitations",
+          "callee": "Array.isArray",
+          "lineNumber": 1149
+        },
+        {
+          "caller": "parseCitations",
+          "callee": "values.map",
+          "lineNumber": 1153
+        },
+        {
+          "caller": "parseCitations",
+          "callee": "this.isRecord",
+          "lineNumber": 1154
+        },
+        {
+          "caller": "parseCitations",
+          "callee": "Object.keys(value).every",
+          "lineNumber": 1159
+        },
+        {
+          "caller": "parseCitations",
+          "callee": "Object.keys",
+          "lineNumber": 1159
+        },
+        {
+          "caller": "parseCitations",
+          "callee": "['url', 'title', 'snippet'].includes",
+          "lineNumber": 1160
+        },
+        {
+          "caller": "parseCitations",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 1165
+        },
+        {
+          "caller": "parseCitations",
+          "callee": "this.isNonEmptyString",
+          "lineNumber": 1166
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/documents/sqlite-document.repository.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 506,
+      "nonEmptyLines": 471,
+      "callGraph": [
+        {
+          "caller": "createProject",
+          "callee": "projects.create",
+          "lineNumber": 39
+        },
+        {
+          "caller": "documentInput",
+          "callee": "'1'.repeat",
+          "lineNumber": 60
+        }
+      ],
+      "metrics": {
+        "importCount": 5,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/knowledge-extraction/knowledge-extraction-resolution.service.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 623,
+      "nonEmptyLines": 546,
+      "classes": [
+        {
+          "name": "KnowledgeExtractionResolutionService",
+          "startLine": 59,
+          "endLine": 623,
+          "methods": [
+            "constructor",
+            "resolveProposal",
+            "discardProposal",
+            "replayResolution",
+            "toNewBubbleResolutionResponse",
+            "toRejectedResolutionResponse",
+            "toUpdateBubbleResolutionResponse",
+            "validateResolutionInput",
+            "reviewedRequiredText",
+            "reviewedSummary",
+            "reviewedIdentifier",
+            "resolutionFingerprint",
+            "extractionNotFound",
+            "resolutionConflict",
+            "targetNotFound",
+            "targetChanged",
+            "resolutionValidationFailed",
+            "resolutionPersistenceFailed",
+            "rejectUnknownFields",
+            "isRecord"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "KnowledgeExtractionResolutionService",
+          "line": 58,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 62
+        },
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 64
+        },
+        {
+          "caller": "resolveProposal",
+          "callee": "this.projects.get",
+          "lineNumber": 76
+        },
+        {
+          "caller": "resolveProposal",
+          "callee": "this.validateResolutionInput",
+          "lineNumber": 77
+        },
+        {
+          "caller": "resolveProposal",
+          "callee": "this.resolutionFingerprint",
+          "lineNumber": 78
+        },
+        {
+          "caller": "resolveProposal",
+          "callee": "this.transactions.run",
+          "lineNumber": 81
+        },
+        {
+          "caller": "resolveProposal",
+          "callee": "this.extractions.findByProjectDiscussionAndId",
+          "lineNumber": 82
+        },
+        {
+          "caller": "resolveProposal",
+          "callee": "this.extractionNotFound",
+          "lineNumber": 89
+        },
+        {
+          "caller": "resolveProposal",
+          "callee": "this.replayResolution",
+          "lineNumber": 93
+        },
+        {
+          "caller": "resolveProposal",
+          "callee": "new Date().toISOString",
+          "lineNumber": 115
+        },
+        {
+          "caller": "resolveProposal",
+          "callee": "this.extractions.markResolved",
+          "lineNumber": 118
+        },
+        {
+          "caller": "resolveProposal",
+          "callee": "this.toRejectedResolutionResponse",
+          "lineNumber": 134
+        },
+        {
+          "caller": "resolveProposal",
+          "callee": "attempt.source_snapshot.messages.map",
+          "lineNumber": 145
+        },
+        {
+          "caller": "resolveProposal",
+          "callee": "attempt.source_snapshot.frozen_context_items.map",
+          "lineNumber": 149
+        },
+        {
+          "caller": "resolveProposal",
+          "callee": "this.bubblePlacement.place",
+          "lineNumber": 155
+        },
+        {
+          "caller": "resolveProposal",
+          "callee": "this.bubbleWriter.createFromDiscussionExtraction",
+          "lineNumber": 158
+        },
+        {
+          "caller": "resolveProposal",
+          "callee": "this.resolutionConflict",
+          "lineNumber": 167
+        },
+        {
+          "caller": "resolveProposal",
+          "callee": "this.extractions.markResolved",
+          "lineNumber": 170
+        },
+        {
+          "caller": "resolveProposal",
+          "callee": "this.toNewBubbleResolutionResponse",
+          "lineNumber": 186
+        },
+        {
+          "caller": "resolveProposal",
+          "callee": "this.bubbleWriter.updateFromDiscussionExtraction",
+          "lineNumber": 192
+        },
+        {
+          "caller": "resolveProposal",
+          "callee": "this.resolutionConflict",
+          "lineNumber": 199
+        },
+        {
+          "caller": "resolveProposal",
+          "callee": "this.targetNotFound",
+          "lineNumber": 203
+        },
+        {
+          "caller": "resolveProposal",
+          "callee": "this.targetChanged",
+          "lineNumber": 207
+        },
+        {
+          "caller": "resolveProposal",
+          "callee": "this.extractions.markResolved",
+          "lineNumber": 210
+        },
+        {
+          "caller": "resolveProposal",
+          "callee": "this.toUpdateBubbleResolutionResponse",
+          "lineNumber": 226
+        },
+        {
+          "caller": "resolveProposal",
+          "callee": "this.resolutionPersistenceFailed",
+          "lineNumber": 236
+        },
+        {
+          "caller": "discardProposal",
+          "callee": "this.projects.get",
+          "lineNumber": 245
+        },
+        {
+          "caller": "discardProposal",
+          "callee": "this.transactions.run",
+          "lineNumber": 248
+        },
+        {
+          "caller": "discardProposal",
+          "callee": "this.extractions.findByProjectDiscussionAndId",
+          "lineNumber": 249
+        },
+        {
+          "caller": "discardProposal",
+          "callee": "this.extractionNotFound",
+          "lineNumber": 256
+        },
+        {
+          "caller": "discardProposal",
+          "callee": "this.resolutionConflict",
+          "lineNumber": 264
+        },
+        {
+          "caller": "discardProposal",
+          "callee": "this.extractions.markDiscarded",
+          "lineNumber": 267
+        },
+        {
+          "caller": "discardProposal",
+          "callee": "new Date().toISOString",
+          "lineNumber": 271
+        },
+        {
+          "caller": "discardProposal",
+          "callee": "this.resolutionPersistenceFailed",
+          "lineNumber": 283
+        },
+        {
+          "caller": "replayResolution",
+          "callee": "this.resolutionConflict",
+          "lineNumber": 296
+        },
+        {
+          "caller": "replayResolution",
+          "callee": "this.toRejectedResolutionResponse",
+          "lineNumber": 300
+        },
+        {
+          "caller": "replayResolution",
+          "callee": "this.bubbleWriter.findByDiscussionExtraction",
+          "lineNumber": 303
+        },
+        {
+          "caller": "replayResolution",
+          "callee": "this.toNewBubbleResolutionResponse",
+          "lineNumber": 313
+        },
+        {
+          "caller": "replayResolution",
+          "callee": "this.toUpdateBubbleResolutionResponse",
+          "lineNumber": 314
+        },
+        {
+          "caller": "validateResolutionInput",
+          "callee": "this.isRecord",
+          "lineNumber": 366
+        },
+        {
+          "caller": "validateResolutionInput",
+          "callee": "this.resolutionValidationFailed",
+          "lineNumber": 367
+        },
+        {
+          "caller": "validateResolutionInput",
+          "callee": "this.rejectUnknownFields",
+          "lineNumber": 373
+        },
+        {
+          "caller": "validateResolutionInput",
+          "callee": "Object.keys",
+          "lineNumber": 375
+        },
+        {
+          "caller": "validateResolutionInput",
+          "callee": "this.resolutionValidationFailed",
+          "lineNumber": 376
+        },
+        {
+          "caller": "validateResolutionInput",
+          "callee": "this.rejectUnknownFields",
+          "lineNumber": 383
+        },
+        {
+          "caller": "validateResolutionInput",
+          "callee": "this.resolutionValidationFailed",
+          "lineNumber": 390
+        },
+        {
+          "caller": "validateResolutionInput",
+          "callee": "this.rejectUnknownFields",
+          "lineNumber": 393
+        },
+        {
+          "caller": "validateResolutionInput",
+          "callee": "this.isRecord",
+          "lineNumber": 401
+        },
+        {
+          "caller": "validateResolutionInput",
+          "callee": "this.rejectUnknownFields",
+          "lineNumber": 404
+        },
+        {
+          "caller": "validateResolutionInput",
+          "callee": "this.isRecord",
+          "lineNumber": 412
+        },
+        {
+          "caller": "validateResolutionInput",
+          "callee": "this.reviewedRequiredText",
+          "lineNumber": 413
+        },
+        {
+          "caller": "validateResolutionInput",
+          "callee": "this.reviewedSummary",
+          "lineNumber": 420
+        },
+        {
+          "caller": "validateResolutionInput",
+          "callee": "this.reviewedRequiredText",
+          "lineNumber": 421
+        },
+        {
+          "caller": "validateResolutionInput",
+          "callee": "this.reviewedIdentifier",
+          "lineNumber": 430
+        },
+        {
+          "caller": "validateResolutionInput",
+          "callee": "this.reviewedIdentifier",
+          "lineNumber": 439
+        },
+        {
+          "caller": "validateResolutionInput",
+          "callee": "Object.keys",
+          "lineNumber": 447
+        },
+        {
+          "caller": "validateResolutionInput",
+          "callee": "this.resolutionValidationFailed",
+          "lineNumber": 448
+        },
+        {
+          "caller": "reviewedRequiredText",
+          "callee": "value.trim",
+          "lineNumber": 487
+        },
+        {
+          "caller": "reviewedRequiredText",
+          "callee": "value.trim",
+          "lineNumber": 492
+        },
+        {
+          "caller": "reviewedSummary",
+          "callee": "value.trim",
+          "lineNumber": 512
+        },
+        {
+          "caller": "reviewedIdentifier",
+          "callee": "value.trim",
+          "lineNumber": 529
+        },
+        {
+          "caller": "reviewedIdentifier",
+          "callee": "value.trim",
+          "lineNumber": 534
+        },
+        {
+          "caller": "resolutionFingerprint",
+          "callee": "createHash('sha256')\n      .update(JSON.stringify(resolution))\n      .digest",
+          "lineNumber": 538
+        },
+        {
+          "caller": "resolutionFingerprint",
+          "callee": "createHash('sha256')\n      .update",
+          "lineNumber": 538
+        },
+        {
+          "caller": "resolutionFingerprint",
+          "callee": "createHash",
+          "lineNumber": 538
+        },
+        {
+          "caller": "resolutionFingerprint",
+          "callee": "JSON.stringify",
+          "lineNumber": 539
+        },
+        {
+          "caller": "rejectUnknownFields",
+          "callee": "Object.keys",
+          "lineNumber": 613
+        },
+        {
+          "caller": "rejectUnknownFields",
+          "callee": "allowedFields.includes",
+          "lineNumber": 614
+        },
+        {
+          "caller": "isRecord",
+          "callee": "Array.isArray",
+          "lineNumber": 621
+        }
+      ],
+      "metrics": {
+        "importCount": 6,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/knowledge-extraction/knowledge-extraction.service.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 1944,
+      "nonEmptyLines": 1842,
+      "callGraph": [
+        {
+          "caller": "createProject",
+          "callee": "projects.create",
+          "lineNumber": 98
+        },
+        {
+          "caller": "createDiscussion",
+          "callee": "projects.get",
+          "lineNumber": 125
+        },
+        {
+          "caller": "createDiscussion",
+          "callee": "'a'.repeat",
+          "lineNumber": 146
+        },
+        {
+          "caller": "createDiscussion",
+          "callee": "discussions.createWithFirstMessage",
+          "lineNumber": 158
+        },
+        {
+          "caller": "createDiscussion",
+          "callee": "thisTimestampAfter",
+          "lineNumber": 164
+        },
+        {
+          "caller": "createDiscussion",
+          "callee": "discussions.completeMessageGeneration",
+          "lineNumber": 170
+        },
+        {
+          "caller": "appendCompletedTurn",
+          "callee": "thisTimestampAfter",
+          "lineNumber": 207
+        },
+        {
+          "caller": "appendCompletedTurn",
+          "callee": "discussions.appendMessage",
+          "lineNumber": 212
+        },
+        {
+          "caller": "appendCompletedTurn",
+          "callee": "discussions.completeMessageGeneration",
+          "lineNumber": 213
+        },
+        {
+          "caller": "appendPendingTurn",
+          "callee": "discussions.appendMessage",
+          "lineNumber": 239
+        },
+        {
+          "caller": "thisTimestampAfter",
+          "callee": "new Date(Date.parse(timestamp) + milliseconds).toISOString",
+          "lineNumber": 244
+        },
+        {
+          "caller": "thisTimestampAfter",
+          "callee": "Date.parse",
+          "lineNumber": 244
+        },
+        {
+          "caller": "createSnapshot",
+          "callee": "service.createSourceSnapshot",
+          "lineNumber": 264
+        },
+        {
+          "caller": "useModel",
+          "callee": "jest.fn",
+          "lineNumber": 277
+        },
+        {
+          "caller": "useModel",
+          "callee": "jest.fn",
+          "lineNumber": 278
+        }
+      ],
+      "metrics": {
+        "importCount": 17,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/knowledge-extraction/sqlite-knowledge-extraction.repository.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 381,
+      "nonEmptyLines": 359,
+      "callGraph": [
+        {
+          "caller": "createProject",
+          "callee": "projects.create",
+          "lineNumber": 30
+        },
+        {
+          "caller": "createDiscussion",
+          "callee": "discussions.createWithFirstMessage",
+          "lineNumber": 61
+        },
+        {
+          "caller": "attempt",
+          "callee": "'a'.repeat",
+          "lineNumber": 85
+        }
+      ],
+      "metrics": {
+        "importCount": 7,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/projects/project.types.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 25,
+      "nonEmptyLines": 22,
+      "exports": [
+        {
+          "name": "CreateProjectInput",
+          "line": 3,
+          "isDefault": false
+        },
+        {
+          "name": "Project",
+          "line": 3,
+          "isDefault": false
+        },
+        {
+          "name": "UpdateProjectDescriptionInput",
+          "line": 3,
+          "isDefault": false
+        },
+        {
+          "name": "UpdateProjectViewportInput",
+          "line": 3,
+          "isDefault": false
+        },
+        {
+          "name": "PROJECT_REPOSITORY",
+          "line": 25,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 0,
+        "exportCount": 5,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/projects/projects.controller.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 90,
+      "nonEmptyLines": 81,
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/projects/projects.controller.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 44,
+      "nonEmptyLines": 38,
+      "classes": [
+        {
+          "name": "ProjectsController",
+          "startLine": 11,
+          "endLine": 44,
+          "methods": [
+            "constructor",
+            "create",
+            "list",
+            "get",
+            "updateDescription",
+            "updateViewport"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "ProjectsController",
+          "line": 10,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "create",
+          "callee": "Body",
+          "lineNumber": 15
+        },
+        {
+          "caller": "create",
+          "callee": "this.projects.create",
+          "lineNumber": 16
+        },
+        {
+          "caller": "list",
+          "callee": "this.projects.list",
+          "lineNumber": 21
+        },
+        {
+          "caller": "get",
+          "callee": "Param",
+          "lineNumber": 25
+        },
+        {
+          "caller": "get",
+          "callee": "this.projects.get",
+          "lineNumber": 26
+        },
+        {
+          "caller": "updateDescription",
+          "callee": "Param",
+          "lineNumber": 31
+        },
+        {
+          "caller": "updateDescription",
+          "callee": "Body",
+          "lineNumber": 32
+        },
+        {
+          "caller": "updateDescription",
+          "callee": "this.projects.updateDescription",
+          "lineNumber": 34
+        },
+        {
+          "caller": "updateViewport",
+          "callee": "Param",
+          "lineNumber": 39
+        },
+        {
+          "caller": "updateViewport",
+          "callee": "Body",
+          "lineNumber": 40
+        },
+        {
+          "caller": "updateViewport",
+          "callee": "this.projects.updateViewport",
+          "lineNumber": 42
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/projects/projects.module.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 19,
+      "nonEmptyLines": 18,
+      "classes": [
+        {
+          "name": "ProjectsModule",
+          "startLine": 19,
+          "endLine": 19,
+          "methods": [],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "ProjectsModule",
+          "line": 7,
+          "isDefault": false
+        }
+      ],
+      "metrics": {
+        "importCount": 4,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/projects/projects.service.spec.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 235,
+      "nonEmptyLines": 205,
+      "metrics": {
+        "importCount": 3,
+        "exportCount": 0,
+        "functionCount": 0,
+        "classCount": 0
+      }
+    },
+    {
+      "path": "backend/src/projects/projects.service.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 185,
+      "nonEmptyLines": 152,
+      "classes": [
+        {
+          "name": "ProjectsService",
+          "startLine": 22,
+          "endLine": 185,
+          "methods": [
+            "constructor",
+            "create",
+            "list",
+            "get",
+            "updateDescription",
+            "updateViewport",
+            "requiredText",
+            "validDescription",
+            "validViewport",
+            "isFiniteNumber",
+            "nextTimestamp",
+            "notFound"
+          ],
+          "properties": []
+        }
+      ],
+      "exports": [
+        {
+          "name": "ProjectsService",
+          "line": 21,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "constructor",
+          "callee": "Inject",
+          "lineNumber": 24
+        },
+        {
+          "caller": "create",
+          "callee": "this.requiredText",
+          "lineNumber": 29
+        },
+        {
+          "caller": "create",
+          "callee": "this.validDescription",
+          "lineNumber": 30
+        },
+        {
+          "caller": "create",
+          "callee": "new Date().toISOString",
+          "lineNumber": 31
+        },
+        {
+          "caller": "create",
+          "callee": "this.projects.create",
+          "lineNumber": 33
+        },
+        {
+          "caller": "create",
+          "callee": "randomUUID",
+          "lineNumber": 34
+        },
+        {
+          "caller": "list",
+          "callee": "this.projects.findAll",
+          "lineNumber": 46
+        },
+        {
+          "caller": "get",
+          "callee": "this.projects.findById",
+          "lineNumber": 50
+        },
+        {
+          "caller": "get",
+          "callee": "this.notFound",
+          "lineNumber": 53
+        },
+        {
+          "caller": "updateDescription",
+          "callee": "this.projects.findById",
+          "lineNumber": 60
+        },
+        {
+          "caller": "updateDescription",
+          "callee": "this.notFound",
+          "lineNumber": 63
+        },
+        {
+          "caller": "updateDescription",
+          "callee": "this.validDescription",
+          "lineNumber": 66
+        },
+        {
+          "caller": "updateDescription",
+          "callee": "this.nextTimestamp",
+          "lineNumber": 67
+        },
+        {
+          "caller": "updateDescription",
+          "callee": "this.projects.updateDescription",
+          "lineNumber": 68
+        },
+        {
+          "caller": "updateDescription",
+          "callee": "this.notFound",
+          "lineNumber": 75
+        },
+        {
+          "caller": "updateViewport",
+          "callee": "this.projects.findById",
+          "lineNumber": 82
+        },
+        {
+          "caller": "updateViewport",
+          "callee": "this.notFound",
+          "lineNumber": 83
+        },
+        {
+          "caller": "updateViewport",
+          "callee": "this.validViewport",
+          "lineNumber": 86
+        },
+        {
+          "caller": "updateViewport",
+          "callee": "this.projects.updateViewport",
+          "lineNumber": 87
+        },
+        {
+          "caller": "updateViewport",
+          "callee": "this.notFound",
+          "lineNumber": 90
+        },
+        {
+          "caller": "requiredText",
+          "callee": "value.trim",
+          "lineNumber": 97
+        },
+        {
+          "caller": "requiredText",
+          "callee": "value.trim",
+          "lineNumber": 107
+        },
+        {
+          "caller": "validDescription",
+          "callee": "value.trim",
+          "lineNumber": 111
+        },
+        {
+          "caller": "validDescription",
+          "callee": "value.trim",
+          "lineNumber": 121
+        },
+        {
+          "caller": "validViewport",
+          "callee": "this.isFiniteNumber",
+          "lineNumber": 141
+        },
+        {
+          "caller": "validViewport",
+          "callee": "this.isFiniteNumber",
+          "lineNumber": 145
+        },
+        {
+          "caller": "validViewport",
+          "callee": "this.isFiniteNumber",
+          "lineNumber": 150
+        },
+        {
+          "caller": "validViewport",
+          "callee": "Object.keys",
+          "lineNumber": 157
+        },
+        {
+          "caller": "isFiniteNumber",
+          "callee": "Number.isFinite",
+          "lineNumber": 169
+        },
+        {
+          "caller": "nextTimestamp",
+          "callee": "Date.now",
+          "lineNumber": 173
+        },
+        {
+          "caller": "nextTimestamp",
+          "callee": "new Date(previousTimestamp).getTime",
+          "lineNumber": 174
+        },
+        {
+          "caller": "nextTimestamp",
+          "callee": "new Date(Math.max(currentTime, previousTime + 1)).toISOString",
+          "lineNumber": 176
+        },
+        {
+          "caller": "nextTimestamp",
+          "callee": "Math.max",
+          "lineNumber": 176
+        }
+      ],
+      "metrics": {
+        "importCount": 1,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    },
+    {
+      "path": "backend/src/projects/sqlite-project.repository.ts",
+      "language": "typescript",
+      "fileCategory": "code",
+      "totalLines": 133,
+      "nonEmptyLines": 119,
+      "classes": [
+        {
+          "name": "SqliteProjectRepository",
+          "startLine": 22,
+          "endLine": 133,
+          "methods": [
+            "constructor",
+            "create",
+            "findAll",
+            "findById",
+            "updateDescription",
+            "updateViewport",
+            "toProject"
+          ],
+          "properties": [
+            "database"
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "name": "SqliteProjectRepository",
+          "line": 21,
+          "isDefault": false
+        }
+      ],
+      "callGraph": [
+        {
+          "caller": "create",
+          "callee": "this.database\n      .prepare(\n        `\n          INSERT INTO projects (\n            id,\n            title,\n            description,\n            created_at,\n            updated_at,\n            canvas_viewport_x,\n            canvas_viewport_y,\n            canvas_zoom\n          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)\n        `,\n      )\n      .run",
+          "lineNumber": 30
+        },
+        {
+          "caller": "create",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 30
+        },
+        {
+          "caller": "findAll",
+          "callee": "this.database\n      .prepare(\n        `\n          SELECT *\n          FROM projects\n          ORDER BY updated_at DESC, created_at DESC, id ASC\n        `,\n      )\n      .all",
+          "lineNumber": 60
+        },
+        {
+          "caller": "findAll",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 60
+        },
+        {
+          "caller": "findAll",
+          "callee": "rows.map",
+          "lineNumber": 70
+        },
+        {
+          "caller": "findAll",
+          "callee": "this.toProject",
+          "lineNumber": 70
+        },
+        {
+          "caller": "findById",
+          "callee": "this.database\n      .prepare('SELECT * FROM projects WHERE id = ?')\n      .get",
+          "lineNumber": 74
+        },
+        {
+          "caller": "findById",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 74
+        },
+        {
+          "caller": "findById",
+          "callee": "this.toProject",
+          "lineNumber": 78
+        },
+        {
+          "caller": "updateDescription",
+          "callee": "this.database\n      .prepare(\n        `\n          UPDATE projects\n          SET description = ?, updated_at = ?\n          WHERE id = ?\n        `,\n      )\n      .run",
+          "lineNumber": 86
+        },
+        {
+          "caller": "updateDescription",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 86
+        },
+        {
+          "caller": "updateDescription",
+          "callee": "this.findById",
+          "lineNumber": 96
+        },
+        {
+          "caller": "updateViewport",
+          "callee": "this.database\n      .prepare(\n        `\n          UPDATE projects\n          SET canvas_viewport_x = ?, canvas_viewport_y = ?, canvas_zoom = ?\n          WHERE id = ?\n        `,\n      )\n      .run",
+          "lineNumber": 103
+        },
+        {
+          "caller": "updateViewport",
+          "callee": "this.database\n      .prepare",
+          "lineNumber": 103
+        },
+        {
+          "caller": "updateViewport",
+          "callee": "this.findById",
+          "lineNumber": 118
+        }
+      ],
+      "metrics": {
+        "importCount": 2,
+        "exportCount": 1,
+        "functionCount": 0,
+        "classCount": 1
+      }
+    }
+  ]
+}
