@@ -140,6 +140,10 @@ export interface BubbleTerritoryAssignmentWriter {
   ): Bubble[];
 }
 
+export interface BubbleTerritoryCompositionReader {
+  listForTerritoryComposition(projectId: string): Bubble[];
+}
+
 export interface BubbleDiscussionProvenanceWriter {
   markSourceDiscussionDeleted(
     projectId: string,
@@ -163,6 +167,9 @@ export const BUBBLE_CONTEXT_SOURCE_READER = Symbol(
 export const BUBBLE_EXTRACTION_WRITER = Symbol('BUBBLE_EXTRACTION_WRITER');
 export const BUBBLE_TERRITORY_ASSIGNMENT_WRITER = Symbol(
   'BUBBLE_TERRITORY_ASSIGNMENT_WRITER',
+);
+export const BUBBLE_TERRITORY_COMPOSITION_READER = Symbol(
+  'BUBBLE_TERRITORY_COMPOSITION_READER',
 );
 export const BUBBLE_DISCUSSION_PROVENANCE_WRITER = Symbol(
   'BUBBLE_DISCUSSION_PROVENANCE_WRITER',

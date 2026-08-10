@@ -210,4 +210,27 @@ export class SqliteTerritoryRepository implements TerritoryRepository {
 
     return result.changes > 0;
   }
+
+  deleteComposedByIds(projectId: string, territoryIds: string[]): void {
+    if (territoryIds.length === 0) {
+      return;
+    }
+
+    const statement = this.database.prepare(
+      `
+        DELETE FROM territories
+        WHERE project_id = ? AND id = ? AND kind = 'composed'
+      `,
+    );
+
+    for (const territoryId of territoryIds) {
+      const result = statement.run(projectId, territoryId);
+
+      if (result.changes === 0) {
+        throw new Error(
+          `Composed territory "${territoryId}" was not available for replacement.`,
+        );
+      }
+    }
+  }
 }

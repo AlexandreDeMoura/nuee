@@ -44,6 +44,7 @@ export interface TerritoryRepository {
     positions: PersistedTerritoryPosition[],
   ): Territory[];
   deleteComposedIfEmpty(projectId: string, territoryId: string): boolean;
+  deleteComposedByIds(projectId: string, territoryIds: string[]): void;
 }
 
 export interface TerritoryBubbleLifecycle {

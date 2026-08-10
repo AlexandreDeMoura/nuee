@@ -1,4 +1,5 @@
-import { Body, Controller, Get, Param, Patch } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import type { RecomposeTerritoriesResponse } from '@nuee/shared-types';
 import type {
   BatchRepositionTerritoriesInput,
   RepositionTerritoryInput,
@@ -6,14 +7,26 @@ import type {
   UpdateTerritoryVisibleCountInput,
 } from './territory.types';
 import { TerritoriesService } from './territories.service';
+import { TerritoryRecompositionService } from './territory-recomposition.service';
 
 @Controller('projects/:projectId/territories')
 export class TerritoriesController {
-  constructor(private readonly territories: TerritoriesService) {}
+  constructor(
+    private readonly territories: TerritoriesService,
+    private readonly recomposition: TerritoryRecompositionService,
+  ) {}
 
   @Get()
   list(@Param('projectId') projectId: string): Territory[] {
     return this.territories.list(projectId);
+  }
+
+  @Post('recompose')
+  recompose(
+    @Param('projectId') projectId: string,
+    @Body() input: unknown,
+  ): Promise<RecomposeTerritoriesResponse> {
+    return this.recomposition.recompose(projectId, input);
   }
 
   @Patch('positions')

@@ -20,6 +20,7 @@ import type {
   BubbleRepository,
   BubbleTerritoryAssignment,
   BubbleTerritoryAssignmentWriter,
+  BubbleTerritoryCompositionReader,
   CreateBubbleFromDiscussionExtractionInput,
   CreateBubbleFromDiscussionExtractionResult,
   CreateBubbleInput,
@@ -48,7 +49,8 @@ export class BubblesService
   implements
     BubbleContextSourceReader,
     BubbleExtractionWriter,
-    BubbleTerritoryAssignmentWriter
+    BubbleTerritoryAssignmentWriter,
+    BubbleTerritoryCompositionReader
 {
   constructor(
     private readonly projects: ProjectsService,
@@ -217,6 +219,10 @@ export class BubblesService
   list(projectId: string): Bubble[] {
     this.projects.get(projectId);
     return this.bubbles.findAllByProjectId(projectId);
+  }
+
+  listForTerritoryComposition(projectId: string): Bubble[] {
+    return this.list(projectId);
   }
 
   get(projectId: string, bubbleId: string): Bubble {

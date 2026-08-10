@@ -16,7 +16,11 @@ import {
   FAKE_STRUCTURED_PROPOSAL,
   FakeModelClient,
 } from './../src/ai/fake-model.client';
-import { MODEL_CLIENT, type ModelClient } from './../src/ai/model-client';
+import {
+  MODEL_CLIENT,
+  type GenerateStructuredOutputInput,
+  type ModelClient,
+} from './../src/ai/model-client';
 import { AppModule } from './../src/app.module';
 import type { KnowledgeExtractionResolutionResponse } from './../src/knowledge-extraction/knowledge-extraction.types';
 
@@ -308,7 +312,7 @@ describe('Knowledge extraction generation journey (e2e)', () => {
     const generateStructuredOutput = jest
       .fn<ModelClient['generateStructuredOutput']>()
       .mockRejectedValueOnce(new Error('Temporary model failure.'))
-      .mockImplementation((input) =>
+      .mockImplementation((input: GenerateStructuredOutputInput) =>
         deterministicModel.generateStructuredOutput(input),
       );
     const flakyModel: ModelClient = {

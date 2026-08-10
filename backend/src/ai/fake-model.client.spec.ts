@@ -9,6 +9,7 @@ import { AiModule } from './ai.module';
 import {
   FAKE_MODEL_ID,
   FAKE_STRUCTURED_PROPOSAL,
+  FAKE_TERRITORY_TITLE,
   FAKE_TITLE_MAX_LENGTH,
   FAKE_WEB_SEARCH_CITATIONS,
   FakeModelClient,
@@ -131,6 +132,42 @@ describe('FakeModelClient', () => {
     });
     await expect(client.generateStructuredOutput(input)).resolves.toEqual({
       output: FAKE_STRUCTURED_PROPOSAL,
+      model: FAKE_MODEL_ID,
+    });
+  });
+
+  it('assigns every framed bubble to a deterministic territory', async () => {
+    await expect(
+      client.generateStructuredOutput({
+        instructions: 'Group every bubble.',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              'TERRITORY_RECOMPOSITION_SOURCE_V1',
+              'UNTRUSTED_BUBBLES_JSON_BEGIN',
+              JSON.stringify({
+                bubbles: [{ id: 'bubble-a' }, { id: 'bubble-b' }],
+              }),
+              'UNTRUSTED_BUBBLES_JSON_END',
+            ].join('\n'),
+          },
+        ],
+        format: {
+          name: 'territory_recomposition',
+          description: 'A complete territory composition.',
+          schema: { type: 'object' },
+        },
+      }),
+    ).resolves.toEqual({
+      output: {
+        territories: [
+          {
+            title: FAKE_TERRITORY_TITLE,
+            bubble_ids: ['bubble-a', 'bubble-b'],
+          },
+        ],
+      },
       model: FAKE_MODEL_ID,
     });
   });

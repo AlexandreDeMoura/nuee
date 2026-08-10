@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import type { MessageCitation } from '@nuee/shared-types';
 import type {
   GenerateAnswerInput,
+  GenerateStructuredOutputInput,
   GenerateTitleInput,
   ModelClient,
   ModelGeneration,
@@ -25,6 +26,7 @@ export const FAKE_STRUCTURED_PROPOSAL = {
   content:
     'This deterministic proposal represents one reusable knowledge unit grounded in the selected discussion sources.',
 };
+export const FAKE_TERRITORY_TITLE = 'Deterministic territory';
 
 function normalizeWhitespace(value: string): string {
   return value.trim().replace(/\s+/g, ' ');
@@ -85,7 +87,39 @@ export class FakeModelClient implements ModelClient {
     });
   }
 
-  generateStructuredOutput(): Promise<StructuredModelGeneration> {
+  generateStructuredOutput(
+    input: GenerateStructuredOutputInput,
+  ): Promise<StructuredModelGeneration> {
+    if (input.format.name === 'territory_recomposition') {
+      const content = lastUserMessage(input.messages) ?? '';
+      const serialized = content.match(
+        /UNTRUSTED_BUBBLES_JSON_BEGIN\n([^\n]+)\nUNTRUSTED_BUBBLES_JSON_END/,
+      )?.[1];
+
+      if (serialized) {
+        try {
+          const source = JSON.parse(serialized) as {
+            bubbles?: Array<{ id?: unknown }>;
+          };
+          const bubbleIds = (source.bubbles ?? [])
+            .map(({ id }) => id)
+            .filter((id): id is string => typeof id === 'string');
+
+          return Promise.resolve({
+            output: {
+              territories: [
+                { title: FAKE_TERRITORY_TITLE, bubble_ids: bubbleIds },
+              ],
+            },
+            model: FAKE_MODEL_ID,
+          });
+        } catch {
+          // Return the default proposal below so the owning feature exercises
+          // its normal invalid-output path for malformed source framing.
+        }
+      }
+    }
+
     return Promise.resolve({
       output: { ...FAKE_STRUCTURED_PROPOSAL },
       model: FAKE_MODEL_ID,
