@@ -1,39 +1,56 @@
 import type {
-  BatchRepositionBubblesInput,
-  Bubble,
+  Bubble as SharedBubble,
   BubbleLink,
-  BubblePlacement,
-  BubblePlacementStrategy,
-  BubblePositionUpdate,
   BubbleSourceKind,
   CreateBubbleInput as SharedCreateBubbleInput,
   CreateBubbleLinkInput,
-  PlaceBubbleInput,
-  RepositionBubbleInput,
   UpdateBubbleInput as SharedUpdateBubbleInput,
 } from '@nuee/shared-types';
 import { requestJson } from './client';
 
 export type {
-  Bubble,
   BubbleLink,
-  BubblePlacement,
-  BubblePlacementStrategy,
-  BubblePositionUpdate,
   BubbleSourceKind,
   CreateBubbleLinkInput,
 };
 
-type WithRequired<T, K extends keyof T> = T & Required<Pick<T, K>>;
+/**
+ * Transitional frontend model for the bubble-canvas slices that still consume
+ * the pre-territory API. Remove it when the territory collection replaces the
+ * free-positioned bubble collection.
+ */
+export type Bubble = Omit<SharedBubble, 'territory_id'> & {
+  position_x: number;
+  position_y: number;
+};
 
-export type CreateBubbleInput = WithRequired<
-  SharedCreateBubbleInput,
-  'position_x' | 'position_y'
->;
-export type UpdateBubblePositionInput = RepositionBubbleInput;
-export type BatchUpdateBubblePositionsInput = BatchRepositionBubblesInput;
+export type CreateBubbleInput = SharedCreateBubbleInput & {
+  position_x: number;
+  position_y: number;
+};
+export interface UpdateBubblePositionInput {
+  position_x: number;
+  position_y: number;
+}
+export interface BubblePositionUpdate extends UpdateBubblePositionInput {
+  bubble_id: string;
+}
+export interface BatchUpdateBubblePositionsInput {
+  positions: BubblePositionUpdate[];
+}
 export type UpdateBubbleInput = Required<SharedUpdateBubbleInput>;
-export type BubblePlacementInput = PlaceBubbleInput;
+export type BubblePlacementStrategy = 'viewport' | 'cluster';
+export interface BubblePlacementInput {
+  strategy: BubblePlacementStrategy;
+  viewport_x?: number;
+  viewport_y?: number;
+  viewport_width?: number;
+  viewport_height?: number;
+}
+export interface BubblePlacement {
+  position_x: number;
+  position_y: number;
+}
 export type BubblesRequest = typeof requestJson;
 
 const INVALID_BUBBLE_MESSAGE =

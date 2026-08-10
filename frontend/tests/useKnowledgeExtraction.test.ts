@@ -5,11 +5,9 @@ import {
   waitFor,
 } from '@testing-library/react';
 import type {
-  Bubble,
   CreateKnowledgeExtractionInput,
   DiscussionDetails,
   KnowledgeExtractionProposalResponse,
-  KnowledgeExtractionResolutionResponse,
 } from '@nuee/shared-types';
 import {
   afterEach,
@@ -18,7 +16,11 @@ import {
   it,
   vi,
 } from 'vitest';
-import { ApiError } from '../src/api';
+import {
+  ApiError,
+  type Bubble,
+  type KnowledgeExtractionResolutionResponse,
+} from '../src/api';
 import type { AnalyticsClient } from '../src/analytics';
 import { useKnowledgeExtraction } from '../src/knowledge-extraction';
 

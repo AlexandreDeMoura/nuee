@@ -20,3 +20,14 @@ export const PROJECT_DESCRIPTION_MAX_LENGTH = 800;
 
 /** Maximum length of the optional instructions attached to an extraction. */
 export const KNOWLEDGE_EXTRACTION_INSTRUCTIONS_MAX_LENGTH = 2_000;
+
+/** Maximum length of a generated territory title, measured after trimming. */
+export const TERRITORY_TITLE_MAX_LENGTH = 60;
+
+/** Inclusive persisted bounds for how many bubble rows a territory may show. */
+export const TERRITORY_VISIBLE_COUNT_MIN = 1;
+export const TERRITORY_VISIBLE_COUNT_MAX = 100;
+
+/** Inclusive bounds for the composed territories returned by recompose. */
+export const RECOMPOSE_TERRITORY_COUNT_MIN = 1;
+export const RECOMPOSE_TERRITORY_COUNT_MAX = 12;

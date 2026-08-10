@@ -9,14 +9,13 @@ import {
 } from '@nestjs/common';
 import { createHash } from 'node:crypto';
 import type {
-  Bubble,
-  KnowledgeExtractionResolutionResponse,
   KnowledgeExtractionTargetChangedError,
   KnowledgeExtractionTargetPreview,
 } from '@nuee/shared-types';
 import { BubblePlacementService } from '../bubbles/bubble-placement.service';
 import {
   BUBBLE_EXTRACTION_WRITER,
+  type Bubble,
   type BubbleExtractionWriter,
 } from '../bubbles/bubble.types';
 import { DatabaseTransaction } from '../database/database-transaction';
@@ -30,6 +29,7 @@ import {
   KNOWLEDGE_EXTRACTION_REPOSITORY,
   type KnowledgeExtractionAttempt,
   type KnowledgeExtractionRepository,
+  type KnowledgeExtractionResolutionResponse,
 } from './knowledge-extraction.types';
 
 type NormalizedResolutionInput =

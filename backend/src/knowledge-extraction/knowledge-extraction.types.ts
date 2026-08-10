@@ -4,6 +4,7 @@ import type {
   KnowledgeExtractionDetailLevel,
   KnowledgeExtractionProposal,
 } from '@nuee/shared-types';
+import type { Bubble } from '../bubbles/bubble.types';
 
 export { KNOWLEDGE_EXTRACTION_INSTRUCTIONS_MAX_LENGTH } from '@nuee/shared-types';
 
@@ -51,6 +52,18 @@ export type KnowledgeExtractionAttemptStatus =
 
 export type KnowledgeExtractionResolutionKind =
   'new_bubble' | 'update_bubble' | 'reject';
+
+/** Temporary response model until persisted bubbles carry territory ids. */
+export interface KnowledgeExtractionResolutionResponse {
+  id: string;
+  project_id: string;
+  discussion_id: string;
+  status: 'resolved';
+  resolution:
+    | { kind: 'new_bubble'; bubble: Bubble }
+    | { kind: 'update_bubble'; bubble: Bubble }
+    | { kind: 'reject' };
+}
 
 export interface KnowledgeExtractionAttempt {
   id: string;

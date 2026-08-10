@@ -1,8 +1,6 @@
 import type {
-  Bubble,
   CreateKnowledgeExtractionInput,
   KnowledgeExtractionProposalResponse,
-  KnowledgeExtractionResolutionResponse,
 } from '@nuee/shared-types';
 import { describe, expect, it } from 'vitest';
 import {
@@ -10,8 +8,10 @@ import {
   isKnowledgeExtractionProposalResponse,
   isKnowledgeExtractionResolutionResponse,
   isKnowledgeExtractionTargetChangedError,
+  type KnowledgeExtractionResolutionResponse,
   type KnowledgeExtractionRequest,
 } from '../src/api/knowledgeExtractions';
+import type { Bubble } from '../src/api/bubbles';
 
 interface RecordedRequest {
   init?: RequestInit;

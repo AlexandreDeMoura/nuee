@@ -1,8 +1,10 @@
 import type {
-  Bubble,
   KnowledgeExtractionProposal,
-  KnowledgeExtractionResolutionResponse,
 } from '@nuee/shared-types';
+import type {
+  Bubble,
+  KnowledgeExtractionResolutionResponse,
+} from '../src/api';
 import { describe, expect, it } from 'vitest';
 import {
   createKnowledgeExtractionState,

@@ -10,11 +10,11 @@ import {
 import type {
   CreateKnowledgeExtractionInput,
   KnowledgeExtractionProposalResponse,
-  KnowledgeExtractionResolutionResponse,
   ResolveKnowledgeExtractionInput,
 } from '@nuee/shared-types';
 import { KnowledgeExtractionResolutionService } from './knowledge-extraction-resolution.service';
 import { KnowledgeExtractionService } from './knowledge-extraction.service';
+import type { KnowledgeExtractionResolutionResponse } from './knowledge-extraction.types';
 
 @Controller(
   'projects/:projectId/discussions/:discussionId/knowledge-extractions',

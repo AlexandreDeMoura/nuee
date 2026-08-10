@@ -6,19 +6,19 @@ import { join } from 'node:path';
 import request from 'supertest';
 import { App } from 'supertest/types';
 import type {
-  Bubble,
   DiscussionDetails,
   FrozenContextV1,
   KnowledgeExtractionProposalResponse,
-  KnowledgeExtractionResolutionResponse,
   Project,
 } from '@nuee/shared-types';
+import type { Bubble } from './../src/bubbles/bubble.types';
 import {
   FAKE_STRUCTURED_PROPOSAL,
   FakeModelClient,
 } from './../src/ai/fake-model.client';
 import { MODEL_CLIENT, type ModelClient } from './../src/ai/model-client';
 import { AppModule } from './../src/app.module';
+import type { KnowledgeExtractionResolutionResponse } from './../src/knowledge-extraction/knowledge-extraction.types';
 
 describe('Knowledge extraction generation journey (e2e)', () => {
   const temporaryDirectory = mkdtempSync(

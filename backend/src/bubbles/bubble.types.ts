@@ -1,23 +1,57 @@
 import type {
-  Bubble,
+  Bubble as SharedBubble,
   BubbleLink,
-  BubblePositionUpdate,
+  CreateBubbleInput as SharedCreateBubbleInput,
 } from '@nuee/shared-types';
 
 export type {
-  BatchRepositionBubblesInput,
-  Bubble,
   BubbleLink,
-  BubblePlacement,
-  BubblePlacementStrategy,
-  BubblePositionUpdate,
   BubbleSourceKind,
-  CreateBubbleInput,
   CreateBubbleLinkInput,
-  PlaceBubbleInput,
-  RepositionBubbleInput,
   UpdateBubbleInput,
 } from '@nuee/shared-types';
+
+/**
+ * Transitional persistence model for the pre-territory bubbles table. Remove
+ * it with the table-rebuild migration that assigns every bubble a territory.
+ */
+export type Bubble = Omit<SharedBubble, 'territory_id'> & {
+  position_x: number;
+  position_y: number;
+};
+
+export type CreateBubbleInput = SharedCreateBubbleInput & {
+  position_x?: number;
+  position_y?: number;
+};
+
+export interface RepositionBubbleInput {
+  position_x: number;
+  position_y: number;
+}
+
+export interface BubblePositionUpdate extends RepositionBubbleInput {
+  bubble_id: string;
+}
+
+export interface BatchRepositionBubblesInput {
+  positions: BubblePositionUpdate[];
+}
+
+export type BubblePlacementStrategy = 'viewport' | 'cluster';
+
+export interface PlaceBubbleInput {
+  strategy: BubblePlacementStrategy;
+  viewport_x?: number;
+  viewport_y?: number;
+  viewport_width?: number;
+  viewport_height?: number;
+}
+
+export interface BubblePlacement {
+  position_x: number;
+  position_y: number;
+}
 
 export interface PersistedBubble extends Bubble {
   latest_extraction_id: string | null;

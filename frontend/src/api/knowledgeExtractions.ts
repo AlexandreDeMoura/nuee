@@ -1,16 +1,15 @@
 import type {
-  Bubble,
   CreateKnowledgeExtractionInput,
   KnowledgeExtractionDetailLevel,
   KnowledgeExtractionProposal,
   KnowledgeExtractionProposalResponse,
-  KnowledgeExtractionResolutionResponse,
+  KnowledgeExtractionResolutionResponse as SharedKnowledgeExtractionResolutionResponse,
   KnowledgeExtractionSourceReference,
   KnowledgeExtractionTargetChangedError,
   KnowledgeExtractionTargetPreview,
   ResolveKnowledgeExtractionInput,
 } from '@nuee/shared-types';
-import { isBubbleResponse } from './bubbles';
+import { isBubbleResponse, type Bubble } from './bubbles';
 import { requestJson } from './client';
 
 export type {
@@ -18,11 +17,21 @@ export type {
   KnowledgeExtractionDetailLevel,
   KnowledgeExtractionProposal,
   KnowledgeExtractionProposalResponse,
-  KnowledgeExtractionResolutionResponse,
   KnowledgeExtractionSourceReference,
   KnowledgeExtractionTargetChangedError,
   KnowledgeExtractionTargetPreview,
   ResolveKnowledgeExtractionInput,
+};
+
+/** Temporary response shape used until bubble persistence emits territories. */
+export type KnowledgeExtractionResolutionResponse = Omit<
+  SharedKnowledgeExtractionResolutionResponse,
+  'resolution'
+> & {
+  resolution:
+    | { kind: 'new_bubble'; bubble: Bubble }
+    | { kind: 'update_bubble'; bubble: Bubble }
+    | { kind: 'reject' };
 };
 
 export type KnowledgeExtractionRequest = typeof requestJson;

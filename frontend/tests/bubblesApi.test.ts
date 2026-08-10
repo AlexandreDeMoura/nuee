@@ -1,10 +1,11 @@
-import type { Bubble, BubbleLink } from '@nuee/shared-types';
+import type { BubbleLink } from '@nuee/shared-types';
 import { describe, expect, it } from 'vitest';
 import {
   createBubblesApi,
   isBubbleLinkListResponse,
   isBubbleLinkResponse,
   isBubbleListResponse,
+  type Bubble,
   type BubblesRequest,
 } from '../src/api/bubbles';
 
