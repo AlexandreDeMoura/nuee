@@ -3,8 +3,11 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { DatabaseProvider } from '../database/database.provider';
+import { DatabaseTransaction } from '../database/database-transaction';
 import { ProjectsService } from '../projects/projects.service';
 import { SqliteProjectRepository } from '../projects/sqlite-project.repository';
+import { SqliteTerritoryRepository } from '../territories/sqlite-territory.repository';
+import { TerritoriesService } from '../territories/territories.service';
 import { BubbleLinksService } from './bubble-links.service';
 import { BubblesService } from './bubbles.service';
 import { SqliteBubbleRepository } from './sqlite-bubble.repository';
@@ -24,7 +27,15 @@ describe('BubbleLinksService', () => {
     projectRepository = new SqliteProjectRepository(databaseProvider);
     bubbleRepository = new SqliteBubbleRepository(databaseProvider);
     projects = new ProjectsService(projectRepository);
-    bubbles = new BubblesService(projects, bubbleRepository);
+    bubbles = new BubblesService(
+      projects,
+      bubbleRepository,
+      new TerritoriesService(
+        projects,
+        new SqliteTerritoryRepository(databaseProvider),
+      ),
+      new DatabaseTransaction(databaseProvider),
+    );
     links = new BubbleLinksService(projects, bubbles, bubbleRepository);
   }
 

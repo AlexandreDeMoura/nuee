@@ -816,9 +816,30 @@ describe('SqliteDiscussionRepository', () => {
     databaseProvider.connection
       .prepare(
         `
+          INSERT INTO territories (
+            id, project_id, kind, title, position_x, position_y,
+            visible_count, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `,
+      )
+      .run(
+        'territory-a',
+        project.id,
+        'ungrouped',
+        'Ungrouped',
+        0,
+        0,
+        1,
+        '2026-07-27T10:04:00.000Z',
+        '2026-07-27T10:04:00.000Z',
+      );
+    databaseProvider.connection
+      .prepare(
+        `
           INSERT INTO bubbles (
             id,
             project_id,
+            territory_id,
             title,
             content,
             created_at,
@@ -829,12 +850,13 @@ describe('SqliteDiscussionRepository', () => {
             source_message_ids,
             source_context_item_ids,
             latest_extraction_id
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `,
       )
       .run(
         'extracted-bubble-a',
         project.id,
+        'territory-a',
         'Extracted knowledge',
         'Knowledge that remains owned by the project.',
         '2026-07-27T10:05:00.000Z',

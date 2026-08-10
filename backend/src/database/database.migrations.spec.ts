@@ -59,9 +59,13 @@ describe('runDatabaseMigrations', () => {
           version: 13,
           name: 'repair-project-foreign-keys',
         },
+        {
+          version: 14,
+          name: 'create-territories',
+        },
       ]);
       expect(database.prepare('PRAGMA user_version;').get()).toEqual({
-        user_version: 13,
+        user_version: 14,
       });
     } finally {
       database.close();
@@ -548,6 +552,150 @@ describe('runDatabaseMigrations', () => {
     }
   });
 
+  it('moves existing bubbles into one anchored ungrouped territory per populated project', () => {
+    const database = new DatabaseSync(':memory:');
+
+    try {
+      database.exec('PRAGMA foreign_keys = ON;');
+      runDatabaseMigrations(database, DATABASE_MIGRATIONS.slice(0, 13));
+      const insertProject = database.prepare(
+        `
+          INSERT INTO projects (
+            id, title, description, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?)
+        `,
+      );
+      insertProject.run(
+        'project-with-bubbles',
+        'Populated project',
+        'Migrates into an ungrouped territory.',
+        '2026-08-09T08:00:00.000Z',
+        '2026-08-09T08:00:00.000Z',
+      );
+      insertProject.run(
+        'project-without-bubbles',
+        'Empty project',
+        'Must not receive an empty territory.',
+        '2026-08-09T08:00:00.000Z',
+        '2026-08-09T08:00:00.000Z',
+      );
+      const insertBubble = database.prepare(
+        `
+          INSERT INTO bubbles (
+            id, project_id, title, content, position_x, position_y,
+            created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `,
+      );
+      insertBubble.run(
+        'bubble-lower-x',
+        'project-with-bubbles',
+        'Left bubble',
+        'Its horizontal position anchors the territory.',
+        -240,
+        100,
+        '2026-08-09T09:00:00.000Z',
+        '2026-08-09T09:00:00.000Z',
+      );
+      insertBubble.run(
+        'bubble-lower-y',
+        'project-with-bubbles',
+        'Upper bubble',
+        'Its vertical position anchors the territory.',
+        80,
+        -120,
+        '2026-08-09T10:00:00.000Z',
+        '2026-08-09T10:00:00.000Z',
+      );
+      database
+        .prepare(
+          `
+            INSERT INTO bubble_links (
+              id, project_id, bubble_a_id, bubble_b_id, created_at
+            ) VALUES (?, ?, ?, ?, ?)
+          `,
+        )
+        .run(
+          'legacy-link',
+          'project-with-bubbles',
+          'bubble-lower-x',
+          'bubble-lower-y',
+          '2026-08-09T10:30:00.000Z',
+        );
+
+      runDatabaseMigrations(database);
+
+      expect(
+        database
+          .prepare(
+            `
+              SELECT project_id, kind, title, position_x, position_y,
+                visible_count
+              FROM territories
+            `,
+          )
+          .all(),
+      ).toEqual([
+        {
+          project_id: 'project-with-bubbles',
+          kind: 'ungrouped',
+          title: 'Ungrouped',
+          position_x: -240,
+          position_y: -120,
+          visible_count: 2,
+        },
+      ]);
+      expect(
+        database
+          .prepare(
+            `
+              SELECT b.id, b.territory_id, t.project_id
+              FROM bubbles AS b
+              JOIN territories AS t ON t.id = b.territory_id
+              ORDER BY b.id ASC
+            `,
+          )
+          .all(),
+      ).toEqual([
+        {
+          id: 'bubble-lower-x',
+          territory_id: 'territory:ungrouped:project-with-bubbles',
+          project_id: 'project-with-bubbles',
+        },
+        {
+          id: 'bubble-lower-y',
+          territory_id: 'territory:ungrouped:project-with-bubbles',
+          project_id: 'project-with-bubbles',
+        },
+      ]);
+      expect(
+        database
+          .prepare('PRAGMA table_info(bubbles)')
+          .all()
+          .map((column) => (column as { name: string }).name),
+      ).not.toEqual(expect.arrayContaining(['position_x', 'position_y']));
+      expect(
+        database
+          .prepare(
+            `
+              SELECT id, bubble_a_id, bubble_b_id
+              FROM bubble_links
+            `,
+          )
+          .all(),
+      ).toEqual([
+        {
+          id: 'legacy-link',
+          bubble_a_id: 'bubble-lower-x',
+          bubble_b_id: 'bubble-lower-y',
+        },
+      ]);
+      expect(database.prepare('PRAGMA foreign_key_check;').all()).toEqual([]);
+    } finally {
+      database.close();
+    }
+  });
+
   it('rejects malformed JSON and inconsistent extraction provenance', () => {
     const database = new DatabaseSync(':memory:');
 
@@ -974,7 +1122,11 @@ describe('runDatabaseMigrations', () => {
             `,
           )
           .all(),
-      ).toEqual([{ parent_table: 'bubbles' }, { parent_table: 'projects' }]);
+      ).toEqual([
+        { parent_table: 'bubbles' },
+        { parent_table: 'projects' },
+        { parent_table: 'territories' },
+      ]);
       expect(database.prepare('PRAGMA foreign_key_check;').all()).toEqual([]);
       expect(() =>
         database

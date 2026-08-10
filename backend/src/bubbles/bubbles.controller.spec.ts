@@ -3,9 +3,11 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { DatabaseProvider } from '../database/database.provider';
+import { DatabaseTransaction } from '../database/database-transaction';
 import { ProjectsService } from '../projects/projects.service';
 import { SqliteProjectRepository } from '../projects/sqlite-project.repository';
-import { BubblePlacementService } from './bubble-placement.service';
+import { SqliteTerritoryRepository } from '../territories/sqlite-territory.repository';
+import { TerritoriesService } from '../territories/territories.service';
 import { BubblesController } from './bubbles.controller';
 import { BubblesService } from './bubbles.service';
 import { SqliteBubbleRepository } from './sqlite-bubble.repository';
@@ -26,8 +28,15 @@ describe('BubblesController', () => {
     bubbleRepository = new SqliteBubbleRepository(databaseProvider);
     projects = new ProjectsService(projectRepository);
     controller = new BubblesController(
-      new BubblesService(projects, bubbleRepository),
-      new BubblePlacementService(projects, bubbleRepository),
+      new BubblesService(
+        projects,
+        bubbleRepository,
+        new TerritoriesService(
+          projects,
+          new SqliteTerritoryRepository(databaseProvider),
+        ),
+        new DatabaseTransaction(databaseProvider),
+      ),
     );
   });
 
@@ -36,7 +45,7 @@ describe('BubblesController', () => {
     rmSync(temporaryDirectory, { recursive: true, force: true });
   });
 
-  it('supports project-scoped create, list, read, update, reposition, and delete operations', () => {
+  it('supports project-scoped create, list, read, update, and delete operations', () => {
     const project = projects.create({
       title: 'Bubble API',
       description: 'Exercise every operation.',
@@ -51,8 +60,7 @@ describe('BubblesController', () => {
       title: 'API bubble',
       summary: null,
       content: 'Initial content',
-      position_x: 0,
-      position_y: 0,
+      territory_id: created.territory_id,
       source_kind: 'manual',
       source_discussion_id: null,
       source_discussion_title: null,
@@ -73,35 +81,6 @@ describe('BubblesController', () => {
       summary: 'Added later',
       content: 'Revised content',
     });
-
-    const repositioned = controller.reposition(project.id, created.id, {
-      position_x: 42,
-      position_y: -24,
-    });
-    expect(repositioned).toEqual({
-      ...updated,
-      position_x: 42,
-      position_y: -24,
-    });
-    expect(repositioned.updated_at).toBe(updated.updated_at);
-
-    const batchRepositioned = controller.repositionMany(project.id, {
-      positions: [
-        {
-          bubble_id: created.id,
-          position_x: -120,
-          position_y: 240,
-        },
-      ],
-    });
-    expect(batchRepositioned).toEqual([
-      {
-        ...repositioned,
-        position_x: -120,
-        position_y: 240,
-      },
-    ]);
-    expect(batchRepositioned[0].updated_at).toBe(updated.updated_at);
 
     expect(controller.delete(project.id, created.id)).toBeUndefined();
     expect(controller.list(project.id)).toEqual([]);
@@ -125,35 +104,6 @@ describe('BubblesController', () => {
       NotFoundException,
     );
     expect(controller.list(other.id)).toEqual([]);
-  });
-
-  it('exposes project-scoped viewport and cluster placement operations', () => {
-    const project = projects.create({
-      title: 'Placement API',
-      description: 'Place bubbles without duplicating canvas geometry.',
-    });
-
-    expect(
-      controller.place(project.id, {
-        strategy: 'viewport',
-        viewport_x: 0,
-        viewport_y: 0,
-        viewport_width: 1000,
-        viewport_height: 800,
-      }),
-    ).toEqual({ position_x: 376, position_y: 323 });
-
-    const bubble = controller.create(project.id, {
-      title: 'Centered',
-      content: 'Already occupies the center.',
-      position_x: 376,
-      position_y: 323,
-    });
-
-    expect(controller.place(project.id, { strategy: 'cluster' })).toEqual({
-      position_x: bubble.position_x + 272,
-      position_y: bubble.position_y,
-    });
   });
 
   it('returns a stable validation error', () => {

@@ -426,8 +426,6 @@ describe('Knowledge extraction generation journey (e2e)', () => {
       .send({
         title: 'Existing cluster',
         content: 'Anchor extracted bubble placement.',
-        position_x: 100,
-        position_y: 200,
       })
       .expect(201);
     const anchor = anchorResponse.body as Bubble;
@@ -486,8 +484,6 @@ describe('Knowledge extraction generation journey (e2e)', () => {
           title: 'Reviewed conclusion',
           summary: null,
           content: 'Persist only the reviewed, grounded conclusion.',
-          position_x: 372,
-          position_y: 200,
           source_kind: 'discussion',
           source_discussion_id: discussion.id,
           source_discussion_title: discussion.title,
@@ -496,6 +492,10 @@ describe('Knowledge extraction generation journey (e2e)', () => {
         },
       },
     });
+    expect(resolved.resolution).toHaveProperty(
+      'bubble.territory_id',
+      expect.any(String),
+    );
     await request(app!.getHttpServer())
       .post(resolutionRoute)
       .send(resolutionInput)
@@ -630,8 +630,6 @@ describe('Knowledge extraction generation journey (e2e)', () => {
         title: 'Original target',
         summary: 'Original summary.',
         content: 'Original target content.',
-        position_x: 480,
-        position_y: -160,
       })
       .expect(201);
     const target = targetResponse.body as Bubble;
@@ -640,8 +638,6 @@ describe('Knowledge extraction generation journey (e2e)', () => {
       .send({
         title: 'Linked neighbor',
         content: 'The manual link must survive.',
-        position_x: 720,
-        position_y: -160,
       })
       .expect(201);
     const neighbor = neighborResponse.body as Bubble;
@@ -752,8 +748,7 @@ describe('Knowledge extraction generation journey (e2e)', () => {
           title: proposal.title,
           summary: proposal.summary,
           content: proposal.content,
-          position_x: target.position_x,
-          position_y: target.position_y,
+          territory_id: target.territory_id,
           created_at: target.created_at,
           source_kind: 'discussion',
           source_discussion_id: discussion.id,

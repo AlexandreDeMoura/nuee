@@ -12,7 +12,6 @@ import type {
   KnowledgeExtractionTargetChangedError,
   KnowledgeExtractionTargetPreview,
 } from '@nuee/shared-types';
-import { BubblePlacementService } from '../bubbles/bubble-placement.service';
 import {
   BUBBLE_EXTRACTION_WRITER,
   type Bubble,
@@ -63,7 +62,6 @@ export class KnowledgeExtractionResolutionService {
     private readonly extractions: KnowledgeExtractionRepository,
     @Inject(BUBBLE_EXTRACTION_WRITER)
     private readonly bubbleWriter: BubbleExtractionWriter,
-    private readonly bubblePlacement: BubblePlacementService,
     private readonly transactions: DatabaseTransaction,
   ) {}
 
@@ -152,16 +150,8 @@ export class KnowledgeExtractionResolutionService {
         };
 
         if (resolution.kind === 'new_bubble') {
-          const position = this.bubblePlacement.place(projectId, {
-            strategy: 'cluster',
-          });
-          const bubbleResult = this.bubbleWriter.createFromDiscussionExtraction(
-            {
-              ...provenance,
-              position_x: position.position_x,
-              position_y: position.position_y,
-            },
-          );
+          const bubbleResult =
+            this.bubbleWriter.createFromDiscussionExtraction(provenance);
 
           if (bubbleResult.status === 'extraction_conflict') {
             throw this.resolutionConflict();

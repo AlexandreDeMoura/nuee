@@ -28,6 +28,8 @@ import type {
 } from '../discussion-context/discussion-context.types';
 import { ProjectsService } from '../projects/projects.service';
 import { SqliteProjectRepository } from '../projects/sqlite-project.repository';
+import { SqliteTerritoryRepository } from '../territories/sqlite-territory.repository';
+import { TerritoriesService } from '../territories/territories.service';
 import { DiscussionsService } from './discussions.service';
 import { SqliteDiscussionRepository } from './sqlite-discussion.repository';
 
@@ -110,10 +112,18 @@ describe('DiscussionsService', () => {
     projects = new ProjectsService(
       new SqliteProjectRepository(databaseProvider),
     );
-    bubbleRepository = new SqliteBubbleRepository(databaseProvider);
-    bubbles = new BubblesService(projects, bubbleRepository);
-    repository = new SqliteDiscussionRepository(databaseProvider);
     transactions = new DatabaseTransaction(databaseProvider);
+    bubbleRepository = new SqliteBubbleRepository(databaseProvider);
+    bubbles = new BubblesService(
+      projects,
+      bubbleRepository,
+      new TerritoriesService(
+        projects,
+        new SqliteTerritoryRepository(databaseProvider),
+      ),
+      transactions,
+    );
+    repository = new SqliteDiscussionRepository(databaseProvider);
     modelClient = new ControllableModelClient();
     contextFormatter = new CanonicalFrozenContextFormatter();
     modelInputBudget = new ConfiguredModelInputBudget(
@@ -464,8 +474,6 @@ describe('DiscussionsService', () => {
     const bubble = bubbles.create(project.id, {
       title: 'Initial bubble title',
       content: 'Initial bubble content.',
-      position_x: 75,
-      position_y: -25,
     });
     projects.updateDescription(project.id, {
       description: 'Latest project description at confirmation.',
@@ -896,14 +904,10 @@ describe('DiscussionsService', () => {
       title: 'Reversible launch path',
       summary: 'Choose the option that preserves reversibility.',
       content: 'Sequence the launch so the uncertain decision can be reversed.',
-      position_x: 320,
-      position_y: -160,
     });
     const updateTarget = bubbles.create(project.id, {
       title: 'Earlier launch guidance',
       content: 'An earlier draft of the launch guidance.',
-      position_x: -80,
-      position_y: 240,
     });
     const updatedResult = bubbles.updateFromDiscussionExtraction({
       project_id: project.id,
@@ -964,8 +968,6 @@ describe('DiscussionsService', () => {
       title: 'Atomic knowledge',
       summary: null,
       content: 'This bubble and its source availability change together.',
-      position_x: 0,
-      position_y: 0,
     });
 
     if (sourceBubbleResult.status !== 'created') {

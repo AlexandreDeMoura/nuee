@@ -7,19 +7,18 @@ import type {
   BubbleDiscussionProvenanceWriter,
   BubbleLink,
   BubbleLinkRepository,
-  BubblePositionUpdate,
   BubbleRepository,
+  BubbleTerritoryAssignment,
   PersistedBubble,
 } from './bubble.types';
 
 interface BubbleRow {
   id: string;
   project_id: string;
+  territory_id: string;
   title: string;
   summary: string | null;
   content: string;
-  position_x: number;
-  position_y: number;
   created_at: string;
   updated_at: string;
   source_kind: unknown;
@@ -59,11 +58,10 @@ export class SqliteBubbleRepository
           INSERT INTO bubbles (
             id,
             project_id,
+            territory_id,
             title,
             summary,
             content,
-            position_x,
-            position_y,
             created_at,
             updated_at,
             source_kind,
@@ -73,17 +71,16 @@ export class SqliteBubbleRepository
             source_message_ids,
             source_context_item_ids,
             latest_extraction_id
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `,
       )
       .run(
         bubble.id,
         bubble.project_id,
+        bubble.territory_id,
         bubble.title,
         bubble.summary,
         bubble.content,
-        bubble.position_x,
-        bubble.position_y,
         bubble.created_at,
         bubble.updated_at,
         bubble.source_kind,
@@ -176,27 +173,6 @@ export class SqliteBubbleRepository
       : this.findByProjectAndId(projectId, id);
   }
 
-  updatePosition(
-    projectId: string,
-    id: string,
-    positionX: number,
-    positionY: number,
-  ): Bubble | undefined {
-    const result = this.database
-      .prepare(
-        `
-          UPDATE bubbles
-          SET position_x = ?, position_y = ?
-          WHERE project_id = ? AND id = ?
-        `,
-      )
-      .run(positionX, positionY, projectId, id);
-
-    return result.changes === 0
-      ? undefined
-      : this.findByProjectAndId(projectId, id);
-  }
-
   updateFromDiscussionExtraction(
     projectId: string,
     id: string,
@@ -257,48 +233,38 @@ export class SqliteBubbleRepository
       : this.findByProjectAndId(projectId, id);
   }
 
-  updatePositions(
+  updateTerritories(
     projectId: string,
-    positions: BubblePositionUpdate[],
+    assignments: BubbleTerritoryAssignment[],
   ): Bubble[] {
     const statement = this.database.prepare(
       `
         UPDATE bubbles
-        SET position_x = ?, position_y = ?
+        SET territory_id = ?
         WHERE project_id = ? AND id = ?
       `,
     );
 
-    this.database.exec('BEGIN IMMEDIATE;');
+    for (const assignment of assignments) {
+      const result = statement.run(
+        assignment.territory_id,
+        projectId,
+        assignment.bubble_id,
+      );
 
-    try {
-      for (const position of positions) {
-        const result = statement.run(
-          position.position_x,
-          position.position_y,
-          projectId,
-          position.bubble_id,
+      if (result.changes === 0) {
+        throw new Error(
+          `Bubble "${assignment.bubble_id}" was not available for territory assignment.`,
         );
-
-        if (result.changes === 0) {
-          throw new Error(
-            `Bubble "${position.bubble_id}" was not available for batch positioning.`,
-          );
-        }
       }
-
-      this.database.exec('COMMIT;');
-    } catch (error) {
-      this.database.exec('ROLLBACK;');
-      throw error;
     }
 
-    return positions.map((position) => {
-      const bubble = this.findByProjectAndId(projectId, position.bubble_id);
+    return assignments.map((assignment) => {
+      const bubble = this.findByProjectAndId(projectId, assignment.bubble_id);
 
       if (!bubble) {
         throw new Error(
-          `Bubble "${position.bubble_id}" was not available after batch positioning.`,
+          `Bubble "${assignment.bubble_id}" was not available after territory assignment.`,
         );
       }
 
@@ -439,11 +405,10 @@ export class SqliteBubbleRepository
     return {
       id: row.id,
       project_id: row.project_id,
+      territory_id: row.territory_id,
       title: row.title,
       summary: row.summary,
       content: row.content,
-      position_x: row.position_x,
-      position_y: row.position_y,
       created_at: row.created_at,
       updated_at: row.updated_at,
       source_kind: row.source_kind as Bubble['source_kind'],

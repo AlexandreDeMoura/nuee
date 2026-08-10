@@ -3,8 +3,11 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { DatabaseProvider } from '../database/database.provider';
+import { DatabaseTransaction } from '../database/database-transaction';
 import { ProjectsService } from '../projects/projects.service';
 import { SqliteProjectRepository } from '../projects/sqlite-project.repository';
+import { SqliteTerritoryRepository } from '../territories/sqlite-territory.repository';
+import { TerritoriesService } from '../territories/territories.service';
 import type { CreateBubbleFromDiscussionExtractionInput } from './bubble.types';
 import { BubblesService } from './bubbles.service';
 import { SqliteBubbleRepository } from './sqlite-bubble.repository';
@@ -23,7 +26,15 @@ describe('BubblesService', () => {
     projectRepository = new SqliteProjectRepository(databaseProvider);
     bubbleRepository = new SqliteBubbleRepository(databaseProvider);
     projects = new ProjectsService(projectRepository);
-    service = new BubblesService(projects, bubbleRepository);
+    service = new BubblesService(
+      projects,
+      bubbleRepository,
+      new TerritoriesService(
+        projects,
+        new SqliteTerritoryRepository(databaseProvider),
+      ),
+      new DatabaseTransaction(databaseProvider),
+    );
   }
 
   beforeEach(() => {
@@ -57,8 +68,6 @@ describe('BubblesService', () => {
       title: 'Extracted decision',
       summary: 'A reusable decision from the discussion.',
       content: 'Choose the reversible launch path while demand is uncertain.',
-      position_x: 272,
-      position_y: -178,
       ...overrides,
     };
   }
@@ -77,11 +86,10 @@ describe('BubblesService', () => {
     expect(bubble).toEqual({
       id: bubble.id,
       project_id: project.id,
+      territory_id: bubble.territory_id,
       title: 'Decision criteria',
       summary: null,
       content: 'Prefer reversible choices.',
-      position_x: 0,
-      position_y: 0,
       created_at: '2026-07-21T09:00:00.000Z',
       updated_at: '2026-07-21T09:00:00.000Z',
       source_kind: 'manual',
@@ -95,22 +103,20 @@ describe('BubblesService', () => {
     expect(service.get(project.id, bubble.id)).toEqual(bubble);
   });
 
-  it('accepts an optional summary and initial finite position', () => {
+  it('accepts an optional summary', () => {
     const project = createProject();
 
     const bubble = service.create(project.id, {
       title: 'Placed bubble',
       summary: '  A concise summary.  ',
       content: 'Full content',
-      position_x: -125.5,
-      position_y: 240,
     });
 
     expect(bubble).toMatchObject({
       summary: 'A concise summary.',
-      position_x: -125.5,
-      position_y: 240,
+      territory_id: bubble.territory_id,
     });
+    expect(bubble.territory_id).not.toHaveLength(0);
   });
 
   it('creates a discussion extraction bubble with complete frozen provenance and supports replay', () => {
@@ -125,11 +131,10 @@ describe('BubblesService', () => {
       bubble: {
         id: created.bubble.id,
         project_id: project.id,
+        territory_id: created.bubble.territory_id,
         title: 'Extracted decision',
         summary: 'A reusable decision from the discussion.',
         content: 'Choose the reversible launch path while demand is uncertain.',
-        position_x: 272,
-        position_y: -178,
         created_at: '2026-07-29T09:00:00.000Z',
         updated_at: '2026-07-29T09:00:00.000Z',
         source_kind: 'discussion',
@@ -168,8 +173,6 @@ describe('BubblesService', () => {
     const original = service.create(project.id, {
       title: 'Original title',
       content: 'Original content',
-      position_x: 42,
-      position_y: -24,
     });
     const updateInput = {
       ...extractionInput(project.id),
@@ -216,8 +219,6 @@ describe('BubblesService', () => {
       status: 'target_changed',
       bubble: laterManualEdit,
     });
-    expect(laterManualEdit.position_x).toBe(original.position_x);
-    expect(laterManualEdit.position_y).toBe(original.position_y);
   });
 
   it('rejects invalid extraction provenance before persistence', () => {
@@ -250,20 +251,6 @@ describe('BubblesService', () => {
       'summary',
       'Summary must be text.',
     ],
-    [
-      { title: 'Valid', content: 'Valid', position_x: Number.NaN },
-      'position_x',
-      'Horizontal position must be a finite number.',
-    ],
-    [
-      {
-        title: 'Valid',
-        content: 'Valid',
-        position_y: Number.POSITIVE_INFINITY,
-      },
-      'position_y',
-      'Vertical position must be a finite number.',
-    ],
   ])('rejects invalid create input', (input, field, message) => {
     const project = createProject();
 
@@ -289,8 +276,6 @@ describe('BubblesService', () => {
       title: 'Original title',
       summary: 'Original summary',
       content: 'Original content',
-      position_x: 12,
-      position_y: 24,
     });
 
     const updated = service.update(project.id, original.id, {
@@ -305,8 +290,6 @@ describe('BubblesService', () => {
       updated_at: '2026-07-21T09:00:00.001Z',
     });
     expect(updated.content).toBe(original.content);
-    expect(updated.position_x).toBe(original.position_x);
-    expect(updated.position_y).toBe(original.position_y);
   });
 
   it.each([
@@ -332,150 +315,7 @@ describe('BubblesService', () => {
     }
   });
 
-  it('repositions without changing content updated_at or another bubble', () => {
-    jest.setSystemTime(new Date('2026-07-21T09:00:00.000Z'));
-    const project = createProject();
-    const movedBubble = service.create(project.id, {
-      title: 'Moved',
-      content: 'Moved content',
-    });
-    const untouchedBubble = service.create(project.id, {
-      title: 'Untouched',
-      content: 'Untouched content',
-      position_x: 50,
-      position_y: 75,
-    });
-    jest.setSystemTime(new Date('2026-07-21T10:00:00.000Z'));
-
-    const repositioned = service.reposition(project.id, movedBubble.id, {
-      position_x: -80.25,
-      position_y: 320.5,
-    });
-
-    expect(repositioned).toEqual({
-      ...movedBubble,
-      position_x: -80.25,
-      position_y: 320.5,
-    });
-    expect(repositioned.updated_at).toBe(movedBubble.updated_at);
-    expect(service.get(project.id, untouchedBubble.id)).toEqual(
-      untouchedBubble,
-    );
-  });
-
-  it('repositions a project batch atomically without changing bubble content metadata', () => {
-    jest.setSystemTime(new Date('2026-07-21T09:00:00.000Z'));
-    const project = createProject();
-    const first = service.create(project.id, {
-      title: 'First',
-      summary: 'First summary',
-      content: 'First content',
-      position_x: 10,
-      position_y: 20,
-    });
-    const second = service.create(project.id, {
-      title: 'Second',
-      content: 'Second content',
-      position_x: 400,
-      position_y: 500,
-    });
-
-    const repositioned = service.repositionMany(project.id, {
-      positions: [
-        { bubble_id: second.id, position_x: 282, position_y: 20 },
-        { bubble_id: first.id, position_x: 10, position_y: 198 },
-      ],
-    });
-
-    expect(repositioned).toEqual([
-      { ...second, position_x: 282, position_y: 20 },
-      { ...first, position_x: 10, position_y: 198 },
-    ]);
-    expect(repositioned[0]).toMatchObject({
-      title: second.title,
-      summary: second.summary,
-      content: second.content,
-      source_kind: second.source_kind,
-      updated_at: second.updated_at,
-    });
-    expect(repositioned[1]).toMatchObject({
-      title: first.title,
-      summary: first.summary,
-      content: first.content,
-      source_kind: first.source_kind,
-      updated_at: first.updated_at,
-    });
-  });
-
-  it('rejects an invalid or cross-project position batch before changing any bubble', () => {
-    const project = createProject('Owner');
-    const otherProject = createProject('Other');
-    const first = service.create(project.id, {
-      title: 'First',
-      content: 'First content',
-      position_x: 10,
-      position_y: 20,
-    });
-    const other = service.create(otherProject.id, {
-      title: 'Other project',
-      content: 'Other content',
-      position_x: 30,
-      position_y: 40,
-    });
-
-    expect(() =>
-      service.repositionMany(project.id, {
-        positions: [
-          { bubble_id: first.id, position_x: 100, position_y: 200 },
-          { bubble_id: other.id, position_x: 300, position_y: 400 },
-        ],
-      }),
-    ).toThrow(NotFoundException);
-    expect(service.get(project.id, first.id)).toEqual(first);
-    expect(service.get(otherProject.id, other.id)).toEqual(other);
-
-    expect(() =>
-      service.repositionMany(project.id, {
-        positions: [
-          { bubble_id: first.id, position_x: 1, position_y: 2 },
-          { bubble_id: first.id, position_x: 3, position_y: 4 },
-        ],
-      }),
-    ).toThrow(BadRequestException);
-    expect(service.get(project.id, first.id)).toEqual(first);
-  });
-
-  it.each([
-    [
-      { position_x: '0', position_y: 1 },
-      'position_x',
-      'Horizontal position must be a finite number.',
-    ],
-    [
-      { position_x: 0, position_y: undefined },
-      'position_y',
-      'Vertical position must be a finite number.',
-    ],
-  ])('rejects invalid reposition input', (input, field, message) => {
-    const project = createProject();
-    const bubble = service.create(project.id, {
-      title: 'Bubble',
-      content: 'Content',
-    });
-
-    try {
-      service.reposition(project.id, bubble.id, input as never);
-    } catch (error) {
-      expect(error).toBeInstanceOf(BadRequestException);
-      expect((error as BadRequestException).getResponse()).toEqual({
-        code: 'BUBBLE_VALIDATION_FAILED',
-        message: 'Bubble input is invalid.',
-        field_errors: { [field]: message },
-      });
-    }
-  });
-
-  it('scopes list, read, edit, reposition, and delete to the project', () => {
+  it('scopes list, read, edit, and delete to the project', () => {
     const owningProject = createProject('Owner');
     const otherProject = createProject('Other');
     const bubble = service.create(owningProject.id, {
@@ -489,15 +329,6 @@ describe('BubblesService', () => {
       () => service.get(otherProject.id, bubble.id),
       () =>
         service.update(otherProject.id, bubble.id, { title: 'Unauthorized' }),
-      () =>
-        service.reposition(otherProject.id, bubble.id, {
-          position_x: 1,
-          position_y: 2,
-        }),
-      () =>
-        service.repositionMany(otherProject.id, {
-          positions: [{ bubble_id: bubble.id, position_x: 1, position_y: 2 }],
-        }),
       () => service.delete(otherProject.id, bubble.id),
     ];
 
@@ -525,11 +356,6 @@ describe('BubblesService', () => {
     for (const operation of [
       () => service.get(project.id, 'missing-bubble'),
       () => service.update(project.id, 'missing-bubble', { title: 'New' }),
-      () =>
-        service.reposition(project.id, 'missing-bubble', {
-          position_x: 1,
-          position_y: 2,
-        }),
       () => service.delete(project.id, 'missing-bubble'),
     ]) {
       try {
@@ -569,19 +395,12 @@ describe('BubblesService', () => {
     const created = service.create(project.id, {
       title: 'Persistent bubble',
       content: 'Survives a process restart.',
-      position_x: 10,
-      position_y: -20,
-    });
-    const repositioned = service.reposition(project.id, created.id, {
-      position_x: -144.5,
-      position_y: 280,
     });
 
     databaseProvider.onModuleDestroy();
     openRepositories();
 
-    expect(service.get(project.id, created.id)).toEqual(repositioned);
-    expect(repositioned.updated_at).toBe(created.updated_at);
+    expect(service.get(project.id, created.id)).toEqual(created);
   });
 
   it('persists edited bubble content when the repository is reopened', () => {
@@ -591,8 +410,6 @@ describe('BubblesService', () => {
       title: 'Original title',
       summary: 'Original summary',
       content: 'Original content',
-      position_x: 10,
-      position_y: -20,
     });
     jest.setSystemTime(new Date('2026-07-21T10:00:00.000Z'));
     const updated = service.update(project.id, created.id, {
@@ -606,7 +423,5 @@ describe('BubblesService', () => {
 
     expect(service.get(project.id, created.id)).toEqual(updated);
     expect(updated.updated_at).toBe('2026-07-21T10:00:00.000Z');
-    expect(updated.position_x).toBe(created.position_x);
-    expect(updated.position_y).toBe(created.position_y);
   });
 });

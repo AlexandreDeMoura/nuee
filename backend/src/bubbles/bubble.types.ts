@@ -1,57 +1,13 @@
-import type {
-  Bubble as SharedBubble,
-  BubbleLink,
-  CreateBubbleInput as SharedCreateBubbleInput,
-} from '@nuee/shared-types';
+import type { Bubble, BubbleLink } from '@nuee/shared-types';
 
 export type {
+  Bubble,
   BubbleLink,
   BubbleSourceKind,
+  CreateBubbleInput,
   CreateBubbleLinkInput,
   UpdateBubbleInput,
 } from '@nuee/shared-types';
-
-/**
- * Transitional persistence model for the pre-territory bubbles table. Remove
- * it with the table-rebuild migration that assigns every bubble a territory.
- */
-export type Bubble = Omit<SharedBubble, 'territory_id'> & {
-  position_x: number;
-  position_y: number;
-};
-
-export type CreateBubbleInput = SharedCreateBubbleInput & {
-  position_x?: number;
-  position_y?: number;
-};
-
-export interface RepositionBubbleInput {
-  position_x: number;
-  position_y: number;
-}
-
-export interface BubblePositionUpdate extends RepositionBubbleInput {
-  bubble_id: string;
-}
-
-export interface BatchRepositionBubblesInput {
-  positions: BubblePositionUpdate[];
-}
-
-export type BubblePlacementStrategy = 'viewport' | 'cluster';
-
-export interface PlaceBubbleInput {
-  strategy: BubblePlacementStrategy;
-  viewport_x?: number;
-  viewport_y?: number;
-  viewport_width?: number;
-  viewport_height?: number;
-}
-
-export interface BubblePlacement {
-  position_x: number;
-  position_y: number;
-}
 
 export interface PersistedBubble extends Bubble {
   latest_extraction_id: string | null;
@@ -67,12 +23,6 @@ export interface BubbleRepository {
     projectId: string,
     id: string,
     input: Pick<Bubble, 'title' | 'summary' | 'content' | 'updated_at'>,
-  ): Bubble | undefined;
-  updatePosition(
-    projectId: string,
-    id: string,
-    positionX: number,
-    positionY: number,
   ): Bubble | undefined;
   updateFromDiscussionExtraction(
     projectId: string,
@@ -93,9 +43,9 @@ export interface BubbleRepository {
       | 'latest_extraction_id'
     >,
   ): Bubble | undefined;
-  updatePositions(
+  updateTerritories(
     projectId: string,
-    positions: BubblePositionUpdate[],
+    assignments: BubbleTerritoryAssignment[],
   ): Bubble[];
   delete(projectId: string, id: string): boolean;
 }
@@ -146,14 +96,9 @@ export interface CreateBubbleFromDiscussionExtractionInput extends DiscussionExt
   title: string;
   summary: string | null;
   content: string;
-  position_x: number;
-  position_y: number;
 }
 
-export interface UpdateBubbleFromDiscussionExtractionInput extends Omit<
-  CreateBubbleFromDiscussionExtractionInput,
-  'position_x' | 'position_y'
-> {
+export interface UpdateBubbleFromDiscussionExtractionInput extends CreateBubbleFromDiscussionExtractionInput {
   bubble_id: string;
   expected_updated_at: string;
 }
@@ -183,6 +128,18 @@ export interface BubbleExtractionWriter {
   ): UpdateBubbleFromDiscussionExtractionResult;
 }
 
+export interface BubbleTerritoryAssignment {
+  bubble_id: string;
+  territory_id: string;
+}
+
+export interface BubbleTerritoryAssignmentWriter {
+  assignTerritories(
+    projectId: string,
+    assignments: BubbleTerritoryAssignment[],
+  ): Bubble[];
+}
+
 export interface BubbleDiscussionProvenanceWriter {
   markSourceDiscussionDeleted(
     projectId: string,
@@ -204,6 +161,9 @@ export const BUBBLE_CONTEXT_SOURCE_READER = Symbol(
   'BUBBLE_CONTEXT_SOURCE_READER',
 );
 export const BUBBLE_EXTRACTION_WRITER = Symbol('BUBBLE_EXTRACTION_WRITER');
+export const BUBBLE_TERRITORY_ASSIGNMENT_WRITER = Symbol(
+  'BUBBLE_TERRITORY_ASSIGNMENT_WRITER',
+);
 export const BUBBLE_DISCUSSION_PROVENANCE_WRITER = Symbol(
   'BUBBLE_DISCUSSION_PROVENANCE_WRITER',
 );

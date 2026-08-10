@@ -10,23 +10,15 @@ import {
   Post,
 } from '@nestjs/common';
 import type {
-  BatchRepositionBubblesInput,
   Bubble,
-  BubblePlacement,
   CreateBubbleInput,
-  PlaceBubbleInput,
-  RepositionBubbleInput,
   UpdateBubbleInput,
 } from './bubble.types';
-import { BubblePlacementService } from './bubble-placement.service';
 import { BubblesService } from './bubbles.service';
 
 @Controller('projects/:projectId/bubbles')
 export class BubblesController {
-  constructor(
-    private readonly bubbles: BubblesService,
-    private readonly placements: BubblePlacementService,
-  ) {}
+  constructor(private readonly bubbles: BubblesService) {}
 
   @Post()
   create(
@@ -39,22 +31,6 @@ export class BubblesController {
   @Get()
   list(@Param('projectId') projectId: string): Bubble[] {
     return this.bubbles.list(projectId);
-  }
-
-  @Post('placement')
-  place(
-    @Param('projectId') projectId: string,
-    @Body() input: PlaceBubbleInput,
-  ): BubblePlacement {
-    return this.placements.place(projectId, input);
-  }
-
-  @Patch('positions')
-  repositionMany(
-    @Param('projectId') projectId: string,
-    @Body() input: BatchRepositionBubblesInput,
-  ): Bubble[] {
-    return this.bubbles.repositionMany(projectId, input);
   }
 
   @Get(':bubbleId')
@@ -72,15 +48,6 @@ export class BubblesController {
     @Body() input: UpdateBubbleInput,
   ): Bubble {
     return this.bubbles.update(projectId, bubbleId, input);
-  }
-
-  @Patch(':bubbleId/position')
-  reposition(
-    @Param('projectId') projectId: string,
-    @Param('bubbleId') bubbleId: string,
-    @Body() input: RepositionBubbleInput,
-  ): Bubble {
-    return this.bubbles.reposition(projectId, bubbleId, input);
   }
 
   @Delete(':bubbleId')

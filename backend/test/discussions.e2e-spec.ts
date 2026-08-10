@@ -314,8 +314,6 @@ describe('Discussion lifecycle journey (e2e)', () => {
       .send({
         title: 'First source',
         content: 'Initial first content.',
-        position_x: 120,
-        position_y: -40,
       })
       .expect(201);
     const firstBubble = firstBubbleResponse.body as Bubble;
@@ -332,8 +330,6 @@ describe('Discussion lifecycle journey (e2e)', () => {
       .send({
         title: 'Second source at confirmation',
         content: 'Second content at confirmation.',
-        position_x: -75,
-        position_y: 30,
       })
       .expect(201);
     const secondBubbleAtConfirmation = secondBubbleResponse.body as Bubble;

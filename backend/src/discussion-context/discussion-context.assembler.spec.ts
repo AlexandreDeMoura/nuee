@@ -1,8 +1,11 @@
 import { DatabaseProvider } from '../database/database.provider';
+import { DatabaseTransaction } from '../database/database-transaction';
 import { BubblesService } from '../bubbles/bubbles.service';
 import { SqliteBubbleRepository } from '../bubbles/sqlite-bubble.repository';
 import { ProjectsService } from '../projects/projects.service';
 import { SqliteProjectRepository } from '../projects/sqlite-project.repository';
+import { SqliteTerritoryRepository } from '../territories/sqlite-territory.repository';
+import { TerritoriesService } from '../territories/territories.service';
 import { DiscussionContextAssembler } from './discussion-context.assembler';
 import {
   DiscussionContextSourceError,
@@ -46,6 +49,11 @@ describe('DiscussionContextAssembler', () => {
     bubbles = new BubblesService(
       projects,
       new SqliteBubbleRepository(databaseProvider),
+      new TerritoriesService(
+        projects,
+        new SqliteTerritoryRepository(databaseProvider),
+      ),
+      new DatabaseTransaction(databaseProvider),
     );
     documents = new FakeDocumentContextSourceReader();
     assembler = new DiscussionContextAssembler(projects, bubbles, documents);
@@ -94,8 +102,6 @@ describe('DiscussionContextAssembler', () => {
       title: 'First bubble',
       summary: 'Display-only summary',
       content: 'Complete first synthesized content.',
-      position_x: 45,
-      position_y: -10,
     });
     const secondBubble = bubbles.create(project.id, {
       title: 'Second bubble',
@@ -374,8 +380,6 @@ describe('DiscussionContextAssembler', () => {
     const bubble = bubbles.create(project.id, {
       title: 'Stable bubble',
       content: 'Stable content',
-      position_x: 120,
-      position_y: -80,
     });
     const originalProject = projects.get(project.id);
     const originalBubble = bubbles.get(project.id, bubble.id);

@@ -12,6 +12,7 @@ import { PERSIST_EXTRACTION_INTENT_MIGRATION } from '../knowledge-extraction/mig
 import { CREATE_PROJECTS_MIGRATION } from '../projects/migrations/001-create-projects';
 import { WIDEN_PROJECT_DESCRIPTION_MIGRATION } from '../projects/migrations/012-widen-project-description';
 import { REPAIR_PROJECT_FOREIGN_KEYS_MIGRATION } from '../projects/migrations/013-repair-project-foreign-keys';
+import { CREATE_TERRITORIES_MIGRATION } from '../territories/migrations/014-create-territories';
 
 export interface DatabaseMigration {
   readonly version: number;
@@ -89,6 +90,11 @@ export const DATABASE_MIGRATIONS: readonly DatabaseMigration[] = [
     version: 13,
     name: 'repair-project-foreign-keys',
     sql: REPAIR_PROJECT_FOREIGN_KEYS_MIGRATION,
+  },
+  {
+    version: 14,
+    name: 'create-territories',
+    sql: CREATE_TERRITORIES_MIGRATION,
   },
 ];
 

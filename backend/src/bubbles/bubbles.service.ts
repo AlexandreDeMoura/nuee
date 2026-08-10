@@ -5,28 +5,31 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
+import { DatabaseTransaction } from '../database/database-transaction';
 import { ProjectsService } from '../projects/projects.service';
+import {
+  TERRITORY_BUBBLE_LIFECYCLE,
+  type TerritoryBubbleLifecycle,
+} from '../territories/territory.types';
 import { BUBBLE_REPOSITORY } from './bubble.types';
 import type {
-  BatchRepositionBubblesInput,
   Bubble,
   BubbleContextSourceReadResult,
   BubbleContextSourceReader,
   BubbleExtractionWriter,
-  BubblePositionUpdate,
   BubbleRepository,
+  BubbleTerritoryAssignment,
+  BubbleTerritoryAssignmentWriter,
   CreateBubbleFromDiscussionExtractionInput,
   CreateBubbleFromDiscussionExtractionResult,
   CreateBubbleInput,
   PersistedBubble,
-  RepositionBubbleInput,
   UpdateBubbleFromDiscussionExtractionInput,
   UpdateBubbleFromDiscussionExtractionResult,
   UpdateBubbleInput,
 } from './bubble.types';
 
 type BubbleTextField = 'title' | 'content';
-type BubblePositionField = 'position_x' | 'position_y';
 
 interface NormalizedExtractionBubbleInput {
   project_id: string;
@@ -40,45 +43,52 @@ interface NormalizedExtractionBubbleInput {
   source_context_item_ids: string[];
 }
 
-interface NormalizedCreateExtractionBubbleInput extends NormalizedExtractionBubbleInput {
-  position_x: number;
-  position_y: number;
-}
-
 @Injectable()
 export class BubblesService
-  implements BubbleContextSourceReader, BubbleExtractionWriter
+  implements
+    BubbleContextSourceReader,
+    BubbleExtractionWriter,
+    BubbleTerritoryAssignmentWriter
 {
   constructor(
     private readonly projects: ProjectsService,
     @Inject(BUBBLE_REPOSITORY)
     private readonly bubbles: BubbleRepository,
+    @Inject(TERRITORY_BUBBLE_LIFECYCLE)
+    private readonly territoryLifecycle: TerritoryBubbleLifecycle,
+    private readonly transactions: DatabaseTransaction,
   ) {}
 
   create(projectId: string, input: CreateBubbleInput): Bubble {
     this.projects.get(projectId);
 
-    const timestamp = new Date().toISOString();
-    const bubble: PersistedBubble = {
-      id: randomUUID(),
-      project_id: projectId,
-      title: this.requiredText(input?.title, 'title'),
-      summary: this.optionalSummary(input?.summary),
-      content: this.requiredText(input?.content, 'content'),
-      position_x: this.optionalCoordinate(input?.position_x, 'position_x'),
-      position_y: this.optionalCoordinate(input?.position_y, 'position_y'),
-      created_at: timestamp,
-      updated_at: timestamp,
-      source_kind: 'manual',
-      source_discussion_id: null,
-      source_discussion_title: null,
-      source_discussion_deleted_at: null,
-      source_message_ids: [],
-      source_context_item_ids: [],
-      latest_extraction_id: null,
-    };
+    const title = this.requiredText(input?.title, 'title');
+    const summary = this.optionalSummary(input?.summary);
+    const content = this.requiredText(input?.content, 'content');
 
-    return this.bubbles.create(bubble);
+    return this.transactions.run(() => {
+      const territory = this.territoryLifecycle.ensureUngrouped(projectId);
+      const timestamp = new Date().toISOString();
+      const bubble: PersistedBubble = {
+        id: randomUUID(),
+        project_id: projectId,
+        territory_id: territory.id,
+        title,
+        summary,
+        content,
+        created_at: timestamp,
+        updated_at: timestamp,
+        source_kind: 'manual',
+        source_discussion_id: null,
+        source_discussion_title: null,
+        source_discussion_deleted_at: null,
+        source_message_ids: [],
+        source_context_item_ids: [],
+        latest_extraction_id: null,
+      };
+
+      return this.bubbles.create(bubble);
+    });
   }
 
   findByDiscussionExtraction(
@@ -95,11 +105,7 @@ export class BubblesService
   createFromDiscussionExtraction(
     input: CreateBubbleFromDiscussionExtractionInput,
   ): CreateBubbleFromDiscussionExtractionResult {
-    const normalized: NormalizedCreateExtractionBubbleInput = {
-      ...this.normalizeExtractionInput(input),
-      position_x: this.requiredCoordinate(input.position_x, 'position_x'),
-      position_y: this.requiredCoordinate(input.position_y, 'position_y'),
-    };
+    const normalized = this.normalizeExtractionInput(input);
     this.projects.get(normalized.project_id);
     const existingResolution = this.bubbles.findByLatestExtractionId(
       normalized.extraction_id,
@@ -114,27 +120,31 @@ export class BubblesService
       };
     }
 
-    const timestamp = new Date().toISOString();
-    const bubble: PersistedBubble = {
-      id: randomUUID(),
-      project_id: normalized.project_id,
-      title: normalized.title,
-      summary: normalized.summary,
-      content: normalized.content,
-      position_x: normalized.position_x,
-      position_y: normalized.position_y,
-      created_at: timestamp,
-      updated_at: timestamp,
-      source_kind: 'discussion',
-      source_discussion_id: normalized.source_discussion_id,
-      source_discussion_title: normalized.source_discussion_title,
-      source_discussion_deleted_at: null,
-      source_message_ids: normalized.source_message_ids,
-      source_context_item_ids: normalized.source_context_item_ids,
-      latest_extraction_id: normalized.extraction_id,
-    };
+    return this.transactions.run(() => {
+      const territory = this.territoryLifecycle.ensureUngrouped(
+        normalized.project_id,
+      );
+      const timestamp = new Date().toISOString();
+      const bubble: PersistedBubble = {
+        id: randomUUID(),
+        project_id: normalized.project_id,
+        territory_id: territory.id,
+        title: normalized.title,
+        summary: normalized.summary,
+        content: normalized.content,
+        created_at: timestamp,
+        updated_at: timestamp,
+        source_kind: 'discussion',
+        source_discussion_id: normalized.source_discussion_id,
+        source_discussion_title: normalized.source_discussion_title,
+        source_discussion_deleted_at: null,
+        source_message_ids: normalized.source_message_ids,
+        source_context_item_ids: normalized.source_context_item_ids,
+        latest_extraction_id: normalized.extraction_id,
+      };
 
-    return { status: 'created', bubble: this.bubbles.create(bubble) };
+      return { status: 'created', bubble: this.bubbles.create(bubble) };
+    });
   }
 
   updateFromDiscussionExtraction(
@@ -288,90 +298,48 @@ export class BubblesService
     return updatedBubble;
   }
 
-  reposition(
+  assignTerritories(
     projectId: string,
-    bubbleId: string,
-    input: RepositionBubbleInput,
-  ): Bubble {
-    this.get(projectId, bubbleId);
-
-    const positionX = this.requiredCoordinate(input?.position_x, 'position_x');
-    const positionY = this.requiredCoordinate(input?.position_y, 'position_y');
-    const updatedBubble = this.bubbles.updatePosition(
-      projectId,
-      bubbleId,
-      positionX,
-      positionY,
-    );
-
-    if (!updatedBubble) {
-      throw this.notFound(projectId, bubbleId);
-    }
-
-    return updatedBubble;
-  }
-
-  repositionMany(
-    projectId: string,
-    input: BatchRepositionBubblesInput,
+    assignments: BubbleTerritoryAssignment[],
   ): Bubble[] {
     this.projects.get(projectId);
 
-    if (!Array.isArray(input?.positions) || input.positions.length === 0) {
-      throw this.validationError({
-        positions: 'At least one bubble position must be provided.',
-      });
+    if (assignments.length === 0) {
+      return [];
     }
 
     const bubbleIds = new Set<string>();
-    const positions: BubblePositionUpdate[] = input.positions.map(
-      (position, index) => {
-        const bubbleId = position?.bubble_id;
-
-        if (typeof bubbleId !== 'string' || bubbleId.trim().length === 0) {
-          throw this.validationError({
-            [`positions.${index}.bubble_id`]: 'Bubble identifier is required.',
-          });
-        }
-
-        if (bubbleIds.has(bubbleId)) {
-          throw this.validationError({
-            [`positions.${index}.bubble_id`]:
-              'Each bubble may only appear once.',
-          });
-        }
-
-        bubbleIds.add(bubbleId);
-
-        return {
-          bubble_id: bubbleId,
-          position_x: this.requiredCoordinate(
-            position.position_x,
-            'position_x',
-          ),
-          position_y: this.requiredCoordinate(
-            position.position_y,
-            'position_y',
-          ),
-        };
-      },
-    );
-
-    for (const position of positions) {
-      if (!this.bubbles.findByProjectAndId(projectId, position.bubble_id)) {
-        throw this.notFound(projectId, position.bubble_id);
+    for (const assignment of assignments) {
+      if (
+        bubbleIds.has(assignment.bubble_id) ||
+        !this.bubbles.findByProjectAndId(projectId, assignment.bubble_id)
+      ) {
+        throw new Error(
+          `Bubble "${assignment.bubble_id}" is unavailable for territory assignment.`,
+        );
       }
+
+      bubbleIds.add(assignment.bubble_id);
     }
 
-    return this.bubbles.updatePositions(projectId, positions);
+    return this.transactions.run(() =>
+      this.bubbles.updateTerritories(projectId, assignments),
+    );
   }
 
   delete(projectId: string, bubbleId: string): void {
-    this.get(projectId, bubbleId);
+    const bubble = this.get(projectId, bubbleId);
 
-    if (!this.bubbles.delete(projectId, bubbleId)) {
-      throw this.notFound(projectId, bubbleId);
-    }
+    this.transactions.run(() => {
+      if (!this.bubbles.delete(projectId, bubbleId)) {
+        throw this.notFound(projectId, bubbleId);
+      }
+
+      this.territoryLifecycle.reconcileAfterBubbleDeletion(
+        projectId,
+        bubble.territory_id,
+      );
+    });
   }
 
   private requiredText(value: unknown, field: BubbleTextField): string {
@@ -394,26 +362,6 @@ export class BubblesService
     }
 
     return value.trim().length === 0 ? null : value.trim();
-  }
-
-  private optionalCoordinate(
-    value: unknown,
-    field: BubblePositionField,
-  ): number {
-    return value === undefined ? 0 : this.requiredCoordinate(value, field);
-  }
-
-  private requiredCoordinate(
-    value: unknown,
-    field: BubblePositionField,
-  ): number {
-    if (typeof value !== 'number' || !Number.isFinite(value)) {
-      throw this.validationError({
-        [field]: `${field === 'position_x' ? 'Horizontal' : 'Vertical'} position must be a finite number.`,
-      });
-    }
-
-    return value;
   }
 
   private normalizeExtractionInput(
@@ -489,13 +437,9 @@ export class BubblesService
 
   private matchesExtractionCreate(
     bubble: Bubble,
-    input: NormalizedCreateExtractionBubbleInput,
+    input: NormalizedExtractionBubbleInput,
   ): boolean {
-    return (
-      this.matchesExtractionContent(bubble, input) &&
-      bubble.position_x === input.position_x &&
-      bubble.position_y === input.position_y
-    );
+    return this.matchesExtractionContent(bubble, input);
   }
 
   private matchesExtractionContent(

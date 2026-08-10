@@ -1,13 +1,14 @@
 import { Module } from '@nestjs/common';
 import { ProjectsModule } from '../projects/projects.module';
+import { TerritoriesModule } from '../territories/territories.module';
 import {
   BUBBLE_CONTEXT_SOURCE_READER,
   BUBBLE_DISCUSSION_PROVENANCE_WRITER,
   BUBBLE_EXTRACTION_WRITER,
   BUBBLE_LINK_REPOSITORY,
   BUBBLE_REPOSITORY,
+  BUBBLE_TERRITORY_ASSIGNMENT_WRITER,
 } from './bubble.types';
-import { BubblePlacementService } from './bubble-placement.service';
 import { BubbleLinksController } from './bubble-links.controller';
 import { BubbleLinksService } from './bubble-links.service';
 import { BubblesController } from './bubbles.controller';
@@ -15,11 +16,10 @@ import { BubblesService } from './bubbles.service';
 import { SqliteBubbleRepository } from './sqlite-bubble.repository';
 
 @Module({
-  imports: [ProjectsModule],
+  imports: [ProjectsModule, TerritoriesModule],
   controllers: [BubblesController, BubbleLinksController],
   providers: [
     BubblesService,
-    BubblePlacementService,
     SqliteBubbleRepository,
     {
       provide: BUBBLE_REPOSITORY,
@@ -38,6 +38,10 @@ import { SqliteBubbleRepository } from './sqlite-bubble.repository';
       useExisting: BubblesService,
     },
     {
+      provide: BUBBLE_TERRITORY_ASSIGNMENT_WRITER,
+      useExisting: BubblesService,
+    },
+    {
       provide: BUBBLE_DISCUSSION_PROVENANCE_WRITER,
       useExisting: SqliteBubbleRepository,
     },
@@ -45,10 +49,10 @@ import { SqliteBubbleRepository } from './sqlite-bubble.repository';
   ],
   exports: [
     BubblesService,
-    BubblePlacementService,
     BubbleLinksService,
     BUBBLE_CONTEXT_SOURCE_READER,
     BUBBLE_EXTRACTION_WRITER,
+    BUBBLE_TERRITORY_ASSIGNMENT_WRITER,
     BUBBLE_DISCUSSION_PROVENANCE_WRITER,
   ],
 })

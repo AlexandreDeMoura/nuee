@@ -59,6 +59,7 @@ describe('DatabaseProvider', () => {
       { name: 'knowledge_extraction_attempts' },
       { name: 'projects' },
       { name: 'schema_migrations' },
+      { name: 'territories' },
     ]);
   });
 

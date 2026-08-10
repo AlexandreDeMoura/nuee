@@ -2,8 +2,11 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { DatabaseProvider } from '../database/database.provider';
+import { DatabaseTransaction } from '../database/database-transaction';
 import { ProjectsService } from '../projects/projects.service';
 import { SqliteProjectRepository } from '../projects/sqlite-project.repository';
+import { SqliteTerritoryRepository } from '../territories/sqlite-territory.repository';
+import { TerritoriesService } from '../territories/territories.service';
 import { BubbleProvenanceIntegrityError } from './bubble.types';
 import { BubblesService } from './bubbles.service';
 import { SqliteBubbleRepository } from './sqlite-bubble.repository';
@@ -24,7 +27,15 @@ describe('SqliteBubbleRepository provenance integrity', () => {
       new SqliteProjectRepository(databaseProvider),
     );
     repository = new SqliteBubbleRepository(databaseProvider);
-    service = new BubblesService(projects, repository);
+    service = new BubblesService(
+      projects,
+      repository,
+      new TerritoriesService(
+        projects,
+        new SqliteTerritoryRepository(databaseProvider),
+      ),
+      new DatabaseTransaction(databaseProvider),
+    );
   });
 
   afterEach(() => {
@@ -103,8 +114,6 @@ describe('SqliteBubbleRepository provenance integrity', () => {
       title: 'Matching extraction',
       summary: 'Matching summary.',
       content: 'Matching extracted knowledge.',
-      position_x: 120,
-      position_y: -80,
     });
     const otherSourceResult = service.createFromDiscussionExtraction({
       project_id: project.id,
@@ -116,8 +125,6 @@ describe('SqliteBubbleRepository provenance integrity', () => {
       title: 'Other extraction',
       summary: null,
       content: 'Knowledge from another discussion.',
-      position_x: 420,
-      position_y: -80,
     });
     const otherProjectResult = service.createFromDiscussionExtraction({
       project_id: otherProject.id,
@@ -129,8 +136,6 @@ describe('SqliteBubbleRepository provenance integrity', () => {
       title: 'Other project extraction',
       summary: null,
       content: 'Knowledge belonging to another project.',
-      position_x: 0,
-      position_y: 0,
     });
     const manualBubble = service.create(project.id, {
       title: 'Manual bubble',

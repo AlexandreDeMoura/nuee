@@ -15,6 +15,7 @@ import { DiscussionsModule } from './discussions/discussions.module';
 import { DocumentsModule } from './documents/documents.module';
 import { KnowledgeExtractionModule } from './knowledge-extraction/knowledge-extraction.module';
 import { ProjectsModule } from './projects/projects.module';
+import { TerritoriesModule } from './territories/territories.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { ProjectsModule } from './projects/projects.module';
     AiModule,
     DatabaseModule,
     ProjectsModule,
+    TerritoriesModule,
     BubblesModule,
     DocumentsModule,
     DiscussionsModule,

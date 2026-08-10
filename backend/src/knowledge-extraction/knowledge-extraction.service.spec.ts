@@ -18,7 +18,6 @@ import type {
   ModelInputBudget,
   ModelInputBudgetResult,
 } from '../ai/model-input-budget';
-import { BubblePlacementService } from '../bubbles/bubble-placement.service';
 import { BubblesService } from '../bubbles/bubbles.service';
 import { SqliteBubbleRepository } from '../bubbles/sqlite-bubble.repository';
 import { DatabaseProvider } from '../database/database.provider';
@@ -31,6 +30,8 @@ import { BubbleLinksService } from '../bubbles/bubble-links.service';
 import { SqliteDiscussionRepository } from '../discussions/sqlite-discussion.repository';
 import { ProjectsService } from '../projects/projects.service';
 import { SqliteProjectRepository } from '../projects/sqlite-project.repository';
+import { SqliteTerritoryRepository } from '../territories/sqlite-territory.repository';
+import { TerritoriesService } from '../territories/territories.service';
 import { KnowledgeExtractionResolutionService } from './knowledge-extraction-resolution.service';
 import { KnowledgeExtractionService } from './knowledge-extraction.service';
 import { SqliteKnowledgeExtractionRepository } from './sqlite-knowledge-extraction.repository';
@@ -42,7 +43,6 @@ describe('Knowledge extraction generation and resolution services', () => {
   let extractions: SqliteKnowledgeExtractionRepository;
   let bubbles: BubblesService;
   let bubbleLinks: BubbleLinksService;
-  let bubblePlacement: BubblePlacementService;
   let transactions: DatabaseTransaction;
   let resolutions: KnowledgeExtractionResolutionService;
   let modelClient: ModelClient;
@@ -59,15 +59,21 @@ describe('Knowledge extraction generation and resolution services', () => {
     discussions = new SqliteDiscussionRepository(databaseProvider);
     extractions = new SqliteKnowledgeExtractionRepository(databaseProvider);
     const bubbleRepository = new SqliteBubbleRepository(databaseProvider);
-    bubbles = new BubblesService(projects, bubbleRepository);
-    bubbleLinks = new BubbleLinksService(projects, bubbles, bubbleRepository);
-    bubblePlacement = new BubblePlacementService(projects, bubbleRepository);
     transactions = new DatabaseTransaction(databaseProvider);
+    bubbles = new BubblesService(
+      projects,
+      bubbleRepository,
+      new TerritoriesService(
+        projects,
+        new SqliteTerritoryRepository(databaseProvider),
+      ),
+      transactions,
+    );
+    bubbleLinks = new BubbleLinksService(projects, bubbles, bubbleRepository);
     resolutions = new KnowledgeExtractionResolutionService(
       projects,
       extractions,
       bubbles,
-      bubblePlacement,
       transactions,
     );
     modelClient = new FakeModelClient();
@@ -1191,14 +1197,12 @@ describe('Knowledge extraction generation and resolution services', () => {
     ).toEqual({ count: 0 });
   });
 
-  it('atomically resolves a reviewed proposal as one cluster-placed bubble and replays it', async () => {
+  it('atomically resolves a reviewed proposal into the ungrouped territory and replays it', async () => {
     const project = createProject('Resolved knowledge');
     const source = createDiscussion(project.id, 'discussion-resolution');
     bubbles.create(project.id, {
       title: 'Existing cluster',
       content: 'Anchor the standard cluster placement.',
-      position_x: 100,
-      position_y: 200,
     });
     const discussionBefore = discussions.findByProjectAndId(
       project.id,
@@ -1245,8 +1249,6 @@ describe('Knowledge extraction generation and resolution services', () => {
           title: 'Reviewed decision',
           summary: null,
           content: 'Keep this final reviewed knowledge.',
-          position_x: 372,
-          position_y: 200,
           source_kind: 'discussion',
           source_discussion_id: source.record.id,
           source_discussion_title: source.record.title,
@@ -1256,6 +1258,10 @@ describe('Knowledge extraction generation and resolution services', () => {
         },
       },
     });
+    expect(resolved.resolution).toHaveProperty(
+      'bubble.territory_id',
+      expect.any(String),
+    );
     expect(
       extractions.findByProjectDiscussionAndId(
         project.id,
@@ -1334,20 +1340,16 @@ describe('Knowledge extraction generation and resolution services', () => {
     });
   });
 
-  it('atomically updates one target while preserving position, links, creation time, and frozen context', async () => {
+  it('atomically updates one target while preserving territory, links, creation time, and frozen context', async () => {
     const project = createProject('Updated knowledge');
     const target = bubbles.create(project.id, {
       title: 'Original target',
       summary: 'Original summary.',
       content: 'Original target content.',
-      position_x: 640,
-      position_y: -320,
     });
     const linkedBubble = bubbles.create(project.id, {
       title: 'Linked neighbor',
       content: 'Keep this manual relationship.',
-      position_x: 900,
-      position_y: -320,
     });
     const link = bubbleLinks.create(project.id, {
       bubble_a_id: target.id,
@@ -1411,8 +1413,7 @@ describe('Knowledge extraction generation and resolution services', () => {
           title: 'Reviewed replacement',
           summary: null,
           content: 'Replace only the editable knowledge fields.',
-          position_x: target.position_x,
-          position_y: target.position_y,
+          territory_id: target.territory_id,
           created_at: target.created_at,
           source_kind: 'discussion',
           source_discussion_id: source.record.id,
@@ -1477,8 +1478,6 @@ describe('Knowledge extraction generation and resolution services', () => {
       title: 'Selected target',
       summary: 'Selected summary.',
       content: 'Selected target content.',
-      position_x: 128,
-      position_y: 256,
     });
     const source = createDiscussion(project.id, 'discussion-target-conflict');
     const generated = await service.generateProposal(
@@ -1568,8 +1567,8 @@ describe('Knowledge extraction generation and resolution services', () => {
       '2026-07-30T12:00:00.002Z',
     );
     expect(resolved.resolution).toHaveProperty(
-      'bubble.position_x',
-      target.position_x,
+      'bubble.territory_id',
+      target.territory_id,
     );
   });
 
@@ -1648,8 +1647,6 @@ describe('Knowledge extraction generation and resolution services', () => {
       title: 'Stable target',
       summary: 'Stable summary.',
       content: 'Keep this content if the transaction fails.',
-      position_x: -150,
-      position_y: 75,
     });
     const source = createDiscussion(project.id, 'discussion-update-rollback');
     const generated = await service.generateProposal(

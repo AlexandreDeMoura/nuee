@@ -3,52 +3,21 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { DatabaseSync } from 'node:sqlite';
 import request from 'supertest';
 import { App } from 'supertest/types';
+import type { Bubble, Project, Territory } from '@nuee/shared-types';
 import { AppModule } from './../src/app.module';
+import {
+  DATABASE_MIGRATIONS,
+  runDatabaseMigrations,
+} from './../src/database/database.migrations';
 
-interface JourneyProject {
-  id: string;
-  title: string;
-  description: string;
-  created_at: string;
-  updated_at: string;
-  canvas_viewport_x: number;
-  canvas_viewport_y: number;
-  canvas_zoom: number;
-}
-
-interface JourneyBubble {
-  id: string;
-  project_id: string;
-  title: string;
-  summary: string | null;
-  content: string;
-  position_x: number;
-  position_y: number;
-  created_at: string;
-  updated_at: string;
-  source_kind: 'manual' | 'discussion';
-  source_discussion_id: string | null;
-  source_discussion_title: string | null;
-  source_discussion_deleted_at: string | null;
-  source_message_ids: string[];
-  source_context_item_ids: string[];
-}
-
-interface JourneyLink {
-  id: string;
-  project_id: string;
-  bubble_a_id: string;
-  bubble_b_id: string;
-  created_at: string;
-}
-
-describe('Bubble canvas journey (e2e)', () => {
+describe('Territory canvas persistence journey (e2e)', () => {
   const temporaryDirectory = mkdtempSync(
-    join(tmpdir(), 'nuee-bubble-canvas-journey-'),
+    join(tmpdir(), 'nuee-territory-canvas-journey-'),
   );
-  const databasePath = join(temporaryDirectory, 'bubble-canvas.sqlite');
+  const databasePath = join(temporaryDirectory, 'territory-canvas.sqlite');
   const previousDatabasePath = process.env.PROJECT_DATABASE_PATH;
   let app: INestApplication<App> | undefined;
 
@@ -61,6 +30,56 @@ describe('Bubble canvas journey (e2e)', () => {
     await application.init();
     return application;
   }
+
+  beforeAll(() => {
+    const database = new DatabaseSync(databasePath);
+    database.exec('PRAGMA foreign_keys = ON;');
+    runDatabaseMigrations(database, DATABASE_MIGRATIONS.slice(0, 13));
+    database
+      .prepare(
+        `
+          INSERT INTO projects (
+            id, title, description, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?)
+        `,
+      )
+      .run(
+        'legacy-project',
+        'Legacy canvas',
+        'A project created before territories existed.',
+        '2026-08-09T08:00:00.000Z',
+        '2026-08-09T08:00:00.000Z',
+      );
+    const insertBubble = database.prepare(
+      `
+        INSERT INTO bubbles (
+          id, project_id, title, content, position_x, position_y,
+          created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+    );
+    insertBubble.run(
+      'legacy-bubble-a',
+      'legacy-project',
+      'Legacy left edge',
+      'Must survive the territory migration.',
+      -300,
+      80,
+      '2026-08-09T09:00:00.000Z',
+      '2026-08-09T09:00:00.000Z',
+    );
+    insertBubble.run(
+      'legacy-bubble-b',
+      'legacy-project',
+      'Legacy top edge',
+      'Must share the migrated ungrouped territory.',
+      40,
+      -140,
+      '2026-08-09T10:00:00.000Z',
+      '2026-08-09T10:00:00.000Z',
+    );
+    database.close();
+  });
 
   beforeEach(async () => {
     app = await startApplication();
@@ -81,198 +100,154 @@ describe('Bubble canvas journey (e2e)', () => {
     rmSync(temporaryDirectory, { recursive: true, force: true });
   });
 
-  it('persists the create, move, edit, link, compact, reload, and delete journey', async () => {
+  it('migrates legacy bubbles and persists territory mutations across reloads', async () => {
+    const migratedTerritoriesResponse = await request(app!.getHttpServer())
+      .get('/projects/legacy-project/territories')
+      .expect(200);
+    const migratedTerritories = migratedTerritoriesResponse.body as Territory[];
+
+    expect(migratedTerritories).toEqual([
+      expect.objectContaining({
+        project_id: 'legacy-project',
+        kind: 'ungrouped',
+        title: 'Ungrouped',
+        position_x: -300,
+        position_y: -140,
+        visible_count: 2,
+      }),
+    ]);
+
+    const migratedBubblesResponse = await request(app!.getHttpServer())
+      .get('/projects/legacy-project/bubbles')
+      .expect(200);
+    const migratedBubbles = migratedBubblesResponse.body as Bubble[];
+    expect(migratedBubbles.map(({ territory_id }) => territory_id)).toEqual([
+      migratedTerritories[0].id,
+      migratedTerritories[0].id,
+    ]);
+    expect(migratedBubbles[0]).not.toHaveProperty('position_x');
+    expect(migratedBubbles[0]).not.toHaveProperty('position_y');
+
     const projectResponse = await request(app!.getHttpServer())
       .post('/projects')
       .send({
-        title: 'Bubble canvas journey',
-        description: 'Exercise durable project knowledge from the canvas.',
+        title: 'Territory canvas journey',
+        description: 'Exercise durable territory-backed knowledge.',
       })
       .expect(201);
-    const createdProject = projectResponse.body as JourneyProject;
+    const project = projectResponse.body as Project;
 
-    const viewportResponse = await request(app!.getHttpServer())
-      .patch(`/projects/${createdProject.id}/viewport`)
-      .send({
-        canvas_viewport_x: -84,
-        canvas_viewport_y: 46,
-        canvas_zoom: 1.25,
-      })
-      .expect(200);
-    const persistedProject = viewportResponse.body as JourneyProject;
+    await request(app!.getHttpServer())
+      .get(`/projects/${project.id}/territories`)
+      .expect(200)
+      .expect([]);
 
-    const anchorResponse = await request(app!.getHttpServer())
-      .post(`/projects/${createdProject.id}/bubbles`)
+    const firstResponse = await request(app!.getHttpServer())
+      .post(`/projects/${project.id}/bubbles`)
       .send({
         title: 'Existing launch constraint',
         summary: 'Licensing remains the longest lead-time item.',
         content: 'The current licensing estimate is nine to fourteen months.',
-        position_x: -320,
-        position_y: 120,
       })
       .expect(201);
-    const anchor = anchorResponse.body as JourneyBubble;
-
-    const placementResponse = await request(app!.getHttpServer())
-      .post(`/projects/${createdProject.id}/bubbles/placement`)
-      .send({
-        strategy: 'viewport',
-        viewport_x: 0,
-        viewport_y: 0,
-        viewport_width: 1200,
-        viewport_height: 800,
-      })
-      .expect(201);
-    const placement = placementResponse.body as {
-      position_x: number;
-      position_y: number;
-    };
-
-    const createdBubbleResponse = await request(app!.getHttpServer())
-      .post(`/projects/${createdProject.id}/bubbles`)
+    const secondResponse = await request(app!.getHttpServer())
+      .post(`/projects/${project.id}/bubbles`)
       .send({
         title: 'Reusable market thesis',
         summary: 'A focused segment can support the initial launch.',
         content: 'Demand is fragmented, but the first segment is large enough.',
-        ...placement,
       })
       .expect(201);
-    const createdBubble = createdBubbleResponse.body as JourneyBubble;
+    const first = firstResponse.body as Bubble;
+    const second = secondResponse.body as Bubble;
 
-    const movedResponse = await request(app!.getHttpServer())
+    expect(second.territory_id).toBe(first.territory_id);
+    expect(first).not.toHaveProperty('position_x');
+    const territoryResponse = await request(app!.getHttpServer())
       .patch(
-        `/projects/${createdProject.id}/bubbles/${createdBubble.id}/position`,
+        `/projects/${project.id}/territories/${first.territory_id}/visible-count`,
+      )
+      .send({ visible_count: 99 })
+      .expect(200);
+    expect(territoryResponse.body).toEqual(
+      expect.objectContaining({ visible_count: 2 }),
+    );
+
+    const movedTerritoryResponse = await request(app!.getHttpServer())
+      .patch(
+        `/projects/${project.id}/territories/${first.territory_id}/position`,
       )
       .send({ position_x: 580, position_y: 340 })
       .expect(200);
-    const movedBubble = movedResponse.body as JourneyBubble;
-
-    expect(movedBubble).toMatchObject({
-      position_x: 580,
-      position_y: 340,
-      updated_at: createdBubble.updated_at,
-    });
-
-    const updatedResponse = await request(app!.getHttpServer())
-      .patch(`/projects/${createdProject.id}/bubbles/${createdBubble.id}`)
-      .send({
-        title: 'Focused market thesis',
-        summary: 'The first buyer segment supports a focused launch.',
-        content:
-          'Demand remains fragmented, but the first buyer segment is large enough for launch.',
-      })
-      .expect(200);
-    const updatedBubble = updatedResponse.body as JourneyBubble;
-
-    expect(updatedBubble).toMatchObject({
-      position_x: 580,
-      position_y: 340,
-      title: 'Focused market thesis',
-      summary: 'The first buyer segment supports a focused launch.',
-    });
-    expect(new Date(updatedBubble.updated_at).getTime()).toBeGreaterThan(
-      new Date(createdBubble.updated_at).getTime(),
+    expect(movedTerritoryResponse.body).toEqual(
+      expect.objectContaining({ position_x: 580, position_y: 340 }),
     );
 
-    const linkResponse = await request(app!.getHttpServer())
-      .post(`/projects/${createdProject.id}/bubble-links`)
+    const compactedTerritoriesResponse = await request(app!.getHttpServer())
+      .patch(`/projects/${project.id}/territories/positions`)
       .send({
-        bubble_a_id: updatedBubble.id,
-        bubble_b_id: anchor.id,
+        positions: [
+          {
+            territory_id: first.territory_id,
+            position_x: -48,
+            position_y: 120,
+          },
+        ],
       })
-      .expect(201);
-    const persistedLink = linkResponse.body as JourneyLink;
-    const timestampsBeforeCompact = new Map([
-      [anchor.id, anchor.updated_at],
-      [updatedBubble.id, updatedBubble.updated_at],
-    ]);
-    const compactPositions = [
-      {
-        bubble_id: anchor.id,
-        position_x: -320,
-        position_y: 120,
-      },
-      {
-        bubble_id: updatedBubble.id,
-        position_x: -48,
-        position_y: 120,
-      },
-    ];
-
-    const compactResponse = await request(app!.getHttpServer())
-      .patch(`/projects/${createdProject.id}/bubbles/positions`)
-      .send({ positions: compactPositions })
       .expect(200);
-    const compactedBubbles = compactResponse.body as JourneyBubble[];
+    expect(compactedTerritoriesResponse.body).toEqual([
+      expect.objectContaining({ position_x: -48, position_y: 120 }),
+    ]);
 
-    expect(compactedBubbles).toHaveLength(2);
-    for (const compactedBubble of compactedBubbles) {
-      expect(compactedBubble.updated_at).toBe(
-        timestampsBeforeCompact.get(compactedBubble.id),
-      );
-    }
+    await request(app!.getHttpServer())
+      .post(`/projects/${project.id}/bubble-links`)
+      .send({ bubble_a_id: first.id, bubble_b_id: second.id })
+      .expect(201);
+
+    await request(app!.getHttpServer())
+      .post(`/projects/${project.id}/bubbles/placement`)
+      .send({ strategy: 'cluster' })
+      .expect(404);
+    await request(app!.getHttpServer())
+      .patch(`/projects/${project.id}/bubbles/${second.id}/position`)
+      .send({ position_x: 1, position_y: 2 })
+      .expect(404);
+    await request(app!.getHttpServer())
+      .patch(`/projects/${project.id}/bubbles/positions`)
+      .send({ positions: [] })
+      .expect(404);
 
     await app!.close();
     app = await startApplication();
 
-    await request(app.getHttpServer())
-      .get(`/projects/${createdProject.id}`)
-      .expect(200)
-      .expect(persistedProject);
-
-    const reloadedBubblesResponse = await request(app.getHttpServer())
-      .get(`/projects/${createdProject.id}/bubbles`)
+    const reloadedTerritoriesResponse = await request(app.getHttpServer())
+      .get(`/projects/${project.id}/territories`)
       .expect(200);
-    const reloadedBubbles = reloadedBubblesResponse.body as JourneyBubble[];
-
-    expect(reloadedBubbles).toEqual([
+    expect(reloadedTerritoriesResponse.body).toEqual([
       expect.objectContaining({
-        id: anchor.id,
-        title: anchor.title,
-        content: anchor.content,
-        position_x: -320,
-        position_y: 120,
-        updated_at: anchor.updated_at,
-      }),
-      expect.objectContaining({
-        id: updatedBubble.id,
-        title: 'Focused market thesis',
-        summary: 'The first buyer segment supports a focused launch.',
-        content:
-          'Demand remains fragmented, but the first buyer segment is large enough for launch.',
+        id: first.territory_id,
         position_x: -48,
         position_y: 120,
-        updated_at: updatedBubble.updated_at,
+        visible_count: 2,
+      }),
+    ]);
+
+    await request(app.getHttpServer())
+      .delete(`/projects/${project.id}/bubbles/${second.id}`)
+      .expect(204);
+    const clampedTerritoriesResponse = await request(app.getHttpServer())
+      .get(`/projects/${project.id}/territories`)
+      .expect(200);
+    expect(clampedTerritoriesResponse.body).toEqual([
+      expect.objectContaining({
+        id: first.territory_id,
+        kind: 'ungrouped',
+        visible_count: 1,
       }),
     ]);
     await request(app.getHttpServer())
-      .get(`/projects/${createdProject.id}/bubble-links`)
-      .expect(200)
-      .expect([persistedLink]);
-
-    await request(app.getHttpServer())
-      .delete(`/projects/${createdProject.id}/bubbles/${updatedBubble.id}`)
-      .expect(204);
-
-    await app.close();
-    app = await startApplication();
-
-    await request(app.getHttpServer())
-      .get(`/projects/${createdProject.id}/bubble-links`)
+      .get(`/projects/${project.id}/bubble-links`)
       .expect(200)
       .expect([]);
-    const retainedBubblesResponse = await request(app.getHttpServer())
-      .get(`/projects/${createdProject.id}/bubbles`)
-      .expect(200);
-    expect(retainedBubblesResponse.body).toEqual([
-      expect.objectContaining({ id: anchor.id }),
-    ]);
-    await request(app.getHttpServer())
-      .get(`/projects/${createdProject.id}`)
-      .expect(200)
-      .expect(persistedProject);
-    await request(app.getHttpServer())
-      .get(`/projects/${createdProject.id}/bubbles/${updatedBubble.id}`)
-      .expect(404);
   });
 });
