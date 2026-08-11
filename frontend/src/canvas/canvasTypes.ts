@@ -2,9 +2,12 @@ import type { ReactNode } from 'react';
 import type {
   Bubble,
   BubbleLink,
+  BatchRepositionTerritoriesInput,
+  BatchRepositionTerritoriesResponse,
   Project,
   ProjectViewportUpdateOptions,
   Territory,
+  RepositionTerritoryInput,
   UpdateProjectViewportInput,
 } from '../api';
 import type { AnalyticsClient } from '../analytics';
@@ -28,6 +31,17 @@ export type TerritoryListRequest = (
   projectId: string,
   signal?: AbortSignal,
 ) => Promise<Territory[]>;
+
+export type TerritoryPositionUpdateRequest = (
+  projectId: string,
+  territoryId: string,
+  input: RepositionTerritoryInput,
+) => Promise<Territory>;
+
+export type TerritoryPositionsUpdateRequest = (
+  projectId: string,
+  input: BatchRepositionTerritoriesInput,
+) => Promise<BatchRepositionTerritoriesResponse>;
 
 export type ProjectViewportUpdateRequest = (
   projectId: string,
@@ -74,6 +88,8 @@ export interface CanvasSurfaceProps {
   requestBubbles?: BubbleListRequest;
   requestBubblePlacement?: BubblePlacementRequest;
   requestTerritories?: TerritoryListRequest;
+  requestTerritoryPositionUpdate?: TerritoryPositionUpdateRequest;
+  requestTerritoryPositionsUpdate?: TerritoryPositionsUpdateRequest;
   requestViewportUpdate?: ProjectViewportUpdateRequest;
   onBubbleSelectionChange?: (bubble: Bubble | null) => void;
   onCreateBubbleDialogOpenChange?: (open: boolean) => void;

@@ -759,12 +759,12 @@ describe('workspace integration contracts', () => {
         screen.getByText('Selected update target').closest('section') as HTMLElement,
       ).getByText('Market evidence Demand remains fragmented.'),
     ).toBeTruthy();
-    expect(screen.getAllByText(target.title).length).toBeGreaterThan(1);
+    expect(screen.getAllByText(target.title)).toHaveLength(1);
     expect(resolve).not.toHaveBeenCalled();
     expect(
       document.querySelector(`[data-bubble-id="${target.id}"]`)
         ?.textContent,
-    ).toContain(target.title);
+    ).toContain('Market evidence Demand remains fragmented.');
 
     activateButtonWithKeyboard(
       screen.getByRole('button', { name: 'Confirm bubble update' }),
@@ -790,7 +790,7 @@ describe('workspace integration contracts', () => {
     expect(
       document.querySelector(`[data-bubble-id="${target.id}"]`)
         ?.textContent,
-    ).toContain(target.title);
+    ).toContain('Market evidence Demand remains fragmented.');
 
     activateButtonWithKeyboard(
       screen.getByRole('button', { name: 'Confirm bubble update' }),

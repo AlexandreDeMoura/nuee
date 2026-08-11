@@ -1,17 +1,26 @@
-import type { CSSProperties, KeyboardEvent } from 'react';
+import type {
+  CSSProperties,
+  KeyboardEvent,
+  PointerEvent as ReactPointerEvent,
+  Ref,
+} from 'react';
 import { Check, ChevronRight, Minus, Plus } from 'lucide-react';
 import type { Bubble, Territory } from '../api';
 import { getBubbleCardPreview } from './bubbleCardPreview';
+import { TERRITORY_CARD_WIDTH } from './compactTerritoryLayout';
 
-export const TERRITORY_CARD_WIDTH = 520;
+export type TerritoryCardStatus = 'default' | 'dragging' | 'saving' | 'error';
 
 export interface TerritoryCardProps {
   bubbles: readonly Bubble[];
   isMultiSelecting?: boolean;
   linkedBubbleIds?: ReadonlySet<string>;
   onBubbleActivate?: (bubble: Bubble) => void;
+  onDragPointerDown?: (event: ReactPointerEvent<HTMLElement>) => void;
   selectedBubbleIds?: ReadonlySet<string>;
+  status?: TerritoryCardStatus;
   territory: Territory;
+  territoryRef?: Ref<HTMLElement>;
 }
 
 export function TerritoryCard({
@@ -19,8 +28,11 @@ export function TerritoryCard({
   isMultiSelecting = false,
   linkedBubbleIds = new Set<string>(),
   onBubbleActivate,
+  onDragPointerDown,
   selectedBubbleIds = new Set<string>(),
+  status = 'default',
   territory,
+  territoryRef,
 }: TerritoryCardProps) {
   const visibleBubbles = bubbles.slice(0, territory.visible_count);
   const hiddenBubbleCount = bubbles.length - visibleBubbles.length;
@@ -35,10 +47,18 @@ export function TerritoryCard({
       className="pointer-events-auto absolute overflow-hidden rounded-[18px] border border-[#dce3eb] bg-white text-left shadow-[0_2px_5px_rgba(30,39,51,0.05),0_14px_32px_-18px_rgba(30,39,51,0.3)]"
       aria-labelledby={`territory-title-${territory.id}`}
       data-canvas-interactive
+      data-territory-state={status}
       data-territory-id={territory.id}
+      ref={territoryRef}
       style={position}
     >
-      <header className="flex min-h-[58px] items-center gap-4 border-b border-[#e7ebf0] px-5 py-3.5">
+      <header
+        className={`flex min-h-[58px] items-center gap-4 border-b border-[#e7ebf0] px-5 py-3.5 ${
+          status === 'dragging' ? 'cursor-grabbing' : 'cursor-grab'
+        } ${status === 'saving' ? 'opacity-75' : ''}`}
+        data-territory-drag-handle
+        onPointerDown={onDragPointerDown}
+      >
         <h2
           className="min-w-0 flex-1 truncate text-[16px] font-semibold tracking-[-0.2px] text-[#1e2733]"
           id={`territory-title-${territory.id}`}

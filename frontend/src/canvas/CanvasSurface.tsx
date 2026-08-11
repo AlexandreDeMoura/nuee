@@ -9,6 +9,8 @@ import {
 import {
   getProjectBubbles,
   getProjectTerritories,
+  repositionTerritories,
+  repositionTerritory,
   updateProjectViewport,
   type Bubble,
   type BubblePlacementInput,
@@ -18,13 +20,16 @@ import { CreateBubbleDialog } from '../bubbles/CreateBubbleDialog';
 import {
   CanvasBubbleActions,
   CanvasBubbleLoadNotice,
+  CompactTerritoryLayoutSaveError,
   CanvasErrorState,
   CanvasLoadingState,
   CanvasMultiSelectionBar,
   CanvasViewportSaveError,
   CanvasZoomControls,
+  TerritoryPositionSaveError,
 } from './CanvasOverlays';
 import { TerritoryCard } from './TerritoryCard';
+import { getCompactTerritoryPositions } from './compactTerritoryLayout';
 import {
   DEFAULT_VIEWPORT,
   DEFAULT_VIEWPORT_SAVE_DELAY_MS,
@@ -40,6 +45,10 @@ import type {
 import { groupBubblesByTerritory } from './territoryModel';
 import { useMultiSelection } from './useMultiSelection';
 import { useProjectBubbles } from './useProjectBubbles';
+import {
+  useTerritoryLayoutPersistence,
+  type TerritoryPosition,
+} from './useTerritoryLayoutPersistence';
 import { useViewportPersistence } from './useViewportPersistence';
 
 export type {
@@ -52,6 +61,8 @@ export type {
   ProjectBubbleCollection,
   ProjectViewportUpdateRequest,
   TerritoryListRequest,
+  TerritoryPositionsUpdateRequest,
+  TerritoryPositionUpdateRequest,
 } from './canvasTypes';
 
 export function CanvasSurface({
@@ -65,6 +76,8 @@ export function CanvasSurface({
   requestBubbles = getProjectBubbles,
   requestBubblePlacement,
   requestTerritories = getProjectTerritories,
+  requestTerritoryPositionUpdate = repositionTerritory,
+  requestTerritoryPositionsUpdate = repositionTerritories,
   requestViewportUpdate = updateProjectViewport,
   onBubbleSelectionChange,
   onCreateBubbleDialogOpenChange,
@@ -75,6 +88,9 @@ export function CanvasSurface({
 }: CanvasSurfaceProps) {
   const [selectedBubbleId, setSelectedBubbleId] = useState<string | null>(null);
   const [isPanning, setIsPanning] = useState(false);
+  const [draggingTerritoryId, setDraggingTerritoryId] = useState<string | null>(
+    null,
+  );
   const [
     isUncontrolledCreateBubbleDialogOpen,
     setIsUncontrolledCreateBubbleDialogOpen,
@@ -83,6 +99,17 @@ export function CanvasSurface({
     useState<BubblePlacementInput | null>(null);
   const surfaceRef = useRef<HTMLElement>(null);
   const activePanRef = useRef<ActivePan | null>(null);
+  const activeTerritoryDragRef = useRef<{
+    territoryId: string;
+    pointerId: number;
+    startClientX: number;
+    startClientY: number;
+    startPosition: TerritoryPosition;
+    currentPosition: TerritoryPosition;
+    persistedPosition: TerritoryPosition;
+    zoom: number;
+  } | null>(null);
+  const territoryElementsRef = useRef(new Map<string, HTMLElement>());
   const onBubbleSelectionChangeRef = useRef(onBubbleSelectionChange);
 
   useEffect(() => {
@@ -122,6 +149,61 @@ export function CanvasSurface({
       groupBubblesByTerritory(loadState.territories, displayedBubbles),
     [displayedBubbles, loadState.territories],
   );
+
+  const {
+    compactLayoutSave,
+    localPositions,
+    persistCompactLayout,
+    persistPosition,
+    positionSaves,
+    positionSavesRef,
+    replaceCompactLayoutSave,
+    replacePositionSave,
+    setLocalPosition,
+  } = useTerritoryLayoutPersistence({
+    projectId,
+    requestPositionUpdate: requestTerritoryPositionUpdate,
+    requestPositionsUpdate: requestTerritoryPositionsUpdate,
+  });
+
+  const positionedTerritories = useMemo(
+    () =>
+      displayedTerritories.map(({ bubbles, territory }) => {
+        const localPosition = localPositions[territory.id];
+
+        return {
+          bubbles,
+          territory: localPosition
+            ? {
+                ...territory,
+                position_x: localPosition.x,
+                position_y: localPosition.y,
+              }
+            : territory,
+        };
+      }),
+    [displayedTerritories, localPositions],
+  );
+  const positionedTerritoryIds = useMemo(
+    () => new Set(positionedTerritories.map(({ territory }) => territory.id)),
+    [positionedTerritories],
+  );
+  const activePositionSaves = useMemo(
+    () =>
+      Object.fromEntries(
+        Object.entries(positionSaves).filter(([territoryId]) =>
+          positionedTerritoryIds.has(territoryId),
+        ),
+      ),
+    [positionSaves, positionedTerritoryIds],
+  );
+  const activeCompactLayoutSave =
+    compactLayoutSave &&
+    compactLayoutSave.requestedPositions.some(({ territory_id }) =>
+      positionedTerritoryIds.has(territory_id),
+    )
+      ? compactLayoutSave
+      : null;
 
   const {
     activeSelectedBubbleIds,
@@ -191,6 +273,50 @@ export function CanvasSurface({
     );
   }
 
+  function handleTerritoryPointerDown(
+    event: ReactPointerEvent<HTMLElement>,
+    territory: (typeof positionedTerritories)[number]['territory'],
+  ) {
+    if (
+      event.button !== 0 ||
+      isMultiSelectionActive ||
+      (event.target instanceof Element && event.target.closest('button')) ||
+      positionSavesRef.current[territory.id]?.status === 'saving' ||
+      activeCompactLayoutSave?.status === 'saving'
+    ) {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    if (activeCompactLayoutSave?.status === 'error') {
+      replaceCompactLayoutSave(null);
+    }
+
+    const failedSave = positionSavesRef.current[territory.id];
+    const startPosition = {
+      x: territory.position_x,
+      y: territory.position_y,
+    };
+
+    activeTerritoryDragRef.current = {
+      territoryId: territory.id,
+      pointerId: event.pointerId,
+      startClientX: event.clientX,
+      startClientY: event.clientY,
+      startPosition,
+      currentPosition: startPosition,
+      persistedPosition: failedSave?.persistedPosition ?? startPosition,
+      zoom: viewport.zoom,
+    };
+    setDraggingTerritoryId(territory.id);
+
+    if (typeof surfaceRef.current?.setPointerCapture === 'function') {
+      surfaceRef.current.setPointerCapture(event.pointerId);
+    }
+  }
+
   function handlePointerDown(event: ReactPointerEvent<HTMLElement>) {
     if (
       (event.button !== 0 && event.button !== 1) ||
@@ -219,6 +345,26 @@ export function CanvasSurface({
   }
 
   function handlePointerMove(event: ReactPointerEvent<HTMLElement>) {
+    const activeDrag = activeTerritoryDragRef.current;
+
+    if (activeDrag?.pointerId === event.pointerId) {
+      event.preventDefault();
+      event.stopPropagation();
+
+      const nextPosition = {
+        x:
+          activeDrag.startPosition.x +
+          (event.clientX - activeDrag.startClientX) / activeDrag.zoom,
+        y:
+          activeDrag.startPosition.y +
+          (event.clientY - activeDrag.startClientY) / activeDrag.zoom,
+      };
+
+      activeDrag.currentPosition = nextPosition;
+      setLocalPosition(activeDrag.territoryId, nextPosition);
+      return;
+    }
+
     const activePan = activePanRef.current;
 
     if (!activePan || activePan.pointerId !== event.pointerId) {
@@ -234,7 +380,60 @@ export function CanvasSurface({
     }));
   }
 
+  function releasePointerCapture(pointerId: number) {
+    const surface = surfaceRef.current;
+
+    if (
+      typeof surface?.hasPointerCapture === 'function' &&
+      surface.hasPointerCapture(pointerId)
+    ) {
+      surface.releasePointerCapture(pointerId);
+    }
+  }
+
+  function finishTerritoryDrag(event: ReactPointerEvent<HTMLElement>) {
+    const activeDrag = activeTerritoryDragRef.current;
+
+    if (!activeDrag || activeDrag.pointerId !== event.pointerId) {
+      return false;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    activeTerritoryDragRef.current = null;
+    setDraggingTerritoryId(null);
+    releasePointerCapture(event.pointerId);
+
+    const didMove =
+      activeDrag.currentPosition.x !== activeDrag.startPosition.x ||
+      activeDrag.currentPosition.y !== activeDrag.startPosition.y;
+
+    if (!didMove) {
+      return true;
+    }
+
+    const returnedToPersistedPosition =
+      activeDrag.currentPosition.x === activeDrag.persistedPosition.x &&
+      activeDrag.currentPosition.y === activeDrag.persistedPosition.y;
+
+    if (returnedToPersistedPosition) {
+      replacePositionSave(activeDrag.territoryId, null);
+      return true;
+    }
+
+    void persistPosition(
+      activeDrag.territoryId,
+      activeDrag.currentPosition,
+      activeDrag.persistedPosition,
+    );
+    return true;
+  }
+
   function finishPointerPan(event: ReactPointerEvent<HTMLElement>) {
+    if (finishTerritoryDrag(event)) {
+      return;
+    }
+
     if (activePanRef.current?.pointerId !== event.pointerId) {
       return;
     }
@@ -250,6 +449,22 @@ export function CanvasSurface({
     ) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
+  }
+
+  function cancelPointerInteraction(event: ReactPointerEvent<HTMLElement>) {
+    const activeDrag = activeTerritoryDragRef.current;
+
+    if (activeDrag?.pointerId === event.pointerId) {
+      event.preventDefault();
+      event.stopPropagation();
+      setLocalPosition(activeDrag.territoryId, activeDrag.startPosition);
+      activeTerritoryDragRef.current = null;
+      setDraggingTerritoryId(null);
+      releasePointerCapture(event.pointerId);
+      return;
+    }
+
+    finishPointerPan(event);
   }
 
   const zoomAt = useCallback(
@@ -392,6 +607,93 @@ export function CanvasSurface({
       ? emptyState({ onCreateBubble: openCreateBubbleDialog })
       : emptyState;
   const hasDisplayedBubbles = displayedTerritories.length > 0;
+  const failedPositionSaveEntry = Object.entries(activePositionSaves).find(
+    ([, save]) => save.status === 'error',
+  );
+  const failedPositionTerritory = failedPositionSaveEntry
+    ? positionedTerritories.find(
+        ({ territory }) => territory.id === failedPositionSaveEntry[0],
+      )?.territory
+    : undefined;
+
+  function compactLayout() {
+    if (
+      positionedTerritories.length < 2 ||
+      draggingTerritoryId !== null ||
+      Object.keys(activePositionSaves).length > 0 ||
+      activeCompactLayoutSave?.status === 'saving'
+    ) {
+      return;
+    }
+
+    const spatiallyOrdered = [...positionedTerritories].sort(
+      (first, second) =>
+        first.territory.position_y - second.territory.position_y ||
+        first.territory.position_x - second.territory.position_x ||
+        first.territory.created_at.localeCompare(second.territory.created_at) ||
+        first.territory.id.localeCompare(second.territory.id),
+    );
+    const measurements = spatiallyOrdered.map(({ territory }) => {
+      const element = territoryElementsRef.current.get(territory.id);
+      const rectHeight = element?.getBoundingClientRect().height ?? 0;
+      const height = element?.offsetHeight || rectHeight / viewport.zoom;
+
+      return { id: territory.id, height };
+    });
+
+    if (
+      measurements.some(
+        ({ height }) => !Number.isFinite(height) || height <= 0,
+      )
+    ) {
+      return;
+    }
+
+    const requestedPositions = getCompactTerritoryPositions(measurements, {
+      x: Math.min(
+        ...positionedTerritories.map(({ territory }) => territory.position_x),
+      ),
+      y: Math.min(
+        ...positionedTerritories.map(({ territory }) => territory.position_y),
+      ),
+    });
+    const territoriesById = new Map(
+      positionedTerritories.map(({ territory }) => [territory.id, territory]),
+    );
+    const changedPositions = requestedPositions.filter((position) => {
+      const territory = territoriesById.get(position.territory_id);
+
+      return (
+        territory &&
+        (territory.position_x !== position.position_x ||
+          territory.position_y !== position.position_y)
+      );
+    });
+
+    if (changedPositions.length === 0) {
+      replaceCompactLayoutSave(null);
+      return;
+    }
+
+    const persistedPositions = changedPositions.map((position) => {
+      const territory = territoriesById.get(position.territory_id)!;
+
+      return {
+        territory_id: territory.id,
+        position_x: territory.position_x,
+        position_y: territory.position_y,
+      };
+    });
+
+    void persistCompactLayout(changedPositions, persistedPositions);
+  }
+
+  const isCompactLayoutSaving = activeCompactLayoutSave?.status === 'saving';
+  const canCompactLayout =
+    positionedTerritories.length >= 2 &&
+    draggingTerritoryId === null &&
+    Object.keys(activePositionSaves).length === 0 &&
+    !isCompactLayoutSaving;
 
   return (
     <section
@@ -408,10 +710,17 @@ export function CanvasSurface({
           : 'single'
       }
       onLostPointerCapture={() => {
+        const activeDrag = activeTerritoryDragRef.current;
+
+        if (activeDrag) {
+          setLocalPosition(activeDrag.territoryId, activeDrag.startPosition);
+          activeTerritoryDragRef.current = null;
+          setDraggingTerritoryId(null);
+        }
         activePanRef.current = null;
         setIsPanning(false);
       }}
-      onPointerCancel={finishPointerPan}
+      onPointerCancel={cancelPointerInteraction}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={finishPointerPan}
@@ -432,19 +741,36 @@ export function CanvasSurface({
           transformOrigin: '0 0',
         }}
       >
-        {displayedTerritories.map(({ bubbles, territory }) => (
+        {positionedTerritories.map(({ bubbles, territory }) => (
           <TerritoryCard
             bubbles={bubbles}
             isMultiSelecting={isMultiSelectionActive}
             key={territory.id}
             linkedBubbleIds={linkedBubbleIds}
+            onDragPointerDown={(event) =>
+              handleTerritoryPointerDown(event, territory)
+            }
             onBubbleActivate={(bubble) =>
               isMultiSelectionActive
                 ? toggleMultiSelectedBubble(bubble.id)
                 : selectBubble(bubble)
             }
             selectedBubbleIds={selectedBubbleIds}
+            status={
+              draggingTerritoryId === territory.id
+                ? 'dragging'
+                : isCompactLayoutSaving
+                  ? 'saving'
+                  : (activePositionSaves[territory.id]?.status ?? 'default')
+            }
             territory={territory}
+            territoryRef={(element) => {
+              if (element) {
+                territoryElementsRef.current.set(territory.id, element);
+              } else {
+                territoryElementsRef.current.delete(territory.id);
+              }
+            }}
           />
         ))}
       </div>
@@ -497,9 +823,9 @@ export function CanvasSurface({
 
       {displayedBubbles.length > 0 && !isMultiSelectionActive && (
         <CanvasBubbleActions
-          canCompact={false}
-          isCompacting={false}
-          onCompact={() => undefined}
+          canCompact={canCompactLayout}
+          isCompacting={isCompactLayoutSaving}
+          onCompact={compactLayout}
           onCreate={openCreateBubbleDialog}
           onStartDiscussion={onStartDiscussion}
         />
@@ -507,6 +833,36 @@ export function CanvasSurface({
 
       {viewportSaveFailed && (
         <CanvasViewportSaveError onRetry={retryViewportSave} />
+      )}
+
+      {failedPositionSaveEntry && failedPositionTerritory && (
+        <TerritoryPositionSaveError
+          territoryTitle={failedPositionTerritory.title}
+          onRetry={() => {
+            const [territoryId, save] = failedPositionSaveEntry;
+            void persistPosition(
+              territoryId,
+              save.requestedPosition,
+              save.persistedPosition,
+            );
+          }}
+          onRevert={() => {
+            const [territoryId, save] = failedPositionSaveEntry;
+            setLocalPosition(territoryId, save.persistedPosition);
+            replacePositionSave(territoryId, null);
+          }}
+        />
+      )}
+
+      {activeCompactLayoutSave?.status === 'error' && (
+        <CompactTerritoryLayoutSaveError
+          onRetry={() => {
+            void persistCompactLayout(
+              activeCompactLayoutSave.requestedPositions,
+              activeCompactLayoutSave.persistedPositions,
+            );
+          }}
+        />
       )}
 
       {isCreateBubbleDialogOpen && createPlacementInput && (

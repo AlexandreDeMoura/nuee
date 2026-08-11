@@ -36,6 +36,60 @@ describe('territories API', () => {
     expect(calls).toEqual(['/projects/project%2F1/territories']);
   });
 
+  it('repositions one territory and a validated batch', async () => {
+    const first = territory({ position_x: 100, position_y: 200 });
+    const second = territory({
+      id: 'territory/2',
+      kind: 'composed',
+      position_x: 644,
+      position_y: 200,
+    });
+    const calls: Array<{ path: string; init?: RequestInit }> = [];
+    const responses: unknown[] = [first, [first, second]];
+    const request: TerritoriesRequest = <T>(
+      path: string,
+      init?: RequestInit,
+    ): Promise<T> => {
+      calls.push({ path, init });
+      return Promise.resolve(responses.shift() as T);
+    };
+    const api = createTerritoriesApi(request);
+
+    await expect(
+      api.repositionTerritory('project/1', 'territory/1', {
+        position_x: 100,
+        position_y: 200,
+      }),
+    ).resolves.toEqual(first);
+    await expect(
+      api.repositionTerritories('project/1', {
+        positions: [
+          { territory_id: 'territory/1', position_x: 100, position_y: 200 },
+          { territory_id: 'territory/2', position_x: 644, position_y: 200 },
+        ],
+      }),
+    ).resolves.toEqual([first, second]);
+
+    expect(calls.map(({ path }) => path)).toEqual([
+      '/projects/project%2F1/territories/territory%2F1/position',
+      '/projects/project%2F1/territories/positions',
+    ]);
+    expect(calls.every(({ init }) => init?.method === 'PATCH')).toBe(true);
+  });
+
+  it('rejects mismatched reposition responses', async () => {
+    const request: TerritoriesRequest = <T>(): Promise<T> =>
+      Promise.resolve(territory({ id: 'territory/elsewhere' }) as T);
+
+    await expect(
+      createTerritoriesApi(request).repositionTerritory(
+        'project/1',
+        'territory/1',
+        { position_x: 10, position_y: 20 },
+      ),
+    ).rejects.toThrow('The territory list response contained invalid data.');
+  });
+
   it('rejects invalid, duplicate, and cross-project territory records', async () => {
     expect(isTerritoryResponse(territory(), 'project/1')).toBe(true);
     expect(

@@ -2,13 +2,27 @@ import {
   TERRITORY_TITLE_MAX_LENGTH,
   TERRITORY_VISIBLE_COUNT_MAX,
   TERRITORY_VISIBLE_COUNT_MIN,
+  type BatchRepositionTerritoriesInput,
+  type BatchRepositionTerritoriesResponse,
+  type RepositionTerritoryInput,
+  type RepositionTerritoryResponse,
   type Territory,
   type TerritoryKind,
   type TerritoryListResponse,
+  type TerritoryPositionUpdate,
 } from '@nuee/shared-types';
 import { requestJson } from './client';
 
-export type { Territory, TerritoryKind, TerritoryListResponse };
+export type {
+  BatchRepositionTerritoriesInput,
+  BatchRepositionTerritoriesResponse,
+  RepositionTerritoryInput,
+  RepositionTerritoryResponse,
+  Territory,
+  TerritoryKind,
+  TerritoryListResponse,
+  TerritoryPositionUpdate,
+};
 
 export type TerritoriesRequest = typeof requestJson;
 
@@ -93,7 +107,68 @@ export function createTerritoriesApi(
     ).then((response) => assertTerritoryListResponse(response, projectId));
   }
 
-  return { getProjectTerritories };
+  function repositionTerritory(
+    projectId: string,
+    territoryId: string,
+    input: RepositionTerritoryInput,
+  ): Promise<RepositionTerritoryResponse> {
+    return request<unknown>(
+      `/projects/${encodeURIComponent(projectId)}/territories/${encodeURIComponent(territoryId)}/position`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      },
+    ).then((response) => {
+      if (
+        !isTerritoryResponse(response, projectId) ||
+        response.id !== territoryId
+      ) {
+        throw new Error(INVALID_TERRITORIES_MESSAGE);
+      }
+
+      return response;
+    });
+  }
+
+  function repositionTerritories(
+    projectId: string,
+    input: BatchRepositionTerritoriesInput,
+  ): Promise<BatchRepositionTerritoriesResponse> {
+    return request<unknown>(
+      `/projects/${encodeURIComponent(projectId)}/territories/positions`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      },
+    ).then((response) => {
+      const territories = assertTerritoryListResponse(response, projectId);
+      const expectedIds = new Set(
+        input.positions.map(({ territory_id }) => territory_id),
+      );
+
+      if (
+        expectedIds.size !== input.positions.length ||
+        territories.length !== expectedIds.size ||
+        territories.some((territory) => !expectedIds.has(territory.id))
+      ) {
+        throw new Error(INVALID_TERRITORIES_MESSAGE);
+      }
+
+      return territories;
+    });
+  }
+
+  return {
+    getProjectTerritories,
+    repositionTerritories,
+    repositionTerritory,
+  };
 }
 
-export const { getProjectTerritories } = createTerritoriesApi();
+export const {
+  getProjectTerritories,
+  repositionTerritories,
+  repositionTerritory,
+} = createTerritoriesApi();
