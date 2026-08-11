@@ -12,6 +12,11 @@ export interface AnalyticsEventProperties {
     project_id: string;
     view: 'discussions' | 'documents' | 'project' | 'inspector';
   };
+  project_panel_collapsed: {
+    project_id: string;
+    collapsed: boolean;
+    source: 'rail_toggle' | 'panel_tab' | 'shortcut';
+  };
   project_empty_action_selected: {
     project_id: string;
     action: 'start_discussion' | 'create_bubble' | 'upload_document';

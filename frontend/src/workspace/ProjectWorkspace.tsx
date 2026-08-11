@@ -16,6 +16,8 @@ import {
   CircleAlert,
   FileText,
   MessageSquare,
+  PanelRightClose,
+  PanelRightOpen,
   RefreshCw,
   Search,
   Upload,
@@ -38,6 +40,7 @@ import {
   type AnalyticsEventProperties,
 } from '../analytics';
 import { focusRing } from '../ui/focusRing';
+import { isPrimaryShortcut, primaryShortcutLabel } from '../ui/keyboardShortcut';
 import {
   CanvasSurface,
   type BubbleListRequest,
@@ -208,6 +211,13 @@ const panelDefinitions: PanelDefinition[] = [
   { view: 'project', label: 'Project', icon: CircleDot },
   { view: 'inspector', label: 'Inspector', icon: Search },
 ];
+
+/** `reveal` reopens a collapsed panel; `keep-collapsed` only moves the tab. */
+type PanelSelectionMode = 'reveal' | 'keep-collapsed';
+
+type PanelCollapseSource = 'rail_toggle' | 'panel_tab' | 'shortcut';
+
+const panelShortcutLabel = primaryShortcutLabel('b');
 
 function Logo() {
   return (
@@ -510,6 +520,7 @@ function InspectorEmptyState() {
 
 function WorkspacePanel({
   activeView,
+  isCollapsed,
   discussionCount,
   discussionsContent,
   inspectorSelection,
@@ -538,6 +549,7 @@ function WorkspacePanel({
   onBubbleUpdated,
 }: {
   activeView: WorkspacePanelView;
+  isCollapsed: boolean;
   discussionCount: number;
   discussionsContent: ReactNode;
   inspectorSelection: WorkspaceInspectorSelection | null;
@@ -576,8 +588,15 @@ function WorkspacePanel({
 
   return (
     <section
-      className="flex w-[min(336px,calc(100vw-52px))] shrink-0 flex-col border-l border-[#e1e6ec] bg-white sm:w-[336px]"
+      // Collapsing keeps the panel mounted so in-flight edits and their pending
+      // saves survive the round trip; only the rail stays on screen.
+      className={
+        isCollapsed
+          ? 'hidden'
+          : 'flex w-[min(336px,calc(100vw-52px))] shrink-0 flex-col border-l border-[#e1e6ec] bg-white sm:w-[336px]'
+      }
       aria-labelledby={`workspace-panel-tab-${activeView}`}
+      hidden={isCollapsed}
       id="workspace-active-panel"
       role="tabpanel"
     >
@@ -696,6 +715,7 @@ export function ProjectWorkspace({
       ? 'documents'
       : getDefaultPanelView(discussionCount),
   );
+  const [isPanelCollapsed, setIsPanelCollapsed] = useState(false);
   const [activatedDocumentLibraryProjectId, setActivatedDocumentLibraryProjectId] =
     useState<string | null>(() =>
       initialDocumentUploads && initialDocumentUploads.length > 0
@@ -940,15 +960,23 @@ export function ProjectWorkspace({
 
     event.preventDefault();
     const nextDefinition = panelDefinitions[nextIndex];
-    selectPanel(nextDefinition.view);
+    // Roving the rail is navigation, not a request to reopen the panel.
+    selectPanel(nextDefinition.view, 'keep-collapsed');
     panelButtonRefs.current[nextIndex]?.focus();
   }
 
-  function selectPanel(view: WorkspacePanelView) {
+  function selectPanel(
+    view: WorkspacePanelView,
+    mode: PanelSelectionMode = 'reveal',
+  ) {
     if (view === 'documents') {
       setActivatedDocumentLibraryProjectId(currentProject.id);
     } else {
       setDocumentUploadPickerProjectId(null);
+    }
+
+    if (mode === 'reveal') {
+      setIsPanelCollapsed(false);
     }
 
     if (view === activePanel) {
@@ -962,6 +990,20 @@ export function ProjectWorkspace({
     });
   }
 
+  const togglePanelCollapsed = useCallback(
+    (source: PanelCollapseSource) => {
+      const collapsed = !isPanelCollapsed;
+
+      setIsPanelCollapsed(collapsed);
+      trackAnalytics(analyticsClient, 'project_panel_collapsed', {
+        project_id: currentProject.id,
+        collapsed,
+        source,
+      });
+    },
+    [analyticsClient, currentProject.id, isPanelCollapsed],
+  );
+
   const handleBubbleSelectionChange = useCallback(
     (bubble: Bubble | null) => {
       setSelectedBubbleId(bubble?.id ?? null);
@@ -974,6 +1016,8 @@ export function ProjectWorkspace({
         project_id: currentProject.id,
         bubble_id: bubble.id,
       });
+      // Inspecting a bubble is a request to read it, so a collapsed panel reopens.
+      setIsPanelCollapsed(false);
 
       if (activePanel !== 'inspector') {
         setActivePanel('inspector');
@@ -1264,6 +1308,26 @@ export function ProjectWorkspace({
           title: discussionVisibility.visibleDiscussion.title,
         }
       : null;
+
+  // The rail is inert behind a discussion or a canvas multi-selection, so the
+  // shortcut stays with whatever owns the screen then.
+  useEffect(() => {
+    if (isDiscussionVisible || resolvedCanvasMultiSelection) {
+      return;
+    }
+
+    const handleKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (!isPrimaryShortcut(event, 'b')) {
+        return;
+      }
+
+      event.preventDefault();
+      togglePanelCollapsed('shortcut');
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isDiscussionVisible, resolvedCanvasMultiSelection, togglePanelCollapsed]);
   const minimizeDiscussion = useCallback(() => {
     const visible = discussionVisibility.visibleDiscussion;
 
@@ -1457,52 +1521,94 @@ export function ProjectWorkspace({
             aria-hidden={resolvedCanvasMultiSelection ? 'true' : undefined}
             inert={resolvedCanvasMultiSelection ? true : undefined}
           >
-            <nav
-              className="flex w-[52px] shrink-0 flex-col items-center gap-1 border-l border-[#e1e6ec] bg-white pt-3"
-              aria-label="Workspace panels"
-              aria-orientation="vertical"
-              role="tablist"
-            >
-              {panelDefinitions.map(({ view, label, icon: Icon }, index) => {
-                const isActive = activePanel === view;
+            <div className="flex w-[52px] shrink-0 flex-col items-center gap-2 border-l border-[#e1e6ec] bg-white py-3">
+              <button
+                className={`grid size-[38px] cursor-pointer place-items-center rounded-[10px] bg-transparent text-[#8b97a6] transition-colors duration-150 hover:bg-[#f6f8fc] hover:text-[#5c6a7a] motion-reduce:transition-none ${focusRing}`}
+                type="button"
+                aria-controls="workspace-active-panel"
+                aria-expanded={!isPanelCollapsed}
+                aria-label={isPanelCollapsed ? 'Show panel' : 'Hide panel'}
+                data-workspace-panel-toggle
+                title={`${isPanelCollapsed ? 'Show panel' : 'Hide panel'} (${panelShortcutLabel})`}
+                onClick={() => togglePanelCollapsed('rail_toggle')}
+              >
+                {isPanelCollapsed ? (
+                  <PanelRightOpen
+                    className="size-[18px]"
+                    strokeWidth={1.7}
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <PanelRightClose
+                    className="size-[18px]"
+                    strokeWidth={1.7}
+                    aria-hidden="true"
+                  />
+                )}
+              </button>
 
-                return (
-                  <button
-                    className={`relative grid size-[38px] cursor-pointer place-items-center rounded-[10px] transition-colors duration-150 motion-reduce:transition-none ${
-                      isActive
-                        ? 'bg-[#eef2fa] text-[#3f63a8]'
-                        : 'bg-transparent text-[#8b97a6] hover:bg-[#f6f8fc] hover:text-[#5c6a7a]'
-                    } ${focusRing}`}
-                    type="button"
-                    aria-label={label}
-                    aria-controls="workspace-active-panel"
-                    aria-selected={isActive}
-                    data-active={isActive ? 'true' : 'false'}
-                    id={`workspace-panel-tab-${view}`}
-                    role="tab"
-                    tabIndex={isActive ? 0 : -1}
-                    title={label}
-                    onClick={() => selectPanel(view)}
-                    onKeyDown={(event) => handlePanelKeyDown(event, index)}
-                    ref={(button) => {
-                      panelButtonRefs.current[index] = button;
-                    }}
-                    key={view}
-                  >
-                    {isActive && (
-                      <span
-                        className="absolute top-[9px] left-0 h-5 w-[3px] rounded-r-[3px] bg-[#3f63a8]"
-                        aria-hidden="true"
-                      />
-                    )}
-                    <Icon className="size-[19px]" strokeWidth={1.7} aria-hidden="true" />
-                  </button>
-                );
-              })}
-            </nav>
+              <span
+                className="h-px w-6 shrink-0 bg-[#e1e6ec]"
+                aria-hidden="true"
+              />
+
+              <nav
+                className="flex flex-col items-center gap-1"
+                aria-label="Workspace panels"
+                aria-orientation="vertical"
+                role="tablist"
+              >
+                {panelDefinitions.map(({ view, label, icon: Icon }, index) => {
+                  const isActive = activePanel === view;
+                  const isOpen = isActive && !isPanelCollapsed;
+
+                  return (
+                    <button
+                      className={`relative grid size-[38px] cursor-pointer place-items-center rounded-[10px] transition-colors duration-150 motion-reduce:transition-none ${
+                        isActive
+                          ? 'bg-[#eef2fa] text-[#3f63a8]'
+                          : 'bg-transparent text-[#8b97a6] hover:bg-[#f6f8fc] hover:text-[#5c6a7a]'
+                      } ${focusRing}`}
+                      type="button"
+                      aria-label={label}
+                      aria-controls="workspace-active-panel"
+                      aria-expanded={isOpen}
+                      aria-selected={isActive}
+                      data-active={isActive ? 'true' : 'false'}
+                      id={`workspace-panel-tab-${view}`}
+                      role="tab"
+                      tabIndex={isActive ? 0 : -1}
+                      title={label}
+                      onClick={() => {
+                        if (isActive) {
+                          togglePanelCollapsed('panel_tab');
+                          return;
+                        }
+
+                        selectPanel(view);
+                      }}
+                      onKeyDown={(event) => handlePanelKeyDown(event, index)}
+                      ref={(button) => {
+                        panelButtonRefs.current[index] = button;
+                      }}
+                      key={view}
+                    >
+                      {isActive && (
+                        <span
+                          className="absolute top-[9px] left-0 h-5 w-[3px] rounded-r-[3px] bg-[#3f63a8]"
+                          aria-hidden="true"
+                        />
+                      )}
+                      <Icon className="size-[19px]" strokeWidth={1.7} aria-hidden="true" />
+                    </button>
+                  );
+                })}
+              </nav>
+            </div>
 
             <WorkspacePanel
               activeView={activePanel}
+              isCollapsed={isPanelCollapsed}
               analyticsClient={analyticsClient}
               availableBubbles={availableBubbles}
               bubbleLinkLoadState={bubbleLinkLoadState}

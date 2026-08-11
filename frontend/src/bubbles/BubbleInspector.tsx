@@ -14,6 +14,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { focusRing } from '../ui/focusRing';
+import { isPrimaryShortcut, primaryShortcutLabel } from '../ui/keyboardShortcut';
 import { RichResponse } from '../ui/RichResponse';
 import { useFieldValidity } from '../ui/useFieldValidity';
 import { BubbleReaderModal } from './BubbleReaderModal';
@@ -50,18 +51,10 @@ const statusPresentation: Record<
   error: { label: 'SAVE FAILED', classes: 'text-[#b4544e]' },
 };
 
-const expandShortcutLabel =
-  typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.userAgent)
-    ? '⌘I'
-    : 'Ctrl+I';
+const expandShortcutLabel = primaryShortcutLabel('i');
 
 function isExpandShortcut(event: KeyboardEvent): boolean {
-  return (
-    (event.metaKey || event.ctrlKey) &&
-    !event.altKey &&
-    !event.shiftKey &&
-    event.key.toLowerCase() === 'i'
-  );
+  return isPrimaryShortcut(event, 'i');
 }
 
 export function BubbleInspector(props: BubbleInspectorProps) {
