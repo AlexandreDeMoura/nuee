@@ -8,6 +8,7 @@ import { randomUUID } from 'node:crypto';
 import {
   TERRITORY_VISIBLE_COUNT_MAX,
   TERRITORY_VISIBLE_COUNT_MIN,
+  TERRITORY_TITLE_MAX_LENGTH,
 } from '@nuee/shared-types';
 import { ProjectsService } from '../projects/projects.service';
 import {
@@ -17,7 +18,9 @@ import {
 } from './territory.types';
 import type {
   BatchRepositionTerritoriesInput,
+  CreateTerritoryInput,
   PersistedTerritoryPosition,
+  RenameTerritoryInput,
   RepositionTerritoryInput,
   Territory,
   TerritoryBubbleLifecycle,
@@ -26,6 +29,7 @@ import type {
 } from './territory.types';
 
 type CoordinateField = 'position_x' | 'position_y';
+const DEFAULT_MANUAL_TERRITORY_VISIBLE_COUNT = 4;
 
 @Injectable()
 export class TerritoriesService implements TerritoryBubbleLifecycle {
@@ -35,9 +39,46 @@ export class TerritoriesService implements TerritoryBubbleLifecycle {
     private readonly territories: TerritoryRepository,
   ) {}
 
+  create(projectId: string, input: CreateTerritoryInput): Territory {
+    this.projects.get(projectId);
+    const timestamp = new Date().toISOString();
+
+    return this.territories.create({
+      id: randomUUID(),
+      project_id: projectId,
+      kind: 'manual',
+      title: this.requiredTitle(input?.title),
+      position_x: this.requiredCoordinate(input?.position_x, 'position_x'),
+      position_y: this.requiredCoordinate(input?.position_y, 'position_y'),
+      visible_count: DEFAULT_MANUAL_TERRITORY_VISIBLE_COUNT,
+      created_at: timestamp,
+      updated_at: timestamp,
+    });
+  }
+
   list(projectId: string): Territory[] {
     this.projects.get(projectId);
     return this.territories.findAllByProjectId(projectId);
+  }
+
+  rename(
+    projectId: string,
+    territoryId: string,
+    input: RenameTerritoryInput,
+  ): Territory {
+    const territory = this.getManual(projectId, territoryId);
+    const updated = this.territories.updateTitle(
+      projectId,
+      territoryId,
+      this.requiredTitle(input?.title),
+      this.nextTimestamp(territory.updated_at),
+    );
+
+    if (!updated) {
+      throw this.notFound(projectId, territoryId);
+    }
+
+    return updated;
   }
 
   ensureUngrouped(projectId: string): Territory {
@@ -173,10 +214,6 @@ export class TerritoriesService implements TerritoryBubbleLifecycle {
   }
 
   reconcileAfterBubbleDeletion(projectId: string, territoryId: string): void {
-    if (this.territories.deleteComposedIfEmpty(projectId, territoryId)) {
-      return;
-    }
-
     const territory = this.territories.findByProjectAndId(
       projectId,
       territoryId,
@@ -202,6 +239,19 @@ export class TerritoriesService implements TerritoryBubbleLifecycle {
     }
   }
 
+  getManual(projectId: string, territoryId: string): Territory {
+    const territory = this.get(projectId, territoryId);
+
+    if (territory.kind === 'ungrouped') {
+      throw new BadRequestException({
+        code: 'TERRITORY_UNGROUPED_IMMUTABLE',
+        message: 'Ungrouped cannot be renamed or deleted.',
+      });
+    }
+
+    return territory;
+  }
+
   private get(projectId: string, territoryId: string): Territory {
     this.projects.get(projectId);
     const territory = this.territories.findByProjectAndId(
@@ -214,6 +264,22 @@ export class TerritoriesService implements TerritoryBubbleLifecycle {
     }
 
     return territory;
+  }
+
+  private requiredTitle(value: unknown): string {
+    if (typeof value !== 'string' || value.trim().length === 0) {
+      throw this.validationError({ title: 'Title is required.' });
+    }
+
+    const title = value.trim();
+
+    if (title.length > TERRITORY_TITLE_MAX_LENGTH) {
+      throw this.validationError({
+        title: `Title must be ${TERRITORY_TITLE_MAX_LENGTH} characters or fewer.`,
+      });
+    }
+
+    return title;
   }
 
   private requiredCoordinate(value: unknown, field: CoordinateField): number {

@@ -13,6 +13,7 @@ import { CREATE_PROJECTS_MIGRATION } from '../projects/migrations/001-create-pro
 import { WIDEN_PROJECT_DESCRIPTION_MIGRATION } from '../projects/migrations/012-widen-project-description';
 import { REPAIR_PROJECT_FOREIGN_KEYS_MIGRATION } from '../projects/migrations/013-repair-project-foreign-keys';
 import { CREATE_TERRITORIES_MIGRATION } from '../territories/migrations/014-create-territories';
+import { MANUAL_TERRITORIES_MIGRATION } from '../territories/migrations/015-manual-territories';
 
 export interface DatabaseMigration {
   readonly version: number;
@@ -95,6 +96,11 @@ export const DATABASE_MIGRATIONS: readonly DatabaseMigration[] = [
     version: 14,
     name: 'create-territories',
     sql: CREATE_TERRITORIES_MIGRATION,
+  },
+  {
+    version: 15,
+    name: 'manual-territories',
+    sql: MANUAL_TERRITORIES_MIGRATION,
   },
 ];
 

@@ -117,7 +117,7 @@ describe('TerritoryRecompositionService', () => {
     const predecessor = territoryRepository.create({
       id: 'old-composed',
       project_id: project.id,
-      kind: 'composed',
+      kind: 'manual',
       title: 'Old composition',
       position_x: 120,
       position_y: -40,
@@ -145,9 +145,7 @@ describe('TerritoryRecompositionService', () => {
     );
 
     const result = await service.recompose(project.id, {});
-    const composed = result.territories.filter(
-      ({ kind }) => kind === 'composed',
-    );
+    const composed = result.territories.filter(({ kind }) => kind === 'manual');
 
     expect(composed).toHaveLength(2);
     expect(composed).toEqual(
@@ -300,6 +298,7 @@ describe('TerritoryRecompositionService', () => {
         bubbleRepository.updateTerritories(projectId, assignments);
         throw new Error('Injected persistence failure.');
       },
+      moveTerritoryMembers: () => 0,
     };
     service = new TerritoryRecompositionService(
       projects,

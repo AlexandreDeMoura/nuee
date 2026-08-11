@@ -188,39 +188,45 @@ export class SqliteTerritoryRepository implements TerritoryRepository {
     });
   }
 
-  deleteComposedIfEmpty(projectId: string, territoryId: string): boolean {
+  updateTitle(
+    projectId: string,
+    territoryId: string,
+    title: string,
+    updatedAt: string,
+  ): Territory | undefined {
     const result = this.database
       .prepare(
         `
-          DELETE FROM territories
-          WHERE
-            project_id = ?
-            AND id = ?
-            AND kind = 'composed'
-            AND NOT EXISTS (
-              SELECT 1
-              FROM bubbles
-              WHERE
-                bubbles.project_id = territories.project_id
-                AND bubbles.territory_id = territories.id
-            )
+          UPDATE territories
+          SET title = ?, updated_at = ?
+          WHERE project_id = ? AND id = ?
         `,
       )
+      .run(title, updatedAt, projectId, territoryId);
+
+    return result.changes === 0
+      ? undefined
+      : this.findByProjectAndId(projectId, territoryId);
+  }
+
+  delete(projectId: string, territoryId: string): boolean {
+    const result = this.database
+      .prepare('DELETE FROM territories WHERE project_id = ? AND id = ?')
       .run(projectId, territoryId);
 
     return result.changes > 0;
   }
 
-  deleteComposedByIds(projectId: string, territoryIds: string[]): void {
+  deleteManualByIds(projectId: string, territoryIds: string[]): void {
     if (territoryIds.length === 0) {
       return;
     }
 
     const statement = this.database.prepare(
       `
-        DELETE FROM territories
-        WHERE project_id = ? AND id = ? AND kind = 'composed'
-      `,
+          DELETE FROM territories
+          WHERE project_id = ? AND id = ? AND kind = 'manual'
+        `,
     );
 
     for (const territoryId of territoryIds) {
@@ -228,7 +234,7 @@ export class SqliteTerritoryRepository implements TerritoryRepository {
 
       if (result.changes === 0) {
         throw new Error(
-          `Composed territory "${territoryId}" was not available for replacement.`,
+          `Manual territory "${territoryId}" was not available for replacement.`,
         );
       }
     }

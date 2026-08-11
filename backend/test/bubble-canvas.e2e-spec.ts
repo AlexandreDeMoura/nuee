@@ -87,6 +87,72 @@ describe('Territory canvas persistence journey (e2e)', () => {
       '2026-08-09T10:00:00.000Z',
       '2026-08-09T10:00:00.000Z',
     );
+
+    runDatabaseMigrations(database, DATABASE_MIGRATIONS.slice(0, 14));
+    database
+      .prepare(
+        `
+          INSERT INTO projects (
+            id, title, description, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?)
+        `,
+      )
+      .run(
+        'prd-10-project',
+        'PRD 10 territory map',
+        'Existing composed territories migrate into user-owned territories.',
+        '2026-08-09T11:00:00.000Z',
+        '2026-08-09T11:00:00.000Z',
+      );
+    const insertPrd10Territory = database.prepare(
+      `
+        INSERT INTO territories (
+          id, project_id, kind, title, position_x, position_y,
+          visible_count, created_at, updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `,
+    );
+    insertPrd10Territory.run(
+      'prd-10-populated',
+      'prd-10-project',
+      'composed',
+      'Existing research',
+      -180,
+      75,
+      3,
+      '2026-08-09T11:10:00.000Z',
+      '2026-08-09T11:20:00.000Z',
+    );
+    insertPrd10Territory.run(
+      'prd-10-empty',
+      'prd-10-project',
+      'composed',
+      'Existing decisions',
+      260,
+      -35,
+      4,
+      '2026-08-09T11:15:00.000Z',
+      '2026-08-09T11:15:00.000Z',
+    );
+    database
+      .prepare(
+        `
+          INSERT INTO bubbles (
+            id, project_id, territory_id, title, summary, content,
+            created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `,
+      )
+      .run(
+        'prd-10-member',
+        'prd-10-project',
+        'prd-10-populated',
+        'Preserved member',
+        'Its complete record survives territory deletion.',
+        'Keep content, links, and provenance untouched.',
+        '2026-08-09T11:20:00.000Z',
+        '2026-08-09T11:20:00.000Z',
+      );
     database.close();
   });
 
@@ -107,6 +173,122 @@ describe('Territory canvas persistence journey (e2e)', () => {
     }
 
     rmSync(temporaryDirectory, { recursive: true, force: true });
+  });
+
+  it('migrates, creates, renames, and transactionally deletes manual territories', async () => {
+    const migratedResponse = await request(app!.getHttpServer())
+      .get('/projects/prd-10-project/territories')
+      .expect(200);
+    expect(migratedResponse.body).toEqual([
+      expect.objectContaining({
+        id: 'prd-10-populated',
+        kind: 'manual',
+        title: 'Existing research',
+        position_x: -180,
+        position_y: 75,
+        visible_count: 3,
+      }),
+      expect.objectContaining({
+        id: 'prd-10-empty',
+        kind: 'manual',
+        title: 'Existing decisions',
+        position_x: 260,
+        position_y: -35,
+        visible_count: 4,
+      }),
+    ]);
+
+    const createdResponse = await request(app!.getHttpServer())
+      .post('/projects/prd-10-project/territories')
+      .send({
+        title: '  New evidence  ',
+        position_x: 420,
+        position_y: 180,
+      })
+      .expect(201);
+    const created = createdResponse.body as Territory;
+    expect(created).toEqual(
+      expect.objectContaining({
+        kind: 'manual',
+        title: 'New evidence',
+        position_x: 420,
+        position_y: 180,
+        visible_count: 4,
+      }),
+    );
+
+    const renamedResponse = await request(app!.getHttpServer())
+      .patch(`/projects/prd-10-project/territories/${created.id}`)
+      .send({ title: '  Renamed evidence  ' })
+      .expect(200);
+    expect(renamedResponse.body).toEqual(
+      expect.objectContaining({
+        id: created.id,
+        kind: 'manual',
+        title: 'Renamed evidence',
+      }),
+    );
+    await request(app!.getHttpServer())
+      .delete(`/projects/prd-10-project/territories/${created.id}`)
+      .expect(200)
+      .expect({ moved_bubble_count: 0 });
+
+    const migratedRenameResponse = await request(app!.getHttpServer())
+      .patch('/projects/prd-10-project/territories/prd-10-populated')
+      .send({ title: 'Owned research' })
+      .expect(200);
+    expect(migratedRenameResponse.body).toEqual(
+      expect.objectContaining({ title: 'Owned research' }),
+    );
+    await request(app!.getHttpServer())
+      .delete('/projects/prd-10-project/territories/prd-10-populated')
+      .expect(200)
+      .expect({ moved_bubble_count: 1 });
+
+    const territoriesAfterDelete = await request(app!.getHttpServer())
+      .get('/projects/prd-10-project/territories')
+      .expect(200);
+    const ungrouped = (territoriesAfterDelete.body as Territory[]).find(
+      ({ kind }) => kind === 'ungrouped',
+    );
+    expect(territoriesAfterDelete.body).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'prd-10-empty', kind: 'manual' }),
+        expect.objectContaining({ kind: 'ungrouped', title: 'Ungrouped' }),
+      ]),
+    );
+    expect(territoriesAfterDelete.body).not.toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ id: 'prd-10-populated' }),
+      ]),
+    );
+
+    const bubblesAfterDelete = await request(app!.getHttpServer())
+      .get('/projects/prd-10-project/bubbles')
+      .expect(200);
+    expect(bubblesAfterDelete.body).toEqual([
+      expect.objectContaining({
+        id: 'prd-10-member',
+        territory_id: ungrouped?.id,
+        title: 'Preserved member',
+        summary: 'Its complete record survives territory deletion.',
+        content: 'Keep content, links, and provenance untouched.',
+      }),
+    ]);
+
+    const renameUngroupedResponse = await request(app!.getHttpServer())
+      .patch(`/projects/prd-10-project/territories/${ungrouped?.id}`)
+      .send({ title: 'Forbidden rename' })
+      .expect(400);
+    expect(renameUngroupedResponse.body).toEqual(
+      expect.objectContaining({ code: 'TERRITORY_UNGROUPED_IMMUTABLE' }),
+    );
+    const deleteUngroupedResponse = await request(app!.getHttpServer())
+      .delete(`/projects/prd-10-project/territories/${ungrouped?.id}`)
+      .expect(400);
+    expect(deleteUngroupedResponse.body).toEqual(
+      expect.objectContaining({ code: 'TERRITORY_UNGROUPED_IMMUTABLE' }),
+    );
   });
 
   it('migrates legacy bubbles and persists territory mutations across reloads', async () => {
@@ -306,7 +488,7 @@ describe('Territory canvas persistence journey (e2e)', () => {
       success.body as unknown as RecomposeTerritoriesResponse;
     const territories = recomposition.territories;
     const recomposedBubbles = recomposition.bubbles;
-    const composed = territories.filter(({ kind }) => kind === 'composed');
+    const composed = territories.filter(({ kind }) => kind === 'manual');
 
     expect(composed).toHaveLength(1);
     expect(territories).toEqual(

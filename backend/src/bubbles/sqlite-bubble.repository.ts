@@ -272,6 +272,24 @@ export class SqliteBubbleRepository
     });
   }
 
+  moveTerritoryMembers(
+    projectId: string,
+    sourceTerritoryId: string,
+    destinationTerritoryId: string,
+  ): number {
+    const result = this.database
+      .prepare(
+        `
+          UPDATE bubbles
+          SET territory_id = ?
+          WHERE project_id = ? AND territory_id = ?
+        `,
+      )
+      .run(destinationTerritoryId, projectId, sourceTerritoryId);
+
+    return Number(result.changes);
+  }
+
   markSourceDiscussionDeleted(
     projectId: string,
     discussionId: string,

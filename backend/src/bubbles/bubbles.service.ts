@@ -333,6 +333,22 @@ export class BubblesService
     );
   }
 
+  moveTerritoryMembers(
+    projectId: string,
+    sourceTerritoryId: string,
+    destinationTerritoryId: string,
+  ): number {
+    this.projects.get(projectId);
+
+    return this.transactions.run(() =>
+      this.bubbles.moveTerritoryMembers(
+        projectId,
+        sourceTerritoryId,
+        destinationTerritoryId,
+      ),
+    );
+  }
+
   delete(projectId: string, bubbleId: string): void {
     const bubble = this.get(projectId, bubbleId);
 

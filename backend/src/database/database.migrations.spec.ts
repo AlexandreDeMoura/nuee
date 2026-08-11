@@ -63,9 +63,13 @@ describe('runDatabaseMigrations', () => {
           version: 14,
           name: 'create-territories',
         },
+        {
+          version: 15,
+          name: 'manual-territories',
+        },
       ]);
       expect(database.prepare('PRAGMA user_version;').get()).toEqual({
-        user_version: 14,
+        user_version: 15,
       });
     } finally {
       database.close();
@@ -690,6 +694,144 @@ describe('runDatabaseMigrations', () => {
           bubble_b_id: 'bubble-lower-y',
         },
       ]);
+      expect(database.prepare('PRAGMA foreign_key_check;').all()).toEqual([]);
+    } finally {
+      database.close();
+    }
+  });
+
+  it('migrates PRD 10 composed territories to manual without changing membership or layout', () => {
+    const database = new DatabaseSync(':memory:');
+
+    try {
+      database.exec('PRAGMA foreign_keys = ON;');
+      runDatabaseMigrations(database, DATABASE_MIGRATIONS.slice(0, 14));
+      database
+        .prepare(
+          `
+            INSERT INTO projects (
+              id, title, description, created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?)
+          `,
+        )
+        .run(
+          'prd-10-project',
+          'Existing territory map',
+          'Keeps the prior composed map intact.',
+          '2026-08-09T08:00:00.000Z',
+          '2026-08-09T08:00:00.000Z',
+        );
+      const insertTerritory = database.prepare(
+        `
+          INSERT INTO territories (
+            id, project_id, kind, title, position_x, position_y,
+            visible_count, created_at, updated_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `,
+      );
+      insertTerritory.run(
+        'composed-populated',
+        'prd-10-project',
+        'composed',
+        'Research',
+        -80,
+        140,
+        3,
+        '2026-08-09T09:00:00.000Z',
+        '2026-08-09T10:00:00.000Z',
+      );
+      insertTerritory.run(
+        'composed-empty',
+        'prd-10-project',
+        'composed',
+        'Decisions',
+        320,
+        -40,
+        4,
+        '2026-08-09T09:30:00.000Z',
+        '2026-08-09T09:30:00.000Z',
+      );
+      database
+        .prepare(
+          `
+            INSERT INTO bubbles (
+              id, project_id, territory_id, title, content,
+              created_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+          `,
+        )
+        .run(
+          'existing-member',
+          'prd-10-project',
+          'composed-populated',
+          'Existing bubble',
+          'Membership must survive the kind migration.',
+          '2026-08-09T10:00:00.000Z',
+          '2026-08-09T10:00:00.000Z',
+        );
+
+      runDatabaseMigrations(database);
+
+      expect(
+        database
+          .prepare(
+            `
+              SELECT id, kind, title, position_x, position_y, visible_count,
+                created_at, updated_at
+              FROM territories
+              ORDER BY id ASC
+            `,
+          )
+          .all(),
+      ).toEqual([
+        {
+          id: 'composed-empty',
+          kind: 'manual',
+          title: 'Decisions',
+          position_x: 320,
+          position_y: -40,
+          visible_count: 4,
+          created_at: '2026-08-09T09:30:00.000Z',
+          updated_at: '2026-08-09T09:30:00.000Z',
+        },
+        {
+          id: 'composed-populated',
+          kind: 'manual',
+          title: 'Research',
+          position_x: -80,
+          position_y: 140,
+          visible_count: 3,
+          created_at: '2026-08-09T09:00:00.000Z',
+          updated_at: '2026-08-09T10:00:00.000Z',
+        },
+      ]);
+      expect(
+        database
+          .prepare(
+            `
+              SELECT id, territory_id
+              FROM bubbles
+              WHERE id = 'existing-member'
+            `,
+          )
+          .get(),
+      ).toEqual({
+        id: 'existing-member',
+        territory_id: 'composed-populated',
+      });
+      expect(() =>
+        insertTerritory.run(
+          'new-composed',
+          'prd-10-project',
+          'composed',
+          'Invalid old kind',
+          0,
+          0,
+          1,
+          '2026-08-09T11:00:00.000Z',
+          '2026-08-09T11:00:00.000Z',
+        ),
+      ).toThrow();
       expect(database.prepare('PRAGMA foreign_key_check;').all()).toEqual([]);
     } finally {
       database.close();

@@ -6,6 +6,7 @@ import { SqliteTerritoryRepository } from './sqlite-territory.repository';
 import { TerritoriesController } from './territories.controller';
 import { TerritoriesService } from './territories.service';
 import { TerritoryRecompositionService } from './territory-recomposition.service';
+import { TerritoryDeletionService } from './territory-deletion.service';
 import {
   TERRITORY_BUBBLE_LIFECYCLE,
   TERRITORY_REPOSITORY,
@@ -16,6 +17,7 @@ import {
   controllers: [TerritoriesController],
   providers: [
     TerritoriesService,
+    TerritoryDeletionService,
     TerritoryRecompositionService,
     SqliteTerritoryRepository,
     {

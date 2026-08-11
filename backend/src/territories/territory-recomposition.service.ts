@@ -135,7 +135,7 @@ export class TerritoryRecompositionService {
   ): RecomposeTerritoriesResponse {
     return this.transactions.run(() => {
       const existing = this.territories.findAllByProjectId(projectId);
-      const predecessors = existing.filter(({ kind }) => kind === 'composed');
+      const predecessors = existing.filter(({ kind }) => kind === 'manual');
       const anchor = predecessors[0] ?? existing[0];
       const timestamp = new Date().toISOString();
       const assignments: BubbleTerritoryAssignment[] = [];
@@ -147,7 +147,7 @@ export class TerritoryRecompositionService {
         this.territories.create({
           id: territoryId,
           project_id: projectId,
-          kind: 'composed',
+          kind: 'manual',
           title: proposal.title,
           position_x:
             previousPosition?.position_x ??
@@ -171,7 +171,7 @@ export class TerritoryRecompositionService {
       });
 
       this.bubbleWriter.assignTerritories(projectId, assignments);
-      this.territories.deleteComposedByIds(
+      this.territories.deleteManualByIds(
         projectId,
         predecessors.map(({ id }) => id),
       );

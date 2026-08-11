@@ -47,6 +47,11 @@ export interface BubbleRepository {
     projectId: string,
     assignments: BubbleTerritoryAssignment[],
   ): Bubble[];
+  moveTerritoryMembers(
+    projectId: string,
+    sourceTerritoryId: string,
+    destinationTerritoryId: string,
+  ): number;
   delete(projectId: string, id: string): boolean;
 }
 
@@ -138,6 +143,11 @@ export interface BubbleTerritoryAssignmentWriter {
     projectId: string,
     assignments: BubbleTerritoryAssignment[],
   ): Bubble[];
+  moveTerritoryMembers(
+    projectId: string,
+    sourceTerritoryId: string,
+    destinationTerritoryId: string,
+  ): number;
 }
 
 export interface BubbleTerritoryCompositionReader {
