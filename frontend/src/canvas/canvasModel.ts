@@ -1,9 +1,10 @@
 import type {
   Bubble,
   Project,
+  Territory,
   UpdateProjectViewportInput,
 } from '../api';
-import { isBubbleResponse } from '../api';
+import { isBubbleResponse, isTerritoryResponse } from '../api';
 import type { CanvasViewport } from './canvasTypes';
 
 export const MIN_ZOOM = 0.25;
@@ -85,6 +86,35 @@ export function renderableBubbles(records: unknown, projectId: string) {
   }
 
   return { bubbles, invalidCount };
+}
+
+export function isRenderableTerritory(
+  value: unknown,
+  projectId: string,
+): value is Territory {
+  return isTerritoryResponse(value, projectId);
+}
+
+export function renderableTerritories(records: unknown, projectId: string) {
+  if (!Array.isArray(records)) {
+    throw new Error('The territory response was not a list.');
+  }
+
+  const seenIds = new Set<string>();
+  const territories: Territory[] = [];
+  let invalidCount = 0;
+
+  for (const record of records) {
+    if (!isRenderableTerritory(record, projectId) || seenIds.has(record.id)) {
+      invalidCount += 1;
+      continue;
+    }
+
+    seenIds.add(record.id);
+    territories.push(record);
+  }
+
+  return { territories, invalidCount };
 }
 
 export function mergeBubbles(current: Bubble[], incoming: Bubble[]) {

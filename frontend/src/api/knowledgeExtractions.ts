@@ -23,7 +23,6 @@ export type {
   ResolveKnowledgeExtractionInput,
 };
 
-/** Temporary response shape used until bubble persistence emits territories. */
 export type KnowledgeExtractionResolutionResponse = Omit<
   SharedKnowledgeExtractionResolutionResponse,
   'resolution'

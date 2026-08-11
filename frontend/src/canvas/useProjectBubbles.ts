@@ -5,25 +5,25 @@ import {
   useRef,
   useState,
 } from 'react';
-import type {
-  Bubble,
-  BubblePositionUpdate,
-} from '../api';
+import type { Bubble } from '../api';
 import {
   isRenderableBubble,
   mergeBubbles,
   renderableBubbles,
+  renderableTerritories,
 } from './canvasModel';
 import type {
   BubbleListRequest,
   CanvasLoadState,
   ProjectBubbleCollection,
+  TerritoryListRequest,
 } from './canvasTypes';
 
 interface UseProjectBubblesOptions {
   enabled?: boolean;
   projectId: string;
   requestBubbles: BubbleListRequest;
+  requestTerritories: TerritoryListRequest;
 }
 
 type BubbleCollectionMutation =
@@ -34,46 +34,12 @@ type BubbleCollectionMutation =
   | {
       bubbleId: string;
       kind: 'remove';
-    }
-  | {
-      kind: 'positions';
-      positions: readonly BubblePositionUpdate[];
     };
 
-function replaceBubblePreservingPosition(
-  bubbles: Bubble[],
-  replacement: Bubble,
-) {
+function replaceBubble(bubbles: Bubble[], replacement: Bubble) {
   return bubbles.map((bubble) =>
-    bubble.id === replacement.id
-      ? {
-          ...replacement,
-          position_x: bubble.position_x,
-          position_y: bubble.position_y,
-        }
-      : bubble,
+    bubble.id === replacement.id ? replacement : bubble,
   );
-}
-
-function updateBubblePositions(
-  bubbles: Bubble[],
-  positions: readonly BubblePositionUpdate[],
-) {
-  const positionsById = new Map(
-    positions.map((position) => [position.bubble_id, position]),
-  );
-
-  return bubbles.map((bubble) => {
-    const position = positionsById.get(bubble.id);
-
-    return position
-      ? {
-          ...bubble,
-          position_x: position.position_x,
-          position_y: position.position_y,
-        }
-      : bubble;
-  });
 }
 
 function applyMutations(
@@ -85,11 +51,9 @@ function applyMutations(
       case 'add':
         return mergeBubbles(current, [mutation.bubble]);
       case 'replace':
-        return replaceBubblePreservingPosition(current, mutation.bubble);
+        return replaceBubble(current, mutation.bubble);
       case 'remove':
         return current.filter((bubble) => bubble.id !== mutation.bubbleId);
-      case 'positions':
-        return updateBubblePositions(current, mutation.positions);
     }
   }, bubbles);
 }
@@ -98,10 +62,12 @@ export function useProjectBubbles({
   enabled = true,
   projectId,
   requestBubbles,
+  requestTerritories,
 }: UseProjectBubblesOptions): ProjectBubbleCollection {
   const [loadState, setLoadState] = useState<CanvasLoadState>({
     status: 'loading',
     bubbles: [],
+    territories: [],
   });
   const [requestKey, setRequestKey] = useState(0);
   const loadedProjectIdRef = useRef(projectId);
@@ -124,6 +90,7 @@ export function useProjectBubbles({
       removedBubbleIdsRef.current.delete(bubble.id);
       recordMutation({ bubble, kind: 'add' });
       setLoadState((current) => ({
+        ...current,
         status: current.status === 'partial' ? 'partial' : 'ready',
         bubbles: mergeBubbles(current.bubbles, [bubble]),
       }));
@@ -131,7 +98,7 @@ export function useProjectBubbles({
     [projectId, recordMutation],
   );
 
-  const replaceBubble = useCallback(
+  const replacePersistedBubble = useCallback(
     (bubble: Bubble) => {
       if (!isRenderableBubble(bubble, projectId)) {
         return;
@@ -140,7 +107,7 @@ export function useProjectBubbles({
       recordMutation({ bubble, kind: 'replace' });
       setLoadState((current) => ({
         ...current,
-        bubbles: replaceBubblePreservingPosition(current.bubbles, bubble),
+        bubbles: replaceBubble(current.bubbles, bubble),
       }));
     },
     [projectId, recordMutation],
@@ -163,32 +130,10 @@ export function useProjectBubbles({
     [],
   );
 
-  const applyBubblePositions = useCallback(
-    (positions: readonly BubblePositionUpdate[]) => {
-      const validPositions = positions.filter(
-        (position) =>
-          typeof position.bubble_id === 'string' &&
-          Number.isFinite(position.position_x) &&
-          Number.isFinite(position.position_y),
-      );
-
-      if (validPositions.length === 0) {
-        return;
-      }
-
-      recordMutation({ kind: 'positions', positions: validPositions });
-      setLoadState((current) => ({
-        ...current,
-        bubbles: updateBubblePositions(current.bubbles, validPositions),
-      }));
-    },
-    [recordMutation],
-  );
-
   const retry = useCallback(() => {
     setLoadState((current) => ({
+      ...current,
       status: 'loading',
-      bubbles: current.bubbles,
     }));
     setRequestKey((key) => key + 1);
   }, []);
@@ -210,25 +155,36 @@ export function useProjectBubbles({
     setLoadState((current) => ({
       status: 'loading',
       bubbles: isNewProject ? [] : current.bubbles,
+      territories: isNewProject ? [] : current.territories,
     }));
 
-    requestBubbles(projectId, controller.signal)
-      .then((records) => {
+    Promise.all([
+      requestBubbles(projectId, controller.signal),
+      requestTerritories(projectId, controller.signal),
+    ])
+      .then(([bubbleRecords, territoryRecords]) => {
         if (controller.signal.aborted) {
           return;
         }
 
-        const result = renderableBubbles(records, projectId);
+        const bubbleResult = renderableBubbles(bubbleRecords, projectId);
+        const territoryResult = renderableTerritories(
+          territoryRecords,
+          projectId,
+        );
+        const hasInvalidRecords =
+          bubbleResult.invalidCount > 0 ||
+          territoryResult.invalidCount > 0;
 
         setLoadState((current) => {
-          const loadedBubbles =
-            result.invalidCount === 0
-              ? result.bubbles
-              : mergeBubbles(current.bubbles, result.bubbles);
+          const loadedBubbles = hasInvalidRecords
+            ? mergeBubbles(current.bubbles, bubbleResult.bubbles)
+            : bubbleResult.bubbles;
 
           return {
-            status: result.invalidCount === 0 ? 'ready' : 'partial',
+            status: hasInvalidRecords ? 'partial' : 'ready',
             bubbles: applyMutations(loadedBubbles, mutationsRef.current),
+            territories: territoryResult.territories,
           };
         });
       })
@@ -241,13 +197,19 @@ export function useProjectBubbles({
         }
 
         setLoadState((current) => ({
+          ...current,
           status: 'failed',
-          bubbles: current.bubbles,
         }));
       });
 
     return () => controller.abort();
-  }, [enabled, projectId, requestBubbles, requestKey]);
+  }, [
+    enabled,
+    projectId,
+    requestBubbles,
+    requestKey,
+    requestTerritories,
+  ]);
 
   return useMemo(
     () => ({
@@ -256,18 +218,16 @@ export function useProjectBubbles({
       loadState,
       projectId,
       removeBubble,
-      replaceBubble,
+      replaceBubble: replacePersistedBubble,
       retry,
-      updateBubblePositions: applyBubblePositions,
     }),
     [
       addBubble,
-      applyBubblePositions,
       isBubbleRemoved,
       loadState,
       projectId,
       removeBubble,
-      replaceBubble,
+      replacePersistedBubble,
       retry,
     ],
   );

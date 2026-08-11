@@ -5,3 +5,4 @@ export * from './discussions';
 export * from './documents';
 export * from './knowledgeExtractions';
 export * from './projects';
+export * from './territories';

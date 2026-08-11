@@ -34,8 +34,7 @@ function bubble(overrides: Partial<Bubble> = {}): Bubble {
     title: 'Durable knowledge',
     summary: null,
     content: 'A complete manual bubble.',
-    position_x: 12,
-    position_y: -24,
+    territory_id: 'territory/1',
     created_at: '2026-08-03T08:00:00.000Z',
     updated_at: '2026-08-03T08:01:00.000Z',
     source_kind: 'manual',
@@ -68,8 +67,6 @@ describe('bubbles API', () => {
       placement,
       savedBubble,
       savedBubble,
-      [savedBubble],
-      savedBubble,
     ]);
     const api = createBubblesApi(request);
 
@@ -84,23 +81,10 @@ describe('bubbles API', () => {
         title: savedBubble.title,
         summary: savedBubble.summary,
         content: savedBubble.content,
-        position_x: savedBubble.position_x,
-        position_y: savedBubble.position_y,
-      }),
-    ).resolves.toBe(savedBubble);
-    await expect(
-      api.updateBubblePosition('project/1', 'bubble/1', {
         position_x: 12,
         position_y: -24,
       }),
     ).resolves.toBe(savedBubble);
-    await expect(
-      api.updateBubblePositions('project/1', {
-        positions: [
-          { bubble_id: 'bubble/1', position_x: 12, position_y: -24 },
-        ],
-      }),
-    ).resolves.toEqual([savedBubble]);
     await expect(
       api.updateBubble(
         'project/1',
@@ -122,8 +106,6 @@ describe('bubbles API', () => {
       { position_x: Number.NaN, position_y: 0 },
       wrongBubble,
       wrongIdentity,
-      [wrongBubble],
-      wrongIdentity,
     ]);
     const api = createBubblesApi(request);
 
@@ -142,15 +124,6 @@ describe('bubbles API', () => {
         position_y: 0,
       }),
     ).rejects.toThrow('The bubble response contained invalid data.');
-    await expect(
-      api.updateBubblePosition('project/1', 'bubble/1', {
-        position_x: 0,
-        position_y: 0,
-      }),
-    ).rejects.toThrow('The bubble response contained invalid data.');
-    await expect(
-      api.updateBubblePositions('project/1', { positions: [] }),
-    ).rejects.toThrow('The bubble list response contained invalid data.');
     await expect(
       api.updateBubble('project/1', 'bubble/1', {
         title: 'Bubble',

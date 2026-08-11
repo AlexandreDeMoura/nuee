@@ -4,10 +4,9 @@ import { ApiError, getProject, type Project } from '../api';
 import { analytics, trackAnalytics, type AnalyticsClient } from '../analytics';
 import type {
   BubbleListRequest,
-  BubblePositionUpdateRequest,
-  BubblePositionsUpdateRequest,
   CanvasMultiSelection,
   ProjectViewportUpdateRequest,
+  TerritoryListRequest,
 } from '../canvas/CanvasSurface';
 import type {
   BubbleCreateRequest,
@@ -40,8 +39,7 @@ export interface ProjectCanvasRouteProps {
   requestBubbleCreate?: BubbleCreateRequest;
   requestBubbles?: BubbleListRequest;
   requestBubblePlacement?: BubblePlacementRequest;
-  requestBubblePositionUpdate?: BubblePositionUpdateRequest;
-  requestBubblePositionsUpdate?: BubblePositionsUpdateRequest;
+  requestTerritories?: TerritoryListRequest;
   requestBubbleDelete?: BubbleDeleteRequest;
   requestBubbleUpdate?: BubbleUpdateRequest;
   requestBubbleLinks?: BubbleLinkListRequest;
@@ -157,8 +155,7 @@ export function ProjectCanvasRoute({
   requestBubbleCreate,
   requestBubbles,
   requestBubblePlacement,
-  requestBubblePositionUpdate,
-  requestBubblePositionsUpdate,
+  requestTerritories,
   requestBubbleDelete,
   requestBubbleUpdate,
   requestBubbleLinks,
@@ -221,8 +218,7 @@ export function ProjectCanvasRoute({
         requestBubbleCreate={requestBubbleCreate}
         requestBubbles={requestBubbles}
         requestBubblePlacement={requestBubblePlacement}
-        requestBubblePositionUpdate={requestBubblePositionUpdate}
-        requestBubblePositionsUpdate={requestBubblePositionsUpdate}
+        requestTerritories={requestTerritories}
         requestBubbleDelete={requestBubbleDelete}
         requestBubbleUpdate={requestBubbleUpdate}
         requestBubbleLinks={requestBubbleLinks}

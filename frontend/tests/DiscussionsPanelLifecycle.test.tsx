@@ -12,9 +12,13 @@ import type {
   DiscussionDetails,
   DiscussionSummary,
   Project,
+  Territory,
 } from '../src/api';
 import type { AnalyticsClient } from '../src/analytics';
-import { ProjectWorkspace } from '../src/workspace/ProjectWorkspace';
+import {
+  ProjectWorkspace as AppProjectWorkspace,
+  type ProjectWorkspaceProps,
+} from '../src/workspace/ProjectWorkspace';
 
 const project: Project = {
   id: 'project-discussions',
@@ -26,6 +30,27 @@ const project: Project = {
   canvas_viewport_y: 0,
   canvas_zoom: 1,
 };
+
+function ProjectWorkspace(props: ProjectWorkspaceProps) {
+  const territory: Territory = {
+    id: 'territory-1',
+    project_id: props.project.id,
+    kind: 'ungrouped',
+    title: 'Ungrouped',
+    position_x: 0,
+    position_y: 0,
+    visible_count: 100,
+    created_at: '2026-07-28T07:00:00.000Z',
+    updated_at: '2026-07-28T07:00:00.000Z',
+  };
+
+  return (
+    <AppProjectWorkspace
+      {...props}
+      requestTerritories={props.requestTerritories ?? (async () => [territory])}
+    />
+  );
+}
 
 function summary(
   id: string,
@@ -313,8 +338,7 @@ describe('discussions panel lifecycle', () => {
       title: 'Preserved extracted bubble',
       summary: null,
       content: 'Knowledge remains after its source discussion is deleted.',
-      position_x: 120,
-      position_y: 80,
+      territory_id: 'territory-1',
       created_at: '2026-07-28T10:00:01.000Z',
       updated_at: '2026-07-28T10:00:01.000Z',
       source_kind: 'discussion',
@@ -338,7 +362,11 @@ describe('discussions panel lifecycle', () => {
       />,
     );
 
-    expect(await screen.findByText('Preserved extracted bubble')).toBeTruthy();
+    expect(
+      await screen.findByRole('article', {
+        name: 'Preserved extracted bubble',
+      }),
+    ).toBeTruthy();
     fireEvent.click(screen.getByRole('tab', { name: 'Discussions' }));
     await screen.findByRole('button', {
       name: 'Open discussion: Current launch plan',
@@ -383,7 +411,11 @@ describe('discussions panel lifecycle', () => {
       }),
     ).toBeTruthy();
     expect(screen.getAllByText('ACTIVE')).toHaveLength(1);
-    expect(screen.getByText('Preserved extracted bubble')).toBeTruthy();
+    expect(
+      screen.getByRole('article', {
+        name: 'Preserved extracted bubble',
+      }),
+    ).toBeTruthy();
   });
 
   it('deletes an open discussion only after confirmation and closes its modal', async () => {

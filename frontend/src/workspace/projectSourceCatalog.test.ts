@@ -10,8 +10,7 @@ function bubbleFixture(
   return {
     content: 'Fallback bubble content.',
     created_at: '2026-08-01T10:00:00.000Z',
-    position_x: 0,
-    position_y: 0,
+    territory_id: 'territory-one',
     source_context_item_ids: [],
     source_discussion_deleted_at: null,
     source_discussion_id: null,

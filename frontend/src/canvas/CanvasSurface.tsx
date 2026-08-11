@@ -8,23 +8,14 @@ import {
 } from 'react';
 import {
   getProjectBubbles,
-  updateBubblePosition,
-  updateBubblePositions,
+  getProjectTerritories,
   updateProjectViewport,
   type Bubble,
   type BubblePlacementInput,
-  type BubblePositionUpdate,
 } from '../api';
+import { analytics, trackAnalytics } from '../analytics';
+import { CreateBubbleDialog } from '../bubbles/CreateBubbleDialog';
 import {
-  analytics,
-  trackAnalytics,
-} from '../analytics';
-import {
-  CreateBubbleDialog,
-} from '../bubbles/CreateBubbleDialog';
-import { BubbleCard } from './BubbleCard';
-import {
-  BubblePositionSaveError,
   CanvasBubbleActions,
   CanvasBubbleLoadNotice,
   CanvasErrorState,
@@ -32,34 +23,27 @@ import {
   CanvasMultiSelectionBar,
   CanvasViewportSaveError,
   CanvasZoomControls,
-  CompactLayoutSaveError,
 } from './CanvasOverlays';
+import { TerritoryCard } from './TerritoryCard';
 import {
   DEFAULT_VIEWPORT,
   DEFAULT_VIEWPORT_SAVE_DELAY_MS,
   GRID_SIZE,
   ZOOM_STEP,
   clampZoom,
-  isRenderableBubble,
   normalizeWheelDelta,
 } from './canvasModel';
 import type {
-  ActiveBubbleDrag,
   ActivePan,
-  BubblePositionSave,
   CanvasSurfaceProps,
-  CompactLayoutSave,
 } from './canvasTypes';
-import { getCompactBubblePositions } from './compactLayout';
-import { useBubbleDrag } from './useBubbleDrag';
+import { groupBubblesByTerritory } from './territoryModel';
 import { useMultiSelection } from './useMultiSelection';
 import { useProjectBubbles } from './useProjectBubbles';
 import { useViewportPersistence } from './useViewportPersistence';
 
 export type {
   BubbleListRequest,
-  BubblePositionUpdateRequest,
-  BubblePositionsUpdateRequest,
   CanvasEmptyStateActions,
   CanvasMultiSelection,
   CanvasMultiSelectionResult,
@@ -67,6 +51,7 @@ export type {
   CanvasViewport,
   ProjectBubbleCollection,
   ProjectViewportUpdateRequest,
+  TerritoryListRequest,
 } from './canvasTypes';
 
 export function CanvasSurface({
@@ -79,8 +64,7 @@ export function CanvasSurface({
   requestBubbleCreate,
   requestBubbles = getProjectBubbles,
   requestBubblePlacement,
-  requestBubblePositionUpdate = updateBubblePosition,
-  requestBubblePositionsUpdate = updateBubblePositions,
+  requestTerritories = getProjectTerritories,
   requestViewportUpdate = updateProjectViewport,
   onBubbleSelectionChange,
   onCreateBubbleDialogOpenChange,
@@ -91,8 +75,6 @@ export function CanvasSurface({
 }: CanvasSurfaceProps) {
   const [selectedBubbleId, setSelectedBubbleId] = useState<string | null>(null);
   const [isPanning, setIsPanning] = useState(false);
-  const [compactLayoutSave, setCompactLayoutSave] =
-    useState<CompactLayoutSave | null>(null);
   const [
     isUncontrolledCreateBubbleDialogOpen,
     setIsUncontrolledCreateBubbleDialogOpen,
@@ -101,30 +83,13 @@ export function CanvasSurface({
     useState<BubblePlacementInput | null>(null);
   const surfaceRef = useRef<HTMLElement>(null);
   const activePanRef = useRef<ActivePan | null>(null);
-  const activeBubbleDragRef = useRef<ActiveBubbleDrag | null>(null);
-  const positionSavesRef = useRef<Record<string, BubblePositionSave>>({});
-  const compactLayoutSaveAttemptRef = useRef(0);
-  const compactLayoutSaveRef = useRef<CompactLayoutSave | null>(null);
-  const selectedBubbleIdRef = useRef<string | null>(null);
   const onBubbleSelectionChangeRef = useRef(onBubbleSelectionChange);
-  const mountedRef = useRef(true);
-  const [localBubblePositions, setLocalBubblePositions] = useState<
-    Record<string, { x: number; y: number }>
-  >({});
 
   useEffect(() => {
     onBubbleSelectionChangeRef.current = onBubbleSelectionChange;
   }, [onBubbleSelectionChange]);
 
-  useEffect(() => {
-    mountedRef.current = true;
-    return () => {
-      mountedRef.current = false;
-    };
-  }, []);
-
   const selectBubble = useCallback((bubble: Bubble | null) => {
-    selectedBubbleIdRef.current = bubble?.id ?? null;
     setSelectedBubbleId(bubble?.id ?? null);
     onBubbleSelectionChangeRef.current?.(bubble);
   }, []);
@@ -146,100 +111,21 @@ export function CanvasSurface({
     enabled: bubbleCollection === undefined,
     projectId,
     requestBubbles,
+    requestTerritories,
   });
   const activeBubbleCollection =
     bubbleCollection ?? internalBubbleCollection;
   const { loadState } = activeBubbleCollection;
-  const displayedBubbles = useMemo(
+  const displayedBubbles = loadState.bubbles;
+  const displayedTerritories = useMemo(
     () =>
-      loadState.bubbles.map((bubble) => {
-        const position =
-          localBubblePositions[`${projectId}\0${bubble.id}`];
-
-        return position
-          ? {
-              ...bubble,
-              position_x: position.x,
-              position_y: position.y,
-            }
-          : bubble;
-      }),
-    [loadState.bubbles, localBubblePositions, projectId],
+      groupBubblesByTerritory(loadState.territories, displayedBubbles),
+    [displayedBubbles, loadState.territories],
   );
-  const setLocalBubblePosition = useCallback(
-    (bubbleId: string, position: { x: number; y: number }) => {
-      setLocalBubblePositions((current) => ({
-        ...current,
-        [`${projectId}\0${bubbleId}`]: position,
-      }));
-    },
-    [projectId],
-  );
-  const setLocalBubblePositionBatch = useCallback(
-    (positions: readonly BubblePositionUpdate[]) => {
-      setLocalBubblePositions((current) => {
-        const next = { ...current };
-
-        for (const position of positions) {
-          next[`${projectId}\0${position.bubble_id}`] = {
-            x: position.position_x,
-            y: position.position_y,
-          };
-        }
-
-        return next;
-      });
-    },
-    [projectId],
-  );
-  const clearLocalBubblePositions = useCallback(
-    (bubbleIds: readonly string[]) => {
-      setLocalBubblePositions((current) => {
-        const next = { ...current };
-        let changed = false;
-
-        for (const bubbleId of bubbleIds) {
-          const key = `${projectId}\0${bubbleId}`;
-
-          if (key in next) {
-            delete next[key];
-            changed = true;
-          }
-        }
-
-        return changed ? next : current;
-      });
-    },
-    [projectId],
-  );
-  const commitBubblePosition = useCallback(
-    (bubble: Bubble) => {
-      activeBubbleCollection.updateBubblePositions([
-        {
-          bubble_id: bubble.id,
-          position_x: bubble.position_x,
-          position_y: bubble.position_y,
-        },
-      ]);
-      clearLocalBubblePositions([bubble.id]);
-    },
-    [activeBubbleCollection, clearLocalBubblePositions],
-  );
-
-  useEffect(() => {
-    if (
-      selectedBubbleIdRef.current &&
-      !displayedBubbles.some(
-        (bubble) => bubble.id === selectedBubbleIdRef.current,
-      )
-    ) {
-      selectBubble(null);
-    }
-  }, [displayedBubbles, selectBubble]);
 
   const {
-    activeSelectedBubbleIds: activeMultiSelectedBubbleIds,
-    activeSelectedBubbleIdSet: activeMultiSelectedBubbleIdSet,
+    activeSelectedBubbleIds,
+    activeSelectedBubbleIdSet,
     cancel: cancelMultiSelection,
     confirm: confirmMultiSelection,
     isActive: isMultiSelectionActive,
@@ -251,147 +137,52 @@ export function CanvasSurface({
     projectId,
   });
 
-  const {
-    cancelActiveBubbleDrag,
-    cancelBubbleDrag,
-    draggingBubbleId,
-    finishBubbleDrag,
-    handleBubblePointerDown,
-    moveActiveBubble,
-    positionSaves,
-    retryPositionSave,
-    revertPositionSave,
-  } = useBubbleDrag({
-    activeBubbleDragRef,
-    analyticsClient,
-    displayedBubbles,
-    isMultiSelectionActive,
-    positionSavesRef,
-    projectId,
-    requestBubblePositionUpdate,
-    commitBubblePosition,
-    selectBubble,
-    setLocalBubblePosition,
-    surfaceRef,
-    toggleMultiSelectedBubble,
-    viewport,
-  });
+  const effectiveSelectedBubbleId = displayedBubbles.some(
+    (bubble) => bubble.id === selectedBubbleId,
+  )
+    ? selectedBubbleId
+    : null;
 
-  const replaceCompactLayoutSave = useCallback(
-    (save: CompactLayoutSave | null) => {
-      compactLayoutSaveRef.current = save;
-      setCompactLayoutSave(save);
-    },
-    [],
-  );
+  const linkedBubbleIds = useMemo(() => {
+    const linkedIds = new Set<string>();
 
-  const persistCompactLayout = useCallback(
-    async (
-      requestedPositions: BubblePositionUpdate[],
-      persistedPositions: BubblePositionUpdate[],
-    ) => {
-      const attempt = ++compactLayoutSaveAttemptRef.current;
-      const saving: CompactLayoutSave = {
-        attempt,
-        persistedPositions,
-        requestedPositions,
-        status: 'saving',
-      };
+    if (!effectiveSelectedBubbleId || isMultiSelectionActive) {
+      return linkedIds;
+    }
 
-      setLocalBubblePositionBatch(requestedPositions);
-      replaceCompactLayoutSave(saving);
-
-      try {
-        const savedBubbles = await requestBubblePositionsUpdate(projectId, {
-          positions: requestedPositions,
-        });
-        const expectedById = new Map(
-          requestedPositions.map((position) => [
-            position.bubble_id,
-            position,
-          ]),
-        );
-        const seenIds = new Set<string>();
-
-        if (
-          !Array.isArray(savedBubbles) ||
-          savedBubbles.length !== requestedPositions.length ||
-          savedBubbles.some((bubble) => {
-            const expected = expectedById.get(bubble.id);
-            const isInvalid =
-              !isRenderableBubble(bubble, projectId) ||
-              !expected ||
-              seenIds.has(bubble.id) ||
-              bubble.position_x !== expected.position_x ||
-              bubble.position_y !== expected.position_y;
-
-            seenIds.add(bubble.id);
-            return isInvalid;
-          })
-        ) {
-          throw new Error('The saved compact layout response was invalid.');
-        }
-
-        if (
-          !mountedRef.current ||
-          compactLayoutSaveRef.current?.attempt !== attempt
-        ) {
-          return;
-        }
-
-        const savedPositions = savedBubbles.map((bubble) => ({
-          bubble_id: bubble.id,
-          position_x: bubble.position_x,
-          position_y: bubble.position_y,
-        }));
-        activeBubbleCollection.updateBubblePositions(savedPositions);
-        clearLocalBubblePositions(
-          savedPositions.map((position) => position.bubble_id),
-        );
-        replaceCompactLayoutSave(null);
-        trackAnalytics(analyticsClient, 'bubble_compact_layout_applied', {
-          project_id: projectId,
-          bubble_ids: requestedPositions.map((position) => position.bubble_id),
-        });
-      } catch {
-        if (
-          mountedRef.current &&
-          compactLayoutSaveRef.current?.attempt === attempt
-        ) {
-          setLocalBubblePositionBatch(persistedPositions);
-          replaceCompactLayoutSave({
-            ...saving,
-            status: 'error',
-          });
-        }
-      }
-    },
-    [
-      analyticsClient,
-      activeBubbleCollection,
-      clearLocalBubblePositions,
-      projectId,
-      replaceCompactLayoutSave,
-      requestBubblePositionsUpdate,
-      setLocalBubblePositionBatch,
-    ],
-  );
-
-  const linkedBubbleIds = new Set<string>();
-
-  if (selectedBubbleId && !isMultiSelectionActive) {
     for (const link of bubbleLinks) {
       if (link.project_id !== projectId) {
         continue;
       }
 
-      if (link.bubble_a_id === selectedBubbleId) {
-        linkedBubbleIds.add(link.bubble_b_id);
-      } else if (link.bubble_b_id === selectedBubbleId) {
-        linkedBubbleIds.add(link.bubble_a_id);
+      if (link.bubble_a_id === effectiveSelectedBubbleId) {
+        linkedIds.add(link.bubble_b_id);
+      } else if (link.bubble_b_id === effectiveSelectedBubbleId) {
+        linkedIds.add(link.bubble_a_id);
       }
     }
-  }
+
+    return linkedIds;
+  }, [
+    bubbleLinks,
+    effectiveSelectedBubbleId,
+    isMultiSelectionActive,
+    projectId,
+  ]);
+
+  const selectedBubbleIds = useMemo(
+    () =>
+      isMultiSelectionActive
+        ? activeSelectedBubbleIdSet
+        : new Set(
+            effectiveSelectedBubbleId ? [effectiveSelectedBubbleId] : [],
+          ),
+    [
+      activeSelectedBubbleIdSet,
+      isMultiSelectionActive,
+      effectiveSelectedBubbleId,
+    ],
+  );
 
   function isInteractiveTarget(target: EventTarget | null) {
     return (
@@ -410,11 +201,9 @@ export function CanvasSurface({
 
     event.preventDefault();
     event.stopPropagation();
-
-    if (event.button === 0 && !isMultiSelectionActive) {
+    if (!isMultiSelectionActive) {
       selectBubble(null);
     }
-
     activePanRef.current = {
       pointerId: event.pointerId,
       startClientX: event.clientX,
@@ -430,10 +219,6 @@ export function CanvasSurface({
   }
 
   function handlePointerMove(event: ReactPointerEvent<HTMLElement>) {
-    if (moveActiveBubble(event)) {
-      return;
-    }
-
     const activePan = activePanRef.current;
 
     if (!activePan || activePan.pointerId !== event.pointerId) {
@@ -450,10 +235,6 @@ export function CanvasSurface({
   }
 
   function finishPointerPan(event: ReactPointerEvent<HTMLElement>) {
-    if (finishBubbleDrag(event)) {
-      return;
-    }
-
     if (activePanRef.current?.pointerId !== event.pointerId) {
       return;
     }
@@ -469,14 +250,6 @@ export function CanvasSurface({
     ) {
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
-  }
-
-  function cancelPointerInteraction(event: ReactPointerEvent<HTMLElement>) {
-    if (cancelBubbleDrag(event)) {
-      return;
-    }
-
-    finishPointerPan(event);
   }
 
   const zoomAt = useCallback(
@@ -586,6 +359,14 @@ export function CanvasSurface({
     });
     setCreateBubbleDialogOpen(false);
     setCreatePlacementInput(null);
+
+    if (
+      !loadState.territories.some(
+        (territory) => territory.id === bubble.territory_id,
+      )
+    ) {
+      activeBubbleCollection.retry();
+    }
   }
 
   useEffect(() => {
@@ -610,67 +391,7 @@ export function CanvasSurface({
     typeof emptyState === 'function'
       ? emptyState({ onCreateBubble: openCreateBubbleDialog })
       : emptyState;
-  const failedPositionSaveEntry = Object.entries(positionSaves).find(
-    ([, save]) => save.status === 'error',
-  );
-  const failedPositionBubble = failedPositionSaveEntry
-    ? displayedBubbles.find(
-        (bubble) => bubble.id === failedPositionSaveEntry[0],
-      )
-    : undefined;
-
-  function compactLayout() {
-    if (
-      displayedBubbles.length < 2 ||
-      draggingBubbleId !== null ||
-      Object.keys(positionSavesRef.current).length > 0 ||
-      compactLayoutSaveRef.current?.status === 'saving'
-    ) {
-      return;
-    }
-
-    const requestedPositions = getCompactBubblePositions(displayedBubbles);
-    const bubblesById = new Map(
-      displayedBubbles.map((bubble) => [bubble.id, bubble]),
-    );
-    const changedPositions = requestedPositions.filter((position) => {
-      const bubble = bubblesById.get(position.bubble_id);
-
-      return (
-        bubble &&
-        (bubble.position_x !== position.position_x ||
-          bubble.position_y !== position.position_y)
-      );
-    });
-
-    if (changedPositions.length === 0) {
-      replaceCompactLayoutSave(null);
-      trackAnalytics(analyticsClient, 'bubble_compact_layout_applied', {
-        project_id: projectId,
-        bubble_ids: requestedPositions.map((position) => position.bubble_id),
-      });
-      return;
-    }
-
-    const persistedPositions = changedPositions.map((position) => {
-      const bubble = bubblesById.get(position.bubble_id)!;
-
-      return {
-        bubble_id: bubble.id,
-        position_x: bubble.position_x,
-        position_y: bubble.position_y,
-      };
-    });
-
-    void persistCompactLayout(changedPositions, persistedPositions);
-  }
-
-  const isCompactLayoutSaving = compactLayoutSave?.status === 'saving';
-  const canCompactLayout =
-    displayedBubbles.length >= 2 &&
-    draggingBubbleId === null &&
-    Object.keys(positionSaves).length === 0 &&
-    !isCompactLayoutSaving;
+  const hasDisplayedBubbles = displayedTerritories.length > 0;
 
   return (
     <section
@@ -682,17 +403,15 @@ export function CanvasSurface({
       data-canvas-y={viewport.y}
       data-canvas-zoom={viewport.zoom}
       data-selection-mode={
-        isMultiSelectionActive &&
-        multiSelection?.maximumSelectionCount !== 1
+        isMultiSelectionActive && multiSelection?.maximumSelectionCount !== 1
           ? 'multiple'
           : 'single'
       }
       onLostPointerCapture={() => {
-        cancelActiveBubbleDrag();
         activePanRef.current = null;
         setIsPanning(false);
       }}
-      onPointerCancel={cancelPointerInteraction}
+      onPointerCancel={finishPointerPan}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={finishPointerPan}
@@ -713,42 +432,21 @@ export function CanvasSurface({
           transformOrigin: '0 0',
         }}
       >
-        {displayedBubbles.map((bubble) => {
-          const positionSave = positionSaves[bubble.id];
-          const status =
-            draggingBubbleId === bubble.id
-              ? 'dragging'
-              : isCompactLayoutSaving
-                ? 'saving'
-                : (positionSave?.status ?? 'default');
-
-          return (
-            <BubbleCard
-              bubble={bubble}
-              isLinked={
-                !isMultiSelectionActive &&
-                selectedBubbleId !== bubble.id &&
-                linkedBubbleIds.has(bubble.id)
-              }
-              isMultiSelecting={isMultiSelectionActive}
-              isSelected={
-                isMultiSelectionActive
-                  ? activeMultiSelectedBubbleIdSet.has(bubble.id)
-                  : selectedBubbleId === bubble.id
-              }
-              key={bubble.id}
-              onActivate={() =>
-                isMultiSelectionActive
-                  ? toggleMultiSelectedBubble(bubble.id)
-                  : selectBubble(bubble)
-              }
-              onPointerDown={(event) =>
-                handleBubblePointerDown(event, bubble)
-              }
-              status={status}
-            />
-          );
-        })}
+        {displayedTerritories.map(({ bubbles, territory }) => (
+          <TerritoryCard
+            bubbles={bubbles}
+            isMultiSelecting={isMultiSelectionActive}
+            key={territory.id}
+            linkedBubbleIds={linkedBubbleIds}
+            onBubbleActivate={(bubble) =>
+              isMultiSelectionActive
+                ? toggleMultiSelectedBubble(bubble.id)
+                : selectBubble(bubble)
+            }
+            selectedBubbleIds={selectedBubbleIds}
+            territory={territory}
+          />
+        ))}
       </div>
 
       {multiSelection && (
@@ -756,20 +454,20 @@ export function CanvasSurface({
           allowEmptySelection={multiSelection.allowEmptySelection ?? false}
           confirmLabel={multiSelection.confirmLabel ?? 'Confirm selection'}
           instruction={multiSelection.instruction ?? 'Select bubbles'}
-          selectedCount={activeMultiSelectedBubbleIds.length}
+          selectedCount={activeSelectedBubbleIds.length}
           onCancel={cancelMultiSelection}
           onConfirm={confirmMultiSelection}
         />
       )}
 
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-6 py-10 lg:px-10">
-        {loadState.status === 'loading' && displayedBubbles.length === 0 && (
+        {loadState.status === 'loading' && !hasDisplayedBubbles && (
           <CanvasLoadingState />
         )}
-        {loadState.status === 'failed' && displayedBubbles.length === 0 && (
+        {loadState.status === 'failed' && !hasDisplayedBubbles && (
           <CanvasErrorState onRetry={activeBubbleCollection.retry} />
         )}
-        {loadState.status === 'partial' && displayedBubbles.length === 0 && (
+        {loadState.status === 'partial' && !hasDisplayedBubbles && (
           <CanvasBubbleLoadNotice
             hasBubbles={false}
             isPartial
@@ -782,7 +480,7 @@ export function CanvasSurface({
       </div>
 
       {(loadState.status === 'partial' || loadState.status === 'failed') &&
-        displayedBubbles.length > 0 && (
+        hasDisplayedBubbles && (
           <CanvasBubbleLoadNotice
             hasBubbles
             isPartial={loadState.status === 'partial'}
@@ -799,43 +497,16 @@ export function CanvasSurface({
 
       {displayedBubbles.length > 0 && !isMultiSelectionActive && (
         <CanvasBubbleActions
-          canCompact={canCompactLayout}
-          isCompacting={isCompactLayoutSaving}
-          onCompact={compactLayout}
+          canCompact={false}
+          isCompacting={false}
+          onCompact={() => undefined}
           onCreate={openCreateBubbleDialog}
           onStartDiscussion={onStartDiscussion}
         />
       )}
 
       {viewportSaveFailed && (
-        <CanvasViewportSaveError
-          onRetry={retryViewportSave}
-        />
-      )}
-
-      {failedPositionSaveEntry && failedPositionBubble && (
-        <BubblePositionSaveError
-          bubbleTitle={failedPositionBubble.title}
-          onRetry={() => {
-            const [bubbleId, save] = failedPositionSaveEntry;
-            retryPositionSave(bubbleId, save);
-          }}
-          onRevert={() => {
-            const [bubbleId, save] = failedPositionSaveEntry;
-            revertPositionSave(bubbleId, save);
-          }}
-        />
-      )}
-
-      {compactLayoutSave?.status === 'error' && (
-        <CompactLayoutSaveError
-          onRetry={() => {
-            void persistCompactLayout(
-              compactLayoutSave.requestedPositions,
-              compactLayoutSave.persistedPositions,
-            );
-          }}
-        />
+        <CanvasViewportSaveError onRetry={retryViewportSave} />
       )}
 
       {isCreateBubbleDialogOpen && createPlacementInput && (

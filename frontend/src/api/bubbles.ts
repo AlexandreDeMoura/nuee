@@ -14,30 +14,12 @@ export type {
   CreateBubbleLinkInput,
 };
 
-/**
- * Transitional frontend model for the bubble-canvas slices that still consume
- * the pre-territory API. Remove it when the territory collection replaces the
- * free-positioned bubble collection.
- */
-export type Bubble = Omit<SharedBubble, 'territory_id'> & {
-  position_x: number;
-  position_y: number;
-};
+export type Bubble = SharedBubble;
 
 export type CreateBubbleInput = SharedCreateBubbleInput & {
   position_x: number;
   position_y: number;
 };
-export interface UpdateBubblePositionInput {
-  position_x: number;
-  position_y: number;
-}
-export interface BubblePositionUpdate extends UpdateBubblePositionInput {
-  bubble_id: string;
-}
-export interface BatchUpdateBubblePositionsInput {
-  positions: BubblePositionUpdate[];
-}
 export type UpdateBubbleInput = Required<SharedUpdateBubbleInput>;
 export type BubblePlacementStrategy = 'viewport' | 'cluster';
 export interface BubblePlacementInput {
@@ -109,13 +91,10 @@ export function isBubbleResponse(
     isNonEmptyIdentifier(bubble.id) &&
     (bubbleId === undefined || bubble.id === bubbleId) &&
     bubble.project_id === projectId &&
+    isNonEmptyIdentifier(bubble.territory_id) &&
     isNonEmptyIdentifier(bubble.title) &&
     (bubble.summary === null || typeof bubble.summary === 'string') &&
     isNonEmptyIdentifier(bubble.content) &&
-    typeof bubble.position_x === 'number' &&
-    Number.isFinite(bubble.position_x) &&
-    typeof bubble.position_y === 'number' &&
-    Number.isFinite(bubble.position_y) &&
     isIsoTimestamp(bubble.created_at) &&
     isIsoTimestamp(bubble.updated_at) &&
     isIdentifierList(sourceMessageIds) &&
@@ -322,37 +301,6 @@ export function createBubblesApi(request: BubblesRequest = requestJson) {
     ).then((response) => assertBubbleResponse(response, projectId));
   }
 
-  function updateBubblePosition(
-    projectId: string,
-    bubbleId: string,
-    input: UpdateBubblePositionInput,
-  ): Promise<Bubble> {
-    return request<unknown>(
-      `/projects/${encodeURIComponent(projectId)}/bubbles/${encodeURIComponent(bubbleId)}/position`,
-      {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input),
-      },
-    ).then((response) =>
-      assertBubbleResponse(response, projectId, bubbleId),
-    );
-  }
-
-  function updateBubblePositions(
-    projectId: string,
-    input: BatchUpdateBubblePositionsInput,
-  ): Promise<Bubble[]> {
-    return request<unknown>(
-      `/projects/${encodeURIComponent(projectId)}/bubbles/positions`,
-      {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input),
-      },
-    ).then((response) => assertBubbleListResponse(response, projectId));
-  }
-
   function updateBubble(
     projectId: string,
     bubbleId: string,
@@ -435,8 +383,6 @@ export function createBubblesApi(request: BubblesRequest = requestJson) {
     getBubblePlacement,
     getProjectBubbles,
     updateBubble,
-    updateBubblePosition,
-    updateBubblePositions,
   };
 }
 
@@ -449,6 +395,4 @@ export const {
   getBubblePlacement,
   getProjectBubbles,
   updateBubble,
-  updateBubblePosition,
-  updateBubblePositions,
 } = createBubblesApi();

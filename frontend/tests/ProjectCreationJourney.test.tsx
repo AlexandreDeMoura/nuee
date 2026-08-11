@@ -77,6 +77,7 @@ describe('project creation journey', () => {
         if (
           method === 'GET' &&
           (url.pathname === '/projects/project-with-documents/bubbles' ||
+            url.pathname === '/projects/project-with-documents/territories' ||
             url.pathname === '/projects/project-with-documents/bubble-links' ||
             url.pathname === '/projects/project-with-documents/documents')
         ) {
@@ -177,7 +178,9 @@ describe('project creation journey', () => {
 
         if (
           method === 'GET' &&
-          url.pathname === '/projects/project-journey/bubbles'
+          (url.pathname === '/projects/project-journey/bubbles' ||
+            url.pathname === '/projects/project-journey/territories' ||
+            url.pathname === '/projects/project-journey/bubble-links')
         ) {
           return jsonResponse([]);
         }

@@ -312,6 +312,7 @@ describe('CreateProjectDialog', () => {
         if (
           method === 'GET' &&
           (url.pathname === '/projects/project-123/bubbles' ||
+            url.pathname === '/projects/project-123/territories' ||
             url.pathname === '/projects/project-123/bubble-links')
         ) {
           return { ok: true, json: async () => [] };
@@ -332,7 +333,7 @@ describe('CreateProjectDialog', () => {
 
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(await screen.findByText("Nothing here yet — that's on purpose.")).toBeTruthy();
-    expect(fetchMock).toHaveBeenCalledTimes(6);
+    expect(fetchMock).toHaveBeenCalledTimes(7);
     const createCall = fetchMock.mock.calls.find(([input, init]) => {
       const url = new URL(String(input));
       return url.pathname === '/projects' && init?.method === 'POST';
@@ -350,6 +351,7 @@ describe('CreateProjectDialog', () => {
       expect.arrayContaining([
         'http://localhost:3000/projects/project-123',
         'http://localhost:3000/projects/project-123/bubbles',
+        'http://localhost:3000/projects/project-123/territories',
         'http://localhost:3000/projects/project-123/bubble-links',
       ]),
     );

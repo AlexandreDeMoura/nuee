@@ -21,6 +21,7 @@ import {
 import {
   getBubbleLinks,
   getProjectBubbles,
+  getProjectTerritories,
   type Bubble,
   type BubbleLink,
   type KnowledgeExtractionResolutionResponse,
@@ -36,10 +37,9 @@ import { focusRing } from '../ui/focusRing';
 import {
   CanvasSurface,
   type BubbleListRequest,
-  type BubblePositionUpdateRequest,
-  type BubblePositionsUpdateRequest,
   type CanvasMultiSelection,
   type ProjectViewportUpdateRequest,
+  type TerritoryListRequest,
 } from '../canvas/CanvasSurface';
 import { useProjectBubbles } from '../canvas/useProjectBubbles';
 import type {
@@ -116,6 +116,8 @@ export interface WorkspaceInspectorSelection {
   isValid?: boolean;
 }
 
+const requestNoTerritories: TerritoryListRequest = async () => [];
+
 export interface WorkspacePanelSlots {
   discussions?: ReactNode;
   documents?: ReactNode;
@@ -138,8 +140,7 @@ export interface ProjectWorkspaceProps {
   requestBubbleCreate?: BubbleCreateRequest;
   requestBubbles?: BubbleListRequest;
   requestBubblePlacement?: BubblePlacementRequest;
-  requestBubblePositionUpdate?: BubblePositionUpdateRequest;
-  requestBubblePositionsUpdate?: BubblePositionsUpdateRequest;
+  requestTerritories?: TerritoryListRequest;
   requestBubbleDelete?: BubbleDeleteRequest;
   requestBubbleUpdate?: BubbleUpdateRequest;
   requestBubbleLinks?: BubbleLinkListRequest;
@@ -585,8 +586,7 @@ export function ProjectWorkspace({
   requestBubbleCreate,
   requestBubbles = getProjectBubbles,
   requestBubblePlacement,
-  requestBubblePositionUpdate,
-  requestBubblePositionsUpdate,
+  requestTerritories,
   requestBubbleDelete,
   requestBubbleUpdate,
   requestBubbleLinks = getBubbleLinks,
@@ -679,6 +679,11 @@ export function ProjectWorkspace({
   const bubbleCollection = useProjectBubbles({
     projectId: currentProject.id,
     requestBubbles,
+    requestTerritories:
+      requestTerritories ??
+      (requestBubbles === getProjectBubbles
+        ? getProjectTerritories
+        : requestNoTerritories),
   });
   const {
     addBubble,
@@ -1212,8 +1217,6 @@ export function ProjectWorkspace({
             projectId={currentProject.id}
             requestBubbleCreate={requestBubbleCreate}
             requestBubblePlacement={requestBubblePlacement}
-            requestBubblePositionUpdate={requestBubblePositionUpdate}
-            requestBubblePositionsUpdate={requestBubblePositionsUpdate}
             requestViewportUpdate={requestViewportUpdate}
             onBubbleSelectionChange={handleBubbleSelectionChange}
             onCreateBubbleDialogOpenChange={(open) =>

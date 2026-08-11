@@ -31,8 +31,7 @@ function bubble(overrides: Partial<Bubble> = {}): Bubble {
     summary: 'Density decides whether the last mile is viable.',
     content:
       'The final delivery leg accounts for most of the delivered cost.',
-    position_x: 72,
-    position_y: 146,
+    territory_id: 'territory-1',
     created_at: '2026-07-19T10:00:00.000Z',
     updated_at: '2026-07-20T10:00:00.000Z',
     source_kind: 'discussion',

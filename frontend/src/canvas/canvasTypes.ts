@@ -1,13 +1,10 @@
 import type { ReactNode } from 'react';
 import type {
-  BatchUpdateBubblePositionsInput,
   Bubble,
   BubbleLink,
-  BubblePlacementInput,
-  BubblePositionUpdate,
   Project,
   ProjectViewportUpdateOptions,
-  UpdateBubblePositionInput,
+  Territory,
   UpdateProjectViewportInput,
 } from '../api';
 import type { AnalyticsClient } from '../analytics';
@@ -27,22 +24,16 @@ export type BubbleListRequest = (
   signal?: AbortSignal,
 ) => Promise<Bubble[]>;
 
+export type TerritoryListRequest = (
+  projectId: string,
+  signal?: AbortSignal,
+) => Promise<Territory[]>;
+
 export type ProjectViewportUpdateRequest = (
   projectId: string,
   input: UpdateProjectViewportInput,
   options?: ProjectViewportUpdateOptions,
 ) => Promise<Project>;
-
-export type BubblePositionUpdateRequest = (
-  projectId: string,
-  bubbleId: string,
-  input: UpdateBubblePositionInput,
-) => Promise<Bubble>;
-
-export type BubblePositionsUpdateRequest = (
-  projectId: string,
-  input: BatchUpdateBubblePositionsInput,
-) => Promise<Bubble[]>;
 
 export interface CanvasEmptyStateActions {
   onCreateBubble: () => void;
@@ -82,8 +73,7 @@ export interface CanvasSurfaceProps {
   requestBubbleCreate?: BubbleCreateRequest;
   requestBubbles?: BubbleListRequest;
   requestBubblePlacement?: BubblePlacementRequest;
-  requestBubblePositionUpdate?: BubblePositionUpdateRequest;
-  requestBubblePositionsUpdate?: BubblePositionsUpdateRequest;
+  requestTerritories?: TerritoryListRequest;
   requestViewportUpdate?: ProjectViewportUpdateRequest;
   onBubbleSelectionChange?: (bubble: Bubble | null) => void;
   onCreateBubbleDialogOpenChange?: (open: boolean) => void;
@@ -94,26 +84,19 @@ export interface CanvasSurfaceProps {
 }
 
 export type CanvasLoadState =
-  | { status: 'loading'; bubbles: Bubble[] }
-  | { status: 'ready'; bubbles: Bubble[] }
-  | { status: 'partial'; bubbles: Bubble[] }
-  | { status: 'failed'; bubbles: Bubble[] };
+  | { status: 'loading'; bubbles: Bubble[]; territories: Territory[] }
+  | { status: 'ready'; bubbles: Bubble[]; territories: Territory[] }
+  | { status: 'partial'; bubbles: Bubble[]; territories: Territory[] }
+  | { status: 'failed'; bubbles: Bubble[]; territories: Territory[] };
 
 export interface ProjectBubbleCollection {
   projectId: string;
   loadState: CanvasLoadState;
   addBubble: (bubble: Bubble) => void;
   isBubbleRemoved: (bubbleId: string) => boolean;
-  /**
-   * Replaces persisted bubble data while retaining the collection's current
-   * canvas position. Content saves must not overwrite a newer spatial save.
-   */
   replaceBubble: (bubble: Bubble) => void;
   removeBubble: (bubbleId: string) => void;
   retry: () => void;
-  updateBubblePositions: (
-    positions: readonly BubblePositionUpdate[],
-  ) => void;
 }
 
 export interface ActivePan {
@@ -123,35 +106,3 @@ export interface ActivePan {
   startViewportX: number;
   startViewportY: number;
 }
-
-export interface BubblePosition {
-  x: number;
-  y: number;
-}
-
-export interface ActiveBubbleDrag {
-  bubbleId: string;
-  pointerId: number;
-  startClientX: number;
-  startClientY: number;
-  startPosition: BubblePosition;
-  currentPosition: BubblePosition;
-  persistedPosition: BubblePosition;
-  zoom: number;
-}
-
-export interface BubblePositionSave {
-  attempt: number;
-  persistedPosition: BubblePosition;
-  requestedPosition: BubblePosition;
-  status: 'saving' | 'error';
-}
-
-export interface CompactLayoutSave {
-  attempt: number;
-  persistedPositions: BubblePositionUpdate[];
-  requestedPositions: BubblePositionUpdate[];
-  status: 'saving' | 'error';
-}
-
-export type { BubblePlacementInput };

@@ -18,12 +18,14 @@ import type {
   KnowledgeExtractionProposalResponse,
   KnowledgeExtractionResolutionResponse,
   Project,
+  Territory,
   UpdateBubbleInput,
 } from '../src/api';
 import { ApiError } from '../src/api';
 import type { AnalyticsClient } from '../src/analytics';
 import {
-  ProjectWorkspace,
+  ProjectWorkspace as AppProjectWorkspace,
+  type ProjectWorkspaceProps,
   type WorkspaceInspectorSelection,
 } from '../src/workspace/ProjectWorkspace';
 
@@ -39,6 +41,32 @@ const project: Project = {
 };
 
 const requestEmptyBubbles = async () => [];
+
+function testTerritory(projectId: string): Territory {
+  return {
+    id: 'territory-1',
+    project_id: projectId,
+    kind: 'ungrouped',
+    title: 'Ungrouped',
+    position_x: 0,
+    position_y: 0,
+    visible_count: 100,
+    created_at: '2026-07-19T09:00:00.000Z',
+    updated_at: '2026-07-19T09:00:00.000Z',
+  };
+}
+
+function ProjectWorkspace(props: ProjectWorkspaceProps) {
+  return (
+    <AppProjectWorkspace
+      {...props}
+      requestTerritories={
+        props.requestTerritories ??
+        (async () => [testTerritory(props.project.id)])
+      }
+    />
+  );
+}
 
 function deferred<T>() {
   let resolve: (value: T) => void = () => undefined;
@@ -69,8 +97,7 @@ function bubble(overrides: Partial<Bubble> = {}): Bubble {
     title: 'Market is real but fragmented',
     summary: 'Demand exists, but buyers remain fragmented.',
     content: 'Complete market knowledge.',
-    position_x: 120,
-    position_y: -48,
+    territory_id: 'territory-1',
     created_at: '2026-07-19T10:00:00.000Z',
     updated_at: '2026-07-20T10:00:00.000Z',
     source_kind: 'manual',
@@ -353,8 +380,6 @@ describe('workspace integration contracts', () => {
     const extractedBubble = bubble({
       content: 'Licensing must be resolved before launch.',
       id: 'bubble-extracted',
-      position_x: 696,
-      position_y: -120,
       source_discussion_id: persisted.id,
       source_discussion_title: persisted.title,
       source_kind: 'discussion',
@@ -502,16 +527,13 @@ describe('workspace integration contracts', () => {
       status: 'resolved',
     });
 
-    const card = await waitFor(() => {
+    await waitFor(() => {
       const persistedCard = document.querySelector<HTMLElement>(
         `[data-bubble-id="${extractedBubble.id}"]`,
       );
 
       expect(persistedCard).not.toBeNull();
-      return persistedCard as HTMLElement;
     });
-    expect(card.style.left).toBe('696px');
-    expect(card.style.top).toBe('-120px');
     expect(
       document.querySelectorAll(
         `[data-bubble-id="${extractedBubble.id}"]`,
@@ -557,7 +579,6 @@ describe('workspace integration contracts', () => {
     });
     const linkedBubble = bubble({
       id: 'bubble-2',
-      position_x: 420,
       title: 'Regulatory lead time',
     });
     const foreignBubble = bubble({
@@ -581,8 +602,6 @@ describe('workspace integration contracts', () => {
     };
     const updatedTarget = bubble({
       content: extractionProposalResponse().proposal.content,
-      position_x: 999,
-      position_y: 999,
       source_discussion_id: persisted.id,
       source_discussion_title: persisted.title,
       source_kind: 'discussion',
@@ -1414,8 +1433,6 @@ describe('workspace integration contracts', () => {
       title: 'Regulatory lead time',
       summary: null,
       content: 'Licensing requires nine to fourteen months.',
-      position_x: 420,
-      position_y: 160,
     });
 
     render(
@@ -1554,12 +1571,10 @@ describe('workspace integration contracts', () => {
     const secondBubble = bubble({
       id: 'bubble-2',
       title: 'Regulatory lead time',
-      position_x: 420,
     });
     const thirdBubble = bubble({
       id: 'bubble-3',
       title: 'Unrelated operations note',
-      position_x: 720,
     });
     const link: BubbleLink = {
       id: 'link-1',
@@ -1594,7 +1609,6 @@ describe('workspace integration contracts', () => {
     expect(firstCard.getAttribute('data-bubble-linked')).toBe('true');
     expect(secondCard.getAttribute('data-bubble-selected')).toBe('true');
     expect(thirdCard.getAttribute('data-bubble-linked')).toBe('false');
-    expect(document.querySelector('[data-canvas-content] svg')).toBeNull();
 
     fireEvent.click(
       screen.getByRole('button', {
@@ -1651,7 +1665,6 @@ describe('workspace integration contracts', () => {
     const secondBubble = bubble({
       id: 'bubble-2',
       title: 'Regulatory lead time',
-      position_x: 420,
     });
     const link: BubbleLink = {
       id: 'link-1',
