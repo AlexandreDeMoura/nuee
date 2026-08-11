@@ -131,11 +131,11 @@ export function BubbleInspector(props: BubbleInspectorProps) {
       >
         <div className="min-h-0 flex-1 overflow-y-auto p-[18px]">
           <div className="mb-3 flex items-center gap-2">
-            <span className="inline-flex rounded-[5px] bg-[#eef2fa] px-1.5 py-0.5 text-[9px] font-semibold tracking-[0.1em] text-[#3f63a8] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
+            <span className="inline-flex rounded-[5px] bg-[#eef2fa] px-1.5 py-0.5 text-[11px] font-semibold tracking-[0.1em] text-[#3f63a8] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
               BUBBLE
             </span>
             <button
-              className={`ml-auto inline-flex min-h-7 cursor-pointer items-center gap-1.5 rounded-[8px] border border-[#e1e6ec] bg-white py-1 pr-1.5 pl-2 text-[10.5px] font-semibold text-[#5c6a7a] hover:border-[#c7d2df] hover:bg-[#f6f8fc] hover:text-[#33538f] ${focusRing}`}
+              className={`ml-auto inline-flex min-h-7 cursor-pointer items-center gap-1.5 rounded-[8px] border border-[#e1e6ec] bg-white py-1 pr-1.5 pl-2 text-[11px] font-semibold text-[#5c6a7a] hover:border-[#c7d2df] hover:bg-[#f6f8fc] hover:text-[#33538f] ${focusRing}`}
               type="button"
               title={`Expand bubble (${expandShortcutLabel})`}
               onClick={() => setIsExpanded(true)}
@@ -159,7 +159,7 @@ export function BubbleInspector(props: BubbleInspectorProps) {
           </h3>
 
           {persistedBubble.summary && (
-            <p className="mt-3 rounded-r-[8px] border-l-2 border-[#a9bde0] bg-[#f6f8fc] px-[13px] py-[11px] text-[12.5px] leading-[1.55] text-[#3a4453] italic">
+            <p className="mt-3 rounded-r-[8px] border-l-2 border-[#a9bde0] bg-[#f6f8fc] px-[13px] py-[11px] text-[14px] leading-[1.55] text-[#3a4453] italic">
               {persistedBubble.summary}
             </p>
           )}

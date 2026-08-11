@@ -177,7 +177,7 @@ function preparedContent(content: string): {
 }
 
 const densityClasses = {
-  compact: 'space-y-2.5 text-[12.5px] leading-[1.6]',
+  compact: 'space-y-2.5 text-[14px] leading-[1.6]',
   comfortable: 'space-y-3.5 text-[15.5px] leading-[1.65]',
 } as const;
 
