@@ -40,6 +40,52 @@ function bubbleFixture(index: number): Bubble {
 }
 
 describe('TerritoryCard visible rows', () => {
+  it('separates row selection from the reader chevron', () => {
+    const bubble = bubbleFixture(1);
+    const onBubbleActivate = vi.fn();
+    const onBubbleReaderOpen = vi.fn();
+
+    render(
+      <TerritoryCard
+        bubbles={[bubble]}
+        onBubbleActivate={onBubbleActivate}
+        onBubbleReaderOpen={onBubbleReaderOpen}
+        territory={territoryFixture({ visible_count: 1 })}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Open Bubble 1' }));
+    expect(onBubbleReaderOpen).toHaveBeenCalledWith(bubble);
+    expect(onBubbleActivate).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('article', { name: 'Bubble 1' }));
+    expect(onBubbleActivate).toHaveBeenCalledWith(bubble);
+    expect(onBubbleReaderOpen).toHaveBeenCalledTimes(1);
+  });
+
+  it('uses the row checkbox contract and suppresses reader opening during multi-selection', () => {
+    const bubble = bubbleFixture(1);
+    const onBubbleActivate = vi.fn();
+
+    render(
+      <TerritoryCard
+        bubbles={[bubble]}
+        isMultiSelecting
+        onBubbleActivate={onBubbleActivate}
+        territory={territoryFixture({ visible_count: 1 })}
+      />,
+    );
+
+    const row = screen.getByRole('checkbox', { name: 'Bubble 1' });
+    fireEvent.click(row);
+
+    expect(onBubbleActivate).toHaveBeenCalledWith(bubble);
+    expect(
+      screen.getByRole<HTMLButtonElement>('button', { name: 'Open Bubble 1' })
+        .disabled,
+    ).toBe(true);
+  });
+
   it('enables bounded stepper changes and announces the optimistic count', () => {
     const onVisibleCountChange = vi.fn();
     const { rerender } = render(

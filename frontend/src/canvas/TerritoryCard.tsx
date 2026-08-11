@@ -18,6 +18,7 @@ export interface TerritoryCardProps {
   isMultiSelecting?: boolean;
   linkedBubbleIds?: ReadonlySet<string>;
   onBubbleActivate?: (bubble: Bubble) => void;
+  onBubbleReaderOpen?: (bubble: Bubble) => void;
   onDragPointerDown?: (event: ReactPointerEvent<HTMLElement>) => void;
   onVisibleCountChange?: (visibleCount: number) => void;
   selectedBubbleIds?: ReadonlySet<string>;
@@ -31,6 +32,7 @@ export function TerritoryCard({
   isMultiSelecting = false,
   linkedBubbleIds = new Set<string>(),
   onBubbleActivate,
+  onBubbleReaderOpen,
   onDragPointerDown,
   onVisibleCountChange,
   selectedBubbleIds = new Set<string>(),
@@ -220,11 +222,14 @@ export function TerritoryCard({
                 </span>
               )}
               <button
-                className="mt-0.5 grid size-6 shrink-0 cursor-default place-items-center rounded-[7px] border border-[#dbe3ec] bg-[#eef3f8] text-[#70829a] disabled:text-[#70829a]"
+                className="mt-0.5 grid size-6 shrink-0 cursor-pointer place-items-center rounded-[7px] border border-[#dbe3ec] bg-[#eef3f8] text-[#70829a] hover:border-[#bdcad8] hover:bg-[#e5edf6] disabled:cursor-default disabled:opacity-50"
                 type="button"
                 aria-label={`Open ${bubble.title}`}
-                disabled
-                onClick={(event) => event.stopPropagation()}
+                disabled={isMultiSelecting}
+                onClick={(event) => {
+                  event.stopPropagation();
+                  onBubbleReaderOpen?.(bubble);
+                }}
               >
                 <ChevronRight
                   className="size-3.5"

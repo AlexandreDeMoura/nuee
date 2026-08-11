@@ -4,14 +4,6 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Bubble } from '../src/api';
 import { CreateBubbleDialog } from '../src/bubbles/CreateBubbleDialog';
 
-const placementInput = {
-  strategy: 'viewport' as const,
-  viewport_x: -100,
-  viewport_y: 50,
-  viewport_width: 800,
-  viewport_height: 600,
-};
-
 const createdBubble: Bubble = {
   id: 'bubble-created',
   project_id: 'project-1',
@@ -53,10 +45,8 @@ describe('CreateBubbleDialog', () => {
         <CreateBubbleDialog
           onCancel={vi.fn()}
           onCreated={vi.fn()}
-          placementInput={placementInput}
           projectId="project-1"
           requestCreate={vi.fn()}
-          requestPlacement={vi.fn()}
         />
       </StrictMode>,
     );
@@ -77,10 +67,8 @@ describe('CreateBubbleDialog', () => {
       <CreateBubbleDialog
         onCancel={vi.fn()}
         onCreated={vi.fn()}
-        placementInput={placementInput}
         projectId="project-1"
         requestCreate={vi.fn()}
-        requestPlacement={vi.fn()}
       />,
     );
 
@@ -105,11 +93,7 @@ describe('CreateBubbleDialog', () => {
     expect((screen.getByLabelText(/^Summary/) as HTMLInputElement).value).toBe('');
   });
 
-  it('requests placement before creating a trimmed manual bubble', async () => {
-    const requestPlacement = vi.fn().mockResolvedValue({
-      position_x: 176,
-      position_y: 273,
-    });
+  it('creates a trimmed manual bubble directly in the ungrouped territory', async () => {
     const requestCreate = vi.fn().mockResolvedValue(createdBubble);
     const onCreated = vi.fn();
 
@@ -117,10 +101,8 @@ describe('CreateBubbleDialog', () => {
       <CreateBubbleDialog
         onCancel={vi.fn()}
         onCreated={onCreated}
-        placementInput={placementInput}
         projectId="project-1"
         requestCreate={requestCreate}
-        requestPlacement={requestPlacement}
       />,
     );
 
@@ -131,21 +113,14 @@ describe('CreateBubbleDialog', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Create bubble' }));
 
     await waitFor(() => expect(onCreated).toHaveBeenCalledWith(createdBubble));
-    expect(requestPlacement).toHaveBeenCalledWith('project-1', placementInput);
     expect(requestCreate).toHaveBeenCalledWith('project-1', {
       title: 'Break-even point',
       summary: null,
       content: 'Routes clear contribution margin above 40% utilization.',
-      position_x: 176,
-      position_y: 273,
     });
   });
 
   it('preserves every field after a recoverable save failure and retries', async () => {
-    const requestPlacement = vi.fn().mockResolvedValue({
-      position_x: 176,
-      position_y: 273,
-    });
     const requestCreate = vi
       .fn()
       .mockRejectedValueOnce(new Error('Unavailable'))
@@ -156,10 +131,8 @@ describe('CreateBubbleDialog', () => {
       <CreateBubbleDialog
         onCancel={vi.fn()}
         onCreated={onCreated}
-        placementInput={placementInput}
         projectId="project-1"
         requestCreate={requestCreate}
-        requestPlacement={requestPlacement}
       />,
     );
 
@@ -192,8 +165,8 @@ describe('CreateBubbleDialog', () => {
   });
 
   it('blocks cancellation and duplicate submissions while creation is pending', () => {
-    const requestPlacement = vi.fn(
-      () => new Promise<{ position_x: number; position_y: number }>(() => undefined),
+    const requestCreate = vi.fn(
+      () => new Promise<Bubble>(() => undefined),
     );
     const onCancel = vi.fn();
 
@@ -201,10 +174,8 @@ describe('CreateBubbleDialog', () => {
       <CreateBubbleDialog
         onCancel={onCancel}
         onCreated={vi.fn()}
-        placementInput={placementInput}
         projectId="project-1"
-        requestCreate={vi.fn()}
-        requestPlacement={requestPlacement}
+        requestCreate={requestCreate}
       />,
     );
 
@@ -216,7 +187,7 @@ describe('CreateBubbleDialog', () => {
     fireEvent.submit(form!);
     fireEvent.keyDown(document, { key: 'Escape' });
 
-    expect(requestPlacement).toHaveBeenCalledTimes(1);
+    expect(requestCreate).toHaveBeenCalledTimes(1);
     expect((screen.getByRole('button', { name: 'Cancel' }) as HTMLButtonElement).disabled)
       .toBe(true);
     expect(onCancel).not.toHaveBeenCalled();

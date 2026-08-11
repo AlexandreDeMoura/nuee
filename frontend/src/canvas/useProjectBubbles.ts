@@ -125,6 +125,15 @@ export function useProjectBubbles({
     [recordMutation],
   );
 
+  const replaceCollection = useCallback(
+    (bubbles: Bubble[], territories: CanvasLoadState['territories']) => {
+      mutationsRef.current = [];
+      removedBubbleIdsRef.current = new Set();
+      setLoadState({ status: 'ready', bubbles, territories });
+    },
+    [],
+  );
+
   const isBubbleRemoved = useCallback(
     (bubbleId: string) => removedBubbleIdsRef.current.has(bubbleId),
     [],
@@ -218,6 +227,7 @@ export function useProjectBubbles({
       loadState,
       projectId,
       removeBubble,
+      replaceCollection,
       replaceBubble: replacePersistedBubble,
       retry,
     }),
@@ -227,6 +237,7 @@ export function useProjectBubbles({
       loadState,
       projectId,
       removeBubble,
+      replaceCollection,
       replacePersistedBubble,
       retry,
     ],

@@ -59,12 +59,10 @@ function bubbleLink(overrides: Partial<BubbleLink> = {}): BubbleLink {
 }
 
 describe('bubbles API', () => {
-  it('validates bubble and placement responses before resolving', async () => {
+  it('validates bubble responses before resolving', async () => {
     const savedBubble = bubble();
-    const placement = { position_x: 36, position_y: -12 };
     const { request } = createRequestFake([
       [savedBubble],
-      placement,
       savedBubble,
       savedBubble,
     ]);
@@ -74,15 +72,10 @@ describe('bubbles API', () => {
       savedBubble,
     ]);
     await expect(
-      api.getBubblePlacement('project/1', { strategy: 'cluster' }),
-    ).resolves.toBe(placement);
-    await expect(
       api.createBubble('project/1', {
         title: savedBubble.title,
         summary: savedBubble.summary,
         content: savedBubble.content,
-        position_x: 12,
-        position_y: -24,
       }),
     ).resolves.toBe(savedBubble);
     await expect(
@@ -103,7 +96,6 @@ describe('bubbles API', () => {
     const wrongIdentity = bubble({ id: 'bubble/2' });
     const { request } = createRequestFake([
       [wrongBubble],
-      { position_x: Number.NaN, position_y: 0 },
       wrongBubble,
       wrongIdentity,
     ]);
@@ -113,15 +105,10 @@ describe('bubbles API', () => {
       'The bubble list response contained invalid data.',
     );
     await expect(
-      api.getBubblePlacement('project/1', { strategy: 'viewport' }),
-    ).rejects.toThrow('The bubble placement response contained invalid data.');
-    await expect(
       api.createBubble('project/1', {
         title: 'Bubble',
         summary: null,
         content: 'Content',
-        position_x: 0,
-        position_y: 0,
       }),
     ).rejects.toThrow('The bubble response contained invalid data.');
     await expect(

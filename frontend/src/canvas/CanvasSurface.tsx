@@ -14,7 +14,6 @@ import {
   updateTerritoryVisibleCount,
   updateProjectViewport,
   type Bubble,
-  type BubblePlacementInput,
 } from '../api';
 import { analytics, trackAnalytics } from '../analytics';
 import { CreateBubbleDialog } from '../bubbles/CreateBubbleDialog';
@@ -79,12 +78,12 @@ export function CanvasSurface({
   analyticsClient = analytics,
   requestBubbleCreate,
   requestBubbles = getProjectBubbles,
-  requestBubblePlacement,
   requestTerritories = getProjectTerritories,
   requestTerritoryPositionUpdate = repositionTerritory,
   requestTerritoryPositionsUpdate = repositionTerritories,
   requestTerritoryVisibleCountUpdate = updateTerritoryVisibleCount,
   requestViewportUpdate = updateProjectViewport,
+  onBubbleReaderOpen,
   onBubbleSelectionChange,
   onCreateBubbleDialogOpenChange,
   onSaveStatusChange,
@@ -103,8 +102,6 @@ export function CanvasSurface({
     isUncontrolledCreateBubbleDialogOpen,
     setIsUncontrolledCreateBubbleDialogOpen,
   ] = useState(false);
-  const [createPlacementInput, setCreatePlacementInput] =
-    useState<BubblePlacementInput | null>(null);
   const surfaceRef = useRef<HTMLElement>(null);
   const activePanRef = useRef<ActivePan | null>(null);
   const activeTerritoryDragRef = useRef<{
@@ -613,7 +610,6 @@ export function CanvasSurface({
       source_kind: 'manual',
     });
     setCreateBubbleDialogOpen(false);
-    setCreatePlacementInput(null);
 
     if (
       !loadState.territories.some(
@@ -623,24 +619,6 @@ export function CanvasSurface({
       activeBubbleCollection.retry();
     }
   }
-
-  useEffect(() => {
-    if (!isCreateBubbleDialogOpen) {
-      return;
-    }
-
-    const bounds = surfaceRef.current?.getBoundingClientRect();
-    const width = bounds?.width || surfaceRef.current?.clientWidth || 1024;
-    const height = bounds?.height || surfaceRef.current?.clientHeight || 768;
-
-    setCreatePlacementInput({
-      strategy: 'viewport',
-      viewport_x: -viewport.x / viewport.zoom,
-      viewport_y: -viewport.y / viewport.zoom,
-      viewport_width: width / viewport.zoom,
-      viewport_height: height / viewport.zoom,
-    });
-  }, [isCreateBubbleDialogOpen, viewport]);
 
   const renderedEmptyState =
     typeof emptyState === 'function'
@@ -803,6 +781,7 @@ export function CanvasSurface({
                 ? toggleMultiSelectedBubble(bubble.id)
                 : selectBubble(bubble)
             }
+            onBubbleReaderOpen={onBubbleReaderOpen}
             onVisibleCountChange={(visibleCount) =>
               changeVisibleCount(territory.id, visibleCount)
             }
@@ -928,17 +907,14 @@ export function CanvasSurface({
         />
       )}
 
-      {isCreateBubbleDialogOpen && createPlacementInput && (
+      {isCreateBubbleDialogOpen && (
         <CreateBubbleDialog
           onCancel={() => {
             setCreateBubbleDialogOpen(false);
-            setCreatePlacementInput(null);
           }}
           onCreated={handleBubbleCreated}
-          placementInput={createPlacementInput}
           projectId={projectId}
           requestCreate={requestBubbleCreate}
-          requestPlacement={requestBubblePlacement}
         />
       )}
     </section>

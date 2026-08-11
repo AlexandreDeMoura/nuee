@@ -1,6 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { CircleAlert, CircleDot, RotateCcw } from 'lucide-react';
-import { ApiError, getProject, type Project } from '../api';
+import {
+  ApiError,
+  getProject,
+  type Project,
+  type TerritoryRecomposeRequest,
+} from '../api';
 import { analytics, trackAnalytics, type AnalyticsClient } from '../analytics';
 import type {
   BubbleListRequest,
@@ -9,10 +14,7 @@ import type {
   TerritoryListRequest,
   TerritoryVisibleCountUpdateRequest,
 } from '../canvas/CanvasSurface';
-import type {
-  BubbleCreateRequest,
-  BubblePlacementRequest,
-} from '../bubbles/CreateBubbleDialog';
+import type { BubbleCreateRequest } from '../bubbles/CreateBubbleDialog';
 import type {
   DocumentDetailRequest,
   DocumentLibraryRequests,
@@ -39,8 +41,8 @@ export interface ProjectCanvasRouteProps {
   requestProject?: ProjectRequest;
   requestBubbleCreate?: BubbleCreateRequest;
   requestBubbles?: BubbleListRequest;
-  requestBubblePlacement?: BubblePlacementRequest;
   requestTerritories?: TerritoryListRequest;
+  requestRecomposeTerritories?: TerritoryRecomposeRequest;
   requestTerritoryVisibleCountUpdate?: TerritoryVisibleCountUpdateRequest;
   requestBubbleDelete?: BubbleDeleteRequest;
   requestBubbleUpdate?: BubbleUpdateRequest;
@@ -157,8 +159,8 @@ export function ProjectCanvasRoute({
   requestProject = getProject,
   requestBubbleCreate,
   requestBubbles,
-  requestBubblePlacement,
   requestTerritories,
+  requestRecomposeTerritories,
   requestTerritoryVisibleCountUpdate,
   requestBubbleDelete,
   requestBubbleUpdate,
@@ -222,8 +224,8 @@ export function ProjectCanvasRoute({
         project={loadState.project}
         requestBubbleCreate={requestBubbleCreate}
         requestBubbles={requestBubbles}
-        requestBubblePlacement={requestBubblePlacement}
         requestTerritories={requestTerritories}
+        requestRecomposeTerritories={requestRecomposeTerritories}
         requestTerritoryVisibleCountUpdate={
           requestTerritoryVisibleCountUpdate
         }

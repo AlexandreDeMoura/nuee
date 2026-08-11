@@ -16,31 +16,14 @@ export type {
 
 export type Bubble = SharedBubble;
 
-export type CreateBubbleInput = SharedCreateBubbleInput & {
-  position_x: number;
-  position_y: number;
-};
+export type CreateBubbleInput = SharedCreateBubbleInput;
 export type UpdateBubbleInput = Required<SharedUpdateBubbleInput>;
-export type BubblePlacementStrategy = 'viewport' | 'cluster';
-export interface BubblePlacementInput {
-  strategy: BubblePlacementStrategy;
-  viewport_x?: number;
-  viewport_y?: number;
-  viewport_width?: number;
-  viewport_height?: number;
-}
-export interface BubblePlacement {
-  position_x: number;
-  position_y: number;
-}
 export type BubblesRequest = typeof requestJson;
 
 const INVALID_BUBBLE_MESSAGE =
   'The bubble response contained invalid data.';
 const INVALID_BUBBLES_MESSAGE =
   'The bubble list response contained invalid data.';
-const INVALID_PLACEMENT_MESSAGE =
-  'The bubble placement response contained invalid data.';
 const INVALID_LINK_MESSAGE =
   'The bubble link response contained invalid data.';
 const INVALID_LINKS_MESSAGE =
@@ -158,28 +141,6 @@ export function assertBubbleListResponse(
   return value;
 }
 
-export function isBubblePlacementResponse(
-  value: unknown,
-): value is BubblePlacement {
-  return (
-    isRecord(value) &&
-    typeof value.position_x === 'number' &&
-    Number.isFinite(value.position_x) &&
-    typeof value.position_y === 'number' &&
-    Number.isFinite(value.position_y)
-  );
-}
-
-export function assertBubblePlacementResponse(
-  value: unknown,
-): BubblePlacement {
-  if (!isBubblePlacementResponse(value)) {
-    throw new Error(INVALID_PLACEMENT_MESSAGE);
-  }
-
-  return value;
-}
-
 function orderedLinkPair(
   firstBubbleId: string,
   secondBubbleId: string,
@@ -271,20 +232,6 @@ export function createBubblesApi(request: BubblesRequest = requestJson) {
       `/projects/${encodeURIComponent(projectId)}/bubbles`,
       { signal },
     ).then((response) => assertBubbleListResponse(response, projectId));
-  }
-
-  function getBubblePlacement(
-    projectId: string,
-    input: BubblePlacementInput,
-  ): Promise<BubblePlacement> {
-    return request<unknown>(
-      `/projects/${encodeURIComponent(projectId)}/bubbles/placement`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input),
-      },
-    ).then(assertBubblePlacementResponse);
   }
 
   function createBubble(
@@ -380,7 +327,6 @@ export function createBubblesApi(request: BubblesRequest = requestJson) {
     deleteBubble,
     deleteBubbleLink,
     getBubbleLinks,
-    getBubblePlacement,
     getProjectBubbles,
     updateBubble,
   };
@@ -392,7 +338,6 @@ export const {
   deleteBubble,
   deleteBubbleLink,
   getBubbleLinks,
-  getBubblePlacement,
   getProjectBubbles,
   updateBubble,
 } = createBubblesApi();

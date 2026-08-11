@@ -3,9 +3,7 @@ import type { FormEvent, MouseEvent as ReactMouseEvent } from 'react';
 import { CircleAlert, LoaderCircle } from 'lucide-react';
 import {
   createBubble,
-  getBubblePlacement,
   type Bubble,
-  type BubblePlacementInput,
   type CreateBubbleInput,
 } from '../api';
 import { focusRing } from '../ui/focusRing';
@@ -20,27 +18,18 @@ export type BubbleCreateRequest = (
   input: CreateBubbleInput,
 ) => Promise<Bubble>;
 
-export type BubblePlacementRequest = (
-  projectId: string,
-  input: BubblePlacementInput,
-) => Promise<{ position_x: number; position_y: number }>;
-
 export interface CreateBubbleDialogProps {
   onCancel: () => void;
   onCreated: (bubble: Bubble) => void;
-  placementInput: BubblePlacementInput;
   projectId: string;
   requestCreate?: BubbleCreateRequest;
-  requestPlacement?: BubblePlacementRequest;
 }
 
 export function CreateBubbleDialog({
   onCancel,
   onCreated,
-  placementInput,
   projectId,
   requestCreate = createBubble,
-  requestPlacement = getBubblePlacement,
 }: CreateBubbleDialogProps) {
   const [title, setTitle] = useState('');
   const [summary, setSummary] = useState('');
@@ -97,12 +86,10 @@ export function CreateBubbleDialog({
     setHasCreateError(false);
 
     try {
-      const placement = await requestPlacement(projectId, placementInput);
       const bubble = await requestCreate(projectId, {
         title: normalizedTitle,
         summary: normalizedSummary.length > 0 ? normalizedSummary : null,
         content: normalizedContent,
-        ...placement,
       });
 
       isCreatingRef.current = false;
@@ -160,7 +147,7 @@ export function CreateBubbleDialog({
                     aria-hidden="true"
                   />
                 )}
-                {isCreating ? 'CREATING' : 'PLACED IN VIEW'}
+                {isCreating ? 'CREATING' : 'ADDED TO UNGROUPED'}
               </span>
             </div>
 

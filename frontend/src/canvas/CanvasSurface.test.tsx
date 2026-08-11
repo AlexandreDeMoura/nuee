@@ -52,6 +52,7 @@ describe('CanvasSurface territory scrolling', () => {
       addBubble: vi.fn(),
       isBubbleRemoved: vi.fn(() => false),
       removeBubble: vi.fn(),
+      replaceCollection: vi.fn(),
       replaceBubble: vi.fn(),
       retry: vi.fn(),
     };

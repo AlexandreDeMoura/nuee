@@ -6,6 +6,8 @@ import {
   type BatchRepositionTerritoriesResponse,
   type RepositionTerritoryInput,
   type RepositionTerritoryResponse,
+  type RecomposeTerritoriesInput,
+  type RecomposeTerritoriesResponse,
   type Territory,
   type TerritoryKind,
   type TerritoryListResponse,
@@ -13,6 +15,7 @@ import {
   type UpdateTerritoryVisibleCountInput,
   type UpdateTerritoryVisibleCountResponse,
 } from '@nuee/shared-types';
+import { isBubbleResponse } from './bubbles';
 import { requestJson } from './client';
 
 export type {
@@ -20,6 +23,8 @@ export type {
   BatchRepositionTerritoriesResponse,
   RepositionTerritoryInput,
   RepositionTerritoryResponse,
+  RecomposeTerritoriesInput,
+  RecomposeTerritoriesResponse,
   Territory,
   TerritoryKind,
   TerritoryListResponse,
@@ -29,6 +34,10 @@ export type {
 };
 
 export type TerritoriesRequest = typeof requestJson;
+export type TerritoryRecomposeRequest = (
+  projectId: string,
+  input?: RecomposeTerritoriesInput,
+) => Promise<RecomposeTerritoriesResponse>;
 
 const INVALID_TERRITORIES_MESSAGE =
   'The territory list response contained invalid data.';
@@ -96,6 +105,41 @@ export function assertTerritoryListResponse(
   }
 
   return value;
+}
+
+export function assertRecomposeTerritoriesResponse(
+  value: unknown,
+  projectId: string,
+): RecomposeTerritoriesResponse {
+  if (
+    !isRecord(value) ||
+    Object.keys(value).length !== 2 ||
+    !('territories' in value) ||
+    !('bubbles' in value)
+  ) {
+    throw new Error(INVALID_TERRITORIES_MESSAGE);
+  }
+
+  const territories = assertTerritoryListResponse(
+    value.territories,
+    projectId,
+  );
+  const territoryIds = new Set(territories.map(({ id }) => id));
+
+  if (
+    !Array.isArray(value.bubbles) ||
+    !value.bubbles.every(
+      (bubble) =>
+        isBubbleResponse(bubble, projectId) &&
+        territoryIds.has(bubble.territory_id),
+    ) ||
+    new Set(value.bubbles.map((bubble) => bubble.id)).size !==
+      value.bubbles.length
+  ) {
+    throw new Error(INVALID_TERRITORIES_MESSAGE);
+  }
+
+  return { territories, bubbles: value.bubbles };
 }
 
 export function createTerritoriesApi(
@@ -188,10 +232,27 @@ export function createTerritoriesApi(
     });
   }
 
+  function recomposeTerritories(
+    projectId: string,
+    input: RecomposeTerritoriesInput = {},
+  ): Promise<RecomposeTerritoriesResponse> {
+    return request<unknown>(
+      `/projects/${encodeURIComponent(projectId)}/territories/recompose`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      },
+    ).then((response) =>
+      assertRecomposeTerritoriesResponse(response, projectId),
+    );
+  }
+
   return {
     getProjectTerritories,
     repositionTerritories,
     repositionTerritory,
+    recomposeTerritories,
     updateTerritoryVisibleCount,
   };
 }
@@ -200,5 +261,6 @@ export const {
   getProjectTerritories,
   repositionTerritories,
   repositionTerritory,
+  recomposeTerritories,
   updateTerritoryVisibleCount,
 } = createTerritoriesApi();

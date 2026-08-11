@@ -12,10 +12,7 @@ import type {
   UpdateProjectViewportInput,
 } from '../api';
 import type { AnalyticsClient } from '../analytics';
-import type {
-  BubbleCreateRequest,
-  BubblePlacementRequest,
-} from '../bubbles/CreateBubbleDialog';
+import type { BubbleCreateRequest } from '../bubbles/CreateBubbleDialog';
 
 export interface CanvasViewport {
   x: number;
@@ -95,13 +92,13 @@ export interface CanvasSurfaceProps {
   analyticsClient?: AnalyticsClient;
   requestBubbleCreate?: BubbleCreateRequest;
   requestBubbles?: BubbleListRequest;
-  requestBubblePlacement?: BubblePlacementRequest;
   requestTerritories?: TerritoryListRequest;
   requestTerritoryPositionUpdate?: TerritoryPositionUpdateRequest;
   requestTerritoryPositionsUpdate?: TerritoryPositionsUpdateRequest;
   requestTerritoryVisibleCountUpdate?: TerritoryVisibleCountUpdateRequest;
   requestViewportUpdate?: ProjectViewportUpdateRequest;
   onBubbleSelectionChange?: (bubble: Bubble | null) => void;
+  onBubbleReaderOpen?: (bubble: Bubble) => void;
   onCreateBubbleDialogOpenChange?: (open: boolean) => void;
   onSaveStatusChange?: (status: CanvasSaveStatus) => void;
   onStartDiscussion?: () => void;
@@ -122,6 +119,7 @@ export interface ProjectBubbleCollection {
   loadState: CanvasLoadState;
   addBubble: (bubble: Bubble) => void;
   isBubbleRemoved: (bubbleId: string) => boolean;
+  replaceCollection: (bubbles: Bubble[], territories: Territory[]) => void;
   replaceBubble: (bubble: Bubble) => void;
   removeBubble: (bubbleId: string) => void;
   retry: () => void;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { Territory } from '../src/api';
+import type { Bubble, Territory } from '../src/api';
 import {
   createTerritoriesApi,
   isTerritoryResponse,
@@ -17,6 +17,26 @@ function territory(overrides: Partial<Territory> = {}): Territory {
     visible_count: 4,
     created_at: '2026-08-10T08:00:00.000Z',
     updated_at: '2026-08-10T08:00:00.000Z',
+    ...overrides,
+  };
+}
+
+function bubble(overrides: Partial<Bubble> = {}): Bubble {
+  return {
+    id: 'bubble/1',
+    project_id: 'project/1',
+    territory_id: 'territory/1',
+    title: 'Launch readiness',
+    summary: null,
+    content: 'Prepare the launch checklist.',
+    created_at: '2026-08-10T08:00:00.000Z',
+    updated_at: '2026-08-10T08:00:00.000Z',
+    source_kind: 'manual',
+    source_discussion_id: null,
+    source_discussion_title: null,
+    source_discussion_deleted_at: null,
+    source_message_ids: [],
+    source_context_item_ids: [],
     ...overrides,
   };
 }
@@ -110,5 +130,45 @@ describe('territories API', () => {
         createTerritoriesApi(request).getProjectTerritories('project/1'),
       ).rejects.toThrow('The territory list response contained invalid data.');
     }
+  });
+
+  it('posts the fixed empty recompose input and validates the replacement', async () => {
+    const response = { territories: [territory()], bubbles: [bubble()] };
+    const calls: Array<{ path: string; init?: RequestInit }> = [];
+    const request: TerritoriesRequest = <T>(
+      path: string,
+      init?: RequestInit,
+    ): Promise<T> => {
+      calls.push({ path, init });
+      return Promise.resolve(response as T);
+    };
+    const api = createTerritoriesApi(request);
+
+    await expect(api.recomposeTerritories('project/1')).resolves.toEqual(
+      response,
+    );
+    expect(calls).toEqual([
+      {
+        path: '/projects/project%2F1/territories/recompose',
+        init: {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: '{}',
+        },
+      },
+    ]);
+  });
+
+  it('rejects a recomposed bubble assigned outside the response', async () => {
+    const request: TerritoriesRequest = <T>(): Promise<T> =>
+      Promise.resolve({
+        territories: [territory()],
+        bubbles: [bubble({ territory_id: 'territory/missing' })],
+      } as T);
+    const api = createTerritoriesApi(request);
+
+    await expect(api.recomposeTerritories('project/1')).rejects.toThrow(
+      'The territory list response contained invalid data.',
+    );
   });
 });
