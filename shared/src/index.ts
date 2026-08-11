@@ -26,7 +26,7 @@ export interface UpdateProjectViewportInput {
   canvas_zoom: number;
 }
 
-export type TerritoryKind = 'composed' | 'ungrouped';
+export type TerritoryKind = 'manual' | 'ungrouped';
 
 export interface Territory {
   id: string;
@@ -41,6 +41,22 @@ export interface Territory {
 }
 
 export type TerritoryListResponse = Territory[];
+
+export interface CreateTerritoryInput extends RepositionTerritoryInput {
+  title: string;
+}
+
+export type CreateTerritoryResponse = Territory;
+
+export interface RenameTerritoryInput {
+  title: string;
+}
+
+export type RenameTerritoryResponse = Territory;
+
+export interface DeleteTerritoryResponse {
+  moved_bubble_count: number;
+}
 
 export interface UpdateTerritoryVisibleCountInput {
   visible_count: number;
@@ -64,13 +80,17 @@ export interface BatchRepositionTerritoriesInput {
 export type RepositionTerritoryResponse = Territory;
 export type BatchRepositionTerritoriesResponse = Territory[];
 
-/** Recompose has no client-selectable options in the MVP. */
-export type RecomposeTerritoriesInput = Record<string, never>;
-
-export interface RecomposeTerritoriesResponse {
-  territories: Territory[];
-  bubbles: Bubble[];
-}
+export type TerritoryDestination =
+  | {
+      kind: 'ungrouped';
+    }
+  | {
+      kind: 'existing';
+      territory_id: string;
+    }
+  | ({
+      kind: 'new';
+    } & CreateTerritoryInput);
 
 export type BubbleSourceKind = 'manual' | 'discussion';
 
@@ -95,6 +115,7 @@ export interface CreateBubbleInput {
   title: string;
   summary?: string | null;
   content: string;
+  destination?: TerritoryDestination;
 }
 
 export interface UpdateBubbleInput {
@@ -374,6 +395,7 @@ export type ResolveKnowledgeExtractionInput =
   | {
       kind: 'new_bubble';
       proposal: KnowledgeExtractionProposal;
+      destination?: TerritoryDestination;
     }
   | {
       kind: 'update_bubble';

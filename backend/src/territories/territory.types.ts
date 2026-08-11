@@ -1,17 +1,31 @@
 import type {
-  Territory,
-  TerritoryKind,
+  Bubble,
+  Territory as SharedTerritory,
   TerritoryPositionUpdate,
 } from '@nuee/shared-types';
 
 export type {
   BatchRepositionTerritoriesInput,
   RepositionTerritoryInput,
-  Territory,
-  TerritoryKind,
   TerritoryPositionUpdate,
   UpdateTerritoryVisibleCountInput,
 } from '@nuee/shared-types';
+
+/**
+ * Transitional persistence model for PRD 10 territory rows. Remove it with
+ * the migration that converts composed territories to manual territories.
+ */
+export type TerritoryKind = 'composed' | 'ungrouped';
+
+export type Territory = Omit<SharedTerritory, 'kind'> & {
+  kind: TerritoryKind;
+};
+
+/** Temporary response model until the recompose endpoint is removed. */
+export interface RecomposeTerritoriesResponse {
+  territories: Territory[];
+  bubbles: Bubble[];
+}
 
 export interface PersistedTerritoryPosition extends TerritoryPositionUpdate {
   updated_at: string;

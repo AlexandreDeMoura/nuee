@@ -1,11 +1,9 @@
-import {
-  RECOMPOSE_TERRITORY_COUNT_MAX,
-  RECOMPOSE_TERRITORY_COUNT_MIN,
-  TERRITORY_TITLE_MAX_LENGTH,
-  type Bubble,
-} from '@nuee/shared-types';
+import { TERRITORY_TITLE_MAX_LENGTH, type Bubble } from '@nuee/shared-types';
 import type { GenerateStructuredOutputInput } from '../ai/model-client';
 
+/** Temporary PRD 10 limits retained until recompose is removed. */
+export const RECOMPOSE_TERRITORY_COUNT_MIN = 1;
+export const RECOMPOSE_TERRITORY_COUNT_MAX = 12;
 export const RECOMPOSE_SUMMARY_EXCERPT_LENGTH = 500;
 export const RECOMPOSE_CONTENT_EXCERPT_LENGTH = 1_000;
 

@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
-import type { RecomposeTerritoriesResponse } from '@nuee/shared-types';
 import type {
   BatchRepositionTerritoriesInput,
+  RecomposeTerritoriesResponse,
   RepositionTerritoryInput,
   Territory,
   UpdateTerritoryVisibleCountInput,

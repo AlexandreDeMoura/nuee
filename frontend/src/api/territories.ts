@@ -2,36 +2,44 @@ import {
   TERRITORY_TITLE_MAX_LENGTH,
   TERRITORY_VISIBLE_COUNT_MAX,
   TERRITORY_VISIBLE_COUNT_MIN,
+  type Bubble,
   type BatchRepositionTerritoriesInput,
-  type BatchRepositionTerritoriesResponse,
   type RepositionTerritoryInput,
-  type RepositionTerritoryResponse,
-  type RecomposeTerritoriesInput,
-  type RecomposeTerritoriesResponse,
-  type Territory,
-  type TerritoryKind,
-  type TerritoryListResponse,
+  type Territory as SharedTerritory,
   type TerritoryPositionUpdate,
   type UpdateTerritoryVisibleCountInput,
-  type UpdateTerritoryVisibleCountResponse,
 } from '@nuee/shared-types';
 import { isBubbleResponse } from './bubbles';
 import { requestJson } from './client';
 
 export type {
   BatchRepositionTerritoriesInput,
-  BatchRepositionTerritoriesResponse,
   RepositionTerritoryInput,
-  RepositionTerritoryResponse,
-  RecomposeTerritoriesInput,
-  RecomposeTerritoriesResponse,
-  Territory,
-  TerritoryKind,
-  TerritoryListResponse,
   TerritoryPositionUpdate,
   UpdateTerritoryVisibleCountInput,
-  UpdateTerritoryVisibleCountResponse,
 };
+
+/**
+ * Transitional frontend model for PRD 10 responses. Remove it with the
+ * recompose API and once the backend emits manual territory kinds.
+ */
+export type TerritoryKind = 'composed' | 'ungrouped';
+
+export type Territory = Omit<SharedTerritory, 'kind'> & {
+  kind: TerritoryKind;
+};
+
+export type TerritoryListResponse = Territory[];
+export type RepositionTerritoryResponse = Territory;
+export type BatchRepositionTerritoriesResponse = Territory[];
+export type UpdateTerritoryVisibleCountResponse = Territory;
+
+export type RecomposeTerritoriesInput = Record<string, never>;
+
+export interface RecomposeTerritoriesResponse {
+  territories: Territory[];
+  bubbles: Bubble[];
+}
 
 export type TerritoriesRequest = typeof requestJson;
 export type TerritoryRecomposeRequest = (

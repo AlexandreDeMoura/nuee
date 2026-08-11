@@ -6,12 +6,7 @@ import { join } from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import type {
-  Bubble,
-  Project,
-  RecomposeTerritoriesResponse,
-  Territory,
-} from '@nuee/shared-types';
+import type { Bubble, Project } from '@nuee/shared-types';
 import { AppModule } from './../src/app.module';
 import {
   MODEL_CLIENT,
@@ -22,6 +17,10 @@ import {
   DATABASE_MIGRATIONS,
   runDatabaseMigrations,
 } from './../src/database/database.migrations';
+import type {
+  RecomposeTerritoriesResponse,
+  Territory,
+} from './../src/territories/territory.types';
 
 describe('Territory canvas persistence journey (e2e)', () => {
   const temporaryDirectory = mkdtempSync(

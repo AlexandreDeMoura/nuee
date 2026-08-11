@@ -6,12 +6,7 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
-import {
-  RECOMPOSE_TERRITORY_COUNT_MAX,
-  RECOMPOSE_TERRITORY_COUNT_MIN,
-  TERRITORY_TITLE_MAX_LENGTH,
-  type RecomposeTerritoriesResponse,
-} from '@nuee/shared-types';
+import { TERRITORY_TITLE_MAX_LENGTH } from '@nuee/shared-types';
 import {
   MODEL_CLIENT,
   ModelGenerationError,
@@ -30,8 +25,13 @@ import {
 } from '../bubbles/bubble.types';
 import { DatabaseTransaction } from '../database/database-transaction';
 import { ProjectsService } from '../projects/projects.service';
-import { buildTerritoryRecompositionModelInput } from './territory-recomposition.prompt';
 import {
+  buildTerritoryRecompositionModelInput,
+  RECOMPOSE_TERRITORY_COUNT_MAX,
+  RECOMPOSE_TERRITORY_COUNT_MIN,
+} from './territory-recomposition.prompt';
+import {
+  type RecomposeTerritoriesResponse,
   TERRITORY_REPOSITORY,
   type TerritoryRepository,
 } from './territory.types';
