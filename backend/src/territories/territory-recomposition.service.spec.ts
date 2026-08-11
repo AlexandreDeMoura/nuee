@@ -265,24 +265,29 @@ describe('TerritoryRecompositionService', () => {
     );
   });
 
-  it('returns a stable provider reason without changing persistence', async () => {
-    const { project } = createProjectWithBubbles(2);
-    const before = territoryRepository.findAllByProjectId(project.id);
-    generateStructuredOutput.mockRejectedValue(
-      new ModelGenerationError('timeout'),
-    );
+  it.each(['timeout', 'invalid_request'] as const)(
+    'returns a stable %s reason without changing persistence',
+    async (reason) => {
+      const { project } = createProjectWithBubbles(2);
+      const before = territoryRepository.findAllByProjectId(project.id);
+      generateStructuredOutput.mockRejectedValue(
+        new ModelGenerationError(reason),
+      );
 
-    await expect(service.recompose(project.id, {})).rejects.toMatchObject({
-      response: {
-        code: 'TERRITORY_RECOMPOSE_FAILED',
-        reason: 'timeout',
-      },
-    });
-    await expect(service.recompose(project.id, {})).rejects.toBeInstanceOf(
-      ServiceUnavailableException,
-    );
-    expect(territoryRepository.findAllByProjectId(project.id)).toEqual(before);
-  });
+      await expect(service.recompose(project.id, {})).rejects.toMatchObject({
+        response: {
+          code: 'TERRITORY_RECOMPOSE_FAILED',
+          reason,
+        },
+      });
+      await expect(service.recompose(project.id, {})).rejects.toBeInstanceOf(
+        ServiceUnavailableException,
+      );
+      expect(territoryRepository.findAllByProjectId(project.id)).toEqual(
+        before,
+      );
+    },
+  );
 
   it('rolls back newly inserted territories and assignments on persistence failure', async () => {
     const { project, created } = createProjectWithBubbles(2);

@@ -51,7 +51,6 @@ export const TERRITORY_RECOMPOSITION_FORMAT = {
             bubble_ids: {
               type: 'array',
               minItems: 1,
-              uniqueItems: true,
               items: { type: 'string', minLength: 1 },
             },
           },

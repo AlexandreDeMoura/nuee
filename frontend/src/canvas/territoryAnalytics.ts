@@ -15,6 +15,7 @@ export type TerritoryRecomposeFailureReason =
 const recomposeFailureReasons = new Set<TerritoryRecomposeFailureReason>([
   'provider',
   'timeout',
+  'invalid_request',
   'invalid_response',
   'invalid_output',
   'persistence',

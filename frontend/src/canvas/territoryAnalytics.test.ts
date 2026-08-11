@@ -76,6 +76,14 @@ describe('territory analytics', () => {
         }),
       ),
     ).toBe('source_too_large');
+    expect(
+      territoryRecomposeFailureReason(
+        new ApiError(503, {
+          code: 'TERRITORY_RECOMPOSE_FAILED',
+          reason: 'invalid_request',
+        }),
+      ),
+    ).toBe('invalid_request');
     expect(territoryRecomposeFailureReason(new Error('private details'))).toBe(
       'request_failed',
     );

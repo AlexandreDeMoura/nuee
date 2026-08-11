@@ -16,6 +16,16 @@ import type {
   ModelMessage,
   StructuredModelGeneration,
 } from './model-client';
+import type {
+  ModelProviderFailureEvent,
+  ModelProviderFailureReporter,
+  ModelProviderOperation,
+} from './model-provider.telemetry';
+import { ModelProviderTelemetry } from './model-provider.telemetry';
+import {
+  assertOpenAiStructuredOutputFormat,
+  OpenAiStructuredOutputFormatError,
+} from './openai-structured-output';
 export { buildFocusedResponseInstructions } from './answer-instructions';
 export { ModelGenerationError as ModelProviderError } from './model-client';
 
@@ -63,6 +73,7 @@ interface OpenAiResponse {
   output?: OpenAiOutputItem[];
   model: string;
   status?: string;
+  requestId?: string;
   inputTokens?: number;
   outputTokens?: number;
 }
@@ -96,6 +107,73 @@ function isTimeout(error: unknown): boolean {
     error instanceof OpenAI.APIConnectionTimeoutError ||
     (error instanceof Error && error.name === 'APIConnectionTimeoutError')
   );
+}
+
+interface OpenAiApiErrorMetadata {
+  status: number | null;
+  type: string | null;
+  code: string | null;
+  requestId: string | null;
+}
+
+function apiErrorMetadata(error: unknown): OpenAiApiErrorMetadata | null {
+  if (!(error instanceof OpenAI.APIError)) {
+    return null;
+  }
+
+  const record = error as unknown as Record<string, unknown>;
+
+  return {
+    status: typeof record.status === 'number' ? record.status : null,
+    type: typeof record.type === 'string' ? record.type : null,
+    code: typeof record.code === 'string' ? record.code : null,
+    requestId: typeof record.requestID === 'string' ? record.requestID : null,
+  };
+}
+
+function generationFailureReason(
+  error: unknown,
+): ModelGenerationError['reason'] {
+  if (isTimeout(error)) {
+    return 'timeout';
+  }
+
+  const status = apiErrorMetadata(error)?.status;
+  if (
+    status !== null &&
+    status !== undefined &&
+    status >= 400 &&
+    status < 500 &&
+    ![408, 409, 429].includes(status)
+  ) {
+    return 'invalid_request';
+  }
+
+  return 'provider';
+}
+
+function requestFailureEvent(
+  error: unknown,
+  operation: ModelProviderOperation,
+  model: string,
+  reason: ModelGenerationError['reason'],
+): ModelProviderFailureEvent {
+  const providerError = apiErrorMetadata(error);
+
+  return {
+    event: 'model_generation_failed',
+    provider: 'openai',
+    operation,
+    stage: 'request',
+    model,
+    reason,
+    status: providerError?.status ?? null,
+    error_type: providerError?.type ?? null,
+    error_code: providerError?.code ?? null,
+    request_id: providerError?.requestId ?? null,
+    schema_name: null,
+    schema_keyword: null,
+  };
 }
 
 function mapResponseOutput(
@@ -181,6 +259,7 @@ function createResponsesClient(config: AiConfig): OpenAiResponsesClient {
         output: mapResponseOutput(response.output),
         model: response.model,
         status: response.status,
+        requestId: response._request_id ?? undefined,
         inputTokens: response.usage?.input_tokens,
         outputTokens: response.usage?.output_tokens,
       };
@@ -194,6 +273,7 @@ export class OpenAiModelClient implements ModelClient {
   constructor(
     private readonly config: AiConfig,
     responsesClient?: OpenAiResponsesClient,
+    private readonly failureReporter: ModelProviderFailureReporter = new ModelProviderTelemetry(),
   ) {
     this.responsesClient = responsesClient ?? createResponsesClient(config);
   }
@@ -211,6 +291,7 @@ export class OpenAiModelClient implements ModelClient {
         ],
         ...(input.webSearch ? { tools: [{ ...WEB_SEARCH_TOOL }] } : {}),
       },
+      input.webSearch ? 'answer_with_web_search' : 'answer',
       true,
       input.webSearch
         ? this.config.webSearchRequestTimeoutMs
@@ -219,35 +300,80 @@ export class OpenAiModelClient implements ModelClient {
   }
 
   generateTitle(input: GenerateTitleInput): Promise<ModelGeneration> {
-    return this.generate({
-      model: this.config.model,
-      instructions: TITLE_INSTRUCTIONS,
-      input: transcriptMessages(input.messages),
-    });
+    return this.generate(
+      {
+        model: this.config.model,
+        instructions: TITLE_INSTRUCTIONS,
+        input: transcriptMessages(input.messages),
+      },
+      'title',
+    );
   }
 
   async generateStructuredOutput(
     input: GenerateStructuredOutputInput,
   ): Promise<StructuredModelGeneration> {
-    const generation = await this.generate({
-      model: this.config.model,
-      instructions: input.instructions,
-      input: transcriptMessages(input.messages),
-      text: {
-        format: {
-          type: 'json_schema',
-          name: input.format.name,
-          description: input.format.description,
-          strict: true,
-          schema: input.format.schema,
+    try {
+      assertOpenAiStructuredOutputFormat(input.format);
+    } catch (error) {
+      const formatError =
+        error instanceof OpenAiStructuredOutputFormatError ? error : null;
+      this.failureReporter.recordFailure({
+        event: 'model_generation_failed',
+        provider: 'openai',
+        operation: 'structured_output',
+        stage: 'preflight',
+        model: this.config.model,
+        reason: 'invalid_request',
+        status: null,
+        error_type: 'structured_output_format',
+        error_code: formatError?.code ?? null,
+        request_id: null,
+        schema_name:
+          formatError?.code === 'invalid_format_name'
+            ? null
+            : input.format.name,
+        schema_keyword: formatError?.keyword ?? null,
+      });
+      throw new ModelGenerationError('invalid_request', { cause: error });
+    }
+
+    const generation = await this.generate(
+      {
+        model: this.config.model,
+        instructions: input.instructions,
+        input: transcriptMessages(input.messages),
+        text: {
+          format: {
+            type: 'json_schema',
+            name: input.format.name,
+            description: input.format.description,
+            strict: true,
+            schema: input.format.schema,
+          },
         },
       },
-    });
+      'structured_output',
+    );
     let output: unknown;
 
     try {
       output = JSON.parse(generation.content) as unknown;
     } catch (error) {
+      this.failureReporter.recordFailure({
+        event: 'model_generation_failed',
+        provider: 'openai',
+        operation: 'structured_output',
+        stage: 'response',
+        model: this.config.model,
+        reason: 'invalid_response',
+        status: null,
+        error_type: 'invalid_response',
+        error_code: 'invalid_json_output',
+        request_id: null,
+        schema_name: input.format.name,
+        schema_keyword: null,
+      });
       throw new ModelGenerationError('invalid_response', { cause: error });
     }
 
@@ -261,6 +387,7 @@ export class OpenAiModelClient implements ModelClient {
 
   private async generate(
     request: OpenAiResponseRequest,
+    operation: ModelProviderOperation,
     mapWebSearchMetadata = false,
     timeoutMs = this.config.requestTimeoutMs,
   ): Promise<ModelGeneration> {
@@ -272,15 +399,33 @@ export class OpenAiModelClient implements ModelClient {
         timeout: timeoutMs,
       });
     } catch (error) {
-      throw new ModelGenerationError(
-        isTimeout(error) ? 'timeout' : 'provider',
-        { cause: error },
+      const reason = generationFailureReason(error);
+      this.failureReporter.recordFailure(
+        requestFailureEvent(error, operation, this.config.model, reason),
       );
+      throw new ModelGenerationError(reason, { cause: error });
     }
 
     const content = response.outputText.trim();
 
     if (response.status !== 'completed' || !content) {
+      this.failureReporter.recordFailure({
+        event: 'model_generation_failed',
+        provider: 'openai',
+        operation,
+        stage: 'response',
+        model: this.config.model,
+        reason: 'invalid_response',
+        status: null,
+        error_type: 'invalid_response',
+        error_code:
+          response.status !== 'completed'
+            ? (response.status ?? 'missing_status')
+            : 'empty_output',
+        request_id: response.requestId ?? null,
+        schema_name: request.text?.format.name ?? null,
+        schema_keyword: null,
+      });
       throw new ModelGenerationError('invalid_response');
     }
 

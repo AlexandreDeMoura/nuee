@@ -47,6 +47,7 @@ interface TerritoryProposal {
 type RecompositionFailureReason =
   | 'provider'
   | 'timeout'
+  | 'invalid_request'
   | 'invalid_response'
   | 'invalid_output'
   | 'persistence';

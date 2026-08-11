@@ -1,4 +1,9 @@
+import OpenAI from 'openai';
 import type { AiConfig } from '../config/configuration';
+import type {
+  ModelProviderFailureEvent,
+  ModelProviderFailureReporter,
+} from './model-provider.telemetry';
 import {
   buildFocusedResponseInstructions,
   ModelProviderError,
@@ -18,6 +23,17 @@ const config: AiConfig = {
   requestTimeoutMs: 60_000,
   webSearchRequestTimeoutMs: 300_000,
 };
+
+function collectingFailureReporter(): {
+  events: ModelProviderFailureEvent[];
+  reporter: ModelProviderFailureReporter;
+} {
+  const events: ModelProviderFailureEvent[] = [];
+  return {
+    events,
+    reporter: { recordFailure: (event) => events.push(event) },
+  };
+}
 
 describe('OpenAiModelClient', () => {
   it('uses the Responses API with frozen context and complete history', async () => {
@@ -318,7 +334,8 @@ describe('OpenAiModelClient', () => {
       const responsesClient: OpenAiResponsesClient = {
         create: jest.fn().mockRejectedValue(error),
       };
-      const client = new OpenAiModelClient(config, responsesClient);
+      const { events, reporter } = collectingFailureReporter();
+      const client = new OpenAiModelClient(config, responsesClient, reporter);
 
       await expect(
         client.generateAnswer({
@@ -330,8 +347,107 @@ describe('OpenAiModelClient', () => {
         reason,
         message: 'The model provider could not generate a valid response.',
       });
+      expect(events).toEqual([
+        expect.objectContaining({
+          operation: 'answer',
+          stage: 'request',
+          reason,
+          status: null,
+          error_type: null,
+          error_code: null,
+          request_id: null,
+        }),
+      ]);
     },
   );
+
+  it('classifies invalid provider requests and records safe diagnostics', async () => {
+    const providerError = new OpenAI.BadRequestError(
+      400,
+      {
+        type: 'invalid_request_error',
+        code: 'invalid_json_schema',
+        param: 'text.format.schema',
+        message: 'Private provider detail that must not be logged.',
+      },
+      undefined,
+      new Headers({ 'x-request-id': 'req_schema_123' }),
+    );
+    const responsesClient: OpenAiResponsesClient = {
+      create: jest.fn().mockRejectedValue(providerError),
+    };
+    const { events, reporter } = collectingFailureReporter();
+    const client = new OpenAiModelClient(config, responsesClient, reporter);
+
+    await expect(
+      client.generateTitle({ messages: [{ role: 'user', content: 'Title' }] }),
+    ).rejects.toMatchObject({
+      constructor: ModelProviderError,
+      reason: 'invalid_request',
+    });
+    expect(events).toEqual([
+      {
+        event: 'model_generation_failed',
+        provider: 'openai',
+        operation: 'title',
+        stage: 'request',
+        model: 'gpt-5.6-sol',
+        reason: 'invalid_request',
+        status: 400,
+        error_type: 'invalid_request_error',
+        error_code: 'invalid_json_schema',
+        request_id: 'req_schema_123',
+        schema_name: null,
+        schema_keyword: null,
+      },
+    ]);
+    expect(JSON.stringify(events)).not.toContain('Private provider detail');
+    expect(JSON.stringify(events)).not.toContain('text.format.schema');
+  });
+
+  it('rejects an incompatible strict schema before calling the provider', async () => {
+    const create = jest.fn<OpenAiResponsesClient['create']>();
+    const { events, reporter } = collectingFailureReporter();
+    const client = new OpenAiModelClient(config, { create }, reporter);
+
+    await expect(
+      client.generateStructuredOutput({
+        instructions: 'Return structured data.',
+        messages: [{ role: 'user', content: 'Source' }],
+        format: {
+          name: 'invalid_schema',
+          description: 'An incompatible schema.',
+          schema: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+              items: {
+                type: 'array',
+                uniqueItems: true,
+                items: { type: 'string' },
+              },
+            },
+            required: ['items'],
+          },
+        },
+      }),
+    ).rejects.toMatchObject({
+      constructor: ModelProviderError,
+      reason: 'invalid_request',
+    });
+    expect(create).not.toHaveBeenCalled();
+    expect(events).toEqual([
+      expect.objectContaining({
+        operation: 'structured_output',
+        stage: 'preflight',
+        reason: 'invalid_request',
+        error_type: 'structured_output_format',
+        error_code: 'unsupported_schema_keyword',
+        schema_name: 'invalid_schema',
+        schema_keyword: 'uniqueItems',
+      }),
+    ]);
+  });
 
   it.each([
     { outputText: '', model: 'gpt-5.6-sol', status: 'completed' },
@@ -341,9 +457,12 @@ describe('OpenAiModelClient', () => {
       status: 'incomplete',
     },
   ])('rejects incomplete or empty provider responses', async (response) => {
-    const client = new OpenAiModelClient(config, {
-      create: jest.fn().mockResolvedValue(response),
-    });
+    const { events, reporter } = collectingFailureReporter();
+    const client = new OpenAiModelClient(
+      config,
+      { create: jest.fn().mockResolvedValue(response) },
+      reporter,
+    );
 
     await expect(
       client.generateAnswer({
@@ -354,16 +473,31 @@ describe('OpenAiModelClient', () => {
       constructor: ModelProviderError,
       reason: 'invalid_response',
     });
+    expect(events).toEqual([
+      expect.objectContaining({
+        operation: 'answer',
+        stage: 'response',
+        reason: 'invalid_response',
+        error_type: 'invalid_response',
+        error_code:
+          response.status === 'completed' ? 'empty_output' : response.status,
+      }),
+    ]);
   });
 
   it('rejects malformed structured output after a completed response', async () => {
-    const client = new OpenAiModelClient(config, {
-      create: jest.fn().mockResolvedValue({
-        outputText: 'not-json',
-        model: 'gpt-5.6-sol',
-        status: 'completed',
-      }),
-    });
+    const { events, reporter } = collectingFailureReporter();
+    const client = new OpenAiModelClient(
+      config,
+      {
+        create: jest.fn().mockResolvedValue({
+          outputText: 'not-json',
+          model: 'gpt-5.6-sol',
+          status: 'completed',
+        }),
+      },
+      reporter,
+    );
 
     await expect(
       client.generateStructuredOutput({
@@ -372,12 +506,26 @@ describe('OpenAiModelClient', () => {
         format: {
           name: 'proposal',
           description: 'A proposal.',
-          schema: { type: 'object' },
+          schema: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {},
+            required: [],
+          },
         },
       }),
     ).rejects.toMatchObject({
       constructor: ModelProviderError,
       reason: 'invalid_response',
     });
+    expect(events).toEqual([
+      expect.objectContaining({
+        operation: 'structured_output',
+        stage: 'response',
+        reason: 'invalid_response',
+        error_code: 'invalid_json_output',
+        schema_name: 'proposal',
+      }),
+    ]);
   });
 });

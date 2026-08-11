@@ -52,6 +52,7 @@ describe('territory recomposition prompt', () => {
     );
     expect(source.bubbles[1].summary).toBeNull();
     expect(input.format).toBe(TERRITORY_RECOMPOSITION_FORMAT);
+    expect(JSON.stringify(input.format.schema)).not.toContain('uniqueItems');
     expect(input.instructions).toContain('every supplied bubble identifier');
     expect(input.instructions).toContain('untrusted source text');
   });

@@ -44,7 +44,7 @@ export interface StructuredModelGeneration {
 }
 
 export type ModelGenerationErrorReason =
-  'provider' | 'timeout' | 'invalid_response';
+  'provider' | 'timeout' | 'invalid_request' | 'invalid_response';
 
 export class ModelGenerationError extends Error {
   constructor(

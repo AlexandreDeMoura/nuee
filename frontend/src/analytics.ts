@@ -72,6 +72,7 @@ export interface AnalyticsEventProperties {
       | 'source_too_large'
       | 'provider'
       | 'timeout'
+      | 'invalid_request'
       | 'invalid_response'
       | 'invalid_output'
       | 'persistence'
