@@ -66,6 +66,8 @@ export function useTerritoryLayoutPersistence({
   }, [onPositionPersisted]);
 
   useEffect(() => {
+    mountedRef.current = true;
+
     return () => {
       mountedRef.current = false;
     };
