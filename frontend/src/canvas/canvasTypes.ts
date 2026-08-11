@@ -8,6 +8,7 @@ import type {
   ProjectViewportUpdateOptions,
   Territory,
   RepositionTerritoryInput,
+  UpdateTerritoryVisibleCountInput,
   UpdateProjectViewportInput,
 } from '../api';
 import type { AnalyticsClient } from '../analytics';
@@ -42,6 +43,14 @@ export type TerritoryPositionsUpdateRequest = (
   projectId: string,
   input: BatchRepositionTerritoriesInput,
 ) => Promise<BatchRepositionTerritoriesResponse>;
+
+export type TerritoryVisibleCountUpdateRequest = (
+  projectId: string,
+  territoryId: string,
+  input: UpdateTerritoryVisibleCountInput,
+) => Promise<Territory>;
+
+export type CanvasSaveStatus = 'dirty' | 'saving' | 'saved' | 'error';
 
 export type ProjectViewportUpdateRequest = (
   projectId: string,
@@ -90,13 +99,16 @@ export interface CanvasSurfaceProps {
   requestTerritories?: TerritoryListRequest;
   requestTerritoryPositionUpdate?: TerritoryPositionUpdateRequest;
   requestTerritoryPositionsUpdate?: TerritoryPositionsUpdateRequest;
+  requestTerritoryVisibleCountUpdate?: TerritoryVisibleCountUpdateRequest;
   requestViewportUpdate?: ProjectViewportUpdateRequest;
   onBubbleSelectionChange?: (bubble: Bubble | null) => void;
   onCreateBubbleDialogOpenChange?: (open: boolean) => void;
+  onSaveStatusChange?: (status: CanvasSaveStatus) => void;
   onStartDiscussion?: () => void;
   bubbleLinks?: BubbleLink[];
   multiSelection?: CanvasMultiSelection | null;
   viewportSaveDelayMs?: number;
+  visibleCountSaveDelayMs?: number;
 }
 
 export type CanvasLoadState =

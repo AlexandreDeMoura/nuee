@@ -11,6 +11,7 @@ import {
   getProjectTerritories,
   repositionTerritories,
   repositionTerritory,
+  updateTerritoryVisibleCount,
   updateProjectViewport,
   type Bubble,
   type BubblePlacementInput,
@@ -27,6 +28,7 @@ import {
   CanvasViewportSaveError,
   CanvasZoomControls,
   TerritoryPositionSaveError,
+  TerritoryVisibleCountSaveError,
 } from './CanvasOverlays';
 import { TerritoryCard } from './TerritoryCard';
 import { getCompactTerritoryPositions } from './compactTerritoryLayout';
@@ -49,6 +51,7 @@ import {
   useTerritoryLayoutPersistence,
   type TerritoryPosition,
 } from './useTerritoryLayoutPersistence';
+import { useTerritoryVisibleCountPersistence } from './useTerritoryVisibleCountPersistence';
 import { useViewportPersistence } from './useViewportPersistence';
 
 export type {
@@ -56,6 +59,7 @@ export type {
   CanvasEmptyStateActions,
   CanvasMultiSelection,
   CanvasMultiSelectionResult,
+  CanvasSaveStatus,
   CanvasSurfaceProps,
   CanvasViewport,
   ProjectBubbleCollection,
@@ -63,6 +67,7 @@ export type {
   TerritoryListRequest,
   TerritoryPositionsUpdateRequest,
   TerritoryPositionUpdateRequest,
+  TerritoryVisibleCountUpdateRequest,
 } from './canvasTypes';
 
 export function CanvasSurface({
@@ -78,13 +83,16 @@ export function CanvasSurface({
   requestTerritories = getProjectTerritories,
   requestTerritoryPositionUpdate = repositionTerritory,
   requestTerritoryPositionsUpdate = repositionTerritories,
+  requestTerritoryVisibleCountUpdate = updateTerritoryVisibleCount,
   requestViewportUpdate = updateProjectViewport,
   onBubbleSelectionChange,
   onCreateBubbleDialogOpenChange,
+  onSaveStatusChange,
   onStartDiscussion,
   bubbleLinks = [],
   multiSelection = null,
   viewportSaveDelayMs = DEFAULT_VIEWPORT_SAVE_DELAY_MS,
+  visibleCountSaveDelayMs,
 }: CanvasSurfaceProps) {
   const [selectedBubbleId, setSelectedBubbleId] = useState<string | null>(null);
   const [isPanning, setIsPanning] = useState(false);
@@ -149,6 +157,27 @@ export function CanvasSurface({
       groupBubblesByTerritory(loadState.territories, displayedBubbles),
     [displayedBubbles, loadState.territories],
   );
+  const visibleCountTargets = useMemo(
+    () =>
+      displayedTerritories.map(({ bubbles, territory }) => ({
+        territory,
+        total: bubbles.length,
+      })),
+    [displayedTerritories],
+  );
+  const {
+    changeVisibleCount,
+    localCounts,
+    retrySave: retryVisibleCountSave,
+    revertSave: revertVisibleCountSave,
+    saves: visibleCountSaves,
+  } = useTerritoryVisibleCountPersistence({
+    onSaveStatusChange,
+    projectId,
+    requestUpdate: requestTerritoryVisibleCountUpdate,
+    saveDelayMs: visibleCountSaveDelayMs,
+    targets: visibleCountTargets,
+  });
 
   const {
     compactLayoutSave,
@@ -170,19 +199,23 @@ export function CanvasSurface({
     () =>
       displayedTerritories.map(({ bubbles, territory }) => {
         const localPosition = localPositions[territory.id];
+        const localVisibleCount = localCounts[territory.id];
 
         return {
           bubbles,
-          territory: localPosition
-            ? {
-                ...territory,
-                position_x: localPosition.x,
-                position_y: localPosition.y,
-              }
-            : territory,
+          territory:
+            localPosition || localVisibleCount !== undefined
+              ? {
+                  ...territory,
+                  visible_count:
+                    localVisibleCount ?? territory.visible_count,
+                  position_x: localPosition?.x ?? territory.position_x,
+                  position_y: localPosition?.y ?? territory.position_y,
+                }
+              : territory,
         };
       }),
-    [displayedTerritories, localPositions],
+    [displayedTerritories, localCounts, localPositions],
   );
   const positionedTerritoryIds = useMemo(
     () => new Set(positionedTerritories.map(({ territory }) => territory.id)),
@@ -508,6 +541,13 @@ export function CanvasSurface({
 
   const handleWheel = useCallback(
     (event: WheelEvent) => {
+      if (
+        event.target instanceof Element &&
+        event.target.closest('[data-canvas-scroll-region="true"]')
+      ) {
+        return;
+      }
+
       event.preventDefault();
       event.stopPropagation();
 
@@ -613,6 +653,14 @@ export function CanvasSurface({
   const failedPositionTerritory = failedPositionSaveEntry
     ? positionedTerritories.find(
         ({ territory }) => territory.id === failedPositionSaveEntry[0],
+      )?.territory
+    : undefined;
+  const failedVisibleCountSaveEntry = Object.entries(visibleCountSaves).find(
+    ([, save]) => save.status === 'error',
+  );
+  const failedVisibleCountTerritory = failedVisibleCountSaveEntry
+    ? positionedTerritories.find(
+        ({ territory }) => territory.id === failedVisibleCountSaveEntry[0],
       )?.territory
     : undefined;
 
@@ -755,6 +803,9 @@ export function CanvasSurface({
                 ? toggleMultiSelectedBubble(bubble.id)
                 : selectBubble(bubble)
             }
+            onVisibleCountChange={(visibleCount) =>
+              changeVisibleCount(territory.id, visibleCount)
+            }
             selectedBubbleIds={selectedBubbleIds}
             status={
               draggingTerritoryId === territory.id
@@ -862,6 +913,18 @@ export function CanvasSurface({
               activeCompactLayoutSave.persistedPositions,
             );
           }}
+        />
+      )}
+
+      {failedVisibleCountSaveEntry && failedVisibleCountTerritory && (
+        <TerritoryVisibleCountSaveError
+          territoryTitle={failedVisibleCountTerritory.title}
+          onRetry={() =>
+            retryVisibleCountSave(failedVisibleCountSaveEntry[0])
+          }
+          onRevert={() =>
+            revertVisibleCountSave(failedVisibleCountSaveEntry[0])
+          }
         />
       )}
 

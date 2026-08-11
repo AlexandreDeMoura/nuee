@@ -37,9 +37,11 @@ import { focusRing } from '../ui/focusRing';
 import {
   CanvasSurface,
   type BubbleListRequest,
+  type CanvasSaveStatus,
   type CanvasMultiSelection,
   type ProjectViewportUpdateRequest,
   type TerritoryListRequest,
+  type TerritoryVisibleCountUpdateRequest,
 } from '../canvas/CanvasSurface';
 import { useProjectBubbles } from '../canvas/useProjectBubbles';
 import type {
@@ -141,6 +143,7 @@ export interface ProjectWorkspaceProps {
   requestBubbles?: BubbleListRequest;
   requestBubblePlacement?: BubblePlacementRequest;
   requestTerritories?: TerritoryListRequest;
+  requestTerritoryVisibleCountUpdate?: TerritoryVisibleCountUpdateRequest;
   requestBubbleDelete?: BubbleDeleteRequest;
   requestBubbleUpdate?: BubbleUpdateRequest;
   requestBubbleLinks?: BubbleLinkListRequest;
@@ -149,6 +152,7 @@ export interface ProjectWorkspaceProps {
   requestViewportUpdate?: ProjectViewportUpdateRequest;
   canvasMultiSelection?: CanvasMultiSelection | null;
   viewportSaveDelayMs?: number;
+  visibleCountSaveDelayMs?: number;
   bubbleSaveDelayMs?: number;
   documentLibraryRequests?: DocumentLibraryRequests;
   documentPollIntervalMs?: number;
@@ -238,12 +242,12 @@ const projectBarStatus: Record<
 
 function ProjectBar({
   project,
-  descriptionStatus,
+  saveStatus,
 }: {
   project: Project;
-  descriptionStatus: ProjectDescriptionSaveStatus;
+  saveStatus: ProjectDescriptionSaveStatus;
 }) {
-  const status = projectBarStatus[descriptionStatus];
+  const status = projectBarStatus[saveStatus];
 
   return (
     <header className="flex h-[53px] shrink-0 items-center gap-3.5 border-b border-[#e1e6ec] bg-white px-[18px]">
@@ -587,6 +591,7 @@ export function ProjectWorkspace({
   requestBubbles = getProjectBubbles,
   requestBubblePlacement,
   requestTerritories,
+  requestTerritoryVisibleCountUpdate,
   requestBubbleDelete,
   requestBubbleUpdate,
   requestBubbleLinks = getBubbleLinks,
@@ -595,6 +600,7 @@ export function ProjectWorkspace({
   requestViewportUpdate,
   canvasMultiSelection = null,
   viewportSaveDelayMs,
+  visibleCountSaveDelayMs,
   bubbleSaveDelayMs,
   documentLibraryRequests,
   documentPollIntervalMs,
@@ -619,6 +625,8 @@ export function ProjectWorkspace({
   const [currentProject, setCurrentProject] = useState(project);
   const [descriptionStatus, setDescriptionStatus] =
     useState<ProjectDescriptionSaveStatus>('saved');
+  const [canvasSaveStatus, setCanvasSaveStatus] =
+    useState<CanvasSaveStatus>('saved');
   const [activePanel, setActivePanel] = useState<WorkspacePanelView>(() =>
     initialDocumentUploads && initialDocumentUploads.length > 0
       ? 'documents'
@@ -1152,6 +1160,14 @@ export function ProjectWorkspace({
     panelSlots?.discussions === undefined
       ? projectDiscussions.discussions.length
       : discussionCount;
+  const workspaceSaveStatus: ProjectDescriptionSaveStatus =
+    descriptionStatus === 'error' || canvasSaveStatus === 'error'
+      ? 'error'
+      : descriptionStatus === 'saving' || canvasSaveStatus === 'saving'
+        ? 'saving'
+        : descriptionStatus === 'dirty' || canvasSaveStatus === 'dirty'
+          ? 'dirty'
+          : 'saved';
   const discussionsContent =
     panelSlots?.discussions ?? (
       <DiscussionsPanel
@@ -1176,7 +1192,7 @@ export function ProjectWorkspace({
         className="relative flex h-screen min-h-[480px] min-w-80 flex-col overflow-hidden bg-[#eef1f5] text-[#1e2733] [font-family:'IBM_Plex_Sans',system-ui,sans-serif] [font-synthesis:none] [text-rendering:optimizeLegibility]"
         data-project-id={currentProject.id}
       >
-        <ProjectBar project={currentProject} descriptionStatus={descriptionStatus} />
+        <ProjectBar project={currentProject} saveStatus={workspaceSaveStatus} />
 
         <div
           className={`relative flex min-h-0 flex-1 transition-[filter,opacity] duration-150 motion-reduce:transition-none ${
@@ -1218,14 +1234,19 @@ export function ProjectWorkspace({
             requestBubbleCreate={requestBubbleCreate}
             requestBubblePlacement={requestBubblePlacement}
             requestViewportUpdate={requestViewportUpdate}
+            requestTerritoryVisibleCountUpdate={
+              requestTerritoryVisibleCountUpdate
+            }
             onBubbleSelectionChange={handleBubbleSelectionChange}
             onCreateBubbleDialogOpenChange={(open) =>
               setCreateBubbleDialogProjectId(
                 open ? currentProject.id : null,
               )
             }
+            onSaveStatusChange={setCanvasSaveStatus}
             onStartDiscussion={startDiscussionFromCanvas}
             viewportSaveDelayMs={viewportSaveDelayMs}
+            visibleCountSaveDelayMs={visibleCountSaveDelayMs}
           />
 
           <aside

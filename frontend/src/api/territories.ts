@@ -10,6 +10,8 @@ import {
   type TerritoryKind,
   type TerritoryListResponse,
   type TerritoryPositionUpdate,
+  type UpdateTerritoryVisibleCountInput,
+  type UpdateTerritoryVisibleCountResponse,
 } from '@nuee/shared-types';
 import { requestJson } from './client';
 
@@ -22,6 +24,8 @@ export type {
   TerritoryKind,
   TerritoryListResponse,
   TerritoryPositionUpdate,
+  UpdateTerritoryVisibleCountInput,
+  UpdateTerritoryVisibleCountResponse,
 };
 
 export type TerritoriesRequest = typeof requestJson;
@@ -131,6 +135,30 @@ export function createTerritoriesApi(
     });
   }
 
+  function updateTerritoryVisibleCount(
+    projectId: string,
+    territoryId: string,
+    input: UpdateTerritoryVisibleCountInput,
+  ): Promise<UpdateTerritoryVisibleCountResponse> {
+    return request<unknown>(
+      `/projects/${encodeURIComponent(projectId)}/territories/${encodeURIComponent(territoryId)}/visible-count`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      },
+    ).then((response) => {
+      if (
+        !isTerritoryResponse(response, projectId) ||
+        response.id !== territoryId
+      ) {
+        throw new Error(INVALID_TERRITORIES_MESSAGE);
+      }
+
+      return response;
+    });
+  }
+
   function repositionTerritories(
     projectId: string,
     input: BatchRepositionTerritoriesInput,
@@ -164,6 +192,7 @@ export function createTerritoriesApi(
     getProjectTerritories,
     repositionTerritories,
     repositionTerritory,
+    updateTerritoryVisibleCount,
   };
 }
 
@@ -171,4 +200,5 @@ export const {
   getProjectTerritories,
   repositionTerritories,
   repositionTerritory,
+  updateTerritoryVisibleCount,
 } = createTerritoriesApi();

@@ -4,6 +4,8 @@ import type {
   PointerEvent as ReactPointerEvent,
   Ref,
 } from 'react';
+import { useRef, useState } from 'react';
+import { TERRITORY_VISIBLE_COUNT_MAX } from '@nuee/shared-types';
 import { Check, ChevronRight, Minus, Plus } from 'lucide-react';
 import type { Bubble, Territory } from '../api';
 import { getBubbleCardPreview } from './bubbleCardPreview';
@@ -17,6 +19,7 @@ export interface TerritoryCardProps {
   linkedBubbleIds?: ReadonlySet<string>;
   onBubbleActivate?: (bubble: Bubble) => void;
   onDragPointerDown?: (event: ReactPointerEvent<HTMLElement>) => void;
+  onVisibleCountChange?: (visibleCount: number) => void;
   selectedBubbleIds?: ReadonlySet<string>;
   status?: TerritoryCardStatus;
   territory: Territory;
@@ -29,18 +32,57 @@ export function TerritoryCard({
   linkedBubbleIds = new Set<string>(),
   onBubbleActivate,
   onDragPointerDown,
+  onVisibleCountChange,
   selectedBubbleIds = new Set<string>(),
   status = 'default',
   territory,
   territoryRef,
 }: TerritoryCardProps) {
+  const [unlockedListKey, setUnlockedListKey] = useState<string | null>(null);
+  const [unlockedBodyHeight, setUnlockedBodyHeight] = useState<number | null>(
+    null,
+  );
+  const [announcement, setAnnouncement] = useState('');
+  const bodyRef = useRef<HTMLDivElement>(null);
   const visibleBubbles = bubbles.slice(0, territory.visible_count);
   const hiddenBubbleCount = bubbles.length - visibleBubbles.length;
+  const listKey = `${territory.visible_count}:${bubbles
+    .map(({ id }) => id)
+    .join(':')}`;
+  const isScrollUnlocked =
+    hiddenBubbleCount > 0 && unlockedListKey === listKey;
+  const renderedBubbles = isScrollUnlocked ? bubbles : visibleBubbles;
+  const canShowFewer = territory.visible_count > 1;
+  const canShowMore =
+    territory.visible_count < bubbles.length &&
+    territory.visible_count < TERRITORY_VISIBLE_COUNT_MAX;
   const position: CSSProperties = {
     left: territory.position_x,
     top: territory.position_y,
     width: TERRITORY_CARD_WIDTH,
   };
+
+  function changeVisibleCount(nextCount: number) {
+    onVisibleCountChange?.(nextCount);
+    setAnnouncement(
+      `Showing ${nextCount} of ${bubbles.length} bubbles in ${territory.title}.`,
+    );
+  }
+
+  function unlockScrolling() {
+    const body = bodyRef.current;
+    const measuredHeight = body
+      ? body.getBoundingClientRect().height || body.offsetHeight
+      : 0;
+
+    if (measuredHeight > 0) {
+      setUnlockedBodyHeight(measuredHeight);
+    }
+    setUnlockedListKey(listKey);
+    setAnnouncement(
+      `Scrolling enabled for all ${bubbles.length} bubbles in ${territory.title}.`,
+    );
+  }
 
   return (
     <article
@@ -72,10 +114,11 @@ export function TerritoryCard({
           role="group"
         >
           <button
-            className="grid h-full w-8 cursor-default place-items-center disabled:text-[#aeb9c7]"
+            className="grid h-full w-8 cursor-pointer place-items-center hover:bg-[#edf1f6] hover:text-[#526985] disabled:cursor-default disabled:text-[#aeb9c7]"
             type="button"
             aria-label={`Show fewer bubbles in ${territory.title}`}
-            disabled
+            disabled={!canShowFewer}
+            onClick={() => changeVisibleCount(territory.visible_count - 1)}
           >
             <Minus className="size-3.5" strokeWidth={1.8} aria-hidden="true" />
           </button>
@@ -83,10 +126,11 @@ export function TerritoryCard({
             {territory.visible_count}
           </span>
           <button
-            className="grid h-full w-8 cursor-default place-items-center disabled:text-[#aeb9c7]"
+            className="grid h-full w-8 cursor-pointer place-items-center hover:bg-[#edf1f6] hover:text-[#526985] disabled:cursor-default disabled:text-[#aeb9c7]"
             type="button"
             aria-label={`Show more bubbles in ${territory.title}`}
-            disabled
+            disabled={!canShowMore}
+            onClick={() => changeVisibleCount(territory.visible_count + 1)}
           >
             <Plus className="size-3.5" strokeWidth={1.8} aria-hidden="true" />
           </button>
@@ -100,9 +144,37 @@ export function TerritoryCard({
         </span>
       </header>
 
-      <div className="px-5 pt-2.5 pb-3">
+      <div
+        className={`px-5 pt-2.5 pb-3 ${
+          isScrollUnlocked
+            ? 'scrollbar-subtle overflow-y-auto overscroll-contain'
+            : 'overflow-hidden'
+        }`}
+        aria-label={
+          isScrollUnlocked
+            ? `All bubbles in ${territory.title}`
+            : undefined
+        }
+        data-canvas-scroll-region={isScrollUnlocked ? 'true' : undefined}
+        onPointerDown={(event) => {
+          if (isScrollUnlocked) {
+            event.stopPropagation();
+          }
+        }}
+        ref={bodyRef}
+        role={isScrollUnlocked ? 'region' : undefined}
+        style={
+          isScrollUnlocked
+            ? {
+                height: unlockedBodyHeight ?? undefined,
+                touchAction: 'pan-y',
+              }
+            : undefined
+        }
+        tabIndex={isScrollUnlocked ? 0 : undefined}
+      >
         <ul className="m-0 list-none p-0">
-          {visibleBubbles.map((bubble) => (
+          {renderedBubbles.map((bubble) => (
             <li
               className={`group relative flex min-h-[58px] cursor-pointer items-start gap-3 rounded-[9px] py-2.5 pr-1 transition-colors motion-reduce:transition-none ${
                 selectedBubbleIds.has(bubble.id)
@@ -167,18 +239,21 @@ export function TerritoryCard({
           ))}
         </ul>
 
-        {hiddenBubbleCount > 0 && (
+        {hiddenBubbleCount > 0 && !isScrollUnlocked && (
           <button
-            className="ml-8 cursor-default px-1 py-1 text-[12px] font-medium text-[#9aa9bb] disabled:text-[#9aa9bb]"
+            className="ml-8 cursor-pointer rounded px-1 py-1 text-[12px] font-medium text-[#8192a8] hover:text-[#526985] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/25"
             type="button"
             aria-label={`${hiddenBubbleCount} more bubbles in ${territory.title}`}
-            disabled
+            onClick={unlockScrolling}
           >
             + {hiddenBubbleCount} more{' '}
             {hiddenBubbleCount === 1 ? 'bubble' : 'bubbles'}
           </button>
         )}
       </div>
+      <span className="sr-only" aria-live="polite">
+        {announcement}
+      </span>
     </article>
   );
 }

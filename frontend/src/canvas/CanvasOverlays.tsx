@@ -196,6 +196,45 @@ export function CompactTerritoryLayoutSaveError({
   );
 }
 
+export function TerritoryVisibleCountSaveError({
+  onRetry,
+  onRevert,
+  territoryTitle,
+}: {
+  onRetry: () => void;
+  onRevert: () => void;
+  territoryTitle: string;
+}) {
+  return (
+    <div
+      className="pointer-events-auto absolute top-4 left-4 flex max-w-[440px] items-center gap-3 rounded-[10px] border border-[#ead5d2] bg-white/95 px-3.5 py-2.5 text-xs text-[#79504c] shadow-[0_8px_24px_-14px_rgba(30,39,51,0.4)] backdrop-blur-sm"
+      data-canvas-overlay
+      role="alert"
+    >
+      <CircleAlert
+        className="size-[15px] shrink-0 text-[#b4544e]"
+        strokeWidth={1.8}
+        aria-hidden="true"
+      />
+      <span>Couldn’t save the visible count for “{territoryTitle}”.</span>
+      <button
+        className={`shrink-0 cursor-pointer font-semibold text-[#8f4843] hover:text-[#6f3531] ${focusRing}`}
+        type="button"
+        onClick={onRetry}
+      >
+        Retry
+      </button>
+      <button
+        className={`shrink-0 cursor-pointer font-semibold text-[#6f7782] hover:text-[#414c59] ${focusRing}`}
+        type="button"
+        onClick={onRevert}
+      >
+        Revert
+      </button>
+    </div>
+  );
+}
+
 export function CanvasZoomControls({
   zoom,
   onReset,

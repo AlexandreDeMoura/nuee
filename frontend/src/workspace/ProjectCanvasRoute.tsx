@@ -7,6 +7,7 @@ import type {
   CanvasMultiSelection,
   ProjectViewportUpdateRequest,
   TerritoryListRequest,
+  TerritoryVisibleCountUpdateRequest,
 } from '../canvas/CanvasSurface';
 import type {
   BubbleCreateRequest,
@@ -40,6 +41,7 @@ export interface ProjectCanvasRouteProps {
   requestBubbles?: BubbleListRequest;
   requestBubblePlacement?: BubblePlacementRequest;
   requestTerritories?: TerritoryListRequest;
+  requestTerritoryVisibleCountUpdate?: TerritoryVisibleCountUpdateRequest;
   requestBubbleDelete?: BubbleDeleteRequest;
   requestBubbleUpdate?: BubbleUpdateRequest;
   requestBubbleLinks?: BubbleLinkListRequest;
@@ -48,6 +50,7 @@ export interface ProjectCanvasRouteProps {
   requestViewportUpdate?: ProjectViewportUpdateRequest;
   canvasMultiSelection?: CanvasMultiSelection | null;
   viewportSaveDelayMs?: number;
+  visibleCountSaveDelayMs?: number;
   bubbleSaveDelayMs?: number;
   documentLibraryRequests?: DocumentLibraryRequests;
   documentPollIntervalMs?: number;
@@ -156,6 +159,7 @@ export function ProjectCanvasRoute({
   requestBubbles,
   requestBubblePlacement,
   requestTerritories,
+  requestTerritoryVisibleCountUpdate,
   requestBubbleDelete,
   requestBubbleUpdate,
   requestBubbleLinks,
@@ -164,6 +168,7 @@ export function ProjectCanvasRoute({
   requestViewportUpdate,
   canvasMultiSelection = null,
   viewportSaveDelayMs,
+  visibleCountSaveDelayMs,
   bubbleSaveDelayMs,
   documentLibraryRequests,
   documentPollIntervalMs,
@@ -219,6 +224,9 @@ export function ProjectCanvasRoute({
         requestBubbles={requestBubbles}
         requestBubblePlacement={requestBubblePlacement}
         requestTerritories={requestTerritories}
+        requestTerritoryVisibleCountUpdate={
+          requestTerritoryVisibleCountUpdate
+        }
         requestBubbleDelete={requestBubbleDelete}
         requestBubbleUpdate={requestBubbleUpdate}
         requestBubbleLinks={requestBubbleLinks}
@@ -227,6 +235,7 @@ export function ProjectCanvasRoute({
         requestBubbleLinkDelete={requestBubbleLinkDelete}
         requestViewportUpdate={requestViewportUpdate}
         viewportSaveDelayMs={viewportSaveDelayMs}
+        visibleCountSaveDelayMs={visibleCountSaveDelayMs}
         bubbleSaveDelayMs={bubbleSaveDelayMs}
       />
     );
