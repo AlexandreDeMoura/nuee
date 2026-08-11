@@ -11,7 +11,6 @@ import type {
   BatchRepositionTerritoriesInput,
   CreateTerritoryInput,
   DeleteTerritoryResponse,
-  RecomposeTerritoriesResponse,
   RenameTerritoryInput,
   RepositionTerritoryInput,
   Territory,
@@ -19,13 +18,11 @@ import type {
 } from './territory.types';
 import { TerritoriesService } from './territories.service';
 import { TerritoryDeletionService } from './territory-deletion.service';
-import { TerritoryRecompositionService } from './territory-recomposition.service';
 
 @Controller('projects/:projectId/territories')
 export class TerritoriesController {
   constructor(
     private readonly territories: TerritoriesService,
-    private readonly recomposition: TerritoryRecompositionService,
     private readonly territoryDeletion: TerritoryDeletionService,
   ) {}
 
@@ -40,14 +37,6 @@ export class TerritoriesController {
     @Body() input: CreateTerritoryInput,
   ): Territory {
     return this.territories.create(projectId, input);
-  }
-
-  @Post('recompose')
-  recompose(
-    @Param('projectId') projectId: string,
-    @Body() input: unknown,
-  ): Promise<RecomposeTerritoriesResponse> {
-    return this.recomposition.recompose(projectId, input);
   }
 
   @Patch('positions')

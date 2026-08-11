@@ -1,4 +1,8 @@
-import type { Bubble, BubbleLink } from '@nuee/shared-types';
+import type {
+  Bubble,
+  BubbleLink,
+  TerritoryDestination,
+} from '@nuee/shared-types';
 
 export type {
   Bubble,
@@ -43,10 +47,6 @@ export interface BubbleRepository {
       | 'latest_extraction_id'
     >,
   ): Bubble | undefined;
-  updateTerritories(
-    projectId: string,
-    assignments: BubbleTerritoryAssignment[],
-  ): Bubble[];
   moveTerritoryMembers(
     projectId: string,
     sourceTerritoryId: string,
@@ -101,6 +101,7 @@ export interface CreateBubbleFromDiscussionExtractionInput extends DiscussionExt
   title: string;
   summary: string | null;
   content: string;
+  destination?: TerritoryDestination;
 }
 
 export interface UpdateBubbleFromDiscussionExtractionInput extends CreateBubbleFromDiscussionExtractionInput {
@@ -133,25 +134,12 @@ export interface BubbleExtractionWriter {
   ): UpdateBubbleFromDiscussionExtractionResult;
 }
 
-export interface BubbleTerritoryAssignment {
-  bubble_id: string;
-  territory_id: string;
-}
-
 export interface BubbleTerritoryAssignmentWriter {
-  assignTerritories(
-    projectId: string,
-    assignments: BubbleTerritoryAssignment[],
-  ): Bubble[];
   moveTerritoryMembers(
     projectId: string,
     sourceTerritoryId: string,
     destinationTerritoryId: string,
   ): number;
-}
-
-export interface BubbleTerritoryCompositionReader {
-  listForTerritoryComposition(projectId: string): Bubble[];
 }
 
 export interface BubbleDiscussionProvenanceWriter {
@@ -177,9 +165,6 @@ export const BUBBLE_CONTEXT_SOURCE_READER = Symbol(
 export const BUBBLE_EXTRACTION_WRITER = Symbol('BUBBLE_EXTRACTION_WRITER');
 export const BUBBLE_TERRITORY_ASSIGNMENT_WRITER = Symbol(
   'BUBBLE_TERRITORY_ASSIGNMENT_WRITER',
-);
-export const BUBBLE_TERRITORY_COMPOSITION_READER = Symbol(
-  'BUBBLE_TERRITORY_COMPOSITION_READER',
 );
 export const BUBBLE_DISCUSSION_PROVENANCE_WRITER = Symbol(
   'BUBBLE_DISCUSSION_PROVENANCE_WRITER',

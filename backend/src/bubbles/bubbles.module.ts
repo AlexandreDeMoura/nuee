@@ -8,7 +8,6 @@ import {
   BUBBLE_LINK_REPOSITORY,
   BUBBLE_REPOSITORY,
   BUBBLE_TERRITORY_ASSIGNMENT_WRITER,
-  BUBBLE_TERRITORY_COMPOSITION_READER,
 } from './bubble.types';
 import { BubbleLinksController } from './bubble-links.controller';
 import { BubbleLinksService } from './bubble-links.service';
@@ -43,10 +42,6 @@ import { SqliteBubbleRepository } from './sqlite-bubble.repository';
       useExisting: BubblesService,
     },
     {
-      provide: BUBBLE_TERRITORY_COMPOSITION_READER,
-      useExisting: BubblesService,
-    },
-    {
       provide: BUBBLE_DISCUSSION_PROVENANCE_WRITER,
       useExisting: SqliteBubbleRepository,
     },
@@ -58,7 +53,6 @@ import { SqliteBubbleRepository } from './sqlite-bubble.repository';
     BUBBLE_CONTEXT_SOURCE_READER,
     BUBBLE_EXTRACTION_WRITER,
     BUBBLE_TERRITORY_ASSIGNMENT_WRITER,
-    BUBBLE_TERRITORY_COMPOSITION_READER,
     BUBBLE_DISCUSSION_PROVENANCE_WRITER,
   ],
 })

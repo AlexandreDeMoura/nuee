@@ -1,6 +1,6 @@
 import type {
-  Bubble,
   Territory,
+  TerritoryDestination,
   TerritoryPositionUpdate,
 } from '@nuee/shared-types';
 
@@ -12,18 +12,13 @@ export type {
   RepositionTerritoryInput,
   Territory,
   TerritoryKind,
+  TerritoryDestination,
   TerritoryPositionUpdate,
   UpdateTerritoryVisibleCountInput,
 } from '@nuee/shared-types';
 
 export interface PersistedTerritoryPosition extends TerritoryPositionUpdate {
   updated_at: string;
-}
-
-/** Temporary response model until the recompose endpoint is removed. */
-export interface RecomposeTerritoriesResponse {
-  territories: Territory[];
-  bubbles: Bubble[];
 }
 
 export interface TerritoryRepository {
@@ -59,11 +54,19 @@ export interface TerritoryRepository {
     updatedAt: string,
   ): Territory | undefined;
   delete(projectId: string, territoryId: string): boolean;
-  deleteManualByIds(projectId: string, territoryIds: string[]): void;
 }
 
 export interface TerritoryBubbleLifecycle {
   ensureUngrouped(projectId: string): Territory;
+  resolveDestination(
+    projectId: string,
+    destination: TerritoryDestination,
+  ): Territory;
+  matchesDestination(
+    projectId: string,
+    territoryId: string,
+    destination: TerritoryDestination,
+  ): boolean;
   reconcileAfterBubbleDeletion(projectId: string, territoryId: string): void;
 }
 

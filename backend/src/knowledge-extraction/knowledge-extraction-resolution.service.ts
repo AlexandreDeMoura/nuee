@@ -11,6 +11,7 @@ import { createHash } from 'node:crypto';
 import type {
   KnowledgeExtractionTargetChangedError,
   KnowledgeExtractionTargetPreview,
+  TerritoryDestination,
 } from '@nuee/shared-types';
 import {
   BUBBLE_EXTRACTION_WRITER,
@@ -19,6 +20,7 @@ import {
 } from '../bubbles/bubble.types';
 import { DatabaseTransaction } from '../database/database-transaction';
 import { ProjectsService } from '../projects/projects.service';
+import { normalizeTerritoryDestination } from '../territories/territory-destination';
 import {
   KNOWLEDGE_PROPOSAL_CONTENT_MAX_LENGTH,
   KNOWLEDGE_PROPOSAL_SUMMARY_MAX_LENGTH,
@@ -39,6 +41,7 @@ type NormalizedResolutionInput =
         summary: string | null;
         content: string;
       };
+      destination: TerritoryDestination;
     }
   | {
       kind: 'update_bubble';
@@ -150,8 +153,12 @@ export class KnowledgeExtractionResolutionService {
         };
 
         if (resolution.kind === 'new_bubble') {
-          const bubbleResult =
-            this.bubbleWriter.createFromDiscussionExtraction(provenance);
+          const bubbleResult = this.bubbleWriter.createFromDiscussionExtraction(
+            {
+              ...provenance,
+              destination: resolution.destination,
+            },
+          );
 
           if (bubbleResult.status === 'extraction_conflict') {
             throw this.resolutionConflict();
@@ -384,7 +391,7 @@ export class KnowledgeExtractionResolutionService {
       input,
       input.kind === 'update_bubble'
         ? ['kind', 'proposal', 'target_bubble_id', 'expected_updated_at']
-        : ['kind', 'proposal'],
+        : ['kind', 'proposal', 'destination'],
       fieldErrors,
     );
 
@@ -433,6 +440,10 @@ export class KnowledgeExtractionResolutionService {
             fieldErrors,
           )
         : undefined;
+    const destination =
+      input.kind === 'new_bubble'
+        ? this.reviewedDestination(input.destination, fieldErrors)
+        : undefined;
 
     if (Object.keys(fieldErrors).length > 0) {
       throw this.resolutionValidationFailed(fieldErrors);
@@ -447,9 +458,16 @@ export class KnowledgeExtractionResolutionService {
     const reviewedProposal = { title, summary, content };
 
     if (input.kind === 'new_bubble') {
+      if (destination === undefined) {
+        throw new Error(
+          'Validated new-bubble destination is unexpectedly missing.',
+        );
+      }
+
       return {
         kind: 'new_bubble',
         proposal: reviewedProposal,
+        destination,
       };
     }
 
@@ -522,6 +540,24 @@ export class KnowledgeExtractionResolutionService {
     }
 
     return value.trim();
+  }
+
+  private reviewedDestination(
+    value: unknown,
+    fieldErrors: Record<string, string>,
+  ): TerritoryDestination | undefined {
+    const normalized = normalizeTerritoryDestination(value);
+
+    if (!normalized.valid) {
+      for (const [field, message] of Object.entries(normalized.fieldErrors)) {
+        fieldErrors[field === 'destination' ? field : `destination.${field}`] =
+          message;
+      }
+
+      return undefined;
+    }
+
+    return normalized.destination;
   }
 
   private resolutionFingerprint(resolution: NormalizedResolutionInput): string {

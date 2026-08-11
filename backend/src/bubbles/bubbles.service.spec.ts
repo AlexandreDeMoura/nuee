@@ -18,6 +18,7 @@ describe('BubblesService', () => {
   let databaseProvider: DatabaseProvider;
   let projectRepository: SqliteProjectRepository;
   let bubbleRepository: SqliteBubbleRepository;
+  let territoryRepository: SqliteTerritoryRepository;
   let projects: ProjectsService;
   let service: BubblesService;
 
@@ -25,14 +26,12 @@ describe('BubblesService', () => {
     databaseProvider = new DatabaseProvider({ databasePath });
     projectRepository = new SqliteProjectRepository(databaseProvider);
     bubbleRepository = new SqliteBubbleRepository(databaseProvider);
+    territoryRepository = new SqliteTerritoryRepository(databaseProvider);
     projects = new ProjectsService(projectRepository);
     service = new BubblesService(
       projects,
       bubbleRepository,
-      new TerritoriesService(
-        projects,
-        new SqliteTerritoryRepository(databaseProvider),
-      ),
+      new TerritoriesService(projects, territoryRepository),
       new DatabaseTransaction(databaseProvider),
     );
   }
@@ -117,6 +116,98 @@ describe('BubblesService', () => {
       territory_id: bubble.territory_id,
     });
     expect(bubble.territory_id).not.toHaveLength(0);
+  });
+
+  it('routes manual bubbles to existing and newly created destinations', () => {
+    const project = createProject();
+    const territories = new TerritoriesService(projects, territoryRepository);
+    const existing = territories.create(project.id, {
+      title: 'Existing evidence',
+      position_x: -120,
+      position_y: 80,
+    });
+
+    const inExisting = service.create(project.id, {
+      title: 'Known destination',
+      content: 'Keep this in the existing territory.',
+      destination: { kind: 'existing', territory_id: existing.id },
+    });
+    const inNew = service.create(project.id, {
+      title: 'New destination',
+      content: 'Create the destination atomically.',
+      destination: {
+        kind: 'new',
+        title: '  New decisions  ',
+        position_x: 240,
+        position_y: -60,
+      },
+    });
+
+    expect(inExisting.territory_id).toBe(existing.id);
+    expect(territories.list(project.id)).toEqual(
+      expect.arrayContaining([
+        existing,
+        expect.objectContaining({
+          id: inNew.territory_id,
+          kind: 'manual',
+          title: 'New decisions',
+          position_x: 240,
+          position_y: -60,
+        }),
+      ]),
+    );
+  });
+
+  it('rejects invalid or cross-project destinations before bubble persistence', () => {
+    const project = createProject('Owner');
+    const otherProject = createProject('Other');
+    const territories = new TerritoriesService(projects, territoryRepository);
+    const otherTerritory = territories.create(otherProject.id, {
+      title: 'Other project',
+      position_x: 0,
+      position_y: 0,
+    });
+
+    expect(() =>
+      service.create(project.id, {
+        title: 'Cross-project bubble',
+        content: 'Must not be persisted.',
+        destination: {
+          kind: 'existing',
+          territory_id: otherTerritory.id,
+        },
+      }),
+    ).toThrow(NotFoundException);
+    expect(() =>
+      service.create(project.id, {
+        title: 'Malformed destination',
+        content: 'Must not be persisted.',
+        destination: { kind: 'new', title: 'Missing coordinates' } as never,
+      }),
+    ).toThrow(BadRequestException);
+    expect(service.list(project.id)).toEqual([]);
+  });
+
+  it('rolls back a new destination when bubble persistence fails', () => {
+    const project = createProject();
+    jest.spyOn(bubbleRepository, 'create').mockImplementationOnce(() => {
+      throw new Error('Simulated bubble persistence failure.');
+    });
+
+    expect(() =>
+      service.create(project.id, {
+        title: 'Atomic bubble',
+        content: 'Neither record may survive.',
+        destination: {
+          kind: 'new',
+          title: 'Atomic territory',
+          position_x: 12,
+          position_y: 34,
+        },
+      }),
+    ).toThrow('Simulated bubble persistence failure.');
+    expect(service.list(project.id)).toEqual([]);
+    expect(territoryRepository.findAllByProjectId(project.id)).toEqual([]);
   });
 
   it('creates a discussion extraction bubble with complete frozen provenance and supports replay', () => {

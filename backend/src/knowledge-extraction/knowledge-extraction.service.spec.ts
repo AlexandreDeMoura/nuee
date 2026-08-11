@@ -42,6 +42,7 @@ describe('Knowledge extraction generation and resolution services', () => {
   let discussions: SqliteDiscussionRepository;
   let extractions: SqliteKnowledgeExtractionRepository;
   let bubbles: BubblesService;
+  let territories: TerritoriesService;
   let bubbleLinks: BubbleLinksService;
   let transactions: DatabaseTransaction;
   let resolutions: KnowledgeExtractionResolutionService;
@@ -60,13 +61,14 @@ describe('Knowledge extraction generation and resolution services', () => {
     extractions = new SqliteKnowledgeExtractionRepository(databaseProvider);
     const bubbleRepository = new SqliteBubbleRepository(databaseProvider);
     transactions = new DatabaseTransaction(databaseProvider);
+    territories = new TerritoriesService(
+      projects,
+      new SqliteTerritoryRepository(databaseProvider),
+    );
     bubbles = new BubblesService(
       projects,
       bubbleRepository,
-      new TerritoriesService(
-        projects,
-        new SqliteTerritoryRepository(databaseProvider),
-      ),
+      territories,
       transactions,
     );
     bubbleLinks = new BubbleLinksService(projects, bubbles, bubbleRepository);
@@ -1197,7 +1199,7 @@ describe('Knowledge extraction generation and resolution services', () => {
     ).toEqual({ count: 0 });
   });
 
-  it('atomically resolves a reviewed proposal into the ungrouped territory and replays it', async () => {
+  it('atomically resolves a reviewed proposal into a new territory and replays it', async () => {
     const project = createProject('Resolved knowledge');
     const source = createDiscussion(project.id, 'discussion-resolution');
     bubbles.create(project.id, {
@@ -1224,6 +1226,12 @@ describe('Knowledge extraction generation and resolution services', () => {
     );
     const resolutionInput = {
       kind: 'new_bubble',
+      destination: {
+        kind: 'new',
+        title: '  Reviewed territory  ',
+        position_x: 320,
+        position_y: -140,
+      },
       proposal: {
         title: '  Reviewed decision  ',
         summary: '   ',
@@ -1261,6 +1269,21 @@ describe('Knowledge extraction generation and resolution services', () => {
     expect(resolved.resolution).toHaveProperty(
       'bubble.territory_id',
       expect.any(String),
+    );
+    expect(territories.list(project.id)).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: 'ungrouped' }),
+        expect.objectContaining({
+          id:
+            resolved.resolution.kind === 'new_bubble'
+              ? resolved.resolution.bubble.territory_id
+              : undefined,
+          kind: 'manual',
+          title: 'Reviewed territory',
+          position_x: 320,
+          position_y: -140,
+        }),
+      ]),
     );
     expect(
       extractions.findByProjectDiscussionAndId(
@@ -1302,7 +1325,7 @@ describe('Knowledge extraction generation and resolution services', () => {
     );
   });
 
-  it('rolls back the bubble when final resolution persistence fails', async () => {
+  it('rolls back the bubble and new destination when final resolution persistence fails', async () => {
     const project = createProject('Atomic rollback');
     const source = createDiscussion(project.id, 'discussion-rollback');
     const generated = await service.generateProposal(
@@ -1323,9 +1346,16 @@ describe('Knowledge extraction generation and resolution services', () => {
       resolutions.resolveProposal(project.id, source.record.id, generated.id, {
         kind: 'new_bubble',
         proposal: generated.proposal,
+        destination: {
+          kind: 'new',
+          title: 'Rolled-back territory',
+          position_x: 100,
+          position_y: 200,
+        },
       }),
     ).toThrow(ServiceUnavailableException);
     expect(bubbles.list(project.id)).toEqual([]);
+    expect(territories.list(project.id)).toEqual([]);
     expect(
       extractions.findByProjectDiscussionAndId(
         project.id,
@@ -1822,7 +1852,18 @@ describe('Knowledge extraction generation and resolution services', () => {
         },
       }),
     ).toThrow(BadRequestException);
+    expect(() =>
+      resolutions.resolveProposal(project.id, source.record.id, generated.id, {
+        kind: 'new_bubble',
+        proposal: generated.proposal,
+        destination: {
+          kind: 'new',
+          title: 'Incomplete destination',
+        },
+      }),
+    ).toThrow(BadRequestException);
     expect(bubbles.list(project.id)).toEqual([]);
+    expect(territories.list(project.id)).toEqual([]);
     expect(
       extractions.findByProjectDiscussionAndId(
         project.id,

@@ -155,13 +155,15 @@ describe('TerritoriesService', () => {
       }),
     ).toThrow(NotFoundException);
     expect(() =>
-      bubbles.assignTerritories(owner.id, [
-        {
-          bubble_id: bubble.id,
+      bubbles.create(owner.id, {
+        title: 'Cross-project destination',
+        content: 'Must not be persisted.',
+        destination: {
+          kind: 'existing',
           territory_id: otherBubble.territory_id,
         },
-      ]),
-    ).toThrow();
+      }),
+    ).toThrow(NotFoundException);
     expect(bubbles.get(owner.id, bubble.id).territory_id).toBe(
       bubble.territory_id,
     );
@@ -213,26 +215,23 @@ describe('TerritoriesService', () => {
 
   it('clamps after bubble deletion and keeps an empty manual territory', () => {
     const project = createProject();
-    const first = bubbles.create(project.id, {
-      title: 'First bubble',
-      content: 'First content',
-    });
-    const second = bubbles.create(project.id, {
-      title: 'Second bubble',
-      content: 'Second content',
-    });
     const timestamp = '2026-08-10T09:30:00.000Z';
     const manual = territories.create(project.id, {
       title: 'Decisions',
       position_x: 300,
       position_y: 100,
     });
+    const first = bubbles.create(project.id, {
+      title: 'First bubble',
+      content: 'First content',
+      destination: { kind: 'existing', territory_id: manual.id },
+    });
+    const second = bubbles.create(project.id, {
+      title: 'Second bubble',
+      content: 'Second content',
+      destination: { kind: 'existing', territory_id: manual.id },
+    });
     repository.updateVisibleCount(project.id, manual.id, 2, timestamp);
-
-    bubbles.assignTerritories(project.id, [
-      { bubble_id: first.id, territory_id: manual.id },
-      { bubble_id: second.id, territory_id: manual.id },
-    ]);
     bubbles.delete(project.id, first.id);
 
     expect(territories.list(project.id)).toEqual(
@@ -267,16 +266,13 @@ describe('TerritoriesService', () => {
     const first = bubbles.create(project.id, {
       title: 'First bubble',
       content: 'First content',
+      destination: { kind: 'existing', territory_id: manual.id },
     });
     const second = bubbles.create(project.id, {
       title: 'Second bubble',
       content: 'Second content',
+      destination: { kind: 'existing', territory_id: manual.id },
     });
-    const ungroupedId = first.territory_id;
-    bubbles.assignTerritories(project.id, [
-      { bubble_id: first.id, territory_id: manual.id },
-      { bubble_id: second.id, territory_id: manual.id },
-    ]);
 
     expect(territoryDeletion.delete(project.id, manual.id)).toEqual({
       moved_bubble_count: 2,
@@ -284,6 +280,9 @@ describe('TerritoriesService', () => {
     expect(territories.list(project.id).map(({ id }) => id)).not.toContain(
       manual.id,
     );
+    const ungroupedId = territories
+      .list(project.id)
+      .find(({ kind }) => kind === 'ungrouped')?.id;
     expect(bubbles.list(project.id)).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ id: first.id, territory_id: ungroupedId }),
@@ -302,10 +301,8 @@ describe('TerritoriesService', () => {
     const bubble = bubbles.create(project.id, {
       title: 'Preserved bubble',
       content: 'The failed deletion must leave membership unchanged.',
+      destination: { kind: 'existing', territory_id: manual.id },
     });
-    bubbles.assignTerritories(project.id, [
-      { bubble_id: bubble.id, territory_id: manual.id },
-    ]);
     jest.spyOn(repository, 'delete').mockReturnValueOnce(false);
 
     expect(() => territoryDeletion.delete(project.id, manual.id)).toThrow(

@@ -24,6 +24,7 @@ import type {
   RepositionTerritoryInput,
   Territory,
   TerritoryBubbleLifecycle,
+  TerritoryDestination,
   TerritoryRepository,
   UpdateTerritoryVisibleCountInput,
 } from './territory.types';
@@ -101,6 +102,51 @@ export class TerritoriesService implements TerritoryBubbleLifecycle {
       created_at: timestamp,
       updated_at: timestamp,
     });
+  }
+
+  resolveDestination(
+    projectId: string,
+    destination: TerritoryDestination,
+  ): Territory {
+    if (destination.kind === 'ungrouped') {
+      return this.ensureUngrouped(projectId);
+    }
+
+    if (destination.kind === 'existing') {
+      return this.get(projectId, destination.territory_id);
+    }
+
+    return this.create(projectId, destination);
+  }
+
+  matchesDestination(
+    projectId: string,
+    territoryId: string,
+    destination: TerritoryDestination,
+  ): boolean {
+    const territory = this.territories.findByProjectAndId(
+      projectId,
+      territoryId,
+    );
+
+    if (!territory) {
+      return false;
+    }
+
+    if (destination.kind === 'ungrouped') {
+      return territory.kind === 'ungrouped';
+    }
+
+    if (destination.kind === 'existing') {
+      return territory.id === destination.territory_id;
+    }
+
+    return (
+      territory.kind === 'manual' &&
+      territory.title === destination.title &&
+      territory.position_x === destination.position_x &&
+      territory.position_y === destination.position_y
+    );
   }
 
   updateVisibleCount(

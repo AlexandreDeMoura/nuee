@@ -8,7 +8,6 @@ import type {
   BubbleLink,
   BubbleLinkRepository,
   BubbleRepository,
-  BubbleTerritoryAssignment,
   PersistedBubble,
 } from './bubble.types';
 
@@ -231,45 +230,6 @@ export class SqliteBubbleRepository
     return result.changes === 0
       ? undefined
       : this.findByProjectAndId(projectId, id);
-  }
-
-  updateTerritories(
-    projectId: string,
-    assignments: BubbleTerritoryAssignment[],
-  ): Bubble[] {
-    const statement = this.database.prepare(
-      `
-        UPDATE bubbles
-        SET territory_id = ?
-        WHERE project_id = ? AND id = ?
-      `,
-    );
-
-    for (const assignment of assignments) {
-      const result = statement.run(
-        assignment.territory_id,
-        projectId,
-        assignment.bubble_id,
-      );
-
-      if (result.changes === 0) {
-        throw new Error(
-          `Bubble "${assignment.bubble_id}" was not available for territory assignment.`,
-        );
-      }
-    }
-
-    return assignments.map((assignment) => {
-      const bubble = this.findByProjectAndId(projectId, assignment.bubble_id);
-
-      if (!bubble) {
-        throw new Error(
-          `Bubble "${assignment.bubble_id}" was not available after territory assignment.`,
-        );
-      }
-
-      return bubble;
-    });
   }
 
   moveTerritoryMembers(

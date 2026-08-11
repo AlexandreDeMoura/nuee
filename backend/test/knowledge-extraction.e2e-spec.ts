@@ -10,6 +10,7 @@ import type {
   FrozenContextV1,
   KnowledgeExtractionProposalResponse,
   Project,
+  Territory,
 } from '@nuee/shared-types';
 import type { Bubble } from './../src/bubbles/bubble.types';
 import {
@@ -463,6 +464,12 @@ describe('Knowledge extraction generation journey (e2e)', () => {
       generatedResponse.body as KnowledgeExtractionProposalResponse;
     const resolutionInput = {
       kind: 'new_bubble',
+      destination: {
+        kind: 'new',
+        title: 'Extracted conclusions',
+        position_x: 440,
+        position_y: -120,
+      },
       proposal: {
         title: 'Reviewed conclusion',
         summary: '',
@@ -499,6 +506,24 @@ describe('Knowledge extraction generation journey (e2e)', () => {
     expect(resolved.resolution).toHaveProperty(
       'bubble.territory_id',
       expect.any(String),
+    );
+    const territoryResponse = await request(app!.getHttpServer())
+      .get(`/projects/${project.id}/territories`)
+      .expect(200);
+    const createdTerritory = (territoryResponse.body as Territory[]).find(
+      ({ id }) =>
+        id ===
+        (resolved.resolution.kind === 'new_bubble'
+          ? resolved.resolution.bubble.territory_id
+          : undefined),
+    );
+    expect(createdTerritory).toEqual(
+      expect.objectContaining({
+        kind: 'manual',
+        title: 'Extracted conclusions',
+        position_x: 440,
+        position_y: -120,
+      }),
     );
     await request(app!.getHttpServer())
       .post(resolutionRoute)

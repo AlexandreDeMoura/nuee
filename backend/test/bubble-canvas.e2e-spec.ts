@@ -9,18 +9,10 @@ import { App } from 'supertest/types';
 import type { Bubble, Project } from '@nuee/shared-types';
 import { AppModule } from './../src/app.module';
 import {
-  MODEL_CLIENT,
-  ModelGenerationError,
-  type ModelClient,
-} from './../src/ai/model-client';
-import {
   DATABASE_MIGRATIONS,
   runDatabaseMigrations,
 } from './../src/database/database.migrations';
-import type {
-  RecomposeTerritoriesResponse,
-  Territory,
-} from './../src/territories/territory.types';
+import type { Territory } from './../src/territories/territory.types';
 
 describe('Territory canvas persistence journey (e2e)', () => {
   const temporaryDirectory = mkdtempSync(
@@ -442,21 +434,34 @@ describe('Territory canvas persistence journey (e2e)', () => {
       .expect([]);
   });
 
-  it('recomposes all bubbles and preserves the prior composition on retryable failures', async () => {
+  it('routes bubbles to existing and new territories and exposes no recompose endpoint', async () => {
     const projectResponse = await request(app!.getHttpServer())
       .post('/projects')
       .send({
-        title: 'Recomposition journey',
-        description: 'Exercise structured territory output.',
+        title: 'Destination journey',
+        description: 'Exercise user-owned bubble placement.',
       })
       .expect(201);
     const project = projectResponse.body as Project;
+    const existingTerritoryResponse = await request(app!.getHttpServer())
+      .post(`/projects/${project.id}/territories`)
+      .send({
+        title: 'Market evidence',
+        position_x: -160,
+        position_y: 90,
+      })
+      .expect(201);
+    const existingTerritory = existingTerritoryResponse.body as Territory;
     const firstResponse = await request(app!.getHttpServer())
       .post(`/projects/${project.id}/bubbles`)
       .send({
         title: 'Market entry',
         summary: 'The first segment is large enough.',
         content: 'Start with the highest-intent segment.',
+        destination: {
+          kind: 'existing',
+          territory_id: existingTerritory.id,
+        },
       })
       .expect(201);
     const secondResponse = await request(app!.getHttpServer())
@@ -465,85 +470,35 @@ describe('Territory canvas persistence journey (e2e)', () => {
         title: 'Launch operations',
         summary: 'Licensing is the critical path.',
         content: 'Begin licensing work before launch production.',
+        destination: {
+          kind: 'new',
+          title: 'Launch decisions',
+          position_x: 280,
+          position_y: -110,
+        },
       })
       .expect(201);
     const first = firstResponse.body as Bubble;
     const second = secondResponse.body as Bubble;
 
-    const invalidInput = await request(app!.getHttpServer())
-      .post(`/projects/${project.id}/territories/recompose`)
-      .send({ instructions: 'Ignore the fixed workflow.' })
-      .expect(400);
-    expect(invalidInput.body).toEqual(
-      expect.objectContaining({
-        code: 'TERRITORY_RECOMPOSE_INPUT_INVALID',
-      }),
-    );
-
-    const success = await request(app!.getHttpServer())
-      .post(`/projects/${project.id}/territories/recompose`)
-      .send({})
-      .expect(201);
-    const recomposition =
-      success.body as unknown as RecomposeTerritoriesResponse;
-    const territories = recomposition.territories;
-    const recomposedBubbles = recomposition.bubbles;
-    const composed = territories.filter(({ kind }) => kind === 'manual');
-
-    expect(composed).toHaveLength(1);
-    expect(territories).toEqual(
-      expect.arrayContaining([expect.objectContaining({ kind: 'ungrouped' })]),
-    );
-    expect(recomposedBubbles.map(({ id }) => id).sort()).toEqual(
-      [first.id, second.id].sort(),
-    );
-    expect(
-      new Set(recomposedBubbles.map(({ territory_id }) => territory_id)),
-    ).toEqual(new Set([composed[0].id]));
-
-    const modelClient = app!.get<ModelClient>(MODEL_CLIENT);
-    const generate = jest.spyOn(modelClient, 'generateStructuredOutput');
-    const snapshot = JSON.parse(JSON.stringify(success.body)) as {
-      territories: Territory[];
-      bubbles: Bubble[];
-    };
-
-    generate.mockResolvedValueOnce({
-      output: {
-        territories: [{ title: 'Incomplete', bubble_ids: [first.id] }],
-      },
-      model: 'invalid-controlled-model',
-    });
-    const invalidOutput = await request(app!.getHttpServer())
-      .post(`/projects/${project.id}/territories/recompose`)
-      .send({})
-      .expect(503);
-    expect(invalidOutput.body).toEqual(
-      expect.objectContaining({
-        code: 'TERRITORY_RECOMPOSE_FAILED',
-        reason: 'invalid_output',
-      }),
-    );
-
-    generate.mockRejectedValueOnce(new ModelGenerationError('provider'));
-    const providerFailure = await request(app!.getHttpServer())
-      .post(`/projects/${project.id}/territories/recompose`)
-      .send({})
-      .expect(503);
-    expect(providerFailure.body).toEqual(
-      expect.objectContaining({
-        code: 'TERRITORY_RECOMPOSE_FAILED',
-        reason: 'provider',
-      }),
-    );
-
-    const persistedTerritories = await request(app!.getHttpServer())
+    expect(first.territory_id).toBe(existingTerritory.id);
+    const territoriesResponse = await request(app!.getHttpServer())
       .get(`/projects/${project.id}/territories`)
       .expect(200);
-    const persistedBubbles = await request(app!.getHttpServer())
-      .get(`/projects/${project.id}/bubbles`)
-      .expect(200);
-    expect(persistedTerritories.body).toEqual(snapshot.territories);
-    expect(persistedBubbles.body).toEqual(snapshot.bubbles);
+    expect(territoriesResponse.body).toEqual([
+      existingTerritory,
+      expect.objectContaining({
+        id: second.territory_id,
+        kind: 'manual',
+        title: 'Launch decisions',
+        position_x: 280,
+        position_y: -110,
+      }),
+    ]);
+
+    await request(app!.getHttpServer())
+      .post(`/projects/${project.id}/territories/recompose`)
+      .send({})
+      .expect(404);
   });
 });

@@ -7,6 +7,7 @@ import {
 import { randomUUID } from 'node:crypto';
 import { DatabaseTransaction } from '../database/database-transaction';
 import { ProjectsService } from '../projects/projects.service';
+import { normalizeTerritoryDestination } from '../territories/territory-destination';
 import {
   TERRITORY_BUBBLE_LIFECYCLE,
   type TerritoryBubbleLifecycle,
@@ -18,9 +19,7 @@ import type {
   BubbleContextSourceReader,
   BubbleExtractionWriter,
   BubbleRepository,
-  BubbleTerritoryAssignment,
   BubbleTerritoryAssignmentWriter,
-  BubbleTerritoryCompositionReader,
   CreateBubbleFromDiscussionExtractionInput,
   CreateBubbleFromDiscussionExtractionResult,
   CreateBubbleInput,
@@ -29,6 +28,7 @@ import type {
   UpdateBubbleFromDiscussionExtractionResult,
   UpdateBubbleInput,
 } from './bubble.types';
+import type { TerritoryDestination } from '@nuee/shared-types';
 
 type BubbleTextField = 'title' | 'content';
 
@@ -42,6 +42,7 @@ interface NormalizedExtractionBubbleInput {
   source_discussion_title: string;
   source_message_ids: string[];
   source_context_item_ids: string[];
+  destination: TerritoryDestination;
 }
 
 @Injectable()
@@ -49,8 +50,7 @@ export class BubblesService
   implements
     BubbleContextSourceReader,
     BubbleExtractionWriter,
-    BubbleTerritoryAssignmentWriter,
-    BubbleTerritoryCompositionReader
+    BubbleTerritoryAssignmentWriter
 {
   constructor(
     private readonly projects: ProjectsService,
@@ -67,9 +67,13 @@ export class BubblesService
     const title = this.requiredText(input?.title, 'title');
     const summary = this.optionalSummary(input?.summary);
     const content = this.requiredText(input?.content, 'content');
+    const destination = this.requiredDestination(input?.destination);
 
     return this.transactions.run(() => {
-      const territory = this.territoryLifecycle.ensureUngrouped(projectId);
+      const territory = this.territoryLifecycle.resolveDestination(
+        projectId,
+        destination,
+      );
       const timestamp = new Date().toISOString();
       const bubble: PersistedBubble = {
         id: randomUUID(),
@@ -123,8 +127,9 @@ export class BubblesService
     }
 
     return this.transactions.run(() => {
-      const territory = this.territoryLifecycle.ensureUngrouped(
+      const territory = this.territoryLifecycle.resolveDestination(
         normalized.project_id,
+        normalized.destination,
       );
       const timestamp = new Date().toISOString();
       const bubble: PersistedBubble = {
@@ -221,10 +226,6 @@ export class BubblesService
     return this.bubbles.findAllByProjectId(projectId);
   }
 
-  listForTerritoryComposition(projectId: string): Bubble[] {
-    return this.list(projectId);
-  }
-
   get(projectId: string, bubbleId: string): Bubble {
     this.projects.get(projectId);
 
@@ -302,35 +303,6 @@ export class BubblesService
     }
 
     return updatedBubble;
-  }
-
-  assignTerritories(
-    projectId: string,
-    assignments: BubbleTerritoryAssignment[],
-  ): Bubble[] {
-    this.projects.get(projectId);
-
-    if (assignments.length === 0) {
-      return [];
-    }
-
-    const bubbleIds = new Set<string>();
-    for (const assignment of assignments) {
-      if (
-        bubbleIds.has(assignment.bubble_id) ||
-        !this.bubbles.findByProjectAndId(projectId, assignment.bubble_id)
-      ) {
-        throw new Error(
-          `Bubble "${assignment.bubble_id}" is unavailable for territory assignment.`,
-        );
-      }
-
-      bubbleIds.add(assignment.bubble_id);
-    }
-
-    return this.transactions.run(() =>
-      this.bubbles.updateTerritories(projectId, assignments),
-    );
   }
 
   moveTerritoryMembers(
@@ -426,6 +398,7 @@ export class BubblesService
       ),
       source_message_ids: sourceMessageIds,
       source_context_item_ids: sourceContextItemIds,
+      destination: this.requiredDestination(input.destination),
     };
   }
 
@@ -461,7 +434,14 @@ export class BubblesService
     bubble: Bubble,
     input: NormalizedExtractionBubbleInput,
   ): boolean {
-    return this.matchesExtractionContent(bubble, input);
+    return (
+      this.matchesExtractionContent(bubble, input) &&
+      this.territoryLifecycle.matchesDestination(
+        input.project_id,
+        bubble.territory_id,
+        input.destination,
+      )
+    );
   }
 
   private matchesExtractionContent(
@@ -491,6 +471,23 @@ export class BubblesService
     return (
       first.length === second.length &&
       first.every((identifier, index) => identifier === second[index])
+    );
+  }
+
+  private requiredDestination(value: unknown): TerritoryDestination {
+    const normalized = normalizeTerritoryDestination(value);
+
+    if (normalized.valid) {
+      return normalized.destination;
+    }
+
+    throw this.validationError(
+      Object.fromEntries(
+        Object.entries(normalized.fieldErrors).map(([field, message]) => [
+          field === 'destination' ? field : `destination.${field}`,
+          message,
+        ]),
+      ),
     );
   }
 
