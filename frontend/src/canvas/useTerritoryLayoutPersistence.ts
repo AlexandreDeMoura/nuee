@@ -26,12 +26,16 @@ export interface CompactTerritoryLayoutSave {
 }
 
 interface UseTerritoryLayoutPersistenceOptions {
+  onCompactLayoutPersisted?: (movedTerritoryCount: number) => void;
+  onPositionPersisted?: (territoryId: string) => void;
   projectId: string;
   requestPositionUpdate: TerritoryPositionUpdateRequest;
   requestPositionsUpdate: TerritoryPositionsUpdateRequest;
 }
 
 export function useTerritoryLayoutPersistence({
+  onCompactLayoutPersisted,
+  onPositionPersisted,
   projectId,
   requestPositionUpdate,
   requestPositionsUpdate,
@@ -50,6 +54,16 @@ export function useTerritoryLayoutPersistence({
   const positionSaveAttemptRef = useRef(0);
   const compactSaveAttemptRef = useRef(0);
   const mountedRef = useRef(true);
+  const onCompactLayoutPersistedRef = useRef(onCompactLayoutPersisted);
+  const onPositionPersistedRef = useRef(onPositionPersisted);
+
+  useEffect(() => {
+    onCompactLayoutPersistedRef.current = onCompactLayoutPersisted;
+  }, [onCompactLayoutPersisted]);
+
+  useEffect(() => {
+    onPositionPersistedRef.current = onPositionPersisted;
+  }, [onPositionPersisted]);
 
   useEffect(() => {
     return () => {
@@ -149,6 +163,7 @@ export function useTerritoryLayoutPersistence({
           y: updated.position_y,
         });
         replacePositionSave(territoryId, null);
+        onPositionPersistedRef.current?.(territoryId);
       } catch {
         if (
           mountedRef.current &&
@@ -228,6 +243,7 @@ export function useTerritoryLayoutPersistence({
           })),
         );
         replaceCompactLayoutSave(null);
+        onCompactLayoutPersistedRef.current?.(requestedPositions.length);
       } catch {
         if (
           mountedRef.current &&

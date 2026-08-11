@@ -8,6 +8,7 @@ import {
   within,
 } from '@testing-library/react';
 import type { Bubble, Territory } from '../src/api';
+import type { AnalyticsClient } from '../src/analytics';
 import { CanvasSurface } from '../src/canvas/CanvasSurface';
 
 const emptyState = <p>Nothing on this canvas</p>;
@@ -130,9 +131,11 @@ describe('CanvasSurface territory cards', () => {
   it('drags a territory in world coordinates and persists only its final position', async () => {
     const pending = deferred<Territory>();
     const requestPositionUpdate = vi.fn(() => pending.promise);
+    const track = vi.fn<AnalyticsClient['track']>();
 
     render(
       <CanvasSurface
+        analyticsClient={{ track }}
         emptyState={emptyState}
         initialViewport={{ x: 80, y: -40, zoom: 2 }}
         projectId="project-123"
@@ -177,6 +180,40 @@ describe('CanvasSurface territory cards', () => {
     });
 
     expect(card.getAttribute('data-territory-state')).toBe('default');
+    expect(track).toHaveBeenCalledWith('territory_moved', {
+      project_id: 'project-123',
+      territory_id: 'territory-1',
+    });
+  });
+
+  it('persists keyboard territory movement in grid steps', async () => {
+    const requestPositionUpdate = vi.fn(async () =>
+      territory({ position_x: 144, position_y: -48 }),
+    );
+
+    render(
+      <CanvasSurface
+        emptyState={emptyState}
+        projectId="project-123"
+        requestBubbles={async () => [bubble()]}
+        requestTerritories={async () => [territory()]}
+        requestTerritoryPositionUpdate={requestPositionUpdate}
+      />,
+    );
+
+    fireEvent.keyDown(
+      await screen.findByLabelText(
+        'Move Market evidence territory. Use the arrow keys.',
+      ),
+      { key: 'ArrowRight' },
+    );
+
+    await act(async () => Promise.resolve());
+    expect(requestPositionUpdate).toHaveBeenCalledWith(
+      'project-123',
+      'territory-1',
+      { position_x: 144, position_y: -48 },
+    );
   });
 
   it('keeps a failed territory move retryable and supports an explicit revert', async () => {
@@ -276,9 +313,11 @@ describe('CanvasSurface territory cards', () => {
       .fn()
       .mockRejectedValueOnce(new Error('Unavailable'))
       .mockResolvedValueOnce(compacted);
+    const track = vi.fn<AnalyticsClient['track']>();
 
     render(
       <CanvasSurface
+        analyticsClient={{ track }}
         emptyState={emptyState}
         projectId="project-123"
         requestBubbles={async () => bubbles}
@@ -331,5 +370,12 @@ describe('CanvasSurface territory cards', () => {
     expect(cardA.style.top).toBe('374px');
     expect(cardC.style.left).toBe('444px');
     expect(cardB.style.left).toBe('-100px');
+    expect(track).toHaveBeenCalledWith(
+      'territory_compact_layout_applied',
+      {
+        project_id: 'project-123',
+        moved_territory_count: 2,
+      },
+    );
   });
 });

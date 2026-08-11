@@ -116,6 +116,38 @@ describe('TerritoryCard visible rows', () => {
     ).toBe(true);
   });
 
+  it('moves from its labeled header with arrow keys without stealing stepper keys', () => {
+    const onKeyboardMove = vi.fn();
+
+    render(
+      <TerritoryCard
+        bubbles={[bubbleFixture(1), bubbleFixture(2)]}
+        onKeyboardMove={onKeyboardMove}
+        territory={territoryFixture()}
+      />,
+    );
+
+    const handle = screen.getByLabelText(
+      'Move Operations territory. Use the arrow keys.',
+    );
+    expect(handle.getAttribute('tabindex')).toBe('0');
+    expect(handle.getAttribute('aria-keyshortcuts')).toContain('ArrowRight');
+
+    fireEvent.keyDown(handle, { key: 'ArrowRight' });
+    expect(onKeyboardMove).toHaveBeenCalledWith({ x: 1, y: 0 });
+    expect(screen.getByRole('status').textContent).toContain(
+      'Operations territory moved.',
+    );
+
+    fireEvent.keyDown(
+      screen.getByRole('button', {
+        name: 'Show fewer bubbles in Operations',
+      }),
+      { key: 'ArrowLeft' },
+    );
+    expect(onKeyboardMove).toHaveBeenCalledTimes(1);
+  });
+
   it('unlocks every row inside a keyboard-scrollable body without changing its height', () => {
     const bubbles = [1, 2, 3, 4].map(bubbleFixture);
     const { container } = render(
@@ -148,6 +180,7 @@ describe('TerritoryCard visible rows', () => {
     expect(scrollRegion.getAttribute('tabindex')).toBe('0');
     expect(scrollRegion.style.height).toBe('180px');
     expect(scrollRegion.style.touchAction).toBe('pan-y');
+    expect(document.activeElement).toBe(scrollRegion);
     expect(
       screen.getByText('Scrolling enabled for all 4 bubbles in Operations.'),
     ).not.toBeNull();

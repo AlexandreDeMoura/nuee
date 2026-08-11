@@ -44,6 +44,7 @@ import type {
   CanvasSurfaceProps,
 } from './canvasTypes';
 import { groupBubblesByTerritory } from './territoryModel';
+import { trackTerritoryAnalytics } from './territoryAnalytics';
 import { useMultiSelection } from './useMultiSelection';
 import { useProjectBubbles } from './useProjectBubbles';
 import {
@@ -187,6 +188,22 @@ export function CanvasSurface({
     replacePositionSave,
     setLocalPosition,
   } = useTerritoryLayoutPersistence({
+    onCompactLayoutPersisted: (movedTerritoryCount) => {
+      trackTerritoryAnalytics(
+        analyticsClient,
+        'territory_compact_layout_applied',
+        {
+          project_id: projectId,
+          moved_territory_count: movedTerritoryCount,
+        },
+      );
+    },
+    onPositionPersisted: (territoryId) => {
+      trackTerritoryAnalytics(analyticsClient, 'territory_moved', {
+        project_id: projectId,
+        territory_id: territoryId,
+      });
+    },
     projectId,
     requestPositionUpdate: requestTerritoryPositionUpdate,
     requestPositionsUpdate: requestTerritoryPositionsUpdate,
@@ -345,6 +362,41 @@ export function CanvasSurface({
     if (typeof surfaceRef.current?.setPointerCapture === 'function') {
       surfaceRef.current.setPointerCapture(event.pointerId);
     }
+  }
+
+  function moveTerritoryWithKeyboard(
+    territory: (typeof positionedTerritories)[number]['territory'],
+    unitDelta: TerritoryPosition,
+  ) {
+    if (
+      isMultiSelectionActive ||
+      positionSavesRef.current[territory.id]?.status === 'saving' ||
+      activeCompactLayoutSave?.status === 'saving'
+    ) {
+      return false;
+    }
+
+    if (activeCompactLayoutSave?.status === 'error') {
+      replaceCompactLayoutSave(null);
+    }
+
+    const failedSave = positionSavesRef.current[territory.id];
+    const persistedPosition = failedSave?.persistedPosition ?? {
+      x: territory.position_x,
+      y: territory.position_y,
+    };
+    const requestedPosition = {
+      x: territory.position_x + unitDelta.x * GRID_SIZE,
+      y: territory.position_y + unitDelta.y * GRID_SIZE,
+    };
+
+    setLocalPosition(territory.id, requestedPosition);
+    void persistPosition(
+      territory.id,
+      requestedPosition,
+      persistedPosition,
+    );
+    return true;
   }
 
   function handlePointerDown(event: ReactPointerEvent<HTMLElement>) {
@@ -698,6 +750,14 @@ export function CanvasSurface({
 
     if (changedPositions.length === 0) {
       replaceCompactLayoutSave(null);
+      trackTerritoryAnalytics(
+        analyticsClient,
+        'territory_compact_layout_applied',
+        {
+          project_id: projectId,
+          moved_territory_count: 0,
+        },
+      );
       return;
     }
 
@@ -781,10 +841,51 @@ export function CanvasSurface({
                 ? toggleMultiSelectedBubble(bubble.id)
                 : selectBubble(bubble)
             }
-            onBubbleReaderOpen={onBubbleReaderOpen}
-            onVisibleCountChange={(visibleCount) =>
-              changeVisibleCount(territory.id, visibleCount)
+            onBubbleReaderOpen={
+              onBubbleReaderOpen
+                ? (bubble) => {
+                    trackTerritoryAnalytics(
+                      analyticsClient,
+                      'bubble_reader_opened_from_canvas',
+                      {
+                        project_id: projectId,
+                        bubble_id: bubble.id,
+                        territory_id: territory.id,
+                      },
+                    );
+                    onBubbleReaderOpen(bubble);
+                  }
+                : undefined
             }
+            onKeyboardMove={(delta) =>
+              moveTerritoryWithKeyboard(territory, delta)
+            }
+            onScrollUnlock={(hiddenBubbleCount) =>
+              trackTerritoryAnalytics(
+                analyticsClient,
+                'territory_scroll_unlocked',
+                {
+                  project_id: projectId,
+                  territory_id: territory.id,
+                  bubble_count: bubbles.length,
+                  hidden_bubble_count: hiddenBubbleCount,
+                },
+              )
+            }
+            onVisibleCountChange={(visibleCount) => {
+              trackTerritoryAnalytics(
+                analyticsClient,
+                'territory_visible_count_changed',
+                {
+                  project_id: projectId,
+                  territory_id: territory.id,
+                  bubble_count: bubbles.length,
+                  previous_visible_count: territory.visible_count,
+                  visible_count: visibleCount,
+                },
+              );
+              changeVisibleCount(territory.id, visibleCount);
+            }}
             selectedBubbleIds={selectedBubbleIds}
             status={
               draggingTerritoryId === territory.id

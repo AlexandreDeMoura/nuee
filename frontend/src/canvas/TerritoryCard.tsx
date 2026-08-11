@@ -4,10 +4,11 @@ import type {
   PointerEvent as ReactPointerEvent,
   Ref,
 } from 'react';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { TERRITORY_VISIBLE_COUNT_MAX } from '@nuee/shared-types';
 import { Check, ChevronRight, Minus, Plus } from 'lucide-react';
 import type { Bubble, Territory } from '../api';
+import { focusRing } from '../ui/focusRing';
 import { getBubbleCardPreview } from './bubbleCardPreview';
 import { TERRITORY_CARD_WIDTH } from './compactTerritoryLayout';
 
@@ -20,6 +21,8 @@ export interface TerritoryCardProps {
   onBubbleActivate?: (bubble: Bubble) => void;
   onBubbleReaderOpen?: (bubble: Bubble) => void;
   onDragPointerDown?: (event: ReactPointerEvent<HTMLElement>) => void;
+  onKeyboardMove?: (delta: { x: number; y: number }) => boolean | void;
+  onScrollUnlock?: (hiddenBubbleCount: number) => void;
   onVisibleCountChange?: (visibleCount: number) => void;
   selectedBubbleIds?: ReadonlySet<string>;
   status?: TerritoryCardStatus;
@@ -34,6 +37,8 @@ export function TerritoryCard({
   onBubbleActivate,
   onBubbleReaderOpen,
   onDragPointerDown,
+  onKeyboardMove,
+  onScrollUnlock,
   onVisibleCountChange,
   selectedBubbleIds = new Set<string>(),
   status = 'default',
@@ -64,6 +69,12 @@ export function TerritoryCard({
     width: TERRITORY_CARD_WIDTH,
   };
 
+  useEffect(() => {
+    if (isScrollUnlocked) {
+      bodyRef.current?.focus();
+    }
+  }, [isScrollUnlocked]);
+
   function changeVisibleCount(nextCount: number) {
     onVisibleCountChange?.(nextCount);
     setAnnouncement(
@@ -81,6 +92,7 @@ export function TerritoryCard({
       setUnlockedBodyHeight(measuredHeight);
     }
     setUnlockedListKey(listKey);
+    onScrollUnlock?.(hiddenBubbleCount);
     setAnnouncement(
       `Scrolling enabled for all ${bubbles.length} bubbles in ${territory.title}.`,
     );
@@ -97,11 +109,46 @@ export function TerritoryCard({
       style={position}
     >
       <header
-        className={`flex min-h-[58px] items-center gap-4 border-b border-[#e7ebf0] px-5 py-3.5 ${
+        className={`flex min-h-[58px] items-center gap-4 border-b border-[#e7ebf0] px-5 py-3.5 ${focusRing} ${
           status === 'dragging' ? 'cursor-grabbing' : 'cursor-grab'
         } ${status === 'saving' ? 'opacity-75' : ''}`}
+        aria-disabled={
+          status === 'saving' || isMultiSelecting ? 'true' : undefined
+        }
+        aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
+        aria-label={`Move ${territory.title} territory. Use the arrow keys.`}
         data-territory-drag-handle
+        onKeyDown={(event: KeyboardEvent<HTMLElement>) => {
+          if (
+            event.target !== event.currentTarget ||
+            status === 'saving' ||
+            isMultiSelecting
+          ) {
+            return;
+          }
+
+          const deltas: Partial<Record<string, { x: number; y: number }>> = {
+            ArrowDown: { x: 0, y: 1 },
+            ArrowLeft: { x: -1, y: 0 },
+            ArrowRight: { x: 1, y: 0 },
+            ArrowUp: { x: 0, y: -1 },
+          };
+          const delta = deltas[event.key];
+
+          if (!delta) {
+            return;
+          }
+
+          event.preventDefault();
+          event.stopPropagation();
+          const didMove = onKeyboardMove?.(delta);
+
+          if (didMove !== false) {
+            setAnnouncement(`${territory.title} territory moved.`);
+          }
+        }}
         onPointerDown={onDragPointerDown}
+        tabIndex={0}
       >
         <h2
           className="min-w-0 flex-1 truncate text-[16px] font-semibold tracking-[-0.2px] text-[#1e2733]"
@@ -116,7 +163,7 @@ export function TerritoryCard({
           role="group"
         >
           <button
-            className="grid h-full w-8 cursor-pointer place-items-center hover:bg-[#edf1f6] hover:text-[#526985] disabled:cursor-default disabled:text-[#aeb9c7]"
+            className={`grid h-full w-8 cursor-pointer place-items-center hover:bg-[#edf1f6] hover:text-[#526985] disabled:cursor-default disabled:text-[#aeb9c7] ${focusRing}`}
             type="button"
             aria-label={`Show fewer bubbles in ${territory.title}`}
             disabled={!canShowFewer}
@@ -128,7 +175,7 @@ export function TerritoryCard({
             {territory.visible_count}
           </span>
           <button
-            className="grid h-full w-8 cursor-pointer place-items-center hover:bg-[#edf1f6] hover:text-[#526985] disabled:cursor-default disabled:text-[#aeb9c7]"
+            className={`grid h-full w-8 cursor-pointer place-items-center hover:bg-[#edf1f6] hover:text-[#526985] disabled:cursor-default disabled:text-[#aeb9c7] ${focusRing}`}
             type="button"
             aria-label={`Show more bubbles in ${territory.title}`}
             disabled={!canShowMore}
@@ -178,7 +225,7 @@ export function TerritoryCard({
         <ul className="m-0 list-none p-0">
           {renderedBubbles.map((bubble) => (
             <li
-              className={`group relative flex min-h-[58px] cursor-pointer items-start gap-3 rounded-[9px] py-2.5 pr-1 transition-colors motion-reduce:transition-none ${
+              className={`group relative flex min-h-[58px] cursor-pointer items-start gap-3 rounded-[9px] py-2.5 pr-1 transition-colors motion-reduce:transition-none ${focusRing} ${
                 selectedBubbleIds.has(bubble.id)
                   ? 'bg-[#eef3fb]'
                   : linkedBubbleIds.has(bubble.id)
@@ -222,7 +269,7 @@ export function TerritoryCard({
                 </span>
               )}
               <button
-                className="mt-0.5 grid size-6 shrink-0 cursor-pointer place-items-center rounded-[7px] border border-[#dbe3ec] bg-[#eef3f8] text-[#70829a] hover:border-[#bdcad8] hover:bg-[#e5edf6] disabled:cursor-default disabled:opacity-50"
+                className={`mt-0.5 grid size-6 shrink-0 cursor-pointer place-items-center rounded-[7px] border border-[#dbe3ec] bg-[#eef3f8] text-[#70829a] hover:border-[#bdcad8] hover:bg-[#e5edf6] disabled:cursor-default disabled:opacity-50 ${focusRing}`}
                 type="button"
                 aria-label={`Open ${bubble.title}`}
                 disabled={isMultiSelecting}
@@ -246,7 +293,7 @@ export function TerritoryCard({
 
         {hiddenBubbleCount > 0 && !isScrollUnlocked && (
           <button
-            className="ml-8 cursor-pointer rounded px-1 py-1 text-[12px] font-medium text-[#8192a8] hover:text-[#526985] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[#3f63a8]/25"
+            className={`ml-8 cursor-pointer rounded px-1 py-1 text-[12px] font-medium text-[#8192a8] hover:text-[#526985] ${focusRing}`}
             type="button"
             aria-label={`${hiddenBubbleCount} more bubbles in ${territory.title}`}
             onClick={unlockScrolling}
@@ -256,7 +303,7 @@ export function TerritoryCard({
           </button>
         )}
       </div>
-      <span className="sr-only" aria-live="polite">
+      <span className="sr-only" aria-atomic="true" aria-live="polite" role="status">
         {announcement}
       </span>
     </article>

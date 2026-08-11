@@ -21,10 +21,6 @@ export interface AnalyticsEventProperties {
     bubble_id: string;
     source_kind: 'manual' | 'discussion';
   };
-  bubble_moved: {
-    project_id: string;
-    bubble_id: string;
-  };
   bubble_inspected: {
     project_id: string;
     bubble_id: string;
@@ -58,9 +54,54 @@ export interface AnalyticsEventProperties {
     project_id: string;
     bubble_ids: string[];
   };
-  bubble_compact_layout_applied: {
+  territory_recompose_requested: {
     project_id: string;
-    bubble_ids: string[];
+    bubble_count: number;
+    territory_count: number;
+  };
+  territory_recompose_completed: {
+    project_id: string;
+    bubble_count: number;
+    territory_count: number;
+  };
+  territory_recompose_failed: {
+    project_id: string;
+    bubble_count: number;
+    territory_count: number;
+    reason:
+      | 'source_too_large'
+      | 'provider'
+      | 'timeout'
+      | 'invalid_response'
+      | 'invalid_output'
+      | 'persistence'
+      | 'request_failed';
+  };
+  territory_visible_count_changed: {
+    project_id: string;
+    territory_id: string;
+    bubble_count: number;
+    previous_visible_count: number;
+    visible_count: number;
+  };
+  territory_scroll_unlocked: {
+    project_id: string;
+    territory_id: string;
+    bubble_count: number;
+    hidden_bubble_count: number;
+  };
+  bubble_reader_opened_from_canvas: {
+    project_id: string;
+    bubble_id: string;
+    territory_id: string;
+  };
+  territory_moved: {
+    project_id: string;
+    territory_id: string;
+  };
+  territory_compact_layout_applied: {
+    project_id: string;
+    moved_territory_count: number;
   };
   canvas_viewport_restored: {
     project_id: string;

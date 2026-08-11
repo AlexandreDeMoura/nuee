@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Bubble, Project, Territory } from '../api';
+import { ApiError, type Bubble, type Project, type Territory } from '../api';
+import type { AnalyticsClient } from '../analytics';
 import { ProjectWorkspace } from './ProjectWorkspace';
 
 afterEach(cleanup);
@@ -59,9 +60,11 @@ describe('ProjectWorkspace territory save status', () => {
           resolveUpdate = resolve;
         }),
     );
+    const track = vi.fn<AnalyticsClient['track']>();
 
     render(
       <ProjectWorkspace
+        analyticsClient={{ track }}
         project={project}
         requestBubbleLinks={async () => []}
         requestBubbles={async () => [bubbleFixture(1), bubbleFixture(2)]}
@@ -87,6 +90,16 @@ describe('ProjectWorkspace territory save status', () => {
       );
       expect(screen.getByText('SAVING')).not.toBeNull();
     });
+    expect(track).toHaveBeenCalledWith(
+      'territory_visible_count_changed',
+      {
+        project_id: project.id,
+        territory_id: 'territory-one',
+        bubble_count: 2,
+        previous_visible_count: 1,
+        visible_count: 2,
+      },
+    );
 
     resolveUpdate(
       territoryFixture({
@@ -120,9 +133,11 @@ describe('ProjectWorkspace territory save status', () => {
       ...bubble,
       territory_id: recomposedTerritory.id,
     }));
+    const track = vi.fn<AnalyticsClient['track']>();
 
     render(
       <ProjectWorkspace
+        analyticsClient={{ track }}
         project={project}
         requestBubbleLinks={async () => []}
         requestBubbles={async () => initialBubbles}
@@ -153,12 +168,28 @@ describe('ProjectWorkspace territory save status', () => {
     expect(await screen.findByText('Launch readiness')).not.toBeNull();
     expect(screen.queryByText('Operations')).toBeNull();
     expect(screen.getByText('2 bubbles · 1 territory')).not.toBeNull();
+    expect(track).toHaveBeenCalledWith('territory_recompose_requested', {
+      project_id: project.id,
+      bubble_count: 2,
+      territory_count: 1,
+    });
+    expect(track).toHaveBeenCalledWith('territory_recompose_completed', {
+      project_id: project.id,
+      bubble_count: 2,
+      territory_count: 1,
+    });
   });
 
   it('keeps the prior composition on failure and exposes retry', async () => {
+    const track = vi.fn<AnalyticsClient['track']>();
     const requestRecomposeTerritories = vi
       .fn()
-      .mockRejectedValueOnce(new Error('Provider unavailable'))
+      .mockRejectedValueOnce(
+        new ApiError(503, {
+          code: 'TERRITORY_RECOMPOSE_FAILED',
+          reason: 'invalid_output',
+        }),
+      )
       .mockResolvedValueOnce({
         bubbles: [bubbleFixture(1), bubbleFixture(2)],
         territories: [territoryFixture()],
@@ -166,6 +197,7 @@ describe('ProjectWorkspace territory save status', () => {
 
     render(
       <ProjectWorkspace
+        analyticsClient={{ track }}
         project={project}
         requestBubbleLinks={async () => []}
         requestBubbles={async () => [bubbleFixture(1), bubbleFixture(2)]}
@@ -182,6 +214,12 @@ describe('ProjectWorkspace territory save status', () => {
       'Recompose failed',
     );
     expect(screen.getByText('Operations')).not.toBeNull();
+    expect(track).toHaveBeenCalledWith('territory_recompose_failed', {
+      project_id: project.id,
+      bubble_count: 2,
+      territory_count: 1,
+      reason: 'invalid_output',
+    });
 
     fireEvent.click(
       screen.getByRole('button', { name: 'Retry recompose territories' }),
@@ -192,8 +230,10 @@ describe('ProjectWorkspace territory save status', () => {
   });
 
   it('opens the reader from the chevron and hands editing to the inspector', async () => {
+    const track = vi.fn<AnalyticsClient['track']>();
     render(
       <ProjectWorkspace
+        analyticsClient={{ track }}
         project={project}
         requestBubbleLinks={async () => []}
         requestBubbles={async () => [bubbleFixture(1)]}
@@ -209,6 +249,14 @@ describe('ProjectWorkspace territory save status', () => {
         .getByRole('dialog')
         .getAttribute('data-bubble-reader-bubble-id'),
     ).toBe('bubble-1');
+    expect(track).toHaveBeenCalledWith(
+      'bubble_reader_opened_from_canvas',
+      {
+        project_id: project.id,
+        bubble_id: 'bubble-1',
+        territory_id: 'territory-one',
+      },
+    );
 
     fireEvent.click(screen.getByRole('button', { name: 'Edit' }));
 

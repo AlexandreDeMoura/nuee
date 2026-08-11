@@ -41,8 +41,9 @@ from static verification.
 
 - `projects/` — project creation and metadata editing.
 - `workspace/` — route-level project composition, panels, shared workspace state.
-- `canvas/` — where bubbles appear in space: spatial collection load, pan, zoom, drag, selection,
-  compact layout, card placement, overlays, position/viewport persistence. `BubbleCard` lives here.
+- `canvas/` — where territories appear in space: joint bubble/territory collection load, pan, zoom,
+  territory drag, bubble-row selection, measured compact layout, overlays, and territory
+  position/visible-count plus viewport persistence. `TerritoryCard` lives here.
 - `bubbles/` — what a bubble contains: creation fields, content editing, source metadata, manual
   links, deletion, validation, save status. `BubbleInspector` lives here.
 - `discussions/` — focused-discussion presentation and client lifecycle: write-first draft, single
@@ -96,7 +97,9 @@ cannot meet concrete requirements.
 ### Feature ownership
 
 - `projects/` — project lifecycle, metadata, viewport state, persistence.
-- `bubbles/` — bubble lifecycle, content, placement, links, persistence.
+- `bubbles/` — bubble lifecycle, content, territory assignment, links, persistence.
+- `territories/` — project-scoped territory persistence, visible-count and spatial updates, the
+  ungrouped lifecycle, and the synchronous AI recompose workflow.
 - `discussions/` — project-scoped discussion and immutable-message lifecycle, title generation,
   frozen-context persistence and forwarding, generation-attempt status and idempotency, soft
   deletion, persistence. Owns the `last_activity_at` ordering/Active model: creation, explicit

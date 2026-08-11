@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Bubble, Territory } from '../api';
+import type { AnalyticsClient } from '../analytics';
 import { CanvasSurface } from './CanvasSurface';
 import type { ProjectBubbleCollection } from './canvasTypes';
 
@@ -56,8 +57,10 @@ describe('CanvasSurface territory scrolling', () => {
       replaceBubble: vi.fn(),
       retry: vi.fn(),
     };
+    const track = vi.fn<AnalyticsClient['track']>();
     render(
       <CanvasSurface
+        analyticsClient={{ track }}
         bubbleCollection={bubbleCollection}
         emptyState={null}
         initialViewport={{ x: 12, y: 24, zoom: 1 }}
@@ -80,6 +83,13 @@ describe('CanvasSurface territory scrolling', () => {
       toJSON: () => ({}),
     });
     fireEvent.click(moreButton);
+
+    expect(track).toHaveBeenCalledWith('territory_scroll_unlocked', {
+      project_id: 'project-one',
+      territory_id: 'territory-one',
+      bubble_count: 3,
+      hidden_bubble_count: 2,
+    });
 
     const canvas = screen.getByLabelText('Project canvas');
     const scrollRegion = screen.getByRole('region', {

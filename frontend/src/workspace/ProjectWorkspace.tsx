@@ -48,6 +48,10 @@ import {
   type TerritoryVisibleCountUpdateRequest,
 } from '../canvas/CanvasSurface';
 import { useProjectBubbles } from '../canvas/useProjectBubbles';
+import {
+  territoryRecomposeFailureReason,
+  trackTerritoryAnalytics,
+} from '../canvas/territoryAnalytics';
 import type { BubbleCreateRequest } from '../bubbles/CreateBubbleDialog';
 import { BubbleReaderModal } from '../bubbles/BubbleReaderModal';
 import {
@@ -999,11 +1003,34 @@ export function ProjectWorkspace({
     }
 
     const projectId = currentProject.id;
+    const requestedBubbleCount = availableBubbles.length;
+    const requestedTerritoryCount = visibleTerritoryCount;
     recomposeInFlightRef.current = true;
     setRecomposeState('recomposing');
+    trackTerritoryAnalytics(
+      analyticsClient,
+      'territory_recompose_requested',
+      {
+        project_id: projectId,
+        bubble_count: requestedBubbleCount,
+        territory_count: requestedTerritoryCount,
+      },
+    );
 
     try {
       const response = await requestRecomposeTerritories(projectId, {});
+
+      trackTerritoryAnalytics(
+        analyticsClient,
+        'territory_recompose_completed',
+        {
+          project_id: projectId,
+          bubble_count: response.bubbles.length,
+          territory_count: new Set(
+            response.bubbles.map(({ territory_id }) => territory_id),
+          ).size,
+        },
+      );
 
       if (projectId !== currentProject.id) {
         return;
@@ -1011,7 +1038,18 @@ export function ProjectWorkspace({
 
       replaceCollection(response.bubbles, response.territories);
       setRecomposeState('idle');
-    } catch {
+    } catch (error: unknown) {
+      trackTerritoryAnalytics(
+        analyticsClient,
+        'territory_recompose_failed',
+        {
+          project_id: projectId,
+          bubble_count: requestedBubbleCount,
+          territory_count: requestedTerritoryCount,
+          reason: territoryRecomposeFailureReason(error),
+        },
+      );
+
       if (projectId === currentProject.id) {
         setRecomposeState('error');
       }
@@ -1020,9 +1058,11 @@ export function ProjectWorkspace({
     }
   }, [
     availableBubbles.length,
+    analyticsClient,
     currentProject.id,
     replaceCollection,
     requestRecomposeTerritories,
+    visibleTerritoryCount,
   ]);
   const handleKnowledgeExtractionResolved = useCallback(
     (response: KnowledgeExtractionResolutionResponse) => {
