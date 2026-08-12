@@ -5,6 +5,9 @@ import {
   type BatchRepositionTerritoriesInput,
   type CreateTerritoryInput,
   type CreateTerritoryResponse,
+  type DeleteTerritoryResponse,
+  type RenameTerritoryInput,
+  type RenameTerritoryResponse,
   type RepositionTerritoryInput,
   type Territory,
   type TerritoryPositionUpdate,
@@ -16,6 +19,9 @@ export type {
   BatchRepositionTerritoriesInput,
   CreateTerritoryInput,
   CreateTerritoryResponse,
+  DeleteTerritoryResponse,
+  RenameTerritoryInput,
+  RenameTerritoryResponse,
   RepositionTerritoryInput,
   Territory,
   TerritoryPositionUpdate,
@@ -32,6 +38,17 @@ export type TerritoryCreateRequest = (
   projectId: string,
   input: CreateTerritoryInput,
 ) => Promise<CreateTerritoryResponse>;
+export type TerritoryRenameRequest = (
+  projectId: string,
+  territoryId: string,
+  input: RenameTerritoryInput,
+  signal?: AbortSignal,
+) => Promise<RenameTerritoryResponse>;
+export type TerritoryDeleteRequest = (
+  projectId: string,
+  territoryId: string,
+  signal?: AbortSignal,
+) => Promise<DeleteTerritoryResponse>;
 
 const INVALID_TERRITORIES_MESSAGE =
   'The territory list response contained invalid data.';
@@ -137,6 +154,55 @@ export function createTerritoriesApi(
     ).then((response) => assertTerritoryListResponse(response, projectId));
   }
 
+  function renameTerritory(
+    projectId: string,
+    territoryId: string,
+    input: RenameTerritoryInput,
+    signal?: AbortSignal,
+  ): Promise<RenameTerritoryResponse> {
+    return request<unknown>(
+      `/projects/${encodeURIComponent(projectId)}/territories/${encodeURIComponent(territoryId)}`,
+      {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+        signal,
+      },
+    ).then((response) => {
+      if (
+        !isTerritoryResponse(response, projectId) ||
+        response.id !== territoryId ||
+        response.kind !== 'manual'
+      ) {
+        throw new Error(INVALID_TERRITORIES_MESSAGE);
+      }
+
+      return response;
+    });
+  }
+
+  function deleteTerritory(
+    projectId: string,
+    territoryId: string,
+    signal?: AbortSignal,
+  ): Promise<DeleteTerritoryResponse> {
+    return request<unknown>(
+      `/projects/${encodeURIComponent(projectId)}/territories/${encodeURIComponent(territoryId)}`,
+      { method: 'DELETE', signal },
+    ).then((response) => {
+      if (
+        !isRecord(response) ||
+        typeof response.moved_bubble_count !== 'number' ||
+        !Number.isInteger(response.moved_bubble_count) ||
+        response.moved_bubble_count < 0
+      ) {
+        throw new Error(INVALID_TERRITORIES_MESSAGE);
+      }
+
+      return { moved_bubble_count: response.moved_bubble_count };
+    });
+  }
+
   function repositionTerritory(
     projectId: string,
     territoryId: string,
@@ -216,7 +282,9 @@ export function createTerritoriesApi(
 
   return {
     createTerritory,
+    deleteTerritory,
     getProjectTerritories,
+    renameTerritory,
     repositionTerritories,
     repositionTerritory,
     updateTerritoryVisibleCount,
@@ -225,7 +293,9 @@ export function createTerritoriesApi(
 
 export const {
   createTerritory,
+  deleteTerritory,
   getProjectTerritories,
+  renameTerritory,
   repositionTerritories,
   repositionTerritory,
   updateTerritoryVisibleCount,

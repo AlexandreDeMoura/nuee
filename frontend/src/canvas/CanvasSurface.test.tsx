@@ -53,9 +53,12 @@ describe('CanvasSurface territory scrolling', () => {
       addBubble: vi.fn(),
       addTerritory: vi.fn(),
       isBubbleRemoved: vi.fn(() => false),
+      refresh: vi.fn(),
       removeBubble: vi.fn(),
+      removeTerritory: vi.fn(),
       replaceCollection: vi.fn(),
       replaceBubble: vi.fn(),
+      replaceTerritory: vi.fn(),
       retry: vi.fn(),
     };
     const track = vi.fn<AnalyticsClient['track']>();

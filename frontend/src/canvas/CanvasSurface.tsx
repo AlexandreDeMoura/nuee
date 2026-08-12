@@ -9,15 +9,19 @@ import {
 import {
   getProjectBubbles,
   getProjectTerritories,
+  deleteTerritory,
+  renameTerritory,
   repositionTerritories,
   repositionTerritory,
   updateTerritoryVisibleCount,
   updateProjectViewport,
   type Bubble,
+  type Territory,
 } from '../api';
 import { analytics, trackAnalytics } from '../analytics';
 import { CreateBubbleDialog } from '../bubbles/CreateBubbleDialog';
 import { CreateTerritoryDialog } from './CreateTerritoryDialog';
+import { DeleteTerritoryDialog } from './DeleteTerritoryDialog';
 import {
   CanvasBubbleActions,
   CanvasBubbleLoadNotice,
@@ -42,6 +46,7 @@ import {
 } from './canvasModel';
 import type {
   ActivePan,
+  CanvasSaveStatus,
   CanvasSurfaceProps,
 } from './canvasTypes';
 import { groupBubblesByTerritory } from './territoryModel';
@@ -71,6 +76,10 @@ export type {
   TerritoryPositionUpdateRequest,
   TerritoryVisibleCountUpdateRequest,
 } from './canvasTypes';
+export type {
+  TerritoryDeleteRequest,
+  TerritoryRenameRequest,
+} from '../api';
 
 export function CanvasSurface({
   bubbleCollection,
@@ -83,6 +92,8 @@ export function CanvasSurface({
   requestBubbles = getProjectBubbles,
   requestTerritories = getProjectTerritories,
   requestTerritoryCreate,
+  requestTerritoryDelete = deleteTerritory,
+  requestTerritoryRename = renameTerritory,
   requestTerritoryPositionUpdate = repositionTerritory,
   requestTerritoryPositionsUpdate = repositionTerritories,
   requestTerritoryVisibleCountUpdate = updateTerritoryVisibleCount,
@@ -104,6 +115,14 @@ export function CanvasSurface({
   );
   const [territoryCreationPlacement, setTerritoryCreationPlacement] =
     useState<{ position_x: number; position_y: number } | null>(null);
+  const [territoryDeleteTarget, setTerritoryDeleteTarget] = useState<{
+    bubbleCount: number;
+    territory: Territory;
+  } | null>(null);
+  const [visibleCountSaveStatus, setVisibleCountSaveStatus] =
+    useState<CanvasSaveStatus>('saved');
+  const [territoryRenameSaveStatuses, setTerritoryRenameSaveStatuses] =
+    useState<Record<string, CanvasSaveStatus>>({});
   const [
     isUncontrolledCreateBubbleDialogOpen,
     setIsUncontrolledCreateBubbleDialogOpen,
@@ -176,12 +195,32 @@ export function CanvasSurface({
     revertSave: revertVisibleCountSave,
     saves: visibleCountSaves,
   } = useTerritoryVisibleCountPersistence({
-    onSaveStatusChange,
+    onSaveStatusChange: setVisibleCountSaveStatus,
     projectId,
     requestUpdate: requestTerritoryVisibleCountUpdate,
     saveDelayMs: visibleCountSaveDelayMs,
     targets: visibleCountTargets,
   });
+
+  useEffect(() => {
+    const statuses = [
+      visibleCountSaveStatus,
+      ...Object.values(territoryRenameSaveStatuses),
+    ];
+    const status: CanvasSaveStatus = statuses.includes('error')
+      ? 'error'
+      : statuses.includes('saving')
+        ? 'saving'
+        : statuses.includes('dirty')
+          ? 'dirty'
+          : 'saved';
+
+    onSaveStatusChange?.(status);
+  }, [
+    onSaveStatusChange,
+    territoryRenameSaveStatuses,
+    visibleCountSaveStatus,
+  ]);
 
   const {
     compactLayoutSave,
@@ -879,6 +918,35 @@ export function CanvasSurface({
             onKeyboardMove={(delta) =>
               moveTerritoryWithKeyboard(territory, delta)
             }
+            onDeleteRequest={() =>
+              setTerritoryDeleteTarget({
+                bubbleCount: bubbles.length,
+                territory,
+              })
+            }
+            onRename={async (title, signal) => {
+              const renamedTerritory = await requestTerritoryRename(
+                projectId,
+                territory.id,
+                { title },
+                signal,
+              );
+              activeBubbleCollection.replaceTerritory(renamedTerritory);
+              return renamedTerritory;
+            }}
+            onRenameSaveStatusChange={(nextStatus) =>
+              setTerritoryRenameSaveStatuses((current) => {
+                const next = { ...current };
+
+                if (nextStatus === 'saved') {
+                  delete next[territory.id];
+                } else {
+                  next[territory.id] = nextStatus;
+                }
+
+                return next;
+              })
+            }
             onScrollUnlock={(hiddenBubbleCount) =>
               trackTerritoryAnalytics(
                 analyticsClient,
@@ -1049,6 +1117,21 @@ export function CanvasSurface({
           placement={territoryCreationPlacement}
           projectId={projectId}
           requestCreate={requestTerritoryCreate}
+        />
+      )}
+
+      {territoryDeleteTarget && (
+        <DeleteTerritoryDialog
+          bubbleCount={territoryDeleteTarget.bubbleCount}
+          onCancel={() => setTerritoryDeleteTarget(null)}
+          onDeleted={() => {
+            const deletedTerritoryId = territoryDeleteTarget.territory.id;
+            setTerritoryDeleteTarget(null);
+            activeBubbleCollection.removeTerritory(deletedTerritoryId);
+            activeBubbleCollection.refresh();
+          }}
+          requestDelete={requestTerritoryDelete}
+          territory={territoryDeleteTarget.territory}
         />
       )}
     </section>

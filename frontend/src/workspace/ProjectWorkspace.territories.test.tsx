@@ -57,6 +57,122 @@ function bubbleFixture(index: number): Bubble {
 }
 
 describe('ProjectWorkspace territory save status', () => {
+  it('renames a manual territory from its card and surfaces the in-flight save', async () => {
+    let resolveRename!: (territory: Territory) => void;
+    const requestTerritoryRename = vi.fn(
+      () =>
+        new Promise<Territory>((resolve) => {
+          resolveRename = resolve;
+        }),
+    );
+
+    render(
+      <ProjectWorkspace
+        project={project}
+        requestBubbleLinks={async () => []}
+        requestBubbles={async () => [bubbleFixture(1)]}
+        requestTerritories={async () => [territoryFixture()]}
+        requestTerritoryRename={requestTerritoryRename}
+      />,
+    );
+
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Rename Operations' }),
+    );
+    fireEvent.change(
+      screen.getByRole('textbox', { name: 'Territory title' }),
+      { target: { value: '  Customer research  ' } },
+    );
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Save territory title for Operations',
+      }),
+    );
+
+    await waitFor(() => {
+      expect(requestTerritoryRename).toHaveBeenCalledWith(
+        project.id,
+        'territory-one',
+        { title: 'Customer research' },
+        expect.any(AbortSignal),
+      );
+      expect(screen.getByText('SAVING')).not.toBeNull();
+    });
+
+    resolveRename(
+      territoryFixture({
+        title: 'Customer research',
+        updated_at: '2026-08-01T10:01:00.000Z',
+      }),
+    );
+    expect(
+      await screen.findByRole('heading', { name: 'Customer research' }),
+    ).not.toBeNull();
+    await waitFor(() => expect(screen.queryByText('SAVING')).toBeNull());
+  });
+
+  it('confirms the move count, deletes, and refreshes reassigned bubbles under Ungrouped', async () => {
+    const ungrouped = territoryFixture({
+      id: 'territory-ungrouped',
+      kind: 'ungrouped',
+      title: 'Ungrouped',
+    });
+    const reassignedBubble = {
+      ...bubbleFixture(1),
+      territory_id: ungrouped.id,
+    };
+    let isDeleted = false;
+    const requestBubbles = vi.fn(async () =>
+      isDeleted ? [reassignedBubble] : [bubbleFixture(1)],
+    );
+    const requestTerritories = vi.fn(async () =>
+      isDeleted ? [ungrouped] : [territoryFixture()],
+    );
+    const requestTerritoryDelete = vi.fn(async () => {
+      isDeleted = true;
+      return { moved_bubble_count: 1 };
+    });
+
+    render(
+      <ProjectWorkspace
+        project={project}
+        requestBubbleLinks={async () => []}
+        requestBubbles={requestBubbles}
+        requestTerritories={requestTerritories}
+        requestTerritoryDelete={requestTerritoryDelete}
+      />,
+    );
+
+    const deleteButton = await screen.findByRole('button', {
+      name: 'Delete Operations',
+    });
+    deleteButton.focus();
+    fireEvent.click(deleteButton);
+    expect(
+      screen.getByText(
+        '1 bubble will move to Ungrouped. Its content, links, and sources will stay intact.',
+      ),
+    ).not.toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Delete territory' }));
+
+    await waitFor(() => {
+      expect(requestTerritoryDelete).toHaveBeenCalledWith(
+        project.id,
+        'territory-one',
+        expect.any(AbortSignal),
+      );
+      expect(requestBubbles).toHaveBeenCalledTimes(2);
+      expect(requestTerritories).toHaveBeenCalledTimes(2);
+    });
+    expect(
+      await screen.findByLabelText(
+        'Move Ungrouped territory. Use the arrow keys.',
+      ),
+    ).not.toBeNull();
+    expect(screen.getByRole('article', { name: 'Bubble 1' })).not.toBeNull();
+    expect(screen.queryByText('Operations')).toBeNull();
+  });
+
   it('surfaces an in-flight visible-count save in the existing header indicator', async () => {
     let resolveUpdate!: (territory: Territory) => void;
     const requestTerritoryVisibleCountUpdate = vi.fn(

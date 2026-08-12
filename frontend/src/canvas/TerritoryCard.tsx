@@ -1,12 +1,26 @@
 import type {
   CSSProperties,
+  FormEvent,
   KeyboardEvent,
   PointerEvent as ReactPointerEvent,
   Ref,
 } from 'react';
 import { useEffect, useRef, useState } from 'react';
-import { TERRITORY_VISIBLE_COUNT_MAX } from '@nuee/shared-types';
-import { Check, ChevronRight, Minus, Plus } from 'lucide-react';
+import {
+  TERRITORY_TITLE_MAX_LENGTH,
+  TERRITORY_VISIBLE_COUNT_MAX,
+} from '@nuee/shared-types';
+import {
+  Check,
+  ChevronRight,
+  CircleAlert,
+  LoaderCircle,
+  Minus,
+  Pencil,
+  Plus,
+  Trash2,
+  X,
+} from 'lucide-react';
 import type { Bubble, Territory } from '../api';
 import { focusRing } from '../ui/focusRing';
 import { getBubbleCardPreview } from './bubbleCardPreview';
@@ -20,8 +34,13 @@ export interface TerritoryCardProps {
   linkedBubbleIds?: ReadonlySet<string>;
   onBubbleActivate?: (bubble: Bubble) => void;
   onBubbleReaderOpen?: (bubble: Bubble) => void;
+  onDeleteRequest?: () => void;
   onDragPointerDown?: (event: ReactPointerEvent<HTMLElement>) => void;
   onKeyboardMove?: (delta: { x: number; y: number }) => boolean | void;
+  onRename?: (title: string, signal?: AbortSignal) => Promise<Territory>;
+  onRenameSaveStatusChange?: (
+    status: 'saving' | 'saved' | 'error',
+  ) => void;
   onScrollUnlock?: (hiddenBubbleCount: number) => void;
   onVisibleCountChange?: (visibleCount: number) => void;
   selectedBubbleIds?: ReadonlySet<string>;
@@ -36,8 +55,11 @@ export function TerritoryCard({
   linkedBubbleIds = new Set<string>(),
   onBubbleActivate,
   onBubbleReaderOpen,
+  onDeleteRequest,
   onDragPointerDown,
   onKeyboardMove,
+  onRename,
+  onRenameSaveStatusChange,
   onScrollUnlock,
   onVisibleCountChange,
   selectedBubbleIds = new Set<string>(),
@@ -50,7 +72,17 @@ export function TerritoryCard({
     null,
   );
   const [announcement, setAnnouncement] = useState('');
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [renameDraft, setRenameDraft] = useState(territory.title);
+  const [isRenameTouched, setIsRenameTouched] = useState(false);
+  const [isRenameSaving, setIsRenameSaving] = useState(false);
+  const [hasRenameError, setHasRenameError] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
+  const renameInputRef = useRef<HTMLInputElement>(null);
+  const renameButtonRef = useRef<HTMLButtonElement>(null);
+  const restoreRenameFocusRef = useRef(false);
+  const renameControllerRef = useRef<AbortController | null>(null);
+  const mountedRef = useRef(true);
   const visibleBubbles = bubbles.slice(0, territory.visible_count);
   const hiddenBubbleCount = bubbles.length - visibleBubbles.length;
   const listKey = `${territory.visible_count}:${bubbles
@@ -68,12 +100,116 @@ export function TerritoryCard({
     top: territory.position_y,
     width: TERRITORY_CARD_WIDTH,
   };
+  const normalizedRename = renameDraft.trim();
+  const renameValidationError =
+    normalizedRename.length === 0
+      ? 'Enter a territory title.'
+      : normalizedRename.length > TERRITORY_TITLE_MAX_LENGTH
+        ? `Use ${TERRITORY_TITLE_MAX_LENGTH} characters or fewer.`
+        : null;
+  const showRenameValidationError =
+    isRenameTouched && renameValidationError !== null;
 
   useEffect(() => {
     if (isScrollUnlocked) {
       bodyRef.current?.focus();
     }
   }, [isScrollUnlocked]);
+
+  useEffect(() => {
+    if (isRenaming) {
+      renameInputRef.current?.focus();
+      renameInputRef.current?.select();
+    }
+  }, [isRenaming]);
+
+  useEffect(() => {
+    if (!isRenaming) {
+      if (restoreRenameFocusRef.current) {
+        restoreRenameFocusRef.current = false;
+        renameButtonRef.current?.focus();
+      }
+    }
+  }, [isRenaming]);
+
+  useEffect(() => {
+    mountedRef.current = true;
+
+    return () => {
+      mountedRef.current = false;
+      renameControllerRef.current?.abort();
+    };
+  }, []);
+
+  function startRenaming() {
+    setRenameDraft(territory.title);
+    setIsRenameTouched(false);
+    setHasRenameError(false);
+    setIsRenaming(true);
+  }
+
+  function cancelRenaming() {
+    if (isRenameSaving) {
+      return;
+    }
+
+    setRenameDraft(territory.title);
+    setIsRenameTouched(false);
+    setHasRenameError(false);
+    restoreRenameFocusRef.current = true;
+    setIsRenaming(false);
+    onRenameSaveStatusChange?.('saved');
+  }
+
+  async function submitRename(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsRenameTouched(true);
+
+    if (renameValidationError || isRenameSaving || !onRename) {
+      return;
+    }
+
+    if (normalizedRename === territory.title) {
+      cancelRenaming();
+      return;
+    }
+
+    const controller = new AbortController();
+    renameControllerRef.current = controller;
+    setIsRenameSaving(true);
+    setHasRenameError(false);
+    onRenameSaveStatusChange?.('saving');
+
+    try {
+      const renamedTerritory = await onRename(
+        normalizedRename,
+        controller.signal,
+      );
+
+      if (!mountedRef.current || controller.signal.aborted) {
+        return;
+      }
+
+      setRenameDraft(renamedTerritory.title);
+      restoreRenameFocusRef.current = true;
+      setIsRenaming(false);
+      setIsRenameTouched(false);
+      onRenameSaveStatusChange?.('saved');
+      setAnnouncement(`Territory renamed to ${renamedTerritory.title}.`);
+    } catch {
+      if (!mountedRef.current || controller.signal.aborted) {
+        return;
+      }
+
+      setHasRenameError(true);
+      onRenameSaveStatusChange?.('error');
+    } finally {
+      if (mountedRef.current && !controller.signal.aborted) {
+        renameControllerRef.current = null;
+        setIsRenameSaving(false);
+      }
+    }
+  }
 
   function changeVisibleCount(nextCount: number) {
     onVisibleCountChange?.(nextCount);
@@ -151,13 +287,123 @@ export function TerritoryCard({
         tabIndex={0}
       >
         <h2
-          className="min-w-0 flex-1 truncate text-[16px] font-semibold tracking-[-0.2px] text-[#1e2733]"
+          className={`${isRenaming ? 'sr-only' : 'min-w-0 flex-1 truncate text-[16px] font-semibold tracking-[-0.2px] text-[#1e2733]'}`}
           id={`territory-title-${territory.id}`}
         >
           {territory.title}
         </h2>
 
-        {bubbles.length > 0 && (
+        {isRenaming && (
+          <form
+            className="min-w-0 flex-1"
+            noValidate
+            onPointerDown={(event) => event.stopPropagation()}
+            onSubmit={(event) => void submitRename(event)}
+          >
+            <label className="sr-only" htmlFor={`territory-rename-${territory.id}`}>
+              Territory title
+            </label>
+            <div className="flex items-center gap-1.5">
+              <input
+                className={`min-w-0 flex-1 rounded-[7px] border bg-white px-2.5 py-1.5 text-[13px] text-[#1e2733] disabled:cursor-wait disabled:bg-[#f6f8fb] ${
+                  showRenameValidationError || hasRenameError
+                    ? 'border-[#dba7a3]'
+                    : 'border-[#cfd8e4]'
+                } ${focusRing}`}
+                id={`territory-rename-${territory.id}`}
+                ref={renameInputRef}
+                type="text"
+                value={renameDraft}
+                disabled={isRenameSaving}
+                aria-invalid={showRenameValidationError || hasRenameError}
+                aria-describedby={
+                  showRenameValidationError || hasRenameError
+                    ? `territory-rename-error-${territory.id}`
+                    : undefined
+                }
+                onBlur={() => setIsRenameTouched(true)}
+                onChange={(event) => {
+                  setRenameDraft(event.target.value);
+                  setHasRenameError(false);
+                  if (hasRenameError) {
+                    onRenameSaveStatusChange?.('saved');
+                  }
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === 'Escape') {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    cancelRenaming();
+                  }
+                }}
+              />
+              <button
+                className={`grid size-8 shrink-0 place-items-center rounded-[7px] text-[#526985] hover:bg-[#edf1f6] disabled:cursor-wait disabled:opacity-60 ${focusRing}`}
+                type="submit"
+                aria-label={`Save territory title for ${territory.title}`}
+                disabled={isRenameSaving}
+              >
+                {isRenameSaving ? (
+                  <LoaderCircle
+                    className="size-3.5 animate-spin motion-reduce:animate-none"
+                    strokeWidth={1.8}
+                    aria-hidden="true"
+                  />
+                ) : (
+                  <Check className="size-3.5" strokeWidth={2} aria-hidden="true" />
+                )}
+              </button>
+              <button
+                className={`grid size-8 shrink-0 place-items-center rounded-[7px] text-[#8090a3] hover:bg-[#edf1f6] hover:text-[#526985] disabled:cursor-wait disabled:opacity-60 ${focusRing}`}
+                type="button"
+                aria-label="Cancel territory rename"
+                disabled={isRenameSaving}
+                onClick={cancelRenaming}
+              >
+                <X className="size-3.5" strokeWidth={1.9} aria-hidden="true" />
+              </button>
+            </div>
+            {(showRenameValidationError || hasRenameError) && (
+              <p
+                className="mt-1 mb-0 flex items-center gap-1 text-[10.5px] leading-[1.35] text-[#b4544e]"
+                id={`territory-rename-error-${territory.id}`}
+                role={hasRenameError ? 'alert' : undefined}
+              >
+                <CircleAlert className="size-3 shrink-0" aria-hidden="true" />
+                {hasRenameError
+                  ? 'Couldn’t rename the territory. Try again.'
+                  : renameValidationError}
+              </p>
+            )}
+          </form>
+        )}
+
+        {!isRenaming && territory.kind === 'manual' && onRename && (
+          <button
+            className={`grid size-8 shrink-0 place-items-center rounded-[8px] text-[#8795a7] hover:bg-[#edf1f6] hover:text-[#526985] disabled:cursor-default disabled:opacity-45 ${focusRing}`}
+            type="button"
+            aria-label={`Rename ${territory.title}`}
+            disabled={status === 'saving' || isMultiSelecting}
+            onClick={startRenaming}
+            ref={renameButtonRef}
+          >
+            <Pencil className="size-3.5" strokeWidth={1.8} aria-hidden="true" />
+          </button>
+        )}
+
+        {!isRenaming && territory.kind === 'manual' && onDeleteRequest && (
+          <button
+            className={`grid size-8 shrink-0 place-items-center rounded-[8px] text-[#9b8585] hover:bg-[#fbf1f0] hover:text-[#b4544e] disabled:cursor-default disabled:opacity-45 ${focusRing}`}
+            type="button"
+            aria-label={`Delete ${territory.title}`}
+            disabled={status === 'saving' || isMultiSelecting}
+            onClick={onDeleteRequest}
+          >
+            <Trash2 className="size-3.5" strokeWidth={1.8} aria-hidden="true" />
+          </button>
+        )}
+
+        {!isRenaming && bubbles.length > 0 && (
           <div
             className="flex h-8 shrink-0 items-center overflow-hidden rounded-[9px] border border-[#dfe5ec] bg-[#f6f8fb] text-[#8090a3]"
             aria-label={`Visible bubbles: ${territory.visible_count}`}

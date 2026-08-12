@@ -8,6 +8,8 @@ import type {
   ProjectViewportUpdateOptions,
   Territory,
   TerritoryCreateRequest,
+  TerritoryDeleteRequest,
+  TerritoryRenameRequest,
   RepositionTerritoryInput,
   UpdateTerritoryVisibleCountInput,
   UpdateProjectViewportInput,
@@ -95,6 +97,8 @@ export interface CanvasSurfaceProps {
   requestBubbles?: BubbleListRequest;
   requestTerritories?: TerritoryListRequest;
   requestTerritoryCreate?: TerritoryCreateRequest;
+  requestTerritoryDelete?: TerritoryDeleteRequest;
+  requestTerritoryRename?: TerritoryRenameRequest;
   requestTerritoryPositionUpdate?: TerritoryPositionUpdateRequest;
   requestTerritoryPositionsUpdate?: TerritoryPositionsUpdateRequest;
   requestTerritoryVisibleCountUpdate?: TerritoryVisibleCountUpdateRequest;
@@ -122,9 +126,12 @@ export interface ProjectBubbleCollection {
   addBubble: (bubble: Bubble) => void;
   addTerritory: (territory: Territory) => void;
   isBubbleRemoved: (bubbleId: string) => boolean;
+  refresh: () => void;
   replaceCollection: (bubbles: Bubble[], territories: Territory[]) => void;
   replaceBubble: (bubble: Bubble) => void;
+  replaceTerritory: (territory: Territory) => void;
   removeBubble: (bubbleId: string) => void;
+  removeTerritory: (territoryId: string) => void;
   retry: () => void;
 }
 

@@ -1,4 +1,11 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { TERRITORY_TITLE_MAX_LENGTH } from '@nuee/shared-types';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Bubble, Territory } from '../api';
 import { TerritoryCard } from './TerritoryCard';
@@ -40,6 +47,137 @@ function bubbleFixture(index: number): Bubble {
 }
 
 describe('TerritoryCard visible rows', () => {
+  it('renames from a distinct header control with shared-limit validation and Escape cancellation', async () => {
+    const renamed = territoryFixture({
+      title: 'Customer research',
+      updated_at: '2026-08-01T10:01:00.000Z',
+    });
+    const onRename = vi.fn(async () => renamed);
+    const onRenameSaveStatusChange = vi.fn();
+
+    render(
+      <TerritoryCard
+        bubbles={[]}
+        onRename={onRename}
+        onRenameSaveStatusChange={onRenameSaveStatusChange}
+        territory={territoryFixture()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Rename Operations' }));
+    const titleInput = screen.getByRole('textbox', {
+      name: 'Territory title',
+    });
+    expect(document.activeElement).toBe(titleInput);
+
+    fireEvent.change(titleInput, { target: { value: '   ' } });
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Save territory title for Operations',
+      }),
+    );
+    expect(screen.getByText('Enter a territory title.')).not.toBeNull();
+
+    fireEvent.change(titleInput, {
+      target: { value: 'x'.repeat(TERRITORY_TITLE_MAX_LENGTH + 1) },
+    });
+    expect(
+      screen.getByText(
+        `Use ${TERRITORY_TITLE_MAX_LENGTH} characters or fewer.`,
+      ),
+    ).not.toBeNull();
+    expect(onRename).not.toHaveBeenCalled();
+
+    fireEvent.keyDown(titleInput, { key: 'Escape' });
+    expect(screen.queryByRole('textbox', { name: 'Territory title' })).toBeNull();
+    expect(document.activeElement).toBe(
+      screen.getByRole('button', { name: 'Rename Operations' }),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Rename Operations' }));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Territory title' }), {
+      target: { value: '  Customer research  ' },
+    });
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Save territory title for Operations',
+      }),
+    );
+
+    await waitFor(() => {
+      expect(onRename).toHaveBeenCalledWith(
+        'Customer research',
+        expect.any(AbortSignal),
+      );
+    });
+    expect(onRenameSaveStatusChange).toHaveBeenCalledWith('saving');
+    expect(onRenameSaveStatusChange).toHaveBeenLastCalledWith('saved');
+    expect(
+      screen.getByText('Territory renamed to Customer research.'),
+    ).not.toBeNull();
+  });
+
+  it('keeps a failed rename retryable and clears the save error on edit', async () => {
+    const onRename = vi
+      .fn<(title: string) => Promise<Territory>>()
+      .mockRejectedValueOnce(new Error('offline'))
+      .mockResolvedValueOnce(territoryFixture({ title: 'Research' }));
+    const onRenameSaveStatusChange = vi.fn();
+
+    render(
+      <TerritoryCard
+        bubbles={[]}
+        onRename={onRename}
+        onRenameSaveStatusChange={onRenameSaveStatusChange}
+        territory={territoryFixture()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Rename Operations' }));
+    const input = screen.getByRole('textbox', { name: 'Territory title' });
+    fireEvent.change(input, { target: { value: 'Research' } });
+    fireEvent.submit(input.closest('form')!);
+
+    expect(
+      await screen.findByText('Couldn’t rename the territory. Try again.'),
+    ).not.toBeNull();
+    expect(onRenameSaveStatusChange).toHaveBeenLastCalledWith('error');
+
+    fireEvent.change(input, { target: { value: 'Research ' } });
+    expect(onRenameSaveStatusChange).toHaveBeenLastCalledWith('saved');
+    fireEvent.submit(input.closest('form')!);
+
+    await waitFor(() => expect(onRename).toHaveBeenCalledTimes(2));
+    expect(onRenameSaveStatusChange).toHaveBeenLastCalledWith('saved');
+  });
+
+  it('offers delete only for a manual territory', () => {
+    const onDeleteRequest = vi.fn();
+    const onRename = vi.fn(async () => territoryFixture());
+    const { rerender } = render(
+      <TerritoryCard
+        bubbles={[]}
+        onDeleteRequest={onDeleteRequest}
+        onRename={onRename}
+        territory={territoryFixture()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Delete Operations' }));
+    expect(onDeleteRequest).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <TerritoryCard
+        bubbles={[]}
+        onDeleteRequest={onDeleteRequest}
+        onRename={onRename}
+        territory={territoryFixture({ kind: 'ungrouped', title: 'Ungrouped' })}
+      />,
+    );
+    expect(screen.queryByRole('button', { name: 'Delete Ungrouped' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Rename Ungrouped' })).toBeNull();
+  });
+
   it('renders a labeled empty state without visible-count controls or a footer', () => {
     render(<TerritoryCard bubbles={[]} territory={territoryFixture()} />);
 

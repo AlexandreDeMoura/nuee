@@ -38,6 +38,8 @@ import {
   type CanvasMultiSelection,
   type ProjectViewportUpdateRequest,
   type TerritoryListRequest,
+  type TerritoryDeleteRequest,
+  type TerritoryRenameRequest,
   type TerritoryVisibleCountUpdateRequest,
 } from '../canvas/CanvasSurface';
 import { useProjectBubbles } from '../canvas/useProjectBubbles';
@@ -132,6 +134,8 @@ export interface ProjectWorkspaceProps {
   requestBubbles?: BubbleListRequest;
   requestTerritories?: TerritoryListRequest;
   requestTerritoryCreate?: TerritoryCreateRequest;
+  requestTerritoryDelete?: TerritoryDeleteRequest;
+  requestTerritoryRename?: TerritoryRenameRequest;
   requestTerritoryVisibleCountUpdate?: TerritoryVisibleCountUpdateRequest;
   requestBubbleDelete?: BubbleDeleteRequest;
   requestBubbleUpdate?: BubbleUpdateRequest;
@@ -414,6 +418,8 @@ export function ProjectWorkspace({
   requestBubbles = getProjectBubbles,
   requestTerritories,
   requestTerritoryCreate,
+  requestTerritoryDelete,
+  requestTerritoryRename,
   requestTerritoryVisibleCountUpdate,
   requestBubbleDelete,
   requestBubbleUpdate,
@@ -1133,6 +1139,8 @@ export function ProjectWorkspace({
             projectId={currentProject.id}
             requestBubbleCreate={requestBubbleCreate}
             requestTerritoryCreate={requestTerritoryCreate}
+            requestTerritoryDelete={requestTerritoryDelete}
+            requestTerritoryRename={requestTerritoryRename}
             requestViewportUpdate={requestViewportUpdate}
             requestTerritoryVisibleCountUpdate={
               requestTerritoryVisibleCountUpdate
