@@ -1,4 +1,10 @@
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Bubble, Territory } from '../api';
 import type { AnalyticsClient } from '../analytics';
@@ -118,5 +124,72 @@ describe('CanvasSurface territory scrolling', () => {
     fireEvent(canvas, canvasWheelEvent);
     expect(canvasWheelEvent.defaultPrevented).toBe(true);
     expect(canvas.getAttribute('data-canvas-y')).toBe('-36');
+  });
+
+  it('records an existing-territory choice after bubble creation without user-authored text', async () => {
+    const bubbleCollection: ProjectBubbleCollection = {
+      projectId: 'project-one',
+      loadState: {
+        status: 'ready',
+        bubbles: [bubbleFixture(1)],
+        territories: [territoryFixture()],
+      },
+      addBubble: vi.fn(),
+      addTerritory: vi.fn(),
+      isBubbleRemoved: vi.fn(() => false),
+      refresh: vi.fn(),
+      removeBubble: vi.fn(),
+      removeTerritory: vi.fn(),
+      replaceCollection: vi.fn(),
+      replaceBubble: vi.fn(),
+      replaceTerritory: vi.fn(),
+      retry: vi.fn(),
+    };
+    const createdBubble = bubbleFixture(2);
+    const requestBubbleCreate = vi.fn(async () => createdBubble);
+    const track = vi.fn<AnalyticsClient['track']>();
+
+    render(
+      <CanvasSurface
+        analyticsClient={{ track }}
+        bubbleCollection={bubbleCollection}
+        createBubbleDialogOpen
+        emptyState={null}
+        projectId="project-one"
+        requestBubbleCreate={requestBubbleCreate}
+      />,
+    );
+
+    fireEvent.change(screen.getByLabelText('Title *'), {
+      target: { value: 'Private bubble title' },
+    });
+    fireEvent.change(screen.getByLabelText('Content *'), {
+      target: { value: 'Private bubble content' },
+    });
+    fireEvent.click(screen.getByRole('radio', { name: 'Operations' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Create bubble' }));
+
+    await waitFor(() => {
+      expect(requestBubbleCreate).toHaveBeenCalledWith('project-one', {
+        title: 'Private bubble title',
+        summary: null,
+        content: 'Private bubble content',
+        destination: {
+          kind: 'existing',
+          territory_id: 'territory-one',
+        },
+      });
+    });
+    expect(track).toHaveBeenCalledWith('territory_destination_selected', {
+      project_id: 'project-one',
+      source: 'bubble_creation',
+      destination_kind: 'existing',
+    });
+    expect(JSON.stringify(track.mock.calls)).not.toContain(
+      'Private bubble title',
+    );
+    expect(JSON.stringify(track.mock.calls)).not.toContain(
+      'Private bubble content',
+    );
   });
 });

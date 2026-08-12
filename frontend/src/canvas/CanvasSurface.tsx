@@ -946,6 +946,10 @@ export function CanvasSurface({
                 signal,
               );
               activeBubbleCollection.replaceTerritory(renamedTerritory);
+              trackTerritoryAnalytics(analyticsClient, 'territory_renamed', {
+                project_id: projectId,
+                territory_id: renamedTerritory.id,
+              });
               return renamedTerritory;
             }}
             onRenameSaveStatusChange={(nextStatus) =>
@@ -1116,6 +1120,25 @@ export function CanvasSurface({
           onCancel={() => {
             setCreateBubbleDialogOpen(false);
           }}
+          onCreationCompleted={(bubble, destination) => {
+            trackTerritoryAnalytics(
+              analyticsClient,
+              'territory_destination_selected',
+              {
+                project_id: projectId,
+                source: 'bubble_creation',
+                destination_kind: destination.kind,
+              },
+            );
+
+            if (destination.kind === 'new') {
+              trackTerritoryAnalytics(analyticsClient, 'territory_created', {
+                project_id: projectId,
+                territory_id: bubble.territory_id,
+                source: 'bubble_creation',
+              });
+            }
+          }}
           onCreated={handleBubbleCreated}
           projectId={projectId}
           requestCreate={requestBubbleCreate}
@@ -1128,6 +1151,11 @@ export function CanvasSurface({
           onCancel={() => setTerritoryCreationPlacement(null)}
           onCreated={(territory) => {
             activeBubbleCollection.addTerritory(territory);
+            trackTerritoryAnalytics(analyticsClient, 'territory_created', {
+              project_id: projectId,
+              territory_id: territory.id,
+              source: 'action_bar',
+            });
             setTerritoryCreationPlacement(null);
           }}
           placement={territoryCreationPlacement}
@@ -1140,8 +1168,13 @@ export function CanvasSurface({
         <DeleteTerritoryDialog
           bubbleCount={territoryDeleteTarget.bubbleCount}
           onCancel={() => setTerritoryDeleteTarget(null)}
-          onDeleted={() => {
+          onDeleted={(response) => {
             const deletedTerritoryId = territoryDeleteTarget.territory.id;
+            trackTerritoryAnalytics(analyticsClient, 'territory_deleted', {
+              project_id: projectId,
+              territory_id: deletedTerritoryId,
+              moved_bubble_count: response.moved_bubble_count,
+            });
             setTerritoryDeleteTarget(null);
             activeBubbleCollection.removeTerritory(deletedTerritoryId);
             activeBubbleCollection.refresh();

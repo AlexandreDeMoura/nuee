@@ -6,6 +6,7 @@ import {
   type Bubble,
   type CreateBubbleInput,
   type Territory,
+  type TerritoryDestination,
 } from '../api';
 import { focusRing } from '../ui/focusRing';
 import { useFieldValidity } from '../ui/useFieldValidity';
@@ -29,6 +30,10 @@ export type BubbleCreateRequest = (
 export interface CreateBubbleDialogProps {
   getTerritoryCreationPlacement?: TerritoryCreationPlacementRequest;
   onCancel: () => void;
+  onCreationCompleted?: (
+    bubble: Bubble,
+    destination: TerritoryDestination,
+  ) => void;
   onCreated: (bubble: Bubble) => void;
   projectId: string;
   requestCreate?: BubbleCreateRequest;
@@ -38,6 +43,7 @@ export interface CreateBubbleDialogProps {
 export function CreateBubbleDialog({
   getTerritoryCreationPlacement,
   onCancel,
+  onCreationCompleted,
   onCreated,
   projectId,
   requestCreate = createBubble,
@@ -132,6 +138,7 @@ export function CreateBubbleDialog({
 
       isCreatingRef.current = false;
       setIsCreating(false);
+      onCreationCompleted?.(bubble, resolvedDestination);
       onCreated(bubble);
     } catch {
       isCreatingRef.current = false;

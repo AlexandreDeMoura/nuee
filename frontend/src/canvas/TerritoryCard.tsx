@@ -471,7 +471,11 @@ export function TerritoryCard({
         tabIndex={isScrollUnlocked ? 0 : undefined}
       >
         {bubbles.length === 0 && (
-          <p className="m-0 py-5 text-center text-[12.5px] leading-[1.5] text-[#8b97a6]">
+          <p
+            className="m-0 py-5 text-center text-[12.5px] leading-[1.5] text-[#8b97a6]"
+            aria-label="This territory doesn’t hold any bubbles yet."
+            role="status"
+          >
             This territory doesn’t hold any bubbles yet.
           </p>
         )}

@@ -219,6 +219,7 @@ describe('useKnowledgeExtraction', () => {
       'knowledge_extraction_generation_finished',
       'knowledge_extraction_resolution_finished',
       'knowledge_extraction_resolution_finished',
+      'territory_destination_selected',
     ]);
     expect(track).toHaveBeenNthCalledWith(
       1,
@@ -267,6 +268,15 @@ describe('useKnowledgeExtraction', () => {
         status: 'succeeded',
         latency_ms: expect.any(Number),
       }),
+    );
+    expect(track).toHaveBeenNthCalledWith(
+      5,
+      'territory_destination_selected',
+      {
+        project_id: 'project-1',
+        source: 'extraction',
+        destination_kind: 'ungrouped',
+      },
     );
 
     const serializedEvents = JSON.stringify(track.mock.calls);

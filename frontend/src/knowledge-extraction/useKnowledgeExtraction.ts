@@ -853,6 +853,36 @@ export function useKnowledgeExtraction({
         }
 
         trackResolution('succeeded');
+        if (
+          input.kind === 'new_bubble' &&
+          response.resolution.kind === 'new_bubble'
+        ) {
+          const destination = input.destination ?? {
+            kind: 'ungrouped' as const,
+          };
+
+          trackAnalytics(
+            analyticsClientRef.current,
+            'territory_destination_selected',
+            {
+              project_id: projectId,
+              source: 'extraction',
+              destination_kind: destination.kind,
+            },
+          );
+
+          if (destination.kind === 'new') {
+            trackAnalytics(
+              analyticsClientRef.current,
+              'territory_created',
+              {
+                project_id: projectId,
+                territory_id: response.resolution.bubble.territory_id,
+                source: 'extraction',
+              },
+            );
+          }
+        }
         onResolvedRef.current?.(response);
         return response;
       } catch (error: unknown) {

@@ -183,7 +183,9 @@ describe('TerritoryCard visible rows', () => {
 
     expect(screen.getByLabelText('0 bubbles total').textContent).toBe('0');
     expect(
-      screen.getByText('This territory doesn’t hold any bubbles yet.'),
+      screen.getByRole('status', {
+        name: 'This territory doesn’t hold any bubbles yet.',
+      }),
     ).not.toBeNull();
     expect(screen.queryByLabelText('Visible bubbles: 2')).toBeNull();
     expect(screen.queryByText(/more bubbles/)).toBeNull();

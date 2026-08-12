@@ -65,9 +65,11 @@ describe('ProjectWorkspace territory save status', () => {
           resolveRename = resolve;
         }),
     );
+    const track = vi.fn<AnalyticsClient['track']>();
 
     render(
       <ProjectWorkspace
+        analyticsClient={{ track }}
         project={project}
         requestBubbleLinks={async () => []}
         requestBubbles={async () => [bubbleFixture(1)]}
@@ -109,6 +111,10 @@ describe('ProjectWorkspace territory save status', () => {
       await screen.findByRole('heading', { name: 'Customer research' }),
     ).not.toBeNull();
     await waitFor(() => expect(screen.queryByText('SAVING')).toBeNull());
+    expect(track).toHaveBeenCalledWith('territory_renamed', {
+      project_id: project.id,
+      territory_id: 'territory-one',
+    });
   });
 
   it('confirms the move count, deletes, and refreshes reassigned bubbles under Ungrouped', async () => {
@@ -132,9 +138,11 @@ describe('ProjectWorkspace territory save status', () => {
       isDeleted = true;
       return { moved_bubble_count: 1 };
     });
+    const track = vi.fn<AnalyticsClient['track']>();
 
     render(
       <ProjectWorkspace
+        analyticsClient={{ track }}
         project={project}
         requestBubbleLinks={async () => []}
         requestBubbles={requestBubbles}
@@ -171,6 +179,11 @@ describe('ProjectWorkspace territory save status', () => {
     ).not.toBeNull();
     expect(screen.getByRole('article', { name: 'Bubble 1' })).not.toBeNull();
     expect(screen.queryByText('Operations')).toBeNull();
+    expect(track).toHaveBeenCalledWith('territory_deleted', {
+      project_id: project.id,
+      territory_id: 'territory-one',
+      moved_bubble_count: 1,
+    });
   });
 
   it('surfaces an in-flight visible-count save in the existing header indicator', async () => {
@@ -242,9 +255,11 @@ describe('ProjectWorkspace territory save status', () => {
           visible_count: 4,
         }),
     );
+    const track = vi.fn<AnalyticsClient['track']>();
 
     render(
       <ProjectWorkspace
+        analyticsClient={{ track }}
         project={project}
         requestBubbleLinks={async () => []}
         requestBubbles={async () => [bubbleFixture(1)]}
@@ -279,6 +294,11 @@ describe('ProjectWorkspace territory save status', () => {
     expect(
       screen.queryByRole('button', { name: 'Recompose territories' }),
     ).toBeNull();
+    expect(track).toHaveBeenCalledWith('territory_created', {
+      project_id: project.id,
+      territory_id: 'territory-created',
+      source: 'action_bar',
+    });
   });
 
   it('opens the reader from the chevron and hands editing to the inspector', async () => {

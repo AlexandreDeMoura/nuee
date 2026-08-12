@@ -59,29 +59,24 @@ export interface AnalyticsEventProperties {
     project_id: string;
     bubble_ids: string[];
   };
-  territory_recompose_requested: {
+  territory_created: {
     project_id: string;
-    bubble_count: number;
-    territory_count: number;
+    territory_id: string;
+    source: 'action_bar' | 'bubble_creation' | 'extraction';
   };
-  territory_recompose_completed: {
+  territory_renamed: {
     project_id: string;
-    bubble_count: number;
-    territory_count: number;
+    territory_id: string;
   };
-  territory_recompose_failed: {
+  territory_deleted: {
     project_id: string;
-    bubble_count: number;
-    territory_count: number;
-    reason:
-      | 'source_too_large'
-      | 'provider'
-      | 'timeout'
-      | 'invalid_request'
-      | 'invalid_response'
-      | 'invalid_output'
-      | 'persistence'
-      | 'request_failed';
+    territory_id: string;
+    moved_bubble_count: number;
+  };
+  territory_destination_selected: {
+    project_id: string;
+    source: 'bubble_creation' | 'extraction';
+    destination_kind: 'ungrouped' | 'existing' | 'new';
   };
   territory_visible_count_changed: {
     project_id: string;

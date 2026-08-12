@@ -1,9 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ApiError } from '../api';
 import type { AnalyticsClient } from '../analytics';
 import {
   assertPrivacySafeTerritoryAnalytics,
-  territoryRecomposeFailureReason,
   trackTerritoryAnalytics,
 } from './territoryAnalytics';
 
@@ -35,6 +33,17 @@ describe('territory analytics', () => {
         position_x: 240,
       }),
     ).toThrow('unsafe properties');
+
+    expect(() =>
+      assertPrivacySafeTerritoryAnalytics(
+        'territory_destination_selected',
+        {
+          project_id: 'project-one',
+          source: 'Private territory title',
+          destination_kind: 'existing',
+        },
+      ),
+    ).toThrow('unstable categorical value');
   });
 
   it('forwards an allowlisted event to the injected analytics client', () => {
@@ -60,32 +69,23 @@ describe('territory analytics', () => {
     );
   });
 
-  it('normalizes backend and transport failures to stable reasons', () => {
-    expect(
-      territoryRecomposeFailureReason(
-        new ApiError(503, {
-          code: 'TERRITORY_RECOMPOSE_FAILED',
-          reason: 'invalid_output',
-        }),
+  it('allows only stable creation sources and destination kinds', () => {
+    expect(() =>
+      assertPrivacySafeTerritoryAnalytics('territory_created', {
+        project_id: 'project-one',
+        territory_id: 'territory-one',
+        source: 'action_bar',
+      }),
+    ).not.toThrow();
+    expect(() =>
+      assertPrivacySafeTerritoryAnalytics(
+        'territory_destination_selected',
+        {
+          project_id: 'project-one',
+          source: 'extraction',
+          destination_kind: 'new',
+        },
       ),
-    ).toBe('invalid_output');
-    expect(
-      territoryRecomposeFailureReason(
-        new ApiError(413, {
-          code: 'TERRITORY_RECOMPOSE_SOURCE_TOO_LARGE',
-        }),
-      ),
-    ).toBe('source_too_large');
-    expect(
-      territoryRecomposeFailureReason(
-        new ApiError(503, {
-          code: 'TERRITORY_RECOMPOSE_FAILED',
-          reason: 'invalid_request',
-        }),
-      ),
-    ).toBe('invalid_request');
-    expect(territoryRecomposeFailureReason(new Error('private details'))).toBe(
-      'request_failed',
-    );
+    ).not.toThrow();
   });
 });

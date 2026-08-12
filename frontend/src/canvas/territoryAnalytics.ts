@@ -1,4 +1,3 @@
-import { ApiError } from '../api';
 import {
   trackAnalytics,
   type AnalyticsClient,
@@ -9,34 +8,18 @@ export type TerritoryAnalyticsEventName =
   | Extract<keyof AnalyticsEventProperties, `territory_${string}`>
   | 'bubble_reader_opened_from_canvas';
 
-export type TerritoryRecomposeFailureReason =
-  AnalyticsEventProperties['territory_recompose_failed']['reason'];
-
-const recomposeFailureReasons = new Set<TerritoryRecomposeFailureReason>([
-  'provider',
-  'timeout',
-  'invalid_request',
-  'invalid_response',
-  'invalid_output',
-  'persistence',
-]);
-
 const allowedKeys = {
-  territory_recompose_requested: [
+  territory_created: ['project_id', 'territory_id', 'source'],
+  territory_renamed: ['project_id', 'territory_id'],
+  territory_deleted: [
     'project_id',
-    'bubble_count',
-    'territory_count',
+    'territory_id',
+    'moved_bubble_count',
   ],
-  territory_recompose_completed: [
+  territory_destination_selected: [
     'project_id',
-    'bubble_count',
-    'territory_count',
-  ],
-  territory_recompose_failed: [
-    'project_id',
-    'bubble_count',
-    'territory_count',
-    'reason',
+    'source',
+    'destination_kind',
   ],
   territory_visible_count_changed: [
     'project_id',
@@ -62,6 +45,11 @@ const allowedKeys = {
     'moved_territory_count',
   ],
 } as const satisfies Record<TerritoryAnalyticsEventName, readonly string[]>;
+
+const allowedStableValues = {
+  source: new Set(['action_bar', 'bubble_creation', 'extraction']),
+  destination_kind: new Set(['ungrouped', 'existing', 'new']),
+} as const;
 
 /**
  * Runtime allowlist for territory telemetry. Canvas copy and spatial
@@ -91,14 +79,25 @@ export function assertPrivacySafeTerritoryAnalytics(
     );
   }
 
-  for (const value of Object.values(properties)) {
+  for (const [key, value] of Object.entries(properties)) {
     const safeValue =
-      typeof value === 'string' ||
+      (typeof value === 'string' && value.length > 0) ||
       (typeof value === 'number' && Number.isFinite(value) && value >= 0);
 
     if (!safeValue) {
       throw new TypeError(
         `Territory analytics event ${event} has unsafe values.`,
+      );
+    }
+
+    if (
+      key in allowedStableValues &&
+      !allowedStableValues[key as keyof typeof allowedStableValues].has(
+        value as never,
+      )
+    ) {
+      throw new TypeError(
+        `Territory analytics event ${event} has an unstable categorical value.`,
       );
     }
   }
@@ -113,23 +112,4 @@ export function trackTerritoryAnalytics<
 ): void {
   assertPrivacySafeTerritoryAnalytics(event, properties);
   trackAnalytics(analyticsClient, event, properties);
-}
-
-export function territoryRecomposeFailureReason(
-  error: unknown,
-): TerritoryRecomposeFailureReason {
-  if (!(error instanceof ApiError)) {
-    return 'request_failed';
-  }
-
-  if (error.code === 'TERRITORY_RECOMPOSE_SOURCE_TOO_LARGE') {
-    return 'source_too_large';
-  }
-
-  const reason = error.body.reason;
-
-  return typeof reason === 'string' &&
-    recomposeFailureReasons.has(reason as TerritoryRecomposeFailureReason)
-    ? (reason as TerritoryRecomposeFailureReason)
-    : 'request_failed';
 }
