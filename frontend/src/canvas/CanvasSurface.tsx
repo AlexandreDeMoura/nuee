@@ -103,6 +103,7 @@ export function CanvasSurface({
   onCreateBubbleDialogOpenChange,
   onSaveStatusChange,
   onStartDiscussion,
+  onTerritoryCreationPlacementRequestChange,
   bubbleLinks = [],
   multiSelection = null,
   viewportSaveDelayMs = DEFAULT_VIEWPORT_SAVE_DELAY_MS,
@@ -699,17 +700,30 @@ export function CanvasSurface({
     setCreateBubbleDialogOpen(true);
   }
 
-  function openCreateTerritoryDialog() {
+  const requestTerritoryCreationPlacement = useCallback(() => {
     const bounds = surfaceRef.current?.getBoundingClientRect();
 
-    setTerritoryCreationPlacement(
-      getTerritoryCreationPlacement({
-        surfaceHeight: bounds?.height ?? 0,
-        surfaceWidth: bounds?.width ?? 0,
-        territories: loadState.territories,
-        viewport,
-      }),
+    return getTerritoryCreationPlacement({
+      surfaceHeight: bounds?.height ?? 0,
+      surfaceWidth: bounds?.width ?? 0,
+      territories: loadState.territories,
+      viewport,
+    });
+  }, [loadState.territories, viewport]);
+
+  useEffect(() => {
+    onTerritoryCreationPlacementRequestChange?.(
+      requestTerritoryCreationPlacement,
     );
+
+    return () => onTerritoryCreationPlacementRequestChange?.(null);
+  }, [
+    onTerritoryCreationPlacementRequestChange,
+    requestTerritoryCreationPlacement,
+  ]);
+
+  function openCreateTerritoryDialog() {
+    setTerritoryCreationPlacement(requestTerritoryCreationPlacement());
   }
 
   function handleBubbleCreated(bubble: Bubble) {
@@ -1098,12 +1112,14 @@ export function CanvasSurface({
 
       {isCreateBubbleDialogOpen && (
         <CreateBubbleDialog
+          getTerritoryCreationPlacement={requestTerritoryCreationPlacement}
           onCancel={() => {
             setCreateBubbleDialogOpen(false);
           }}
           onCreated={handleBubbleCreated}
           projectId={projectId}
           requestCreate={requestBubbleCreate}
+          territories={loadState.territories}
         />
       )}
 

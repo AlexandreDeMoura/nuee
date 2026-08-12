@@ -10,6 +10,7 @@ import {
   type RenameTerritoryResponse,
   type RepositionTerritoryInput,
   type Territory,
+  type TerritoryDestination,
   type TerritoryPositionUpdate,
   type UpdateTerritoryVisibleCountInput,
 } from '@nuee/shared-types';
@@ -24,6 +25,7 @@ export type {
   RenameTerritoryResponse,
   RepositionTerritoryInput,
   Territory,
+  TerritoryDestination,
   TerritoryPositionUpdate,
   UpdateTerritoryVisibleCountInput,
 };

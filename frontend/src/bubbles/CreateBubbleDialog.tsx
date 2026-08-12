@@ -5,10 +5,18 @@ import {
   createBubble,
   type Bubble,
   type CreateBubbleInput,
+  type Territory,
 } from '../api';
 import { focusRing } from '../ui/focusRing';
 import { useFieldValidity } from '../ui/useFieldValidity';
 import { useModalShell } from '../ui/useModalShell';
+import type { TerritoryCreationPlacementRequest } from '../canvas/territoryPlacement';
+import { BubbleDestinationSelector } from './BubbleDestinationSelector';
+import {
+  getNewTerritoryTitleError,
+  resolveBubbleDestination,
+  type BubbleDestinationSelection,
+} from './bubbleDestinationModel';
 
 const fieldClasses =
   `w-full rounded-[9px] border bg-white px-3 py-2.5 text-[13px] text-[#1e2733] placeholder:text-[#b6c0cc] disabled:cursor-not-allowed disabled:border-[#eef1f5] disabled:bg-[#fafbfc] disabled:text-[#8b97a6] ${focusRing}`;
@@ -19,21 +27,29 @@ export type BubbleCreateRequest = (
 ) => Promise<Bubble>;
 
 export interface CreateBubbleDialogProps {
+  getTerritoryCreationPlacement?: TerritoryCreationPlacementRequest;
   onCancel: () => void;
   onCreated: (bubble: Bubble) => void;
   projectId: string;
   requestCreate?: BubbleCreateRequest;
+  territories?: readonly Territory[];
 }
 
 export function CreateBubbleDialog({
+  getTerritoryCreationPlacement,
   onCancel,
   onCreated,
   projectId,
   requestCreate = createBubble,
+  territories = [],
 }: CreateBubbleDialogProps) {
   const [title, setTitle] = useState('');
   const [summary, setSummary] = useState('');
   const [content, setContent] = useState('');
+  const [destination, setDestination] =
+    useState<BubbleDestinationSelection>({ kind: 'ungrouped' });
+  const [destinationValidationRevealed, setDestinationValidationRevealed] =
+    useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [hasCreateError, setHasCreateError] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
@@ -42,7 +58,14 @@ export function CreateBubbleDialog({
   const normalizedTitle = title.trim();
   const normalizedSummary = summary.trim();
   const normalizedContent = content.trim();
-  const isValid = normalizedTitle.length > 0 && normalizedContent.length > 0;
+  const isDestinationValid =
+    destination.kind !== 'new' ||
+    (getNewTerritoryTitleError(destination.title) === null &&
+      getTerritoryCreationPlacement !== undefined);
+  const isValid =
+    normalizedTitle.length > 0 &&
+    normalizedContent.length > 0 &&
+    isDestinationValid;
   const { containerRef, isClosing } = useModalShell({
     onEscape: () => {
       if (!isCreatingRef.current) {
@@ -75,6 +98,7 @@ export function CreateBubbleDialog({
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setDestinationValidationRevealed(true);
 
     if (!isValid || isCreatingRef.current) {
       fields.revealAll();
@@ -86,10 +110,24 @@ export function CreateBubbleDialog({
     setHasCreateError(false);
 
     try {
+      const resolvedDestination = resolveBubbleDestination(
+        destination,
+        destination.kind === 'new'
+          ? getTerritoryCreationPlacement?.()
+          : undefined,
+      );
+
+      if (!resolvedDestination) {
+        isCreatingRef.current = false;
+        setIsCreating(false);
+        return;
+      }
+
       const bubble = await requestCreate(projectId, {
         title: normalizedTitle,
         summary: normalizedSummary.length > 0 ? normalizedSummary : null,
         content: normalizedContent,
+        destination: resolvedDestination,
       });
 
       isCreatingRef.current = false;
@@ -114,7 +152,7 @@ export function CreateBubbleDialog({
       onMouseDown={handleBackdropMouseDown}
     >
       <div
-        className="w-full max-w-[472px] overflow-hidden rounded-2xl border border-[#e1e6ec] bg-white shadow-[0_24px_60px_-18px_rgba(20,28,40,0.55)]"
+        className="max-h-[calc(100vh-32px)] w-full max-w-[472px] overflow-hidden rounded-2xl border border-[#e1e6ec] bg-white shadow-[0_24px_60px_-18px_rgba(20,28,40,0.55)]"
         ref={containerRef}
         role="dialog"
         aria-modal="true"
@@ -123,8 +161,12 @@ export function CreateBubbleDialog({
         aria-busy={isCreating}
         tabIndex={-1}
       >
-        <form noValidate onSubmit={handleSubmit}>
-          <div className="px-5 pt-5 pb-4 sm:px-[22px]">
+        <form
+          className="flex max-h-[calc(100vh-32px)] flex-col"
+          noValidate
+          onSubmit={handleSubmit}
+        >
+          <div className="min-h-0 overflow-y-auto px-5 pt-5 pb-4 sm:px-[22px]">
             <div className="mb-1 flex items-center gap-3">
               <h2
                 className="m-0 text-base font-semibold tracking-[-0.15px] text-[#1e2733]"
@@ -147,7 +189,13 @@ export function CreateBubbleDialog({
                     aria-hidden="true"
                   />
                 )}
-                {isCreating ? 'CREATING' : 'ADDED TO UNGROUPED'}
+                {isCreating
+                  ? 'CREATING'
+                  : destination.kind === 'ungrouped'
+                    ? 'DESTINATION · UNGROUPED'
+                    : destination.kind === 'existing'
+                      ? 'DESTINATION · TERRITORY'
+                      : 'DESTINATION · NEW TERRITORY'}
               </span>
             </div>
 
@@ -277,6 +325,22 @@ export function CreateBubbleDialog({
                 Content is required.
               </p>
             )}
+
+            <div className="mt-4 border-t border-[#eef1f5] pt-4">
+              <BubbleDestinationSelector
+                disabled={isCreating}
+                newTerritoryPlacementAvailable={
+                  getTerritoryCreationPlacement !== undefined
+                }
+                onChange={(selection) => {
+                  setDestination(selection);
+                  clearCreateError();
+                }}
+                revealValidation={destinationValidationRevealed}
+                selection={destination}
+                territories={territories}
+              />
+            </div>
           </div>
 
           <div className="flex items-center gap-2.5 border-t border-[#eef1f5] bg-[#fafbfc] px-5 py-3.5 sm:px-[22px]">
@@ -294,7 +358,11 @@ export function CreateBubbleDialog({
             <button
               className={`inline-flex min-h-9 items-center justify-center gap-[7px] rounded-[9px] bg-[#3f63a8] px-[18px] py-2 text-[12.5px] font-semibold text-white shadow-[0_6px_16px_-8px_rgba(63,99,168,0.7)] hover:bg-[#33538f] disabled:cursor-not-allowed disabled:bg-[#c4cdd8] disabled:shadow-none ${focusRing}`}
               type="submit"
-              disabled={!isValid || isCreating}
+              disabled={
+                normalizedTitle.length === 0 ||
+                normalizedContent.length === 0 ||
+                isCreating
+              }
             >
               {isCreating && (
                 <LoaderCircle

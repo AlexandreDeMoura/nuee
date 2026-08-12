@@ -1,7 +1,8 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { TERRITORY_TITLE_MAX_LENGTH } from '@nuee/shared-types';
 import { StrictMode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import type { Bubble } from '../src/api';
+import type { Bubble, Territory } from '../src/api';
 import { CreateBubbleDialog } from '../src/bubbles/CreateBubbleDialog';
 
 const createdBubble: Bubble = {
@@ -19,6 +20,18 @@ const createdBubble: Bubble = {
   source_discussion_deleted_at: null,
   source_message_ids: [],
   source_context_item_ids: [],
+};
+
+const existingTerritory: Territory = {
+  id: 'territory-existing',
+  project_id: 'project-1',
+  kind: 'manual',
+  title: 'Pricing research',
+  position_x: 10,
+  position_y: 20,
+  visible_count: 4,
+  created_at: '2026-07-22T08:00:00.000Z',
+  updated_at: '2026-07-22T08:00:00.000Z',
 };
 
 function fillValidForm() {
@@ -117,7 +130,94 @@ describe('CreateBubbleDialog', () => {
       title: 'Break-even point',
       summary: null,
       content: 'Routes clear contribution margin above 40% utilization.',
+      destination: { kind: 'ungrouped' },
     });
+  });
+
+  it('creates in an existing territory or a new viewport-centered territory', async () => {
+    const requestCreate = vi.fn().mockResolvedValue(createdBubble);
+
+    const { unmount } = render(
+      <CreateBubbleDialog
+        getTerritoryCreationPlacement={() => ({
+          position_x: 120,
+          position_y: -40,
+        })}
+        onCancel={vi.fn()}
+        onCreated={vi.fn()}
+        projectId="project-1"
+        requestCreate={requestCreate}
+        territories={[existingTerritory]}
+      />,
+    );
+
+    fillValidForm();
+    fireEvent.click(
+      screen.getByRole('radio', { name: /Pricing research/ }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Create bubble' }));
+
+    await waitFor(() => expect(requestCreate).toHaveBeenCalledTimes(1));
+    expect(requestCreate).toHaveBeenLastCalledWith(
+      'project-1',
+      expect.objectContaining({
+        destination: {
+          kind: 'existing',
+          territory_id: existingTerritory.id,
+        },
+      }),
+    );
+
+    unmount();
+    requestCreate.mockClear();
+
+    render(
+      <CreateBubbleDialog
+        getTerritoryCreationPlacement={() => ({
+          position_x: 120,
+          position_y: -40,
+        })}
+        onCancel={vi.fn()}
+        onCreated={vi.fn()}
+        projectId="project-1"
+        requestCreate={requestCreate}
+        territories={[existingTerritory]}
+      />,
+    );
+
+    fillValidForm();
+    fireEvent.click(screen.getByRole('radio', { name: /New territory/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Create bubble' }));
+
+    expect(screen.getByText('Enter a territory title.')).not.toBeNull();
+    expect(requestCreate).not.toHaveBeenCalled();
+
+    fireEvent.change(screen.getByLabelText('New territory title'), {
+      target: { value: 'x'.repeat(TERRITORY_TITLE_MAX_LENGTH + 1) },
+    });
+    expect(
+      screen.getByText(
+        `Use ${TERRITORY_TITLE_MAX_LENGTH} characters or fewer.`,
+      ),
+    ).not.toBeNull();
+
+    fireEvent.change(screen.getByLabelText('New territory title'), {
+      target: { value: '  Unit economics  ' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Create bubble' }));
+
+    await waitFor(() => expect(requestCreate).toHaveBeenCalledTimes(1));
+    expect(requestCreate).toHaveBeenLastCalledWith(
+      'project-1',
+      expect.objectContaining({
+        destination: {
+          kind: 'new',
+          position_x: 120,
+          position_y: -40,
+          title: 'Unit economics',
+        },
+      }),
+    );
   });
 
   it('preserves every field after a recoverable save failure and retries', async () => {

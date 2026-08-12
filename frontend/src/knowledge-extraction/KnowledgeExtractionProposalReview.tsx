@@ -8,7 +8,17 @@ import {
   Target,
   X,
 } from 'lucide-react';
-import type { KnowledgeExtractionProposal } from '../api';
+import type {
+  KnowledgeExtractionProposal,
+  Territory,
+  TerritoryDestination,
+} from '../api';
+import { BubbleDestinationSelector } from '../bubbles/BubbleDestinationSelector';
+import {
+  resolveBubbleDestination,
+  type BubbleDestinationSelection,
+} from '../bubbles/bubbleDestinationModel';
+import type { TerritoryCreationPlacementRequest } from '../canvas/territoryPlacement';
 import { focusRing } from '../ui/focusRing';
 import { markdownToPlainText } from '../ui/markdownToPlainText';
 import { RichResponse } from '../ui/RichResponse';
@@ -23,14 +33,23 @@ type ContentView = {
   extractionId: string | null;
   mode: 'edit' | 'preview';
 };
+type DestinationView = {
+  extractionId: string | null;
+  selection: BubbleDestinationSelection;
+  validationRevealed: boolean;
+};
 
 export interface KnowledgeExtractionProposalReviewProps {
   controller: KnowledgeExtractionController;
+  getTerritoryCreationPlacement?: TerritoryCreationPlacementRequest;
   isRejecting?: boolean;
-  onApproveAsNewBubble?: () => void | Promise<void>;
+  onApproveAsNewBubble?: (
+    destination: TerritoryDestination,
+  ) => void | Promise<void>;
   onApproveBubbleUpdate?: () => void | Promise<void>;
   onReject: () => void | Promise<void>;
   onUpdateExistingBubble?: () => void | Promise<void>;
+  territories?: readonly Territory[];
 }
 
 function normalizedProposal(
@@ -45,11 +64,13 @@ function normalizedProposal(
 
 export function KnowledgeExtractionProposalReview({
   controller,
+  getTerritoryCreationPlacement,
   isRejecting = false,
   onApproveAsNewBubble,
   onApproveBubbleUpdate,
   onReject,
   onUpdateExistingBubble,
+  territories = [],
 }: KnowledgeExtractionProposalReviewProps) {
   const titleId = useId();
   const summaryId = useId();
@@ -62,6 +83,21 @@ export function KnowledgeExtractionProposalReview({
     extractionId: controller.state.extractionId,
     mode: 'edit',
   });
+  const [storedDestinationView, setStoredDestinationView] =
+    useState<DestinationView>({
+      extractionId: controller.state.extractionId,
+      selection: { kind: 'ungrouped' },
+      validationRevealed: false,
+    });
+  const destinationView =
+    storedDestinationView.extractionId === controller.state.extractionId
+      ? storedDestinationView
+      : {
+          extractionId: controller.state.extractionId,
+          selection: { kind: 'ungrouped' } as const,
+          validationRevealed: false,
+        };
+  const destination = destinationView.selection;
   const proposal = controller.state.proposal;
   const normalized = proposal ? normalizedProposal(proposal) : null;
   const fields = useFieldValidity({
@@ -137,6 +173,35 @@ export function KnowledgeExtractionProposalReview({
     }
 
     void action();
+  };
+
+  const tryNewBubbleResolution = () => {
+    fields.revealAll();
+    setStoredDestinationView({
+      ...destinationView,
+      validationRevealed: true,
+    });
+
+    if (
+      normalized.title.length === 0 ||
+      normalized.content.length === 0 ||
+      !onApproveAsNewBubble
+    ) {
+      return;
+    }
+
+    const resolvedDestination = resolveBubbleDestination(
+      destination,
+      destination.kind === 'new'
+        ? getTerritoryCreationPlacement?.()
+        : undefined,
+    );
+
+    if (!resolvedDestination) {
+      return;
+    }
+
+    void onApproveAsNewBubble(resolvedDestination);
   };
 
   const inputBorderClasses = (hasError: boolean) =>
@@ -387,13 +452,31 @@ export function KnowledgeExtractionProposalReview({
           Choose one resolution. Rejecting keeps the discussion unchanged and
           creates no bubble.
         </p>
+        <div className="mb-4 border-b border-[#e7ebf0] pb-4">
+          <BubbleDestinationSelector
+            description="Used only when approving as a new bubble. Updating an existing bubble leaves its territory unchanged."
+            disabled={isBusy}
+            newTerritoryPlacementAvailable={
+              getTerritoryCreationPlacement !== undefined
+            }
+            onChange={(selection) =>
+              setStoredDestinationView({
+                ...destinationView,
+                selection,
+              })
+            }
+            revealValidation={destinationView.validationRevealed}
+            selection={destination}
+            territories={territories}
+          />
+        </div>
         <div className="grid gap-2.5 sm:grid-cols-2">
           <button
             className={`inline-flex min-h-12 cursor-pointer items-center justify-center gap-2.5 rounded-[11px] bg-[#3f63a8] px-4.25 text-[14px] font-semibold text-white shadow-[0_6px_16px_-8px_rgba(63,99,168,0.7)] hover:bg-[#33538f] disabled:cursor-not-allowed disabled:bg-[#aebbd1] disabled:shadow-none ${focusRing}`}
             data-knowledge-extraction-resolution-action="new_bubble"
             type="button"
             disabled={isBusy || onApproveAsNewBubble === undefined}
-            onClick={() => tryResolution(onApproveAsNewBubble)}
+            onClick={tryNewBubbleResolution}
           >
             {controller.state.status === 'saving_new' ? (
               <LoaderCircle

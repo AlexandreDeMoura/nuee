@@ -498,6 +498,7 @@ describe('workspace integration contracts', () => {
       persisted.id,
       'extraction-1',
       {
+        destination: { kind: 'ungrouped' },
         kind: 'new_bubble',
         proposal: guidedProposal.proposal,
       },

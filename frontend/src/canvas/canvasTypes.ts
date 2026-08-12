@@ -16,6 +16,7 @@ import type {
 } from '../api';
 import type { AnalyticsClient } from '../analytics';
 import type { BubbleCreateRequest } from '../bubbles/CreateBubbleDialog';
+import type { TerritoryCreationPlacementRequest } from './territoryPlacement';
 
 export interface CanvasViewport {
   x: number;
@@ -106,6 +107,9 @@ export interface CanvasSurfaceProps {
   onBubbleSelectionChange?: (bubble: Bubble | null) => void;
   onBubbleReaderOpen?: (bubble: Bubble) => void;
   onCreateBubbleDialogOpenChange?: (open: boolean) => void;
+  onTerritoryCreationPlacementRequestChange?: (
+    request: TerritoryCreationPlacementRequest | null,
+  ) => void;
   onSaveStatusChange?: (status: CanvasSaveStatus) => void;
   onStartDiscussion?: () => void;
   bubbleLinks?: BubbleLink[];

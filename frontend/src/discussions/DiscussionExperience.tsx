@@ -17,7 +17,10 @@ import { DiscussionMessages } from './DiscussionMessages';
 import type {
   DiscussionDetails,
   KnowledgeExtractionResolutionResponse,
+  Territory,
+  TerritoryDestination,
 } from '../api';
+import type { TerritoryCreationPlacementRequest } from '../canvas/territoryPlacement';
 import {
   hasEligibleKnowledgeExtractionSource,
   KnowledgeExtractionDiscardDialog,
@@ -52,6 +55,7 @@ export interface DiscussionExperienceProps {
   controller: DiscussionVisibilityController;
   createExtractionAttemptId?: () => string;
   extractionRequests?: KnowledgeExtractionRequests;
+  getTerritoryCreationPlacement?: TerritoryCreationPlacementRequest;
   isObscured?: boolean;
   onExtractKnowledge?: (source: DiscussionKnowledgeSource) => void;
   onKnowledgeExtractionResolved?: (
@@ -69,6 +73,7 @@ export interface DiscussionExperienceProps {
   projectId: string;
   requests?: DiscussionLifecycleRequests;
   sourceCatalog: DiscussionSourceCatalog;
+  territories?: readonly Territory[];
 }
 
 export function DiscussionExperience({
@@ -77,6 +82,7 @@ export function DiscussionExperience({
   controller,
   createExtractionAttemptId,
   extractionRequests,
+  getTerritoryCreationPlacement,
   isObscured,
   onExtractKnowledge,
   onKnowledgeExtractionResolved,
@@ -90,6 +96,7 @@ export function DiscussionExperience({
   projectId,
   requests,
   sourceCatalog,
+  territories,
 }: DiscussionExperienceProps) {
   const visibleDiscussion = controller.visibleDiscussion;
 
@@ -109,6 +116,7 @@ export function DiscussionExperience({
       contextSelection={contextSelection}
       createExtractionAttemptId={createExtractionAttemptId}
       extractionRequests={extractionRequests}
+      getTerritoryCreationPlacement={getTerritoryCreationPlacement}
       isObscured={isObscured}
       onExtractKnowledge={onExtractKnowledge}
       onKnowledgeExtractionResolved={onKnowledgeExtractionResolved}
@@ -125,6 +133,7 @@ export function DiscussionExperience({
       projectId={projectId}
       requests={requests}
       sourceCatalog={sourceCatalog}
+      territories={territories}
       visibleDiscussion={visibleDiscussion}
     />
   );
@@ -136,6 +145,7 @@ function DiscussionExperienceModal({
   controller,
   createExtractionAttemptId,
   extractionRequests,
+  getTerritoryCreationPlacement,
   isObscured,
   onExtractKnowledge,
   onKnowledgeExtractionResolved,
@@ -149,6 +159,7 @@ function DiscussionExperienceModal({
   projectId,
   requests,
   sourceCatalog,
+  territories,
   visibleDiscussion,
 }: DiscussionExperienceProps & {
   visibleDiscussion: NonNullable<
@@ -455,16 +466,19 @@ function DiscussionExperienceModal({
       setIsRejectingExtraction(false);
     }
   }, [extraction, restoreExtractionTriggerFocus]);
-  const approveExtractionAsNewBubble = useCallback(async () => {
-    const response = await extraction.approveAsNewBubble();
+  const approveExtractionAsNewBubble = useCallback(
+    async (destination: TerritoryDestination) => {
+      const response = await extraction.approveAsNewBubble(destination);
 
-    if (response?.resolution.kind !== 'new_bubble') {
-      return;
-    }
+      if (response?.resolution.kind !== 'new_bubble') {
+        return;
+      }
 
-    extraction.reset();
-    restoreExtractionTriggerFocus();
-  }, [extraction, restoreExtractionTriggerFocus]);
+      extraction.reset();
+      restoreExtractionTriggerFocus();
+    },
+    [extraction, restoreExtractionTriggerFocus],
+  );
   const beginExtractionUpdateTargetSelection = useCallback(() => {
     if (!onKnowledgeExtractionTargetSelectionChange) {
       return;
@@ -645,6 +659,7 @@ function DiscussionExperienceModal({
         isReviewingExtraction ? (
           <KnowledgeExtractionProposalReview
             controller={extraction}
+            getTerritoryCreationPlacement={getTerritoryCreationPlacement}
             isRejecting={isRejectingExtraction}
             onApproveAsNewBubble={approveExtractionAsNewBubble}
             onApproveBubbleUpdate={approveExtractionBubbleUpdate}
@@ -654,6 +669,7 @@ function DiscussionExperienceModal({
                 ? beginExtractionUpdateTargetSelection
                 : undefined
             }
+            territories={territories}
           />
         ) : isExtractionFlowActive && lifecycle.details ? (
           <KnowledgeExtractionSourceSelection

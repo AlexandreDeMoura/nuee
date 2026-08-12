@@ -1,9 +1,17 @@
-import type { Territory } from '../api';
+import type { CreateTerritoryInput, Territory } from '../api';
 import type { CanvasViewport } from './canvasTypes';
 import { GRID_SIZE } from './canvasModel';
 import { TERRITORY_CARD_WIDTH } from './compactTerritoryLayout';
 
 export const EMPTY_TERRITORY_CARD_HEIGHT = 132;
+
+export type TerritoryCreationPlacement = Pick<
+  CreateTerritoryInput,
+  'position_x' | 'position_y'
+>;
+
+export type TerritoryCreationPlacementRequest =
+  () => TerritoryCreationPlacement;
 
 interface TerritoryCreationPlacementInput {
   surfaceHeight: number;

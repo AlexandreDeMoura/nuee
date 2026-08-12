@@ -650,9 +650,13 @@ describe('useKnowledgeExtraction', () => {
       await result.current.generateProposal();
     });
     act(() => result.current.editProposal('title', 'Final title'));
+    const destination = {
+      kind: 'existing' as const,
+      territory_id: 'territory-research',
+    };
 
     await act(async () => {
-      await result.current.approveAsNewBubble();
+      await result.current.approveAsNewBubble(destination);
     });
     expect(result.current.state.status).toBe('reviewing');
     expect(result.current.state.proposal?.title).toBe('Final title');
@@ -664,13 +668,16 @@ describe('useKnowledgeExtraction', () => {
     );
 
     await act(async () => {
-      await result.current.approveAsNewBubble();
+      await result.current.approveAsNewBubble(destination);
     });
     expect(result.current.state.status).toBe('resolved');
     expect(onResolved).toHaveBeenCalledTimes(1);
     expect(resolve).toHaveBeenCalledTimes(2);
     expect(resolve.mock.calls[0]?.[3]).toEqual(
       resolve.mock.calls[1]?.[3],
+    );
+    expect(resolve.mock.calls[0]?.[3]).toEqual(
+      expect.objectContaining({ destination }),
     );
   });
 

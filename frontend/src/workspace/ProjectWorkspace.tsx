@@ -44,6 +44,7 @@ import {
 } from '../canvas/CanvasSurface';
 import { useProjectBubbles } from '../canvas/useProjectBubbles';
 import type { BubbleCreateRequest } from '../bubbles/CreateBubbleDialog';
+import type { TerritoryCreationPlacementRequest } from '../canvas/territoryPlacement';
 import { BubbleReaderModal } from '../bubbles/BubbleReaderModal';
 import {
   type BubbleDeleteRequest,
@@ -472,6 +473,8 @@ export function ProjectWorkspace({
     useState<string | null>(null);
   const [createBubbleDialogProjectId, setCreateBubbleDialogProjectId] =
     useState<string | null>(null);
+  const [territoryCreationPlacementRequest, setTerritoryCreationPlacementRequest] =
+    useState<TerritoryCreationPlacementRequest | null>(null);
   const [selectedBubbleId, setSelectedBubbleId] = useState<string | null>(null);
   const [readerBubbleId, setReaderBubbleId] = useState<string | null>(null);
   const [
@@ -795,6 +798,12 @@ export function ProjectWorkspace({
       setKnowledgeExtractionTargetSelection(selection);
     },
     [currentProject.id],
+  );
+  const handleTerritoryCreationPlacementRequestChange = useCallback(
+    (request: TerritoryCreationPlacementRequest | null) => {
+      setTerritoryCreationPlacementRequest(() => request);
+    },
+    [],
   );
 
   const handleBubbleLinkCreated = useCallback((link: BubbleLink) => {
@@ -1152,6 +1161,9 @@ export function ProjectWorkspace({
                 open ? currentProject.id : null,
               )
             }
+            onTerritoryCreationPlacementRequestChange={
+              handleTerritoryCreationPlacementRequestChange
+            }
             onSaveStatusChange={setCanvasSaveStatus}
             onStartDiscussion={startDiscussionFromCanvas}
             viewportSaveDelayMs={viewportSaveDelayMs}
@@ -1222,6 +1234,9 @@ export function ProjectWorkspace({
                 contextSelection={discussionContextSelection}
                 controller={discussionVisibility}
                 extractionRequests={extractionRequests}
+                getTerritoryCreationPlacement={
+                  territoryCreationPlacementRequest ?? undefined
+                }
                 isObscured={discussionPendingDeletion !== null}
                 onExtractKnowledge={onExtractDiscussionKnowledge}
                 onKnowledgeExtractionResolved={
@@ -1240,6 +1255,7 @@ export function ProjectWorkspace({
                 projectId={currentProject.id}
                 requests={discussionLifecycleRequests}
                 sourceCatalog={discussionSourceCatalog}
+                territories={bubbleCollection.loadState.territories}
                 onUploadDocument={uploadDocumentFromCanvas}
               />
             )))}

@@ -13,6 +13,7 @@ import type {
   KnowledgeExtractionProposalResponse,
   KnowledgeExtractionResolutionResponse,
   ResolveKnowledgeExtractionInput,
+  TerritoryDestination,
 } from '../api';
 import {
   analytics,
@@ -71,7 +72,9 @@ export interface UseKnowledgeExtractionOptions
 }
 
 export interface KnowledgeExtractionController {
-  approveAsNewBubble: () => Promise<KnowledgeExtractionResolutionResponse | null>;
+  approveAsNewBubble: (
+    destination?: TerritoryDestination,
+  ) => Promise<KnowledgeExtractionResolutionResponse | null>;
   approveBubbleUpdate: () => Promise<KnowledgeExtractionResolutionResponse | null>;
   beginUpdateTargetSelection: () => void;
   cancelUpdateTargetSelection: () => void;
@@ -903,24 +906,25 @@ export function useKnowledgeExtraction({
     ],
   );
 
-  const approveAsNewBubble = useCallback(() => {
-    const current = stateRef.current;
+  const approveAsNewBubble = useCallback(
+    (destination: TerritoryDestination = { kind: 'ungrouped' }) => {
+      const current = stateRef.current;
 
-    if (
-      current.status !== 'reviewing' ||
-      !current.proposal
-    ) {
-      return Promise.resolve(null);
-    }
+      if (current.status !== 'reviewing' || !current.proposal) {
+        return Promise.resolve(null);
+      }
 
-    return runResolution(
-      {
-        kind: 'new_bubble',
-        proposal: { ...current.proposal },
-      },
-      { type: 'new_bubble_save_started' },
-    );
-  }, [runResolution]);
+      return runResolution(
+        {
+          destination,
+          kind: 'new_bubble',
+          proposal: { ...current.proposal },
+        },
+        { type: 'new_bubble_save_started' },
+      );
+    },
+    [runResolution],
+  );
 
   const approveBubbleUpdate = useCallback(() => {
     const current = stateRef.current;
