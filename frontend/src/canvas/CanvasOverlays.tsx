@@ -5,6 +5,7 @@ import {
   CircleDot,
   CirclePlus,
   LayoutGrid,
+  Map as MapIcon,
   MessageSquare,
   Minus,
   Plus,
@@ -288,12 +289,14 @@ export function CanvasBubbleActions({
   isCompacting,
   onCompact,
   onCreate,
+  onCreateTerritory,
   onStartDiscussion,
 }: {
   canCompact: boolean;
   isCompacting: boolean;
   onCompact: () => void;
   onCreate: () => void;
+  onCreateTerritory: () => void;
   onStartDiscussion?: () => void;
 }) {
   return (
@@ -320,6 +323,15 @@ export function CanvasBubbleActions({
       >
         <CirclePlus className="size-[15px]" strokeWidth={1.8} aria-hidden="true" />
         Bubble
+      </button>
+      <button
+        className={`inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-[9px] px-[13px] py-2 text-[12.5px] font-medium text-[#5c6a7a] hover:bg-[#f4f6f9] hover:text-[#33538f] ${focusRing}`}
+        type="button"
+        aria-haspopup="dialog"
+        onClick={onCreateTerritory}
+      >
+        <MapIcon className="size-[15px]" strokeWidth={1.8} aria-hidden="true" />
+        Territory
       </button>
       <span className="h-5 w-px bg-[#e1e6ec]" aria-hidden="true" />
       <button

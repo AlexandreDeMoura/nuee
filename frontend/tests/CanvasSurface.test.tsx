@@ -17,7 +17,7 @@ function territory(overrides: Partial<Territory> = {}): Territory {
   return {
     id: 'territory-1',
     project_id: 'project-123',
-    kind: 'composed',
+    kind: 'manual',
     title: 'Market evidence',
     position_x: 120,
     position_y: -48,
@@ -103,7 +103,10 @@ describe('CanvasSurface territory cards', () => {
     expect(within(card).getByText('Fallback content opening.')).toBeTruthy();
     expect(within(card).queryByText('Bubble title must not be the row face')).toBeNull();
     expect(within(card).getByText('+ 1 more bubble')).toBeTruthy();
-    expect(screen.queryByText('Empty territory')).toBeNull();
+    expect(screen.getByText('Empty territory')).toBeTruthy();
+    expect(
+      screen.getByText('This territory doesn’t hold any bubbles yet.'),
+    ).toBeTruthy();
     expect(card.getAttribute('style')).toContain('left: 120px');
     expect(card.getAttribute('style')).toContain('top: -48px');
   });

@@ -11,7 +11,7 @@ function territoryFixture(): Territory {
   return {
     id: 'territory-one',
     project_id: 'project-one',
-    kind: 'composed',
+    kind: 'manual',
     title: 'Operations',
     position_x: 0,
     position_y: 0,
@@ -51,6 +51,7 @@ describe('CanvasSurface territory scrolling', () => {
         territories: [territoryFixture()],
       },
       addBubble: vi.fn(),
+      addTerritory: vi.fn(),
       isBubbleRemoved: vi.fn(() => false),
       removeBubble: vi.fn(),
       replaceCollection: vi.fn(),

@@ -17,6 +17,7 @@ import {
 } from '../api';
 import { analytics, trackAnalytics } from '../analytics';
 import { CreateBubbleDialog } from '../bubbles/CreateBubbleDialog';
+import { CreateTerritoryDialog } from './CreateTerritoryDialog';
 import {
   CanvasBubbleActions,
   CanvasBubbleLoadNotice,
@@ -44,6 +45,7 @@ import type {
   CanvasSurfaceProps,
 } from './canvasTypes';
 import { groupBubblesByTerritory } from './territoryModel';
+import { getTerritoryCreationPlacement } from './territoryPlacement';
 import { trackTerritoryAnalytics } from './territoryAnalytics';
 import { useMultiSelection } from './useMultiSelection';
 import { useProjectBubbles } from './useProjectBubbles';
@@ -80,6 +82,7 @@ export function CanvasSurface({
   requestBubbleCreate,
   requestBubbles = getProjectBubbles,
   requestTerritories = getProjectTerritories,
+  requestTerritoryCreate,
   requestTerritoryPositionUpdate = repositionTerritory,
   requestTerritoryPositionsUpdate = repositionTerritories,
   requestTerritoryVisibleCountUpdate = updateTerritoryVisibleCount,
@@ -99,6 +102,8 @@ export function CanvasSurface({
   const [draggingTerritoryId, setDraggingTerritoryId] = useState<string | null>(
     null,
   );
+  const [territoryCreationPlacement, setTerritoryCreationPlacement] =
+    useState<{ position_x: number; position_y: number } | null>(null);
   const [
     isUncontrolledCreateBubbleDialogOpen,
     setIsUncontrolledCreateBubbleDialogOpen,
@@ -157,10 +162,11 @@ export function CanvasSurface({
   );
   const visibleCountTargets = useMemo(
     () =>
-      displayedTerritories.map(({ bubbles, territory }) => ({
-        territory,
-        total: bubbles.length,
-      })),
+      displayedTerritories.flatMap(({ bubbles, territory }) =>
+        bubbles.length > 0
+          ? [{ territory, total: bubbles.length }]
+          : [],
+      ),
     [displayedTerritories],
   );
   const {
@@ -654,6 +660,19 @@ export function CanvasSurface({
     setCreateBubbleDialogOpen(true);
   }
 
+  function openCreateTerritoryDialog() {
+    const bounds = surfaceRef.current?.getBoundingClientRect();
+
+    setTerritoryCreationPlacement(
+      getTerritoryCreationPlacement({
+        surfaceHeight: bounds?.height ?? 0,
+        surfaceWidth: bounds?.width ?? 0,
+        territories: loadState.territories,
+        viewport,
+      }),
+    );
+  }
+
   function handleBubbleCreated(bubble: Bubble) {
     activeBubbleCollection.addBubble(bubble);
     trackAnalytics(analyticsClient, 'bubble_created', {
@@ -676,7 +695,7 @@ export function CanvasSurface({
     typeof emptyState === 'function'
       ? emptyState({ onCreateBubble: openCreateBubbleDialog })
       : emptyState;
-  const hasDisplayedBubbles = displayedTerritories.length > 0;
+  const hasDisplayedTerritories = displayedTerritories.length > 0;
   const failedPositionSaveEntry = Object.entries(activePositionSaves).find(
     ([, save]) => save.status === 'error',
   );
@@ -918,13 +937,13 @@ export function CanvasSurface({
       )}
 
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-6 py-10 lg:px-10">
-        {loadState.status === 'loading' && !hasDisplayedBubbles && (
+        {loadState.status === 'loading' && !hasDisplayedTerritories && (
           <CanvasLoadingState />
         )}
-        {loadState.status === 'failed' && !hasDisplayedBubbles && (
+        {loadState.status === 'failed' && !hasDisplayedTerritories && (
           <CanvasErrorState onRetry={activeBubbleCollection.retry} />
         )}
-        {loadState.status === 'partial' && !hasDisplayedBubbles && (
+        {loadState.status === 'partial' && !hasDisplayedTerritories && (
           <CanvasBubbleLoadNotice
             hasBubbles={false}
             isPartial
@@ -932,12 +951,12 @@ export function CanvasSurface({
           />
         )}
         {loadState.status === 'ready' &&
-          displayedBubbles.length === 0 &&
+          !hasDisplayedTerritories &&
           renderedEmptyState}
       </div>
 
       {(loadState.status === 'partial' || loadState.status === 'failed') &&
-        hasDisplayedBubbles && (
+        hasDisplayedTerritories && (
           <CanvasBubbleLoadNotice
             hasBubbles
             isPartial={loadState.status === 'partial'}
@@ -952,12 +971,13 @@ export function CanvasSurface({
         onZoomOut={() => zoomAt((currentZoom) => currentZoom / ZOOM_STEP)}
       />
 
-      {displayedBubbles.length > 0 && !isMultiSelectionActive && (
+      {hasDisplayedTerritories && !isMultiSelectionActive && (
         <CanvasBubbleActions
           canCompact={canCompactLayout}
           isCompacting={isCompactLayoutSaving}
           onCompact={compactLayout}
           onCreate={openCreateBubbleDialog}
+          onCreateTerritory={openCreateTerritoryDialog}
           onStartDiscussion={onStartDiscussion}
         />
       )}
@@ -1016,6 +1036,19 @@ export function CanvasSurface({
           onCreated={handleBubbleCreated}
           projectId={projectId}
           requestCreate={requestBubbleCreate}
+        />
+      )}
+
+      {territoryCreationPlacement && (
+        <CreateTerritoryDialog
+          onCancel={() => setTerritoryCreationPlacement(null)}
+          onCreated={(territory) => {
+            activeBubbleCollection.addTerritory(territory);
+            setTerritoryCreationPlacement(null);
+          }}
+          placement={territoryCreationPlacement}
+          projectId={projectId}
+          requestCreate={requestTerritoryCreate}
         />
       )}
     </section>

@@ -1,6 +1,11 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ApiError, type Bubble, type Project, type Territory } from '../api';
+import type {
+  Bubble,
+  CreateTerritoryInput,
+  Project,
+  Territory,
+} from '../api';
 import type { AnalyticsClient } from '../analytics';
 import { ProjectWorkspace } from './ProjectWorkspace';
 
@@ -21,7 +26,7 @@ function territoryFixture(overrides: Partial<Territory> = {}): Territory {
   return {
     id: 'territory-one',
     project_id: project.id,
-    kind: 'composed',
+    kind: 'manual',
     title: 'Operations',
     position_x: 0,
     position_y: 0,
@@ -110,123 +115,54 @@ describe('ProjectWorkspace territory save status', () => {
     await waitFor(() => expect(screen.queryByText('SAVING')).toBeNull());
   });
 
-  it('recomposes once, shows progress, and replaces the canvas collection from the response', async () => {
-    let resolveRecompose!: (value: {
-      bubbles: Bubble[];
-      territories: Territory[];
-    }) => void;
-    const requestRecomposeTerritories = vi.fn(
-      () =>
-        new Promise<{ bubbles: Bubble[]; territories: Territory[] }>(
-          (resolve) => {
-            resolveRecompose = resolve;
-          },
-        ),
-    );
-    const initialBubbles = [bubbleFixture(1), bubbleFixture(2)];
-    const recomposedTerritory = territoryFixture({
-      id: 'territory-recomposed',
-      title: 'Launch readiness',
-      visible_count: 2,
-    });
-    const recomposedBubbles = initialBubbles.map((bubble) => ({
-      ...bubble,
-      territory_id: recomposedTerritory.id,
-    }));
-    const track = vi.fn<AnalyticsClient['track']>();
-
-    render(
-      <ProjectWorkspace
-        analyticsClient={{ track }}
-        project={project}
-        requestBubbleLinks={async () => []}
-        requestBubbles={async () => initialBubbles}
-        requestRecomposeTerritories={requestRecomposeTerritories}
-        requestTerritories={async () => [territoryFixture()]}
-      />,
-    );
-
-    const action = await screen.findByRole('button', {
-      name: 'Recompose territories',
-    });
-    fireEvent.click(action);
-    fireEvent.click(action);
-
-    expect(requestRecomposeTerritories).toHaveBeenCalledTimes(1);
-    expect(requestRecomposeTerritories).toHaveBeenCalledWith(project.id, {});
-    expect(
-      screen.getByRole<HTMLButtonElement>('button', {
-        name: 'Recomposing territories',
-      }).disabled,
-    ).toBe(true);
-
-    resolveRecompose({
-      bubbles: recomposedBubbles,
-      territories: [recomposedTerritory],
-    });
-
-    expect(await screen.findByText('Launch readiness')).not.toBeNull();
-    expect(screen.queryByText('Operations')).toBeNull();
-    expect(screen.getByText('2 bubbles · 1 territory')).not.toBeNull();
-    expect(track).toHaveBeenCalledWith('territory_recompose_requested', {
-      project_id: project.id,
-      bubble_count: 2,
-      territory_count: 1,
-    });
-    expect(track).toHaveBeenCalledWith('territory_recompose_completed', {
-      project_id: project.id,
-      bubble_count: 2,
-      territory_count: 1,
-    });
-  });
-
-  it('keeps the prior composition on failure and exposes retry', async () => {
-    const track = vi.fn<AnalyticsClient['track']>();
-    const requestRecomposeTerritories = vi
-      .fn()
-      .mockRejectedValueOnce(
-        new ApiError(503, {
-          code: 'TERRITORY_RECOMPOSE_FAILED',
-          reason: 'invalid_output',
+  it('creates a viewport-centered empty territory from the action bar', async () => {
+    const requestTerritoryCreate = vi.fn(
+      async (_projectId: string, input: CreateTerritoryInput) =>
+        territoryFixture({
+          id: 'territory-created',
+          title: input.title,
+          position_x: input.position_x,
+          position_y: input.position_y,
+          visible_count: 4,
         }),
-      )
-      .mockResolvedValueOnce({
-        bubbles: [bubbleFixture(1), bubbleFixture(2)],
-        territories: [territoryFixture()],
-      });
+    );
 
     render(
       <ProjectWorkspace
-        analyticsClient={{ track }}
         project={project}
         requestBubbleLinks={async () => []}
-        requestBubbles={async () => [bubbleFixture(1), bubbleFixture(2)]}
-        requestRecomposeTerritories={requestRecomposeTerritories}
+        requestBubbles={async () => [bubbleFixture(1)]}
         requestTerritories={async () => [territoryFixture()]}
+        requestTerritoryCreate={requestTerritoryCreate}
       />,
     );
 
-    fireEvent.click(
-      await screen.findByRole('button', { name: 'Recompose territories' }),
-    );
-
-    expect((await screen.findByRole('alert')).textContent).toContain(
-      'Recompose failed',
-    );
-    expect(screen.getByText('Operations')).not.toBeNull();
-    expect(track).toHaveBeenCalledWith('territory_recompose_failed', {
-      project_id: project.id,
-      bubble_count: 2,
-      territory_count: 1,
-      reason: 'invalid_output',
+    const territoryAction = await screen.findByRole('button', {
+      name: 'Territory',
     });
+    territoryAction.focus();
+    fireEvent.click(territoryAction);
+    const titleInput = screen.getByLabelText('Title *');
+    expect(document.activeElement).toBe(titleInput);
+    fireEvent.change(titleInput, { target: { value: '  Pricing research  ' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Create territory' }));
 
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Retry recompose territories' }),
-    );
-    await waitFor(() =>
-      expect(requestRecomposeTerritories).toHaveBeenCalledTimes(2),
-    );
+    await waitFor(() => {
+      expect(requestTerritoryCreate).toHaveBeenCalledWith(project.id, {
+        title: 'Pricing research',
+        position_x: -260,
+        position_y: -66,
+      });
+    });
+    expect(await screen.findByText('Pricing research')).not.toBeNull();
+    expect(
+      screen.getByText('This territory doesn’t hold any bubbles yet.'),
+    ).not.toBeNull();
+    expect(screen.getByText('1 bubble · 2 territories')).not.toBeNull();
+    await waitFor(() => expect(document.activeElement).toBe(territoryAction));
+    expect(
+      screen.queryByRole('button', { name: 'Recompose territories' }),
+    ).toBeNull();
   });
 
   it('opens the reader from the chevron and hands editing to the inspector', async () => {

@@ -4,7 +4,7 @@ import {
   ApiError,
   getProject,
   type Project,
-  type TerritoryRecomposeRequest,
+  type TerritoryCreateRequest,
 } from '../api';
 import { analytics, trackAnalytics, type AnalyticsClient } from '../analytics';
 import type {
@@ -42,7 +42,7 @@ export interface ProjectCanvasRouteProps {
   requestBubbleCreate?: BubbleCreateRequest;
   requestBubbles?: BubbleListRequest;
   requestTerritories?: TerritoryListRequest;
-  requestRecomposeTerritories?: TerritoryRecomposeRequest;
+  requestTerritoryCreate?: TerritoryCreateRequest;
   requestTerritoryVisibleCountUpdate?: TerritoryVisibleCountUpdateRequest;
   requestBubbleDelete?: BubbleDeleteRequest;
   requestBubbleUpdate?: BubbleUpdateRequest;
@@ -160,7 +160,7 @@ export function ProjectCanvasRoute({
   requestBubbleCreate,
   requestBubbles,
   requestTerritories,
-  requestRecomposeTerritories,
+  requestTerritoryCreate,
   requestTerritoryVisibleCountUpdate,
   requestBubbleDelete,
   requestBubbleUpdate,
@@ -225,7 +225,7 @@ export function ProjectCanvasRoute({
         requestBubbleCreate={requestBubbleCreate}
         requestBubbles={requestBubbles}
         requestTerritories={requestTerritories}
-        requestRecomposeTerritories={requestRecomposeTerritories}
+        requestTerritoryCreate={requestTerritoryCreate}
         requestTerritoryVisibleCountUpdate={
           requestTerritoryVisibleCountUpdate
         }

@@ -26,9 +26,9 @@ export function groupBubblesByTerritory(
   }
 
   return territories.flatMap((territory) => {
-    const territoryBubbles = bubblesByTerritoryId.get(territory.id);
+    const territoryBubbles = bubblesByTerritoryId.get(territory.id) ?? [];
 
-    if (!territoryBubbles || territoryBubbles.length === 0) {
+    if (territory.kind === 'ungrouped' && territoryBubbles.length === 0) {
       return [];
     }
 

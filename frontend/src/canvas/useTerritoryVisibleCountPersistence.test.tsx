@@ -12,7 +12,7 @@ function territoryFixture(overrides: Partial<Territory> = {}): Territory {
   return {
     id: 'territory-one',
     project_id: 'project-one',
-    kind: 'composed',
+    kind: 'manual',
     title: 'Operations',
     position_x: 0,
     position_y: 0,

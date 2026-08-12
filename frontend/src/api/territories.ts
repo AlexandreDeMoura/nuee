@@ -2,31 +2,24 @@ import {
   TERRITORY_TITLE_MAX_LENGTH,
   TERRITORY_VISIBLE_COUNT_MAX,
   TERRITORY_VISIBLE_COUNT_MIN,
-  type Bubble,
   type BatchRepositionTerritoriesInput,
+  type CreateTerritoryInput,
+  type CreateTerritoryResponse,
   type RepositionTerritoryInput,
-  type Territory as SharedTerritory,
+  type Territory,
   type TerritoryPositionUpdate,
   type UpdateTerritoryVisibleCountInput,
 } from '@nuee/shared-types';
-import { isBubbleResponse } from './bubbles';
 import { requestJson } from './client';
 
 export type {
   BatchRepositionTerritoriesInput,
+  CreateTerritoryInput,
+  CreateTerritoryResponse,
   RepositionTerritoryInput,
+  Territory,
   TerritoryPositionUpdate,
   UpdateTerritoryVisibleCountInput,
-};
-
-/**
- * Transitional frontend model for PRD 10 responses. Remove it with the
- * recompose API and once the backend emits manual territory kinds.
- */
-export type TerritoryKind = 'composed' | 'ungrouped';
-
-export type Territory = Omit<SharedTerritory, 'kind'> & {
-  kind: TerritoryKind;
 };
 
 export type TerritoryListResponse = Territory[];
@@ -34,18 +27,11 @@ export type RepositionTerritoryResponse = Territory;
 export type BatchRepositionTerritoriesResponse = Territory[];
 export type UpdateTerritoryVisibleCountResponse = Territory;
 
-export type RecomposeTerritoriesInput = Record<string, never>;
-
-export interface RecomposeTerritoriesResponse {
-  territories: Territory[];
-  bubbles: Bubble[];
-}
-
 export type TerritoriesRequest = typeof requestJson;
-export type TerritoryRecomposeRequest = (
+export type TerritoryCreateRequest = (
   projectId: string,
-  input?: RecomposeTerritoriesInput,
-) => Promise<RecomposeTerritoriesResponse>;
+  input: CreateTerritoryInput,
+) => Promise<CreateTerritoryResponse>;
 
 const INVALID_TERRITORIES_MESSAGE =
   'The territory list response contained invalid data.';
@@ -82,7 +68,7 @@ export function isTerritoryResponse(
   return (
     isNonEmptyIdentifier(value.id) &&
     value.project_id === projectId &&
-    (value.kind === 'composed' || value.kind === 'ungrouped') &&
+    (value.kind === 'manual' || value.kind === 'ungrouped') &&
     typeof value.title === 'string' &&
     value.title.trim().length > 0 &&
     value.title.trim().length <= TERRITORY_TITLE_MAX_LENGTH &&
@@ -115,44 +101,32 @@ export function assertTerritoryListResponse(
   return value;
 }
 
-export function assertRecomposeTerritoriesResponse(
-  value: unknown,
-  projectId: string,
-): RecomposeTerritoriesResponse {
-  if (
-    !isRecord(value) ||
-    Object.keys(value).length !== 2 ||
-    !('territories' in value) ||
-    !('bubbles' in value)
-  ) {
-    throw new Error(INVALID_TERRITORIES_MESSAGE);
-  }
-
-  const territories = assertTerritoryListResponse(
-    value.territories,
-    projectId,
-  );
-  const territoryIds = new Set(territories.map(({ id }) => id));
-
-  if (
-    !Array.isArray(value.bubbles) ||
-    !value.bubbles.every(
-      (bubble) =>
-        isBubbleResponse(bubble, projectId) &&
-        territoryIds.has(bubble.territory_id),
-    ) ||
-    new Set(value.bubbles.map((bubble) => bubble.id)).size !==
-      value.bubbles.length
-  ) {
-    throw new Error(INVALID_TERRITORIES_MESSAGE);
-  }
-
-  return { territories, bubbles: value.bubbles };
-}
-
 export function createTerritoriesApi(
   request: TerritoriesRequest = requestJson,
 ) {
+  function createTerritory(
+    projectId: string,
+    input: CreateTerritoryInput,
+  ): Promise<CreateTerritoryResponse> {
+    return request<unknown>(
+      `/projects/${encodeURIComponent(projectId)}/territories`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      },
+    ).then((response) => {
+      if (
+        !isTerritoryResponse(response, projectId) ||
+        response.kind !== 'manual'
+      ) {
+        throw new Error(INVALID_TERRITORIES_MESSAGE);
+      }
+
+      return response;
+    });
+  }
+
   function getProjectTerritories(
     projectId: string,
     signal?: AbortSignal,
@@ -240,35 +214,19 @@ export function createTerritoriesApi(
     });
   }
 
-  function recomposeTerritories(
-    projectId: string,
-    input: RecomposeTerritoriesInput = {},
-  ): Promise<RecomposeTerritoriesResponse> {
-    return request<unknown>(
-      `/projects/${encodeURIComponent(projectId)}/territories/recompose`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input),
-      },
-    ).then((response) =>
-      assertRecomposeTerritoriesResponse(response, projectId),
-    );
-  }
-
   return {
+    createTerritory,
     getProjectTerritories,
     repositionTerritories,
     repositionTerritory,
-    recomposeTerritories,
     updateTerritoryVisibleCount,
   };
 }
 
 export const {
+  createTerritory,
   getProjectTerritories,
   repositionTerritories,
   repositionTerritory,
-  recomposeTerritories,
   updateTerritoryVisibleCount,
 } = createTerritoriesApi();

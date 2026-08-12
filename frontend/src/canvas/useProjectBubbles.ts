@@ -5,9 +5,10 @@ import {
   useRef,
   useState,
 } from 'react';
-import type { Bubble } from '../api';
+import type { Bubble, Territory } from '../api';
 import {
   isRenderableBubble,
+  isRenderableTerritory,
   mergeBubbles,
   renderableBubbles,
   renderableTerritories,
@@ -35,6 +36,15 @@ type BubbleCollectionMutation =
       bubbleId: string;
       kind: 'remove';
     };
+
+function mergeTerritories(current: Territory[], incoming: Territory[]) {
+  const currentIds = new Set(current.map(({ id }) => id));
+
+  return [
+    ...current,
+    ...incoming.filter(({ id }) => !currentIds.has(id)),
+  ];
+}
 
 function replaceBubble(bubbles: Bubble[], replacement: Bubble) {
   return bubbles.map((bubble) =>
@@ -72,6 +82,7 @@ export function useProjectBubbles({
   const [requestKey, setRequestKey] = useState(0);
   const loadedProjectIdRef = useRef(projectId);
   const mutationsRef = useRef<BubbleCollectionMutation[]>([]);
+  const addedTerritoriesRef = useRef<Territory[]>([]);
   const removedBubbleIdsRef = useRef(new Set<string>());
 
   const recordMutation = useCallback(
@@ -96,6 +107,25 @@ export function useProjectBubbles({
       }));
     },
     [projectId, recordMutation],
+  );
+
+  const addTerritory = useCallback(
+    (territory: Territory) => {
+      if (!isRenderableTerritory(territory, projectId)) {
+        return;
+      }
+
+      addedTerritoriesRef.current = mergeTerritories(
+        addedTerritoriesRef.current,
+        [territory],
+      );
+      setLoadState((current) => ({
+        ...current,
+        status: current.status === 'partial' ? 'partial' : 'ready',
+        territories: mergeTerritories(current.territories, [territory]),
+      }));
+    },
+    [projectId],
   );
 
   const replacePersistedBubble = useCallback(
@@ -128,6 +158,7 @@ export function useProjectBubbles({
   const replaceCollection = useCallback(
     (bubbles: Bubble[], territories: CanvasLoadState['territories']) => {
       mutationsRef.current = [];
+      addedTerritoriesRef.current = [];
       removedBubbleIdsRef.current = new Set();
       setLoadState({ status: 'ready', bubbles, territories });
     },
@@ -158,6 +189,7 @@ export function useProjectBubbles({
     if (isNewProject) {
       loadedProjectIdRef.current = projectId;
       mutationsRef.current = [];
+      addedTerritoriesRef.current = [];
       removedBubbleIdsRef.current = new Set();
     }
 
@@ -193,7 +225,10 @@ export function useProjectBubbles({
           return {
             status: hasInvalidRecords ? 'partial' : 'ready',
             bubbles: applyMutations(loadedBubbles, mutationsRef.current),
-            territories: territoryResult.territories,
+            territories: mergeTerritories(
+              territoryResult.territories,
+              addedTerritoriesRef.current,
+            ),
           };
         });
       })
@@ -223,6 +258,7 @@ export function useProjectBubbles({
   return useMemo(
     () => ({
       addBubble,
+      addTerritory,
       isBubbleRemoved,
       loadState,
       projectId,
@@ -233,6 +269,7 @@ export function useProjectBubbles({
     }),
     [
       addBubble,
+      addTerritory,
       isBubbleRemoved,
       loadState,
       projectId,

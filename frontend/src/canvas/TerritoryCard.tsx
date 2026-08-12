@@ -157,33 +157,35 @@ export function TerritoryCard({
           {territory.title}
         </h2>
 
-        <div
-          className="flex h-8 shrink-0 items-center overflow-hidden rounded-[9px] border border-[#dfe5ec] bg-[#f6f8fb] text-[#8090a3]"
-          aria-label={`Visible bubbles: ${territory.visible_count}`}
-          role="group"
-        >
-          <button
-            className={`grid h-full w-8 cursor-pointer place-items-center hover:bg-[#edf1f6] hover:text-[#526985] disabled:cursor-default disabled:text-[#aeb9c7] ${focusRing}`}
-            type="button"
-            aria-label={`Show fewer bubbles in ${territory.title}`}
-            disabled={!canShowFewer}
-            onClick={() => changeVisibleCount(territory.visible_count - 1)}
+        {bubbles.length > 0 && (
+          <div
+            className="flex h-8 shrink-0 items-center overflow-hidden rounded-[9px] border border-[#dfe5ec] bg-[#f6f8fb] text-[#8090a3]"
+            aria-label={`Visible bubbles: ${territory.visible_count}`}
+            role="group"
           >
-            <Minus className="size-3.5" strokeWidth={1.8} aria-hidden="true" />
-          </button>
-          <span className="min-w-7 text-center text-xs font-medium [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
-            {territory.visible_count}
-          </span>
-          <button
-            className={`grid h-full w-8 cursor-pointer place-items-center hover:bg-[#edf1f6] hover:text-[#526985] disabled:cursor-default disabled:text-[#aeb9c7] ${focusRing}`}
-            type="button"
-            aria-label={`Show more bubbles in ${territory.title}`}
-            disabled={!canShowMore}
-            onClick={() => changeVisibleCount(territory.visible_count + 1)}
-          >
-            <Plus className="size-3.5" strokeWidth={1.8} aria-hidden="true" />
-          </button>
-        </div>
+            <button
+              className={`grid h-full w-8 cursor-pointer place-items-center hover:bg-[#edf1f6] hover:text-[#526985] disabled:cursor-default disabled:text-[#aeb9c7] ${focusRing}`}
+              type="button"
+              aria-label={`Show fewer bubbles in ${territory.title}`}
+              disabled={!canShowFewer}
+              onClick={() => changeVisibleCount(territory.visible_count - 1)}
+            >
+              <Minus className="size-3.5" strokeWidth={1.8} aria-hidden="true" />
+            </button>
+            <span className="min-w-7 text-center text-xs font-medium [font-family:'IBM_Plex_Mono',ui-monospace,monospace]">
+              {territory.visible_count}
+            </span>
+            <button
+              className={`grid h-full w-8 cursor-pointer place-items-center hover:bg-[#edf1f6] hover:text-[#526985] disabled:cursor-default disabled:text-[#aeb9c7] ${focusRing}`}
+              type="button"
+              aria-label={`Show more bubbles in ${territory.title}`}
+              disabled={!canShowMore}
+              onClick={() => changeVisibleCount(territory.visible_count + 1)}
+            >
+              <Plus className="size-3.5" strokeWidth={1.8} aria-hidden="true" />
+            </button>
+          </div>
+        )}
 
         <span
           className="w-7 shrink-0 text-right text-[11px] text-[#9aa6b4] [font-family:'IBM_Plex_Mono',ui-monospace,monospace]"
@@ -222,6 +224,11 @@ export function TerritoryCard({
         }
         tabIndex={isScrollUnlocked ? 0 : undefined}
       >
+        {bubbles.length === 0 && (
+          <p className="m-0 py-5 text-center text-[12.5px] leading-[1.5] text-[#8b97a6]">
+            This territory doesn’t hold any bubbles yet.
+          </p>
+        )}
         <ul className="m-0 list-none p-0">
           {renderedBubbles.map((bubble) => (
             <li

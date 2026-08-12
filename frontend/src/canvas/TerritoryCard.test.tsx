@@ -9,7 +9,7 @@ function territoryFixture(overrides: Partial<Territory> = {}): Territory {
   return {
     id: 'territory-one',
     project_id: 'project-one',
-    kind: 'composed',
+    kind: 'manual',
     title: 'Operations',
     position_x: 40,
     position_y: 60,
@@ -40,6 +40,17 @@ function bubbleFixture(index: number): Bubble {
 }
 
 describe('TerritoryCard visible rows', () => {
+  it('renders a labeled empty state without visible-count controls or a footer', () => {
+    render(<TerritoryCard bubbles={[]} territory={territoryFixture()} />);
+
+    expect(screen.getByLabelText('0 bubbles total').textContent).toBe('0');
+    expect(
+      screen.getByText('This territory doesn’t hold any bubbles yet.'),
+    ).not.toBeNull();
+    expect(screen.queryByLabelText('Visible bubbles: 2')).toBeNull();
+    expect(screen.queryByText(/more bubbles/)).toBeNull();
+  });
+
   it('separates row selection from the reader chevron', () => {
     const bubble = bubbleFixture(1);
     const onBubbleActivate = vi.fn();

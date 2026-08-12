@@ -6,7 +6,7 @@ function territoryFixture(overrides: Partial<Territory> = {}): Territory {
   return {
     id: 'territory-one',
     project_id: 'project-one',
-    kind: 'composed',
+    kind: 'manual',
     title: 'First territory',
     position_x: 24,
     position_y: 24,
@@ -38,11 +38,16 @@ function bubbleFixture(overrides: Partial<Bubble> = {}): Bubble {
 }
 
 describe('groupBubblesByTerritory', () => {
-  it('omits empty territories and orders rows by creation time then id', () => {
+  it('keeps empty manual territories, omits empty ungrouped, and orders rows', () => {
     const first = territoryFixture();
     const empty = territoryFixture({ id: 'territory-empty' });
+    const ungrouped = territoryFixture({
+      id: 'territory-ungrouped',
+      kind: 'ungrouped',
+      title: 'Ungrouped',
+    });
     const groups = groupBubblesByTerritory(
-      [first, empty],
+      [first, empty, ungrouped],
       [
         bubbleFixture({ id: 'bubble-c', created_at: '2026-08-10T10:00:00.000Z' }),
         bubbleFixture({ id: 'bubble-b' }),
@@ -50,12 +55,13 @@ describe('groupBubblesByTerritory', () => {
       ],
     );
 
-    expect(groups).toHaveLength(1);
+    expect(groups).toHaveLength(2);
     expect(groups[0].territory).toBe(first);
     expect(groups[0].bubbles.map(({ id }) => id)).toEqual([
       'bubble-a',
       'bubble-b',
       'bubble-c',
     ]);
+    expect(groups[1]).toEqual({ territory: empty, bubbles: [] });
   });
 });

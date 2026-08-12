@@ -10,21 +10,18 @@ import type { LucideIcon } from 'lucide-react';
 import {
   ChevronLeft,
   CirclePlus,
-  CircleAlert,
   MessageSquare,
-  RefreshCw,
   Upload,
 } from 'lucide-react';
 import {
   getBubbleLinks,
   getProjectBubbles,
   getProjectTerritories,
-  recomposeTerritories,
   type Bubble,
   type BubbleLink,
   type KnowledgeExtractionResolutionResponse,
   type Project,
-  type TerritoryRecomposeRequest,
+  type TerritoryCreateRequest,
 } from '../api';
 import {
   analytics,
@@ -44,10 +41,6 @@ import {
   type TerritoryVisibleCountUpdateRequest,
 } from '../canvas/CanvasSurface';
 import { useProjectBubbles } from '../canvas/useProjectBubbles';
-import {
-  territoryRecomposeFailureReason,
-  trackTerritoryAnalytics,
-} from '../canvas/territoryAnalytics';
 import type { BubbleCreateRequest } from '../bubbles/CreateBubbleDialog';
 import { BubbleReaderModal } from '../bubbles/BubbleReaderModal';
 import {
@@ -138,7 +131,7 @@ export interface ProjectWorkspaceProps {
   requestBubbleCreate?: BubbleCreateRequest;
   requestBubbles?: BubbleListRequest;
   requestTerritories?: TerritoryListRequest;
-  requestRecomposeTerritories?: TerritoryRecomposeRequest;
+  requestTerritoryCreate?: TerritoryCreateRequest;
   requestTerritoryVisibleCountUpdate?: TerritoryVisibleCountUpdateRequest;
   requestBubbleDelete?: BubbleDeleteRequest;
   requestBubbleUpdate?: BubbleUpdateRequest;
@@ -221,23 +214,16 @@ const projectBarStatus: Record<
 
 function ProjectBar({
   bubbleCount,
-  recomposeError,
-  recomposeInFlight,
-  onRecompose,
   project,
   saveStatus,
   territoryCount,
 }: {
   bubbleCount: number;
-  recomposeError: boolean;
-  recomposeInFlight: boolean;
-  onRecompose: () => void;
   project: Project;
   saveStatus: ProjectDescriptionSaveStatus;
   territoryCount: number;
 }) {
   const status = projectBarStatus[saveStatus];
-  const canRecompose = bubbleCount >= 2 && !recomposeInFlight;
 
   return (
     <header className="flex h-[53px] shrink-0 items-center gap-3.5 border-b border-[#e1e6ec] bg-white px-[18px]">
@@ -263,48 +249,6 @@ function ProjectBar({
         {bubbleCount} {bubbleCount === 1 ? 'bubble' : 'bubbles'} ·{' '}
         {territoryCount} {territoryCount === 1 ? 'territory' : 'territories'}
       </span>
-
-      {recomposeError && (
-        <span
-          className="hidden items-center gap-1.5 text-[11px] text-[#b4544e] xl:inline-flex"
-          role="alert"
-        >
-          <CircleAlert className="size-3.5" strokeWidth={1.8} aria-hidden="true" />
-          Recompose failed
-        </span>
-      )}
-
-      <button
-        className={`inline-flex min-h-8 shrink-0 items-center gap-1.5 rounded-[8px] border border-[#d7e0eb] bg-[#f6f8fc] px-2.5 text-[11.5px] font-semibold text-[#476393] hover:border-[#b8c7db] hover:bg-[#eef2fa] disabled:cursor-not-allowed disabled:opacity-50 ${focusRing}`}
-        type="button"
-        aria-label={
-          recomposeInFlight
-            ? 'Recomposing territories'
-            : recomposeError
-              ? 'Retry recompose territories'
-              : 'Recompose territories'
-        }
-        disabled={!canRecompose}
-        title={
-          bubbleCount < 2
-            ? 'At least two bubbles are required'
-            : undefined
-        }
-        onClick={onRecompose}
-      >
-        <RefreshCw
-          className={`size-3.5 ${recomposeInFlight ? 'animate-spin motion-reduce:animate-none' : ''}`}
-          strokeWidth={1.8}
-          aria-hidden="true"
-        />
-        <span className="hidden sm:inline">
-          {recomposeInFlight
-            ? 'Recomposing…'
-            : recomposeError
-              ? 'Retry recompose'
-              : 'Recompose territories'}
-        </span>
-      </button>
 
       <span
         className={`inline-flex shrink-0 items-center gap-1.5 text-[10.5px] font-medium tracking-[0.04em] [font-family:'IBM_Plex_Mono',ui-monospace,monospace] ${status.textClasses}`}
@@ -469,7 +413,7 @@ export function ProjectWorkspace({
   requestBubbleCreate,
   requestBubbles = getProjectBubbles,
   requestTerritories,
-  requestRecomposeTerritories = recomposeTerritories,
+  requestTerritoryCreate,
   requestTerritoryVisibleCountUpdate,
   requestBubbleDelete,
   requestBubbleUpdate,
@@ -524,10 +468,6 @@ export function ProjectWorkspace({
     useState<string | null>(null);
   const [selectedBubbleId, setSelectedBubbleId] = useState<string | null>(null);
   const [readerBubbleId, setReaderBubbleId] = useState<string | null>(null);
-  const [recomposeState, setRecomposeState] = useState<
-    'idle' | 'recomposing' | 'error'
-  >('idle');
-  const recomposeInFlightRef = useRef(false);
   const [
     knowledgeExtractionTargetSelection,
     setKnowledgeExtractionTargetSelection,
@@ -581,7 +521,6 @@ export function ProjectWorkspace({
     addBubble,
     isBubbleRemoved,
     removeBubble,
-    replaceCollection,
     replaceBubble,
     retry: refreshBubbleCollection,
   } = bubbleCollection;
@@ -591,8 +530,8 @@ export function ProjectWorkspace({
       availableBubbles.map(({ territory_id }) => territory_id),
     );
 
-    return bubbleCollection.loadState.territories.filter(({ id }) =>
-      occupiedTerritoryIds.has(id),
+    return bubbleCollection.loadState.territories.filter(
+      ({ id, kind }) => kind === 'manual' || occupiedTerritoryIds.has(id),
     ).length;
   }, [availableBubbles, bubbleCollection.loadState.territories]);
   const discussionSourceCatalog: DiscussionSourceCatalog = useMemo(
@@ -812,73 +751,6 @@ export function ProjectWorkspace({
     [currentProject.id, replaceBubble],
   );
 
-  const handleRecompose = useCallback(async () => {
-    if (availableBubbles.length < 2 || recomposeInFlightRef.current) {
-      return;
-    }
-
-    const projectId = currentProject.id;
-    const requestedBubbleCount = availableBubbles.length;
-    const requestedTerritoryCount = visibleTerritoryCount;
-    recomposeInFlightRef.current = true;
-    setRecomposeState('recomposing');
-    trackTerritoryAnalytics(
-      analyticsClient,
-      'territory_recompose_requested',
-      {
-        project_id: projectId,
-        bubble_count: requestedBubbleCount,
-        territory_count: requestedTerritoryCount,
-      },
-    );
-
-    try {
-      const response = await requestRecomposeTerritories(projectId, {});
-
-      trackTerritoryAnalytics(
-        analyticsClient,
-        'territory_recompose_completed',
-        {
-          project_id: projectId,
-          bubble_count: response.bubbles.length,
-          territory_count: new Set(
-            response.bubbles.map(({ territory_id }) => territory_id),
-          ).size,
-        },
-      );
-
-      if (projectId !== currentProject.id) {
-        return;
-      }
-
-      replaceCollection(response.bubbles, response.territories);
-      setRecomposeState('idle');
-    } catch (error: unknown) {
-      trackTerritoryAnalytics(
-        analyticsClient,
-        'territory_recompose_failed',
-        {
-          project_id: projectId,
-          bubble_count: requestedBubbleCount,
-          territory_count: requestedTerritoryCount,
-          reason: territoryRecomposeFailureReason(error),
-        },
-      );
-
-      if (projectId === currentProject.id) {
-        setRecomposeState('error');
-      }
-    } finally {
-      recomposeInFlightRef.current = false;
-    }
-  }, [
-    availableBubbles.length,
-    analyticsClient,
-    currentProject.id,
-    replaceCollection,
-    requestRecomposeTerritories,
-    visibleTerritoryCount,
-  ]);
   const handleKnowledgeExtractionResolved = useCallback(
     (response: KnowledgeExtractionResolutionResponse) => {
       if (response.project_id !== currentProject.id) {
@@ -1217,12 +1089,7 @@ export function ProjectWorkspace({
       >
         <ProjectBar
           bubbleCount={availableBubbles.length}
-          onRecompose={() => {
-            void handleRecompose();
-          }}
           project={currentProject}
-          recomposeError={recomposeState === 'error'}
-          recomposeInFlight={recomposeState === 'recomposing'}
           saveStatus={workspaceSaveStatus}
           territoryCount={visibleTerritoryCount}
         />
@@ -1265,6 +1132,7 @@ export function ProjectWorkspace({
             }}
             projectId={currentProject.id}
             requestBubbleCreate={requestBubbleCreate}
+            requestTerritoryCreate={requestTerritoryCreate}
             requestViewportUpdate={requestViewportUpdate}
             requestTerritoryVisibleCountUpdate={
               requestTerritoryVisibleCountUpdate
