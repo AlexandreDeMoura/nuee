@@ -32,8 +32,7 @@ from static verification.
   import paths during mechanical reorganizations.
 - Ownership follows the behavior's responsibility, not the domain type it touches. A flow crossing
   features keeps orchestration in the lowest common owner, behind a typed callback or port.
-- When a change supersedes a weakness recorded in `FRONTEND_ARCHITECTURE_IMPROVEMENTS.md` or
-  `BACKEND_ARCHITECTURE_IMPROVEMENTS.md`, update that file.
+- When implementing a common feature like form validation, handling modals or updating the database, ask yourself if this has not been already solved somewhere else in the codebase. 
 
 ## Frontend (`frontend/src/`)
 
