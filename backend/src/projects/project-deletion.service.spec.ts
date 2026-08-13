@@ -16,6 +16,48 @@ describe('ProjectDeletionService', () => {
   let removeFiles: jest.Mock<Promise<number>, [string, readonly string[]]>;
   let listedWhileProjectExisted: boolean | undefined;
 
+  /**
+   * Applying the migrations to an empty database leaves `bubbles` after
+   * `territories` in `sqlite_master`, which happens to make the project
+   * cascade empty `bubbles` before the RESTRICT to `territories` is checked.
+   * A database migrated incrementally ends up with the opposite order, where
+   * that RESTRICT aborts the delete. Rebuilding `territories` last reproduces
+   * the deployed schema so the guard is exercised, not the lucky order.
+   */
+  function reorderTerritoriesLast(): void {
+    const connection = databaseProvider.connection;
+    const schema = connection
+      .prepare(
+        `SELECT sql FROM sqlite_master
+         WHERE tbl_name = 'territories' AND sql IS NOT NULL
+         ORDER BY rowid`,
+      )
+      .all() as unknown as { sql: string }[];
+
+    connection.exec(
+      'CREATE TEMP TABLE territories_backup AS SELECT * FROM territories;',
+    );
+    connection.exec('DROP TABLE territories;');
+
+    for (const { sql } of schema) {
+      connection.exec(sql);
+    }
+
+    connection.exec(
+      'INSERT INTO territories SELECT * FROM territories_backup; DROP TABLE territories_backup;',
+    );
+  }
+
+  function tableOrder(): string[] {
+    const rows = databaseProvider.connection
+      .prepare(
+        `SELECT name FROM sqlite_master WHERE type = 'table' ORDER BY rowid`,
+      )
+      .all() as unknown as { name: string }[];
+
+    return rows.map((row) => row.name);
+  }
+
   function countRows(table: string): number {
     const row = databaseProvider.connection
       .prepare(`SELECT COUNT(*) AS total FROM ${table}`)
@@ -120,6 +162,49 @@ describe('ProjectDeletionService', () => {
     expect(countRows('bubble_links')).toBe(0);
     expect(countRows('discussions')).toBe(0);
     expect(countRows('discussion_messages')).toBe(0);
+  });
+
+  it('cascades even when the bubble-to-territory RESTRICT is reached first', async () => {
+    reorderTerritoriesLast();
+
+    const order = tableOrder();
+    expect(order.indexOf('territories')).toBeGreaterThan(
+      order.indexOf('bubbles'),
+    );
+
+    const project = createProject();
+    seedProjectGraph(project.id);
+
+    await service.delete(project.id);
+
+    expect(countRows('projects')).toBe(0);
+    expect(countRows('territories')).toBe(0);
+    expect(countRows('bubbles')).toBe(0);
+  });
+
+  it('leaves the project intact when the cascade cannot complete', async () => {
+    const project = createProject();
+    seedProjectGraph(project.id);
+
+    // A row that the cascade cannot clear must abort the whole delete rather
+    // than leave a half-removed project behind.
+    databaseProvider.connection.exec(
+      `CREATE TABLE bubble_holds (
+         bubble_id TEXT NOT NULL,
+         FOREIGN KEY (bubble_id) REFERENCES bubbles(id) ON DELETE RESTRICT
+       )`,
+    );
+    databaseProvider.connection
+      .prepare('INSERT INTO bubble_holds (bubble_id) VALUES (?)')
+      .run('bub-1');
+
+    await expect(service.delete(project.id)).rejects.toThrow(
+      /FOREIGN KEY constraint failed/,
+    );
+
+    expect(countRows('projects')).toBe(1);
+    expect(countRows('bubbles')).toBe(2);
+    expect(countRows('territories')).toBe(1);
   });
 
   it('rejects an unknown project without touching document files', async () => {

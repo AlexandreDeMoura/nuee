@@ -1,6 +1,7 @@
 import type { DatabaseSync } from 'node:sqlite';
 import { Injectable } from '@nestjs/common';
 import { DatabaseProvider } from '../database/database.provider';
+import { DatabaseTransaction } from '../database/database-transaction';
 import {
   Project,
   ProjectRepository,
@@ -22,7 +23,16 @@ interface ProjectRow {
 export class SqliteProjectRepository implements ProjectRepository {
   private readonly database: DatabaseSync;
 
-  constructor(databaseProvider: DatabaseProvider) {
+  constructor(
+    databaseProvider: DatabaseProvider,
+    /**
+     * Injected as the application-scoped instance; the default only serves
+     * tests that construct this repository directly.
+     */
+    private readonly transactions: DatabaseTransaction = new DatabaseTransaction(
+      databaseProvider,
+    ),
+  ) {
     this.database = databaseProvider.connection;
   }
 
@@ -119,13 +129,27 @@ export class SqliteProjectRepository implements ProjectRepository {
   }
 
   delete(id: string): boolean {
-    // Every project-owned table reaches `projects` by ON DELETE CASCADE, so
-    // SQLite removes the whole graph atomically in this one statement.
-    const result = this.database
-      .prepare('DELETE FROM projects WHERE id = ?')
-      .run(id);
+    // Every project-owned table reaches `projects` by ON DELETE CASCADE, but
+    // `bubbles` also references `territories` with ON DELETE RESTRICT, and
+    // SQLite evaluates a RESTRICT the instant it cascades into the parent
+    // rather than at the end of the statement. Whether the bubble cascade has
+    // already emptied the table by then depends on the order SQLite walks the
+    // child tables, which follows their `sqlite_master` order — and that
+    // differs between a freshly migrated database and one built by applying
+    // the migrations incrementally, where `territories` lands last.
+    //
+    // Deferring enforcement to COMMIT removes the dependency on that order.
+    // Nothing is weakened: every constraint is still checked before the
+    // transaction lands, and SQLite clears the pragma when it ends.
+    return this.transactions.run(() => {
+      this.database.exec('PRAGMA defer_foreign_keys = ON;');
 
-    return result.changes > 0;
+      const result = this.database
+        .prepare('DELETE FROM projects WHERE id = ?')
+        .run(id);
+
+      return result.changes > 0;
+    });
   }
 
   private toProject(row: ProjectRow): Project {
