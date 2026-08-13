@@ -8,6 +8,9 @@ export interface AnalyticsEventProperties {
   project_description_updated: {
     project_id: string;
   };
+  project_deleted: {
+    project_id: string;
+  };
   project_panel_viewed: {
     project_id: string;
     view: 'discussions' | 'documents' | 'project' | 'inspector';

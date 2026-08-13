@@ -18,6 +18,10 @@ export interface ProjectViewportUpdateOptions {
 }
 
 export type ProjectsRequest = typeof requestJson;
+export type ProjectDeleteRequest = (
+  projectId: string,
+  signal?: AbortSignal,
+) => Promise<void>;
 
 const MIN_CANVAS_ZOOM = 0.25;
 const MAX_CANVAS_ZOOM = 2;
@@ -156,8 +160,19 @@ export function createProjectsApi(request: ProjectsRequest = requestJson) {
     ).then((response) => assertProject(response, projectId));
   }
 
+  function deleteProject(
+    projectId: string,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    return request<void>(`/projects/${encodeURIComponent(projectId)}`, {
+      method: 'DELETE',
+      signal,
+    });
+  }
+
   return {
     createProject,
+    deleteProject,
     getProject,
     getProjects,
     updateProjectDescription,
@@ -167,6 +182,7 @@ export function createProjectsApi(request: ProjectsRequest = requestJson) {
 
 export const {
   createProject,
+  deleteProject,
   getProject,
   getProjects,
   updateProjectDescription,

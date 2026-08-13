@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
-import { ChevronRight, CircleAlert, CircleDot, Plus, RotateCcw } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { CircleAlert, CircleDot, Plus, RotateCcw } from 'lucide-react';
 import { getProjects, type Project } from './api';
-import { analytics, type AnalyticsClient } from './analytics';
+import { analytics, trackAnalytics, type AnalyticsClient } from './analytics';
 import { CreateProjectDialog } from './projects/CreateProjectDialog';
+import { DeleteProjectDialog } from './projects/DeleteProjectDialog';
+import { ProjectList } from './projects/ProjectList';
 import { focusRing } from './ui/focusRing';
-import { formatUpdatedAt } from './utils/date';
 import { navigate, navigateTo, resolveRoute } from './utils/routing';
 import { ProjectCanvasRoute } from './workspace/ProjectCanvasRoute';
 
@@ -128,50 +129,6 @@ function ProjectsError({ onRetry }: { onRetry: () => void }) {
   );
 }
 
-function ProjectList({ projects }: { projects: Project[] }) {
-  return (
-    <div className="overflow-hidden rounded-xl border border-[#e1e6ec] bg-white">
-      {projects.map((project, index) => {
-        const href = `/projects/${encodeURIComponent(project.id)}`;
-
-        return (
-          <a
-            className={`group flex min-h-[67px] items-center gap-2.5 border-b border-[#eef1f5] px-3 py-3.5 text-inherit no-underline transition-colors duration-150 last:border-b-0 hover:bg-[#f6f8fc] motion-reduce:transition-none sm:gap-3.5 sm:px-4 sm:py-[15px] ${focusRing}`}
-            href={href}
-            onClick={(event) => navigate(event, href)}
-            key={project.id}
-          >
-            <span
-              className={`grid size-8 shrink-0 place-items-center rounded-[9px] sm:size-9 ${
-                index === 0 ? 'bg-[#eef2fa] text-[#3f63a8]' : 'bg-[#eef1f5] text-[#7b8899]'
-              }`}
-            >
-              <CircleDot className="size-[18px]" strokeWidth={1.7} aria-hidden="true" />
-            </span>
-            <span className="flex min-w-0 flex-1 flex-col gap-0.5">
-              <span className="truncate text-[13.5px] font-semibold text-[#1e2733]">
-                {project.title}
-              </span>
-              <span className="truncate text-[11.5px] text-[#8b97a6]">{project.description}</span>
-            </span>
-            <time
-              className="hidden shrink-0 text-[10.5px] font-medium text-[#9aa6b4] [font-family:'IBM_Plex_Mono',ui-monospace,monospace] sm:block"
-              dateTime={project.updated_at}
-            >
-              {formatUpdatedAt(project.updated_at)}
-            </time>
-            <ChevronRight
-              className="size-[13px] shrink-0 text-[#c4cdd8] opacity-50 transition-[opacity,transform] duration-150 group-hover:translate-x-0.5 group-hover:opacity-100 motion-reduce:transition-none sm:size-[15px]"
-              strokeWidth={1.8}
-              aria-hidden="true"
-            />
-          </a>
-        );
-      })}
-    </div>
-  );
-}
-
 function ProjectEntry({
   analyticsClient,
   onProjectCreated,
@@ -183,6 +140,12 @@ function ProjectEntry({
   const [hasError, setHasError] = useState(false);
   const [requestKey, setRequestKey] = useState(0);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [projectPendingDeletion, setProjectPendingDeletion] =
+    useState<Project | null>(null);
+  const [deletedProjectTitle, setDeletedProjectTitle] = useState<string | null>(
+    null,
+  );
+  const headingRef = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -216,6 +179,20 @@ function ProjectEntry({
     onProjectCreated(project, documentFiles);
   };
 
+  const handleProjectDeleted = (deleted: Project) => {
+    setProjects((current) =>
+      current ? current.filter((project) => project.id !== deleted.id) : current,
+    );
+    setProjectPendingDeletion(null);
+    setDeletedProjectTitle(deleted.title);
+    trackAnalytics(analyticsClient, 'project_deleted', {
+      project_id: deleted.id,
+    });
+    // The dialog restores focus to the delete button of a row that no longer
+    // exists, which would drop focus to the document body.
+    headingRef.current?.focus();
+  };
+
   return (
     <main className={pageClasses}>
       <AppHeader onNewProject={openCreateDialog} />
@@ -226,7 +203,12 @@ function ProjectEntry({
       >
         <div className="mb-4 flex items-baseline gap-[9px]">
           <div className="flex items-baseline gap-[9px]">
-            <h1 className="m-0 text-[12.5px] font-semibold" id="projects-heading">
+            <h1
+              className={`m-0 text-[12.5px] font-semibold ${focusRing}`}
+              id="projects-heading"
+              ref={headingRef}
+              tabIndex={-1}
+            >
               Your projects
             </h1>
             {projects && (
@@ -240,10 +222,16 @@ function ProjectEntry({
           </span>
         </div>
 
+        <p className="sr-only" role="status">
+          {deletedProjectTitle ? `${deletedProjectTitle} was deleted.` : ''}
+        </p>
+
         {!projects && !hasError && <LoadingProjects />}
         {hasError && <ProjectsError onRetry={retry} />}
         {projects?.length === 0 && <EmptyProjects onNewProject={openCreateDialog} />}
-        {projects && projects.length > 0 && <ProjectList projects={projects} />}
+        {projects && projects.length > 0 && (
+          <ProjectList onDeleteProject={setProjectPendingDeletion} projects={projects} />
+        )}
 
         {!hasError && projects && projects.length > 0 && (
           <p className="mt-3.5 flex items-start gap-1.5 text-[11px] leading-[1.5] text-[#9aa6b4] sm:items-center">
@@ -258,6 +246,14 @@ function ProjectEntry({
           analyticsClient={analyticsClient}
           onCancel={() => setIsCreateDialogOpen(false)}
           onCreated={handleProjectCreated}
+        />
+      )}
+
+      {projectPendingDeletion && (
+        <DeleteProjectDialog
+          onCancel={() => setProjectPendingDeletion(null)}
+          onDeleted={() => handleProjectDeleted(projectPendingDeletion)}
+          project={projectPendingDeletion}
         />
       )}
     </main>

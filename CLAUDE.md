@@ -38,7 +38,8 @@ from static verification.
 
 ### Feature ownership
 
-- `projects/` — project creation and metadata editing.
+- `projects/` — the project list card, project creation, metadata editing, and project
+  deletion with its confirmation.
 - `workspace/` — route-level project composition, panels, shared workspace state.
 - `canvas/` — where territories appear in space: joint bubble/territory collection load, pan, zoom,
   territory drag, bubble-row selection, measured compact layout, overlays, and territory
