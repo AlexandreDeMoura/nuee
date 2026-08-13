@@ -321,6 +321,7 @@ export interface QueueDocumentProcessingRetryInput {
 
 export interface DocumentRepository extends DocumentUploadRepository {
   findAllByProjectId(projectId: string): DocumentRecord[];
+  findFileReferencesByProjectId(projectId: string): string[];
   findProjectIdById(documentId: string): string | undefined;
   findByProjectAndId(
     projectId: string,

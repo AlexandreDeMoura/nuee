@@ -1,7 +1,8 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import type { ConfigType } from '@nestjs/config';
 import { appConfig } from '../config/configuration';
 import { DOCUMENT_CONTEXT_SOURCE_READER } from '../discussion-context/discussion-context.types';
+import { PROJECT_DOCUMENT_FILE_PURGER } from '../projects/project.types';
 import { ProjectsModule } from '../projects/projects.module';
 import { ClamAvDocumentMalwareScanner } from './clamav-document-malware.scanner';
 import { DeterministicDocumentMalwareScanner } from './deterministic-document-malware.scanner';
@@ -32,7 +33,7 @@ import {
 } from './utf8-document-text.extractors';
 
 @Module({
-  imports: [ProjectsModule],
+  imports: [forwardRef(() => ProjectsModule)],
   controllers: [DocumentUploadPolicyController, DocumentsController],
   providers: [
     DocumentsService,
@@ -82,7 +83,15 @@ import {
       provide: DOCUMENT_CONTEXT_SOURCE_READER,
       useExisting: DocumentsService,
     },
+    {
+      provide: PROJECT_DOCUMENT_FILE_PURGER,
+      useExisting: DocumentsService,
+    },
   ],
-  exports: [DocumentsService, DOCUMENT_CONTEXT_SOURCE_READER],
+  exports: [
+    DocumentsService,
+    DOCUMENT_CONTEXT_SOURCE_READER,
+    PROJECT_DOCUMENT_FILE_PURGER,
+  ],
 })
 export class DocumentsModule {}

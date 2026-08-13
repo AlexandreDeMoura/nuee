@@ -146,4 +146,60 @@ describe('Project creation journey (e2e)', () => {
       .expect(200)
       .expect(projectWithViewport);
   });
+
+  it('deletes a project with its content and stays deleted after a restart', async () => {
+    const createdResponse = await request(app!.getHttpServer())
+      .post('/projects')
+      .send({
+        title: 'Disposable plan',
+        description: 'A project that will be deleted.',
+      })
+      .expect(201);
+    const project = createdResponse.body as { id: string };
+
+    const territoryResponse = await request(app!.getHttpServer())
+      .post(`/projects/${project.id}/territories`)
+      .send({ title: 'Findings', position_x: 10, position_y: 20 })
+      .expect(201);
+    const territory = territoryResponse.body as { id: string };
+
+    await request(app!.getHttpServer())
+      .post(`/projects/${project.id}/bubbles`)
+      .send({
+        title: 'A finding',
+        content: 'The launch remains reversible.',
+        territory_id: territory.id,
+      })
+      .expect(201);
+
+    await request(app!.getHttpServer())
+      .delete(`/projects/${project.id}`)
+      .expect(204);
+
+    await request(app!.getHttpServer())
+      .get(`/projects/${project.id}`)
+      .expect(404)
+      .expect(({ body }) => {
+        expect(body).toMatchObject({ code: 'PROJECT_NOT_FOUND' });
+      });
+
+    // The project-scoped children are gone with it rather than orphaned.
+    await request(app!.getHttpServer())
+      .get(`/projects/${project.id}/bubbles`)
+      .expect(404);
+
+    await request(app!.getHttpServer())
+      .delete(`/projects/${project.id}`)
+      .expect(404)
+      .expect(({ body }) => {
+        expect(body).toMatchObject({ code: 'PROJECT_NOT_FOUND' });
+      });
+
+    await app!.close();
+    app = await startApplication();
+
+    await request(app.getHttpServer())
+      .get(`/projects/${project.id}`)
+      .expect(404);
+  });
 });

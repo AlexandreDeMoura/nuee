@@ -147,6 +147,26 @@ export class SqliteDocumentRepository implements DocumentRepository {
     return rows.map((row) => this.toDocument(row));
   }
 
+  // Deliberately narrower than `findAllByProjectId`: cleanup only needs the
+  // storage keys, and reading raw columns keeps a corrupt row from failing
+  // record mapping and stranding that project's files.
+  findFileReferencesByProjectId(projectId: string): string[] {
+    const rows = this.database
+      .prepare(
+        `
+          SELECT file_reference
+          FROM documents
+          WHERE project_id = ?
+          ORDER BY created_at ASC, id ASC
+        `,
+      )
+      .all(projectId) as unknown as { file_reference: string }[];
+
+    return rows
+      .map((row) => row.file_reference)
+      .filter((fileReference) => typeof fileReference === 'string');
+  }
+
   findProjectIdById(documentId: string): string | undefined {
     const row = this.database
       .prepare('SELECT project_id FROM documents WHERE id = ?')

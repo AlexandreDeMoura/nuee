@@ -23,6 +23,7 @@ import type {
   DocumentContextSourceReadResult,
   DocumentContextSourceReader,
 } from '../discussion-context/discussion-context.types';
+import type { ProjectDocumentFilePurger } from '../projects/project.types';
 import { ProjectsService } from '../projects/projects.service';
 import { DocumentUploadValidator } from './document-upload.validator';
 import {
@@ -54,7 +55,9 @@ interface DocumentUploadResult {
 }
 
 @Injectable()
-export class DocumentsService implements DocumentContextSourceReader {
+export class DocumentsService
+  implements DocumentContextSourceReader, ProjectDocumentFilePurger
+{
   private readonly projectUploadTails = new Map<string, Promise<void>>();
 
   constructor(
@@ -324,6 +327,35 @@ export class DocumentsService implements DocumentContextSourceReader {
           detail.processing_status === 'ready' ? detail.extracted_text : null,
       },
     };
+  }
+
+  listProjectFileReferences(projectId: string): string[] {
+    return this.documents.findFileReferencesByProjectId(projectId);
+  }
+
+  async removeFiles(
+    projectId: string,
+    fileReferences: readonly string[],
+  ): Promise<number> {
+    let removedCount = 0;
+
+    for (const fileReference of fileReferences) {
+      try {
+        await this.fileStorage.remove(fileReference);
+        removedCount += 1;
+      } catch (error) {
+        // The owning records are already gone, so one unlink failure must not
+        // abandon the remaining originals or fail the caller's deletion.
+        this.telemetry.record({
+          event: 'document_file_cleanup_failed',
+          project_id: projectId,
+          file_reference: fileReference,
+          error_code: this.applicationErrorCode(error),
+        });
+      }
+    }
+
+    return removedCount;
   }
 
   private async validateFile(

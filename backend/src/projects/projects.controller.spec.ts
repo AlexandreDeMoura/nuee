@@ -1,6 +1,7 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { DatabaseProvider } from '../database/database.provider';
 import { SqliteProjectRepository } from './sqlite-project.repository';
+import { ProjectDeletionService } from './project-deletion.service';
 import { ProjectsController } from './projects.controller';
 import { ProjectsService } from './projects.service';
 
@@ -12,7 +13,16 @@ describe('ProjectsController', () => {
   beforeEach(() => {
     databaseProvider = new DatabaseProvider({ databasePath: ':memory:' });
     repository = new SqliteProjectRepository(databaseProvider);
-    controller = new ProjectsController(new ProjectsService(repository));
+
+    const projects = new ProjectsService(repository);
+
+    controller = new ProjectsController(
+      projects,
+      new ProjectDeletionService(projects, repository, {
+        listProjectFileReferences: () => [],
+        removeFiles: () => Promise.resolve(0),
+      }),
+    );
   });
 
   afterEach(() => {
@@ -86,5 +96,19 @@ describe('ProjectsController', () => {
         message: 'Project "missing-project" was not found.',
       });
     }
+  });
+
+  it('deletes a project and then reports it as missing', async () => {
+    const created = controller.create({
+      title: 'Disposable',
+      description: 'To be deleted.',
+    });
+
+    await expect(controller.delete(created.id)).resolves.toBeUndefined();
+
+    expect(controller.list()).toEqual([]);
+    await expect(controller.delete(created.id)).rejects.toBeInstanceOf(
+      NotFoundException,
+    );
   });
 });

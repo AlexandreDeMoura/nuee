@@ -493,6 +493,49 @@ describe('SqliteDocumentRepository', () => {
     ).toThrow(DocumentIntegrityError);
   });
 
+  it('lists project-scoped file references, including corrupt records', () => {
+    const project = createProject();
+    const otherProject = createProject('Other document project');
+
+    repository.create(documentInput(project.id));
+    repository.create(
+      documentInput(project.id, {
+        id: 'document-b',
+        file_reference: 'private/project/document-b/source',
+        upload_idempotency_key: 'upload-b',
+        source_hash: OTHER_SOURCE_HASH,
+        created_at: '2026-07-30T11:00:00.000Z',
+        updated_at: '2026-07-30T11:00:00.000Z',
+      }),
+    );
+    repository.create(
+      documentInput(otherProject.id, {
+        id: 'document-c',
+        file_reference: 'private/project/document-c/source',
+        upload_idempotency_key: 'upload-c',
+      }),
+    );
+
+    expect(repository.findFileReferencesByProjectId(project.id)).toEqual([
+      'private/project/document-a/source',
+      'private/project/document-b/source',
+    ]);
+
+    // Cleanup must still reach every original when one row cannot be mapped
+    // into a record, otherwise a corrupt document strands its file forever.
+    databaseProvider.connection.exec('PRAGMA ignore_check_constraints = ON;');
+    databaseProvider.connection
+      .prepare('UPDATE documents SET processing_started_at = ? WHERE id = ?')
+      .run('not-a-timestamp', 'document-a');
+
+    expect(() => repository.findAllByProjectId(project.id)).toThrow(
+      DocumentIntegrityError,
+    );
+    expect(repository.findFileReferencesByProjectId(project.id)).toHaveLength(
+      2,
+    );
+  });
+
   it('cascades documents when their owning project is removed', () => {
     const project = createProject();
     repository.create(documentInput(project.id));

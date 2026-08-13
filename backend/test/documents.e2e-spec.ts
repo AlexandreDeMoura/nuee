@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { INestApplication } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import request from 'supertest';
@@ -572,6 +572,59 @@ describe('Document library journey (e2e)', () => {
         .findAllByProjectId(project.id)
         .filter(({ id }) => id === 'recoverable-document'),
     ).toHaveLength(1);
+  });
+
+  it('unlinks private originals when the owning project is deleted', async () => {
+    const project = await createProject('Purged document project');
+    const survivingProject = await createProject('Surviving document project');
+
+    async function upload(
+      targetProjectId: string,
+      idempotencyKey: string,
+    ): Promise<string> {
+      await request(app.getHttpServer())
+        .post(`/projects/${targetProjectId}/documents`)
+        .field('idempotency_key', idempotencyKey)
+        .attach('file', plainTextDocumentFixture, {
+          filename: 'notes.txt',
+          contentType: 'text/plain',
+        })
+        .expect(201);
+
+      return idempotencyKey;
+    }
+
+    await upload(project.id, 'purge-upload-a');
+    await upload(project.id, 'purge-upload-b');
+    await upload(survivingProject.id, 'purge-upload-survivor');
+    await app.get(DocumentProcessingCoordinator).drain();
+
+    const repository = app.get<DocumentRepository>(DOCUMENT_REPOSITORY);
+    const purgedPaths = repository
+      .findAllByProjectId(project.id)
+      .map(({ file_reference }) => join(privateStoragePath, file_reference));
+    const survivingPaths = repository
+      .findAllByProjectId(survivingProject.id)
+      .map(({ file_reference }) => join(privateStoragePath, file_reference));
+
+    expect(purgedPaths).toHaveLength(2);
+    expect(survivingPaths).toHaveLength(1);
+    for (const path of [...purgedPaths, ...survivingPaths]) {
+      expect(existsSync(path)).toBe(true);
+    }
+
+    await request(app.getHttpServer())
+      .delete(`/projects/${project.id}`)
+      .expect(204);
+
+    for (const path of purgedPaths) {
+      expect(existsSync(path)).toBe(false);
+    }
+
+    // Only the deleted project's originals go; the neighbour keeps its file.
+    expect(existsSync(survivingPaths[0])).toBe(true);
+    expect(repository.findAllByProjectId(project.id)).toEqual([]);
+    expect(repository.findAllByProjectId(survivingProject.id)).toHaveLength(1);
   });
 });
 

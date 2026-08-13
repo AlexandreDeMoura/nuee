@@ -118,6 +118,16 @@ export class SqliteProjectRepository implements ProjectRepository {
     return result.changes === 0 ? undefined : this.findById(id);
   }
 
+  delete(id: string): boolean {
+    // Every project-owned table reaches `projects` by ON DELETE CASCADE, so
+    // SQLite removes the whole graph atomically in this one statement.
+    const result = this.database
+      .prepare('DELETE FROM projects WHERE id = ?')
+      .run(id);
+
+    return result.changes > 0;
+  }
+
   private toProject(row: ProjectRow): Project {
     return {
       id: row.id,

@@ -44,6 +44,13 @@ export type DocumentOperationalLogEvent =
       retry_count: number;
       outcome: 'accepted' | 'failed';
       error_code: string | null;
+    }
+  | {
+      event: 'document_file_cleanup_failed';
+      project_id: string;
+      /** Server-generated opaque storage key — never a submitted filename. */
+      file_reference: string;
+      error_code: string;
     };
 
 const allowedKeys = {
@@ -81,6 +88,12 @@ const allowedKeys = {
     'duration_ms',
     'retry_count',
     'outcome',
+    'error_code',
+  ],
+  document_file_cleanup_failed: [
+    'event',
+    'project_id',
+    'file_reference',
     'error_code',
   ],
 } as const;

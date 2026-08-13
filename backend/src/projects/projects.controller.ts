@@ -1,15 +1,29 @@
-import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import type {
   CreateProjectInput,
   Project,
   UpdateProjectDescriptionInput,
   UpdateProjectViewportInput,
 } from './project.types';
+import { ProjectDeletionService } from './project-deletion.service';
 import { ProjectsService } from './projects.service';
 
 @Controller('projects')
 export class ProjectsController {
-  constructor(private readonly projects: ProjectsService) {}
+  constructor(
+    private readonly projects: ProjectsService,
+    private readonly projectDeletion: ProjectDeletionService,
+  ) {}
 
   @Post()
   create(@Body() input: CreateProjectInput): Project {
@@ -40,5 +54,11 @@ export class ProjectsController {
     @Body() input: UpdateProjectViewportInput,
   ): Project {
     return this.projects.updateViewport(projectId, input);
+  }
+
+  @Delete(':projectId')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async delete(@Param('projectId') projectId: string): Promise<void> {
+    await this.projectDeletion.delete(projectId);
   }
 }

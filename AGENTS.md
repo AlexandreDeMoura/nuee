@@ -95,7 +95,8 @@ cannot meet concrete requirements.
 
 ### Feature ownership
 
-- `projects/` — project lifecycle, metadata, viewport state, persistence.
+- `projects/` — project lifecycle, metadata, viewport state, persistence, and project deletion:
+  it owns the cascade plus the ordering that purges document originals.
 - `bubbles/` — bubble lifecycle, content, territory assignment, links, persistence.
 - `territories/` — project-scoped territory persistence, visible-count and spatial updates, the
   ungrouped lifecycle, and the synchronous AI recompose workflow.
@@ -151,6 +152,11 @@ cannot meet concrete requirements.
 - Discussion Context reads ready documents through a narrow project-scoped capability and copies
   title and complete processed text into its own immutable snapshot. It never accepts client-supplied
   document text or dereferences a live document after discussion creation.
+- Deleting a project cascades document rows away in SQLite, but private originals are reachable only
+  through the `file_reference` those rows carry. Projects collects the references before the delete
+  and asks Documents to unlink them after it commits, through a narrow project-scoped purge
+  capability. Files cannot join the transaction, so a failed unlink strands a file rather than a
+  record, and never fails a completed deletion.
 
 ### Services and persistence
 
