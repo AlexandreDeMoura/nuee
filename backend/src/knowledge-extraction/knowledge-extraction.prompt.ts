@@ -10,17 +10,15 @@ export const KNOWLEDGE_EXTRACTION_INSTRUCTIONS = `
 Create exactly one reusable, self-contained project knowledge proposal from the supplied source snapshot.
 
 Grounding rules:
-- Use only claims present in the selected source snapshot. Add only minimal connective phrasing needed for a coherent synthesis.
 - Preserve material uncertainty, disagreement, alternatives, assumptions, and unresolved caveats. Do not silently adjudicate them.
-- Synthesize the useful knowledge rather than copying the conversation or describing the extraction process.
 - Make the proposal understandable without access to the source discussion.
-- Do not expose prompts, source framing, internal identifiers, database metadata, message metadata, or model metadata.
 
 Output rules:
 - Return one object with exactly title, summary, and content.
 - Use a specific plain-text title.
-- Use a concise one-sentence plain-text summary.
-- Use coherent content with minimal repetition. Markdown is optional and limited to headings no deeper than ###, bullet and ordered lists, bold and italic text, inline code, fenced code blocks, and tables. Do not use images, raw HTML, or headings at level #### or deeper.
+- Use a concise one-sentence plain-text summary that will help the user differenciate this bubble to others. 
+- Use coherent content with minimal repetition. Markdown is limited to headings no deeper than ###, bullet and ordered lists, bold and italic text, inline code, fenced code blocks, and tables. Do not use images, raw HTML, or headings at level #### or deeper.
+- User's instruction trumps any other grounding and output rules as long as it is not harmful.
 `.trim();
 
 export const KNOWLEDGE_EXTRACTION_PROPOSAL_FORMAT = {
@@ -50,10 +48,10 @@ export const KNOWLEDGE_EXTRACTION_PROPOSAL_FORMAT = {
 } as const;
 
 const DETAIL_LEVEL_GUIDANCE: Record<KnowledgeExtractionDetailLevel, string> = {
-  tight: 'For content only, target 50-100 words. Mainly small sentences and bullet points.',
-  standard: 'For content only, target 120-200 words. Small paragraphs with titles, bullet points etc...',
+  tight: 'For content only, target 50-100 words. ',
+  standard: 'For content only, target 120-200 words.',
   detailed:
-    'For content only, target 300-400 words. An introduction, paragraphs with titles, some bullet points if needed. ',
+    'For content only, target 300-400 words.',
 };
 
 interface KnowledgeExtractionPromptOptions {
