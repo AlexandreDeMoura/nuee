@@ -121,9 +121,7 @@ export function DiscussionModal({
         className={`flex max-h-[min(912px,calc(100vh-108px))] min-h-[504px] w-full flex-col overflow-hidden rounded-2xl border border-[#d9e0e8] bg-white shadow-[0_28px_72px_-24px_rgba(20,28,40,0.58)] md:flex-row ${
           inspectorSlot
             ? 'max-w-[1296px]'
-            : isExtractionRequest
-              ? 'max-w-[1152px]'
-              : 'max-w-[912px]'
+            : 'max-w-[1152px]'
         }`}
         ref={dialogRef}
         role="dialog"
