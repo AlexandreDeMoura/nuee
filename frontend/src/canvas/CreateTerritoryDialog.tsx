@@ -8,6 +8,7 @@ import {
   type TerritoryCreateRequest,
 } from '../api';
 import { focusRing } from '../ui/focusRing';
+import { useFieldValidity } from '../ui/useFieldValidity';
 import { useModalShell } from '../ui/useModalShell';
 
 interface CreateTerritoryDialogProps {
@@ -26,7 +27,6 @@ export function CreateTerritoryDialog({
   requestCreate = createTerritory,
 }: CreateTerritoryDialogProps) {
   const [title, setTitle] = useState('');
-  const [isTouched, setIsTouched] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [hasCreateError, setHasCreateError] = useState(false);
   const titleInputRef = useRef<HTMLInputElement>(null);
@@ -38,7 +38,7 @@ export function CreateTerritoryDialog({
       : normalizedTitle.length > TERRITORY_TITLE_MAX_LENGTH
         ? `Use ${TERRITORY_TITLE_MAX_LENGTH} characters or fewer.`
         : null;
-  const { containerRef } = useModalShell({
+  const { containerRef, isClosing } = useModalShell({
     initialFocus: () => titleInputRef.current,
     onEscape: () => {
       if (!isCreatingRef.current) {
@@ -46,6 +46,10 @@ export function CreateTerritoryDialog({
       }
     },
   });
+  const fields = useFieldValidity(
+    { title: titleError !== null },
+    { isSuppressed: isClosing },
+  );
 
   function cancelFromBackdrop(event: MouseEvent<HTMLDivElement>) {
     if (event.target === event.currentTarget && !isCreatingRef.current) {
@@ -55,9 +59,9 @@ export function CreateTerritoryDialog({
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setIsTouched(true);
 
     if (titleError || isCreatingRef.current) {
+      fields.revealAll();
       return;
     }
 
@@ -81,7 +85,7 @@ export function CreateTerritoryDialog({
     }
   }
 
-  const showTitleError = isTouched && titleError !== null;
+  const showTitleError = fields.showError.title;
 
   return (
     <div
@@ -177,7 +181,7 @@ export function CreateTerritoryDialog({
               aria-describedby={
                 showTitleError ? 'create-territory-name-error' : undefined
               }
-              onBlur={() => setIsTouched(true)}
+              onBlur={() => fields.markTouched('title')}
               onChange={(event) => {
                 setTitle(event.target.value);
                 setHasCreateError(false);

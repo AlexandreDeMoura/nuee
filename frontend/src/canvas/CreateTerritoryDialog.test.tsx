@@ -1,10 +1,24 @@
 import { TERRITORY_TITLE_MAX_LENGTH } from '@nuee/shared-types';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { StrictMode, useState } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Territory } from '../api';
 import { CreateTerritoryDialog } from './CreateTerritoryDialog';
 
 afterEach(cleanup);
+
+/**
+ * The error paragraph is always mounted and toggles a `invisible` class, so its
+ * presence in the DOM proves nothing. Read what the user can actually see.
+ */
+function titleError() {
+  const message = document.getElementById('create-territory-name-error');
+  const isShown =
+    screen.getByLabelText('Title *').getAttribute('aria-invalid') === 'true' &&
+    message?.className.includes('invisible') === false;
+
+  return { isShown, text: isShown ? message?.textContent?.trim() : undefined };
+}
 
 const createdTerritory: Territory = {
   id: 'territory-created',
@@ -35,18 +49,21 @@ describe('CreateTerritoryDialog', () => {
 
     const input = screen.getByLabelText('Title *');
     expect(document.activeElement).toBe(input);
+    expect(titleError().isShown).toBe(false);
 
     fireEvent.click(screen.getByRole('button', { name: 'Create territory' }));
-    expect(screen.getByText('Enter a territory title.')).not.toBeNull();
+    expect(titleError()).toEqual({
+      isShown: true,
+      text: 'Enter a territory title.',
+    });
 
     fireEvent.change(input, {
       target: { value: 'x'.repeat(TERRITORY_TITLE_MAX_LENGTH + 1) },
     });
-    expect(
-      screen.getByText(
-        `Use ${TERRITORY_TITLE_MAX_LENGTH} characters or fewer.`,
-      ),
-    ).not.toBeNull();
+    expect(titleError()).toEqual({
+      isShown: true,
+      text: `Use ${TERRITORY_TITLE_MAX_LENGTH} characters or fewer.`,
+    });
     expect(requestCreate).not.toHaveBeenCalled();
 
     fireEvent.change(input, { target: { value: '  Research  ' } });
@@ -60,5 +77,43 @@ describe('CreateTerritoryDialog', () => {
       });
     });
     expect(onCreated).toHaveBeenCalledWith(createdTerritory);
+  });
+
+  it('stays pristine when StrictMode remounts the modal shell', () => {
+    function Host() {
+      const [isOpen, setIsOpen] = useState(false);
+
+      return (
+        <div>
+          <button type="button" onClick={() => setIsOpen(true)}>
+            New territory
+          </button>
+          {isOpen && (
+            <CreateTerritoryDialog
+              onCancel={vi.fn()}
+              onCreated={vi.fn()}
+              placement={{ position_x: 10, position_y: 20 }}
+              projectId="project-one"
+              requestCreate={vi.fn(async () => createdTerritory)}
+            />
+          )}
+        </div>
+      );
+    }
+
+    render(
+      <StrictMode>
+        <Host />
+      </StrictMode>,
+    );
+
+    // The shell restores focus to the trigger on teardown, blurring the title
+    // input. That blur is the shell's, not the user's, and must reveal nothing.
+    const trigger = screen.getByRole('button', { name: 'New territory' });
+    trigger.focus();
+    fireEvent.click(trigger);
+
+    expect(document.activeElement).toBe(screen.getByLabelText('Title *'));
+    expect(titleError().isShown).toBe(false);
   });
 });
